@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import { Fira_Code as FontMono, Inter as FontSans } from "next/font/google";
 
 import NavBar from "@/logic/NavBar";
+
 const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
