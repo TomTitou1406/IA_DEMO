@@ -69,6 +69,9 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           onChange={(value) => onChange("knowledgeId", value)}
         />
       </Field>
+      <h1 className="text-zinc-100 w-full text-center mt-5">
+            Paramétrages de l'Avatar interactif
+      </h1>
       <Field label="Nom de l'avatar interactif">
         <Select
           isSelected={(option) =>
@@ -137,7 +140,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           />
         </Field>
           <h1 className="text-zinc-100 w-full text-center mt-5">
-            Voice Settings
+            Paramétrages du mode vocal
           </h1>
           <Field label="Identifiant de la voix presonnalisée">
             <Input
@@ -171,7 +174,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
             />
           </Field>
           <h1 className="text-zinc-100 w-full text-center mt-5">
-            STT Settings
+            Paramétrages STT
           </h1>
           <Field label="Provider">
             <Select
