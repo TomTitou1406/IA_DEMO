@@ -99,7 +99,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
     "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center";
 
   return (
-    <div className="relative flex flex-col gap-4 w-full max-w-[900px] py-8 pb-24 mx-auto px-4">
+    <div className="relative flex flex-col gap-4 w-full py-4 px-4">
 
       {/* =========================================================================
          🧩 Étape 1 — Sélection de l'avatar
