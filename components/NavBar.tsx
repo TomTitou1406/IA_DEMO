@@ -14,7 +14,7 @@ export default function NavBar() {
           </Link>
           <div className="bg-gradient-to-br from-sky-300 to-indigo-500 bg-clip-text">
             <p className="text-xl font-semibold text-transparent">
-              HeyGen Interactive Avatar SDK NextJS Demo
+              Test Avantar interactif heyGen - Op'Team-IA v0
             </p>
           </div>
         </div>
