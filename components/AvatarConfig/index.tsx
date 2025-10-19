@@ -54,14 +54,14 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
 
   return (
     <div className="relative flex flex-col gap-4 w-[550px] py-8 max-h-full overflow-y-auto px-4">
-      <Field label="Custom Knowledge Base ID">
+      <Field label="Identifiant de la base de connaissances spécifiques">
         <Input
-          placeholder="Enter custom knowledge base ID"
+          placeholder="Saisir l'ID de la base de ocnnaissance"
           value={config.knowledgeId}
           onChange={(value) => onChange("knowledgeId", value)}
         />
       </Field>
-      <Field label="Avatar ID">
+      <Field label="Identifiant de l'avatar interactif">
         <Select
           isSelected={(option) =>
             typeof option === "string"
@@ -88,15 +88,15 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
         />
       </Field>
       {selectedAvatar?.isCustom && (
-        <Field label="Custom Avatar ID">
+        <Field label="Identifiant de l'avatar personnalisé">
           <Input
-            placeholder="Enter custom avatar ID"
+            placeholder="Saisir l'identifiant de l'avatar personnalisé"
             value={config.avatarName}
             onChange={(value) => onChange("avatarName", value)}
           />
         </Field>
       )}
-      <Field label="Language">
+      <Field label="Langue">
         <Select
           isSelected={(option) => option.value === config.language}
           options={STT_LANGUAGE_LIST}
@@ -108,7 +108,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           onSelect={(option) => onChange("language", option.value)}
         />
       </Field>
-      <Field label="Avatar Quality">
+      <Field label="Qualité vidéo de l'avatar">
         <Select
           isSelected={(option) => option === config.quality}
           options={Object.values(AvatarQuality)}
@@ -117,7 +117,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           onSelect={(option) => onChange("quality", option)}
         />
       </Field>
-      <Field label="Voice Chat Transport">
+      <Field label="Méthode de transport de la voix">
         <Select
           isSelected={(option) => option === config.voiceChatTransport}
           options={Object.values(VoiceChatTransport)}
@@ -131,9 +131,9 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           <h1 className="text-zinc-100 w-full text-center mt-5">
             Voice Settings
           </h1>
-          <Field label="Custom Voice ID">
+          <Field label="Identifiant de la voix presonnalisée">
             <Input
-              placeholder="Enter custom voice ID"
+              placeholder="Saisir l'identifiant de la voix presonnalisée"
               value={config.voice?.voiceId}
               onChange={(value) =>
                 onChange("voice", { ...config.voice, voiceId: value })
@@ -151,7 +151,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               }
             />
           </Field>
-          <Field label="ElevenLabs Model">
+          <Field label="Modèle ElevenLabs">
             <Select
               isSelected={(option) => option === config.voice?.model}
               options={Object.values(ElevenLabsModel)}
