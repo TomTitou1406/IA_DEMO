@@ -29,3 +29,6 @@ export const STT_LANGUAGE_LIST = [
   { label: "Portuguese", value: "pt", key: "pt" },
   { label: "Spanish", value: "es", key: "es" },
 ];
+export const DEFAULT_LANGUAGE = 'French';
+export const DEFAULT_VIDEO_QUALITY = 'high';
+export const DEFAULT_AVATAR_ID = 'Elenora_IT_Sitting_public';
