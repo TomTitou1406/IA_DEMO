@@ -108,26 +108,26 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           onSelect={(option) => onChange("language", option.value)}
         />
       </Field>
-      <Field label="Qualité vidéo de l'avatar">
-        <Select
-          isSelected={(option) => option === config.quality}
-          options={Object.values(AvatarQuality)}
-          renderOption={(option) => option}
-          value={config.quality}
-          onSelect={(option) => onChange("quality", option)}
-        />
-      </Field>
-      <Field label="Méthode de transport de la voix">
-        <Select
-          isSelected={(option) => option === config.voiceChatTransport}
-          options={Object.values(VoiceChatTransport)}
-          renderOption={(option) => option}
-          value={config.voiceChatTransport}
-          onSelect={(option) => onChange("voiceChatTransport", option)}
-        />
-      </Field>
       {showMore && (
         <>
+        <Field label="Qualité vidéo de l'avatar">
+          <Select
+            isSelected={(option) => option === config.quality}
+            options={Object.values(AvatarQuality)}
+            renderOption={(option) => option}
+            value={config.quality}
+            onSelect={(option) => onChange("quality", option)}
+          />
+        </Field>
+        <Field label="Méthode de transport de la voix">
+          <Select
+            isSelected={(option) => option === config.voiceChatTransport}
+            options={Object.values(VoiceChatTransport)}
+            renderOption={(option) => option}
+            value={config.voiceChatTransport}
+            onSelect={(option) => onChange("voiceChatTransport", option)}
+          />
+        </Field>
           <h1 className="text-zinc-100 w-full text-center mt-5">
             Voice Settings
           </h1>
