@@ -128,7 +128,7 @@ function InteractiveAvatar() {
             <AvatarVideo ref={mediaStream} />
           ) : (
             <div className="absolute inset-0 overflow-y-auto">
-              <div className="max-w-[1000px] mx-auto p-6">
+              <div className="max-w-[1000px] mx-auto p-4">
                 <AvatarConfig config={config} onConfigChange={setConfig} />
               </div>
             </div>
