@@ -23,9 +23,9 @@ export const AVATARS = [
 
 export const STT_LANGUAGE_LIST = [
   { label: "English", value: "en", key: "en" },
-  { label: "French", value: "fr", key: "fr" },
-  { label: "German", value: "de", key: "de" },
-  { label: "Italian", value: "it", key: "it" },
-  { label: "Portuguese", value: "pt", key: "pt" },
-  { label: "Spanish", value: "es", key: "es" },
+  { label: "Français", value: "fr", key: "fr" },
+  { label: "Deutsch", value: "de", key: "de" },
+  { label: "Italiano", value: "it", key: "it" },
+  { label: "Português", value: "pt", key: "pt" },
+  { label: "Español", value: "es", key: "es" },
 ];
