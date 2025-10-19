@@ -10,7 +10,7 @@ export default function NavBar() {
       <div className="flex flex-row justify-between items-center w-[1000px] m-auto p-6">
         <div className="flex flex-row items-center gap-4">
           <Link href="https://ia-demo.vercel.app/" target="_blank">
-            <OpTeamIALogo />
+            <opteam-ia_logo />
           </Link>
           <div className="bg-gradient-to-br from-sky-300 to-indigo-500 bg-clip-text">
             <p className="text-xl font-semibold text-transparent">
