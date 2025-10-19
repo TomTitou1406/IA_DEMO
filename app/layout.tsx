@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import { Metadata } from "next";
 import { Fira_Code as FontMono, Inter as FontSans } from "next/font/google";
 
-import NavBar from "@/components/NavBar.tsx";
+import NavBar from "@/components/NavBar";
 
 const fontSans = FontSans({
   subsets: ["latin"],
@@ -16,11 +16,11 @@ const fontMono = FontMono({
 
 export const metadata: Metadata = {
   title: {
-    default: "Op’Team-IA — Avatar Interactif - Test v0",
-    template: `%s - Op’Team-IA — Avatar Interactif - Test v0`,
+    default: "HeyGen Interactive Avatar SDK Demo",
+    template: `%s - HeyGen Interactive Avatar SDK Demo`,
   },
   icons: {
-    icon: "/opteam-ia_logo.png",
+    icon: "/heygen-logo.png",
   },
 };
 
