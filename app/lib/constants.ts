@@ -2,47 +2,47 @@ export const AVATARS = [
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
   {
     avatar_id: "Pedro_CasualLook_public",
     name: "Pedro",
-    image: "/avatars/pedro.jpg",
+    image: "/avatars/pedro.png",
   },
 ];
 
