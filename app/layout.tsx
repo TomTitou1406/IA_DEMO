@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import { Metadata } from "next";
 import { Fira_Code as FontMono, Inter as FontSans } from "next/font/google";
 
-import NavBar from "@/logic/NavBar";
+import NavBar from "@/components/NavBar.tsx";
 
 const fontSans = FontSans({
   subsets: ["latin"],
