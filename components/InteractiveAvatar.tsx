@@ -23,15 +23,15 @@ import { MessageHistory } from "./AvatarSession/MessageHistory";
 import { AVATARS } from "@/app/lib/constants";
 
 const DEFAULT_CONFIG: StartAvatarRequest = {
-  quality: AvatarQuality.Low,
-  avatarName: AVATARS[0].avatar_id,
-  knowledgeId: undefined,
+  quality: AvatarQuality.High,
+  avatarName: AVATARS[0]?.avatar_id ?? "Pedro_Blue_Shirt_public",
+  knowledgeId: "262a94b9bd4a45ad94ea3f7fd4264300", //Base de bricolage
   voice: {
-    rate: 1.5,
-    emotion: VoiceEmotion.EXCITED,
+    rate: 1.2,
+    emotion: VoiceEmotion.FRIENDLY,
     model: ElevenLabsModel.eleven_flash_v2_5,
   },
-  language: "en",
+  language: "fr",
   voiceChatTransport: VoiceChatTransport.WEBSOCKET,
   sttSettings: {
     provider: STTProvider.DEEPGRAM,
