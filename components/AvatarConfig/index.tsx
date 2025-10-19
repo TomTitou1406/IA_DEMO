@@ -56,12 +56,12 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
     <div className="relative flex flex-col gap-4 w-[550px] py-8 max-h-full overflow-y-auto px-4">
       <Field label="Identifiant de la base de connaissances spécifiques">
         <Input
-          placeholder="Saisir l'ID de la base de ocnnaissance"
+          placeholder="Saisir l'identifiant"
           value={config.knowledgeId}
           onChange={(value) => onChange("knowledgeId", value)}
         />
       </Field>
-      <Field label="Identifiant de l'avatar interactif">
+      <Field label="Nom de l'avatar interactif">
         <Select
           isSelected={(option) =>
             typeof option === "string"
@@ -90,7 +90,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
       {selectedAvatar?.isCustom && (
         <Field label="Identifiant de l'avatar personnalisé">
           <Input
-            placeholder="Saisir l'identifiant de l'avatar personnalisé"
+            placeholder="Saisir l'identifiant"
             value={config.avatarName}
             onChange={(value) => onChange("avatarName", value)}
           />
