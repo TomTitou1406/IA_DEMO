@@ -96,15 +96,15 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
   // 🎨 Rendu principal
   // --------------------------------------------------------------------------
   const gridCols =
-    "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 justify-items-center";
+    "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 justify-items-center";
 
   return (
-    <div className="relative flex flex-col gap-4 w-full py-4 px-4">
+    <div className="relative flex flex-col gap-3 w-full py-2 px-3">
 
       {/* =========================================================================
          🧩 Étape 1 — Sélection de l'avatar
          ========================================================================= */}
-      <h1 className="text-zinc-100 w-full text-center text-lg font-semibold mb-4">
+      <h1 className="text-zinc-100 text-base font-semibold text-center mt-2 mb-2">
         1 – Sélectionnez votre avatar
       </h1>
 
@@ -113,38 +113,35 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           <div
             key={avatar.avatar_id}
             onClick={() => onChange("avatarName", avatar.avatar_id)}
-            className={`relative flex flex-col items-center p-3 rounded-xl cursor-pointer transition border shadow-sm
+            className={`relative flex flex-col items-center p-2 rounded-xl cursor-pointer transition border
               ${
                 config.avatarName === avatar.avatar_id
-                  ? "border-blue-500 bg-blue-950/30 scale-[1.02]"
+                  ? "border-blue-500 bg-blue-950/30"
                   : "border-zinc-700 hover:border-blue-400 hover:bg-blue-950/10"
               }`}
           >
             <img
               src={avatar.image || "/avatars/default.webp"}
               alt={avatar.name}
-              className="w-24 h-24 object-cover rounded-full mb-2"
+              className="w-20 h-20 object-cover rounded-full mb-1"
             />
-            <p className="text-sm text-center text-zinc-200 font-medium">
-              {avatar.name}
-            </p>
+            <p className="text-[13px] leading-tight text-center text-zinc-200">{avatar.name}</p>
             {config.avatarName === avatar.avatar_id && (
-              <span className="text-xs text-blue-400 mt-1">Sélectionné</span>
+              <span className="text-[11px] text-blue-400 mt-0.5">Sélectionné</span>
             )}
           </div>
         ))}
       </div>
 
       {config.avatarName && (
-        <p className="text-center text-xs text-zinc-400 mt-2">
+        <p className="text-center text-xs text-zinc-500 mt-1">
           Avatar ID : {config.avatarName}
         </p>
       )}
-
       {/* =========================================================================
          🧩 Étape 2 — Sélection de la langue
          ========================================================================= */}
-      <h1 className="text-zinc-100 w-full text-center text-lg font-semibold mt-10">
+      <h1 className="text-zinc-100 text-base font-semibold text-center mt-2 mb-2">
         2 – Sélectionnez votre langue de travail
       </h1>
 
@@ -168,7 +165,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
       {/* =========================================================================
          🧩 Étape 3 — Paramètres avancés
          ========================================================================= */}
-      <h1 className="text-zinc-100 w-full text-center text-lg font-semibold mt-10">
+      <h1 className="text-zinc-100 text-base font-semibold text-center mt-2 mb-2">
         3 – Paramètres avancés
       </h1>
 
