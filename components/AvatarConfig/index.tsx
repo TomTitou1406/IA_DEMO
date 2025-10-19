@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import {
   AvatarQuality,
   ElevenLabsModel,
@@ -7,13 +7,13 @@ import {
   StartAvatarRequest,
   VoiceChatTransport,
 } from "@heygen/streaming-avatar";
-
 import { Input } from "../Input";
 import { Select } from "../Select";
-
 import { Field } from "./Field";
-
 import { AVATARS, STT_LANGUAGE_LIST } from "@/app/lib/constants";
+
+//Forçage des valeurs par défaut
+const DEFAULT_KB_ID = "262a94b9bd4a45ad94ea3f7fd4264300"; // Base de connaissance bricolage
 
 interface AvatarConfigProps {
   onConfigChange: (config: StartAvatarRequest) => void;
@@ -52,12 +52,20 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
     }
   }, [config.avatarName]);
 
+  // Défaut KB : si vide, on applique la valeur de repli une fois le composant monté / lors des changements.
+  useEffect(() => {
+    if (!config.knowledgeId || config.knowledgeId.trim() === "") {
+      onChange("knowledgeId", DEFAULT_KB_ID);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.knowledgeId]);
+    
   return (
     <div className="relative flex flex-col gap-4 w-[550px] py-8 max-h-full overflow-y-auto px-4">
       <Field label="Identifiant de la base de connaissances spécifiques">
         <Input
           placeholder="Saisir l'identifiant"
-          value={config.knowledgeId}
+          value={config.knowledgeId || DEFAULT_KB_ID}   // ← fallback visuel
           onChange={(value) => onChange("knowledgeId", value)}
         />
       </Field>
