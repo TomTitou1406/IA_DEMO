@@ -14,6 +14,8 @@ import { AVATARS, STT_LANGUAGE_LIST } from "@/app/lib/constants";
 
 //Forçage des valeurs par défaut
 const DEFAULT_KB_ID = "262a94b9bd4a45ad94ea3f7fd4264300"; // Base de connaissance bricolage
+const DEFAULT_LANGUAGE = "fr";
+
 
 interface AvatarConfigProps {
   onConfigChange: (config: StartAvatarRequest) => void;
@@ -59,6 +61,13 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [config.knowledgeId]);
+  // Défaut langue : si vide, on force "fr"
+  useEffect(() => {
+    if (!config.language || String(config.language).trim() === "") {
+      onChange("language", DEFAULT_LANGUAGE);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.language]);
     
   return (
     <div className="relative flex flex-col gap-4 w-[550px] py-8 max-h-full overflow-y-auto px-4">
@@ -109,16 +118,19 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
       )}
       <Field label="Langue">
         <Select
-          isSelected={(option) => option.value === config.language}
+          isSelected={(option) => option.value === (config.language || DEFAULT_LANGUAGE)}
           options={STT_LANGUAGE_LIST}
           renderOption={(option) => option.label}
           value={
-            STT_LANGUAGE_LIST.find((option) => option.value === config.language)
-              ?.label
+            (
+              STT_LANGUAGE_LIST.find((option) => option.value === config.language) ||
+              STT_LANGUAGE_LIST.find((option) => option.value === DEFAULT_LANGUAGE)
+            )?.label
           }
           onSelect={(option) => onChange("language", option.value)}
         />
       </Field>
+     
       {showMore && (
         <>
         <Field label="Qualité vidéo de l'avatar">
