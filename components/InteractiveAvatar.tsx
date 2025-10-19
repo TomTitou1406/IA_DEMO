@@ -9,7 +9,6 @@ import {
 } from "@heygen/streaming-avatar";
 import { useEffect, useRef, useState } from "react";
 import { useMemoizedFn, useUnmount } from "ahooks";
-
 import { Button } from "./Button";
 import { AvatarConfig } from "./AvatarConfig";
 import { AvatarVideo } from "./AvatarSession/AvatarVideo";
@@ -19,7 +18,6 @@ import { useVoiceChat } from "./logic/useVoiceChat";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "./logic";
 import { LoadingIcon } from "./Icons";
 import { MessageHistory } from "./AvatarSession/MessageHistory";
-
 import { AVATARS } from "@/app/lib/constants";
 
 const DEFAULT_CONFIG: StartAvatarRequest = {
@@ -27,9 +25,9 @@ const DEFAULT_CONFIG: StartAvatarRequest = {
   avatarName: AVATARS[0]?.avatar_id ?? "Pedro_Blue_Shirt_public",
   knowledgeId: "262a94b9bd4a45ad94ea3f7fd4264300", //Base de bricolage
   voice: {
-    rate: 1.2,
+    rate: 1.2, //mieux pour le phraser français
     emotion: VoiceEmotion.FRIENDLY,
-    model: ElevenLabsModel.eleven_flash_v2_5,
+    model: ElevenLabsModel.eleven_multilingual_v2, // Mieux pour le phraser français
   },
   language: "fr",
   voiceChatTransport: VoiceChatTransport.WEBSOCKET,
@@ -138,10 +136,10 @@ function InteractiveAvatar() {
           ) : sessionState === StreamingAvatarSessionState.INACTIVE ? (
             <div className="flex flex-row gap-4">
               <Button onClick={() => startSessionV2(true)}>
-                Start Voice Chat
+                Parler avec l'avatar (réponses orales)
               </Button>
               <Button onClick={() => startSessionV2(false)}>
-                Start Text Chat
+                Ecrire à l'avatar (réponses orales)
               </Button>
             </div>
           ) : (
