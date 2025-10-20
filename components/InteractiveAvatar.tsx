@@ -123,12 +123,12 @@ function InteractiveAvatar() {
   return (
     <div className="w-full flex flex-col gap-4">
       <div className="flex flex-col rounded-xl bg-zinc-900 overflow-hidden">
-        <div className="relative w-full h-[80vh] md:h-[82vh] min-h-[620px] overflow-hidden rounded-b-xl">
+        <div className="relative w-full max-h-[85vh] min-h-[620px] md:min-h-[720px] overflow-hidden rounded-b-xl">
           {sessionState !== StreamingAvatarSessionState.INACTIVE ? (
             <AvatarVideo ref={mediaStream} />
           ) : (
-            <div className="absolute inset-0 overflow-y-auto">
-              <div className="max-w-[1000px] mx-auto p-4">
+            <div className="h-full w-full overflow-y-auto">
+              <div className="max-w-[1000px] mx-auto p-6">
                 <AvatarConfig config={config} onConfigChange={setConfig} />
               </div>
             </div>
