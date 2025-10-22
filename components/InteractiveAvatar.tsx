@@ -158,7 +158,7 @@ function InteractiveAvatar() {
     )}
   </>
 );
-
+}
 export default function InteractiveAvatarWrapper() {
   return (
     <StreamingAvatarProvider basePath={process.env.NEXT_PUBLIC_BASE_API_URL}>
