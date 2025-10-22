@@ -121,42 +121,43 @@ function InteractiveAvatar() {
   }, [mediaStream, stream]);
 
   return (
-    <div className="w-full flex flex-col gap-4">
-      <div className="flex flex-col rounded-xl bg-zinc-900 overflow-hidden">
-        <div className="relative w-full max-h-[85vh] min-h-[620px] md:min-h-[720px] overflow-hidden rounded-b-xl">
-          {sessionState !== StreamingAvatarSessionState.INACTIVE ? (
+  <>
+    {sessionState === StreamingAvatarSessionState.INACTIVE ? (
+      // ===== Page d'accueil scrollable (fond principal, pas de "fenêtre") =====
+      <div className="w-full max-w-5xl mx-auto px-4 pt-4 pb-28">
+        <AvatarConfig config={config} onConfigChange={setConfig} />
+      </div>
+    ) : (
+      // ===== Mode session : vidéo + contrôles =====
+      <div className="w-full flex flex-col gap-4">
+        <div className="flex flex-col rounded-xl bg-zinc-900 overflow-hidden">
+          <div className="relative w-full aspect-video overflow-hidden flex items-center justify-center">
             <AvatarVideo ref={mediaStream} />
-          ) : (
-            <div className="h-full w-full overflow-y-auto">
-              <div className="max-w-[1000px] mx-auto p-6">
-                <AvatarConfig config={config} onConfigChange={setConfig} />
-              </div>
-            </div>
-          )}
-        </div>
-        <div className="flex flex-col gap-3 items-center justify-center p-4 border-t border-zinc-700 w-full">
-          {sessionState === StreamingAvatarSessionState.CONNECTED ? (
+          </div>
+          <div className="flex flex-col gap-3 items-center justify-center p-4 border-t border-zinc-700 w-full">
             <AvatarControls />
-          ) : sessionState === StreamingAvatarSessionState.INACTIVE ? (
-            <div className="flex flex-row gap-4">
-              <Button onClick={() => startSessionV2(true)}>
-                Parler avec l'avatar (réponses orales)
-              </Button>
-              <Button onClick={() => startSessionV2(false)}>
-                Ecrire à l'avatar (réponses orales)
-              </Button>
-            </div>
-          ) : (
-            <LoadingIcon />
-          )}
+          </div>
+        </div>
+
+        <MessageHistory />
+      </div>
+    )}
+
+    {/* ===== Barre d'actions flottante (seulement à l'accueil) ===== */}
+    {sessionState === StreamingAvatarSessionState.INACTIVE && (
+      <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50">
+        <div className="flex gap-3 bg-zinc-900/90 border border-zinc-700 rounded-xl px-4 py-3 shadow-xl backdrop-blur">
+          <Button onClick={() => startSessionV2(true)}>
+            Parler avec l’avatar (réponses orales)
+          </Button>
+          <Button onClick={() => startSessionV2(false)}>
+            Écrire à l’avatar (réponses orales)
+          </Button>
         </div>
       </div>
-      {sessionState === StreamingAvatarSessionState.CONNECTED && (
-        <MessageHistory />
-      )}
-    </div>
-  );
-}
+    )}
+  </>
+);
 
 export default function InteractiveAvatarWrapper() {
   return (
