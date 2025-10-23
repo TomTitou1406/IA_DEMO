@@ -1,5 +1,5 @@
-import AssistantChat from "@/components/AssistantChat";
-import ActionsBar from "@/components/ActionsBar";
+import AssistantChat from "@/components/UI/AssistantChat";
+import ActionsBar from "@/components/UI/ActionsBar";
 
 export default function RecruteurEntreprise() {
   return (
