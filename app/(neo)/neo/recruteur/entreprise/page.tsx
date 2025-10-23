@@ -1,3 +1,6 @@
+import React from "react";
+import Link from "next/link";
+
 export default function RecruteurEntreprise() {
   return (
     <section className="w-full max-w-3xl mx-auto flex flex-col gap-8 p-4">
