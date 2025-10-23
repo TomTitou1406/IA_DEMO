@@ -39,13 +39,18 @@ export default function RecruteurEntreprise() {
     }
   };
 
+  const ouvrirDocuments = () => {
+    // Placeholder pour l'action d'ouverture de documents
+    alert("Fonction Documents à venir !");
+  };
+
   return (
-    <section className="w-full max-w-3xl mx-auto p-2 flex flex-col gap-2 text-gray-800 mt-0">
+    <section className="w-full max-w-3xl mx-auto p-2 flex flex-col gap-2 text-gray-800 mt-2">
       <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] text-center mb-1 mt-2">
         Présenter votre entreprise
       </h1>
       <p className="text-base text-gray-700 text-center mb-1 mt-0">
-        Présentez votre entreprise afin d'attirer les talents – L’IA vous assiste dans cette tâche.
+        L’avatar IA vous assiste pour présentez votre entreprise afin d'attirer les talents.
       </p>
 
       {/* Avatar centré et réduit */}
@@ -59,13 +64,13 @@ export default function RecruteurEntreprise() {
       </div>
 
       {/* Boutons d’action, bien alignés */}
-      <div className="flex justify-center gap-2 my-1">
+      <div className="flex justify-center gap-2 my-1 flex-wrap">
         <button
           onClick={demarrerDiscussion}
           disabled={isActive}
           className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
         >
-          Démarrer la discussion
+          Discuter
         </button>
         <button
           onClick={finaliserPresentation}
@@ -79,19 +84,25 @@ export default function RecruteurEntreprise() {
           disabled={!isActive}
           className="bg-red-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
         >
-          Abandonner la discussion
+          Abandonner
         </button>
         <button
           onClick={reprendreDiscussion}
           disabled={isActive || !wasAbandoned}
           className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
         >
-          Reprendre la discussion
+          Reprendre
+        </button>
+        <button
+          onClick={ouvrirDocuments}
+          className="bg-cyan-700 text-white px-3 py-1.5 rounded text-sm hover:bg-cyan-800"
+        >
+          Documents
         </button>
       </div>
 
       {/* Fil de discussion agrandi */}
-      <div className="h-60 md:h-72 overflow-y-scroll border rounded p-3 bg-white shadow-inner scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+      <div className="h-72 overflow-y-scroll border rounded p-3 bg-white shadow-inner scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
         {discussion.length === 0 ? (
           <p className="text-gray-500 italic text-center">
             Le fil de discussion apparaîtra ici.
