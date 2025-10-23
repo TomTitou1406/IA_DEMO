@@ -31,7 +31,7 @@ export default function RecruteurEntreprise() {
         Présenter votre entreprise
       </h1>
       <p className="text-base text-gray-700 text-center mb-1 mt-0">
-        Présentez votre entreprise afin d'attirer les talents – L’IA vous assiste dans cette tâche.
+        L’avatar IA vous assiste pour présenter votre entreprise afin d'attirer les talents.
       </p>
 
       <div className="w-full aspect-[16/9] rounded-md bg-gray-200 overflow-hidden mx-auto mb-1">
