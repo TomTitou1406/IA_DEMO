@@ -7,6 +7,9 @@ export default function RecruteurEntreprise() {
       <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4">
         Présenter votre entreprise
       </h1>
+       <p className="text-lg text-gray-700 mb-10 text-center">
+        Présentez votre entrepirse afin d'attirer les talents - L'IA vous assiste dans cette tâche
+      </p>
       {/* Contenu additionnel statique ou futur contenu métier */}
     </section>
   );
