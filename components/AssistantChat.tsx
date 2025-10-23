@@ -1,13 +1,16 @@
+"use client";
+
 type AssistantChatProps = {
   avatar: string;
-  // ajoute d’autres props ici si tu veux, par ex. "history", "onSend"
+  // autres props
 };
 
 export default function AssistantChat({ avatar }: AssistantChatProps) {
+  // Composant interactif
   return (
     <div>
-      {/* ton composant, par ex. afficher avatar */}
       Avatar actuel : {avatar}
+      {/* Zone de chat avec events */}
     </div>
   );
 }
