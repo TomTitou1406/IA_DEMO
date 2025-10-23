@@ -34,7 +34,7 @@ export default function RecruteurEntreprise() {
         Présentez votre entreprise afin d'attirer les talents – L’IA vous assiste dans cette tâche.
       </p>
 
-      <div className="w-full aspect-[16/6] rounded-md bg-gray-200 overflow-hidden mx-auto mb-1">
+      <div className="w-full aspect-[16/9] rounded-md bg-gray-200 overflow-hidden mx-auto mb-1">
         <img
           src="/avatar-placeholder-16x9.png"
           alt="Avatar interactif simulation"
