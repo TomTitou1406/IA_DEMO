@@ -73,13 +73,6 @@ export default function RecruteurEntreprise() {
           Discuter
         </button>
         <button
-          onClick={finaliserPresentation}
-          disabled={!isActive}
-          className="bg-green-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
-        >
-          Finaliser la présentation
-        </button>
-        <button
           onClick={abandonnerDiscussion}
           disabled={!isActive}
           className="bg-red-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
@@ -97,7 +90,14 @@ export default function RecruteurEntreprise() {
           onClick={ouvrirDocuments}
           className="bg-cyan-700 text-white px-3 py-1.5 rounded text-sm hover:bg-cyan-800"
         >
-          Documents
+          Ajouter PDF
+        </button>
+        <button
+          onClick={finaliserPresentation}
+          disabled={!isActive}
+          className="bg-green-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
+        >
+          Finaliser
         </button>
       </div>
 
