@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link"; // Ajoute ceci si tu utilises Next.js
 
 export default function Page() {
   const roles = [
@@ -11,26 +12,29 @@ export default function Page() {
           🏢
         </span>
       ),
+      href: "/neo/recruteur/",
     },
     {
       title: "Espace Talents",
-      desc: "Trouvez l'emploi de vos rêves grâce à notre matching IA. Passez des entretiens virtuels et recevez des conseils personnalisés.",
+      desc: "Découvrez et postulez à des offres, participez aux entretiens virtuels IA et recevez des conseils personnalisés.",
       color: "bg-[var(--nc-cyan)]",
       icon: (
-        <span role="img" aria-label="Candidat">
-          👤
+        <span role="img" aria-label="Talents">
+          👥
         </span>
       ),
+      href: "/neo/entretien/",
     },
     {
-      title: "Accès Administrateur",
+      title: "Accès administrateur",
       desc: "Supervisez la plateforme, gérez les utilisateurs et analysez les performances avec des tableaux de bord complets.",
       color: "bg-[var(--nc-green)]",
       icon: (
-        <span role="img" aria-label="Administrateur">
+        <span role="img" aria-label="Admin">
           ⚙️
         </span>
       ),
+      href: "/neo/", // Ou une future route admin dédiée
     },
   ];
 
@@ -41,23 +45,23 @@ export default function Page() {
       </h1>
       <div className="flex flex-wrap gap-8 justify-center">
         {roles.map((r) => (
-          <div
+          <Link
+            href={r.href}
             key={r.title}
-            className={`
-              relative bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)]
+            className="
+              group relative bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)]
               hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200
               w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer
-              group
-            `}
+              focus:outline focus:outline-2 focus:outline-[var(--nc-blue)]
+            "
             style={{willChange: "transform, box-shadow"}}
           >
-            {/* Barre colorée en haut, fine et élégante */}
+            {/* Barre colorée en haut */}
             <div
               className={`
                 ${r.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200
-                group-hover:scale-x-105
               `}
-              style={{marginTop: "-2px"}} // Décalage fin pour bien coller le coin arrondi
+              style={{marginTop: "-2px"}}
             />
             {/* Icône/avatar */}
             <div className="mb-5">
@@ -65,11 +69,9 @@ export default function Page() {
                 {r.icon}
               </div>
             </div>
-            {/* Titre */}
             <h3 className="text-xl font-bold text-gray-900 mb-2">{r.title}</h3>
-            {/* Description */}
             <p className="text-gray-700">{r.desc}</p>
-          </div>
+          </Link>
         ))}
       </div>
     </main>
