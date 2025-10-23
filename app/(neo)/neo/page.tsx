@@ -41,8 +41,11 @@ export default function Page() {
   return (
     <main className="bg-[var(--nc-gray)] min-h-screen py-12 px-4">
       <h1 className="text-4xl font-extrabold text-[var(--nc-blue)] text-center mb-12">
-        NeoRecrut - La nouvelle ère du recrutement
+        La nouvelle ère du recrutement, fluide et intelligente
       </h1>
+       <p className="text-lg text-gray-700 mb-10 text-center">
+        Pour un recrutement plus simple, plus rapide, assisté par l'IA sans perdre l'humain
+      </p>
       <div className="flex flex-wrap gap-8 justify-center">
         {roles.map((r) => (
           <Link
