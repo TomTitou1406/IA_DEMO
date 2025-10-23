@@ -5,10 +5,12 @@ import React, { useState } from "react";
 export default function RecruteurEntreprise() {
   const [discussion, setDiscussion] = useState<string[]>([]);
   const [isActive, setIsActive] = useState(false);
+  const [wasAbandoned, setWasAbandoned] = useState(false);
 
   const demarrerDiscussion = () => {
     setDiscussion(["Discussion démarrée... L’avatar IA vous écoute."]);
     setIsActive(true);
+    setWasAbandoned(false);
   };
 
   const finaliserPresentation = () => {
@@ -23,18 +25,31 @@ export default function RecruteurEntreprise() {
 
   const abandonnerDiscussion = () => {
     setIsActive(false);
+    setWasAbandoned(true);
+  };
+
+  const reprendreDiscussion = () => {
+    if (!isActive && wasAbandoned) {
+      setIsActive(true);
+      setWasAbandoned(false);
+      setDiscussion((prev) => [
+        ...prev,
+        "Discussion reprise… L’avatar IA continue l’accompagnement.",
+      ]);
+    }
   };
 
   return (
-    <section className="w-full max-w-3xl mx-auto p-2 flex flex-col gap-2 text-gray-800">
+    <section className="w-full max-w-3xl mx-auto p-2 flex flex-col gap-2 text-gray-800 mt-0">
       <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] text-center mb-1 mt-2">
         Présenter votre entreprise
       </h1>
       <p className="text-base text-gray-700 text-center mb-1 mt-0">
-        L’avatar IA vous assiste pour présenter votre entreprise afin d'attirer les talents.
+        Présentez votre entreprise afin d'attirer les talents – L’IA vous assiste dans cette tâche.
       </p>
 
-      <div className="w-full aspect-[16/9] rounded-md bg-gray-200 overflow-hidden mx-auto mb-1">
+      {/* Avatar centré et réduit */}
+      <div className="mx-auto w-full max-w-lg aspect-video rounded-md bg-gray-200 overflow-hidden mb-1">
         <img
           src="/avatar-placeholder-16x9.png"
           alt="Avatar interactif simulation"
@@ -43,6 +58,7 @@ export default function RecruteurEntreprise() {
         />
       </div>
 
+      {/* Boutons d’action, bien alignés */}
       <div className="flex justify-center gap-2 my-1">
         <button
           onClick={demarrerDiscussion}
@@ -65,9 +81,17 @@ export default function RecruteurEntreprise() {
         >
           Abandonner la discussion
         </button>
+        <button
+          onClick={reprendreDiscussion}
+          disabled={isActive || !wasAbandoned}
+          className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
+        >
+          Reprendre la discussion
+        </button>
       </div>
 
-      <div className="h-40 overflow-y-scroll border rounded p-3 bg-white shadow-inner scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
+      {/* Fil de discussion agrandi */}
+      <div className="h-60 md:h-72 overflow-y-scroll border rounded p-3 bg-white shadow-inner scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
         {discussion.length === 0 ? (
           <p className="text-gray-500 italic text-center">
             Le fil de discussion apparaîtra ici.
