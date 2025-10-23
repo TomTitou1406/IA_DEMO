@@ -192,7 +192,7 @@ export default function RecruteurEntreprise() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded p-6 max-w-sm text-center shadow-lg">
             <p className="mb-4 text-lg font-semibold">
-              Vous êtes sur le point d'abandonner cette tâche, confirmez-vous votre souhait (Oui/non) ?
+              Vous êtes sur le point d'abandonner cette tâche, confirmez-vous votre souhait (Oui/Non) ?
             </p>
             <div className="flex justify-around gap-4">
               <button
