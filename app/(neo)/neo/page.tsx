@@ -49,7 +49,7 @@ export default function Page() {
             href={r.href}
             key={r.title}
             className="
-              group relative bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)]
+              group relative overflow-hidden bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)]
               hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200
               w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer
               focus:outline focus:outline-2 focus:outline-[var(--nc-blue)]
@@ -65,8 +65,8 @@ export default function Page() {
             />
             {/* Icône/avatar */}
             <div className="mb-5">
-              <div className="mx-auto w-14 h-14 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
-                {r.icon}
+              <div className="mx-auto w-20 h-20 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
+                <span className="text-4xl">{r.icon}</span>
               </div>
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">{r.title}</h3>
