@@ -1,8 +1,37 @@
 import React from "react";
 
 export default function Recruteur() {
-  const cards = [
-    // ... (même données qu'avant)
+   const cards = [
+    {
+      title: "Votre entreprise",
+      desc: "Présentez ici le contexte de votre société et valorisez son attractivité. L’avatar IA vous guidera pas à pas pour rédiger la description parfaite et booster l’intérêt des candidats.",
+      color: "bg-[var(--nc-blue)]",
+      icon: (
+        <span className="text-5xl" role="img" aria-label="Bâtiment">
+          🏢
+        </span>
+      ),
+    },
+    {
+      title: "Vos postes à pourvoir",
+      desc: "Publiez, décrivez et gérez vos offres d’emploi : profils, critères, compétences attendues, tout est centralisé ici. L’avatar IA vous accompagne à chaque étape pour ne rien oublier.",
+      color: "bg-[var(--nc-cyan)]",
+      icon: (
+        <span className="text-5xl" role="img" aria-label="Document">
+          📄
+        </span>
+      ),
+    },
+    {
+      title: "Conseils pour le recruteur",
+      desc: "Accédez à des conseils intelligents pour réussir chaque phase du recrutement. L’avatar IA est toujours présent pour vous épauler et vous orienter, même en cas de doute.",
+      color: "bg-[var(--nc-green)]",
+      icon: (
+        <span className="text-5xl" role="img" aria-label="Ampoule">
+          💡
+        </span>
+      ),
+    },
   ];
 
   return (
