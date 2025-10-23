@@ -36,9 +36,6 @@ export default function Entretien() {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-[70vh] py-10">
-      <a href="/neo" className="mb-6 text-sm text-[var(--nc-blue)] underline hover:opacity-80">
-        ← Accueil
-      </a>
       <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
         Espace Talents : préparation à l’entretien
       </h1>
