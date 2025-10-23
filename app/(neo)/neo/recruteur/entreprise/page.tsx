@@ -143,7 +143,7 @@ export default function RecruteurEntreprise() {
 
         {/* Col 3: Finaliser */}
         <div className="flex justify-center items-center">
-          {etatDiscussion !== "finalized" && (
+          {etatDiscussion !== "finalized" && etatDiscussion !== "init" && (
             <button
               onClick={finaliserPresentation}
               disabled={!canFinalize}
@@ -158,23 +158,22 @@ export default function RecruteurEntreprise() {
 
         {/* Col 4: Quitter ou Ajouter PDF */}
         <div className="flex justify-center items-center">
-          {etatDiscussion === "init" && (
-            <button
-              className="bg-cyan-700 text-white px-3 py-1.5 rounded text-sm opacity-50 cursor-not-allowed whitespace-nowrap"
-              disabled
-              title="Ajout futur de documents"
-            >
-              Ajouter PDF
-            </button>
-          )}
-          {etatDiscussion !== "init" && (
+          {etatDiscussion === "init" ? (
             <button
               onClick={() => window.history.back()}
               className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm whitespace-nowrap"
             >
               Quitter
             </button>
-          )}
+          ) : etatDiscussion === "stopped" ? (
+            <button
+              disabled
+              className="bg-cyan-700 text-white px-3 py-1.5 rounded text-sm opacity-50 cursor-not-allowed whitespace-nowrap"
+              title="Ajout futur de documents"
+            >
+              Ajouter PDF
+            </button>
+          ) : null}
         </div>
       </div>
 
@@ -192,7 +191,6 @@ export default function RecruteurEntreprise() {
         )}
       </div>
 
-      {/* Popup confirmation abandon */}
       {showConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded p-6 max-w-sm text-center shadow-lg">
@@ -217,7 +215,6 @@ export default function RecruteurEntreprise() {
         </div>
       )}
 
-      {/* Popup message sauvegarde */}
       {showSavedMessage && (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
           <div className="bg-green-600 text-white rounded p-4 px-8 text-lg font-semibold shadow-lg">
