@@ -1,43 +1,33 @@
-import "@/styles/globals.css";
-import { Metadata } from "next";
-import { Fira_Code as FontMono, Inter as FontSans } from "next/font/google";
-
+import "./globals.css";
+import type { Metadata } from "next";
 import NavBar from "@/components/NavBar";
 
-const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans", weight: ["400","600","700"] });
+// 🔹 Importe les polices
+import { Inter, JetBrains_Mono } from "next/font/google";
 
-const fontMono = FontMono({
+const fontSans = Inter({
   subsets: ["latin"],
-  variable: "--font-geist-mono",
+  variable: "--font-sans",
+  weight: ["400", "600", "700"],
+});
+
+const fontMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-geist-mono", // cohérent avec tailwind.config.js
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
-  title: {
-    default: "HeyGen Interactive Avatar SDK Demo",
-    template: `%s - HeyGen Interactive Avatar SDK Demo`,
-  },
-  icons: {
-    icon: "/heygen-logo.png",
-  },
+  title: "NeoRecrut",
+  description: "La nouvelle ère du recrutement",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html
-      suppressHydrationWarning
-      className={`${fontSans.variable} ${fontMono.variable} font-sans`}
-      lang="en"
-    >
-      <head />
-      <body className="min-h-screen bg-black text-white">
-          <main className="relative flex flex-col min-h-screen w-full pt-14">
-            <NavBar />
-            {children}
-          </main>
+    <html lang="fr" className="">
+      <body className={`${fontSans.variable} ${fontMono.variable} font-sans`}>
+        <NavBar />
+        {children}
       </body>
     </html>
   );
