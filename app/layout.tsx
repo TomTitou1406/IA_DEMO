@@ -4,10 +4,7 @@ import { Fira_Code as FontMono, Inter as FontSans } from "next/font/google";
 
 import NavBar from "@/components/NavBar";
 
-const fontSans = FontSans({
-  subsets: ["latin"],
-  variable: "--font-sans",
-});
+const fontSans = Inter({ subsets: ["latin"], variable: "--font-sans", weight: ["400","600","700"] });
 
 const fontMono = FontMono({
   subsets: ["latin"],
