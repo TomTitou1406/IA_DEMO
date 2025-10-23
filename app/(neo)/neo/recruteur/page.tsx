@@ -1,7 +1,8 @@
 import React from "react";
+import Link from "next/link";
 
 export default function Recruteur() {
-   const cards = [
+  const cards = [
     {
       title: "Votre entreprise",
       desc: "Présentez ici le contexte de votre société et valorisez son attractivité. L’avatar IA vous guidera pas à pas pour rédiger la description parfaite et booster l’intérêt des candidats.",
@@ -43,22 +44,44 @@ export default function Recruteur() {
         Gérez votre entreprise, vos offres d'emploi et recevez un accompagnement IA personnalisé.
       </p>
       <div className="flex gap-8 flex-wrap justify-center">
-        {cards.map((c) => (
-          <div
-            key={c.title}
-            className="relative overflow-hidden bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)] hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200 w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer group"
-            style={{ willChange: "transform, box-shadow" }}
-          >
-            <div className={`${c.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200`} style={{ marginTop: "-2px" }} />
-            <div className="mb-5">
-              <div className="mx-auto w-24 h-24 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
-                {c.icon}
+        {cards.map((c, idx) =>
+          idx === 0 ? (
+            <Link
+              href="/neo/recruteur/entreprise"
+              key={c.title}
+              className="no-underline"
+            >
+              <div
+                className="relative overflow-hidden bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)] hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200 w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer group"
+                style={{ willChange: "transform, box-shadow" }}
+              >
+                <div className={`${c.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200`} style={{ marginTop: "-2px" }} />
+                <div className="mb-5">
+                  <div className="mx-auto w-24 h-24 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
+                    {c.icon}
+                  </div>
+                </div>
+                <h3 className="text-xl font-bold text-gray-900 mb-2">{c.title}</h3>
+                <p className="text-gray-700">{c.desc}</p>
               </div>
+            </Link>
+          ) : (
+            <div
+              key={c.title}
+              className="relative overflow-hidden bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)] hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200 w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer group"
+              style={{ willChange: "transform, box-shadow" }}
+            >
+              <div className={`${c.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200`} style={{ marginTop: "-2px" }} />
+              <div className="mb-5">
+                <div className="mx-auto w-24 h-24 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
+                  {c.icon}
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{c.title}</h3>
+              <p className="text-gray-700">{c.desc}</p>
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-2">{c.title}</h3>
-            <p className="text-gray-700">{c.desc}</p>
-          </div>
-        ))}
+          )
+        )}
       </div>
     </div>
   );
