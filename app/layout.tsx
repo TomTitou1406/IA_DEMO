@@ -14,7 +14,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="fr">
       <body className="min-h-screen flex flex-col">
         <header className="w-full bg-white border-b">
-          <div className="max-w-[1024px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
+          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
             <span className="text-2xl font-extrabold text-[var(--nc-blue)] tracking-wide">
               NeoRecrut
             </span>
@@ -45,7 +45,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-grow max-w-[1024px] w-full mx-auto px-4 sm:px-8 py-6">
+        <main className="flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-6">
           {children}
         </main>
 
