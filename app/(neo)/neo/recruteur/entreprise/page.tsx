@@ -132,16 +132,8 @@ export default function RecruteurEntreprise() {
           )}
         </div>
 
-        {/* Col 3: Finaliser ou Ajouter PDF */}
+        {/* Col 3: Ajouter PDF (finalized) ou rien */}
         <div className="flex justify-center items-center">
-          {etatDiscussion === "stopped" && (
-            <button
-              onClick={finaliserPresentation}
-              className="bg-green-600 text-white px-3 py-1.5 rounded text-sm"
-            >
-              Finaliser
-            </button>
-          )}
           {etatDiscussion === "finalized" && (
             <button
               disabled
@@ -153,14 +145,22 @@ export default function RecruteurEntreprise() {
           )}
         </div>
 
-        {/* Col 4: Quitter ou Sauvegarder */}
-        <div className="flex justify-center items-center">
+        {/* Col 4: Quitter (init) ou Finaliser/Sauvegarder */}
+        <div className="flex justify-center items-center space-x-2">
           {etatDiscussion === "init" && (
             <button
               onClick={() => window.history.back()}
               className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm whitespace-nowrap"
             >
               Quitter
+            </button>
+          )}
+          {etatDiscussion === "stopped" && (
+            <button
+              onClick={finaliserPresentation}
+              className="bg-green-600 text-white px-3 py-1.5 rounded text-sm"
+            >
+              Finaliser
             </button>
           )}
           {etatDiscussion === "finalized" && (
