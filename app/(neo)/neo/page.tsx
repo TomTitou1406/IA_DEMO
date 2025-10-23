@@ -3,7 +3,7 @@ import React from "react";
 export default function Page() {
   const roles = [
     {
-      title: "Entreprise",
+      title: "Espace Entreprises",
       desc: "Gérez vos recrutements avec des outils IA avancés. Créez des postes, suivez les candidatures et optimisez votre processus de sélection.",
       color: "bg-[var(--nc-blue)]",
       icon: (
@@ -13,7 +13,7 @@ export default function Page() {
       ),
     },
     {
-      title: "Candidat",
+      title: "Espace Talents",
       desc: "Trouvez l'emploi de vos rêves grâce à notre matching IA. Passez des entretiens virtuels et recevez des conseils personnalisés.",
       color: "bg-[var(--nc-cyan)]",
       icon: (
@@ -23,7 +23,7 @@ export default function Page() {
       ),
     },
     {
-      title: "Administrateur",
+      title: "Accès Administrateur",
       desc: "Supervisez la plateforme, gérez les utilisateurs et analysez les performances avec des tableaux de bord complets.",
       color: "bg-[var(--nc-green)]",
       icon: (
@@ -45,14 +45,19 @@ export default function Page() {
             key={r.title}
             className={`
               relative bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)]
-              hover:border-[var(--nc-blue)] hover:border-2 hover:shadow-xl transition-all duration-200
+              hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200
               w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer
               group
             `}
+            style={{willChange: "transform, box-shadow"}}
           >
-            {/* Barre colorée en haut */}
+            {/* Barre colorée en haut, fine et élégante */}
             <div
-              className={`${r.color} absolute top-0 left-0 h-2 w-full rounded-t-xl transition-all duration-200`}
+              className={`
+                ${r.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200
+                group-hover:scale-x-105
+              `}
+              style={{marginTop: "-2px"}} // Décalage fin pour bien coller le coin arrondi
             />
             {/* Icône/avatar */}
             <div className="mb-5">
