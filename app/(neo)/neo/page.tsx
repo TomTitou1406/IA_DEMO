@@ -9,19 +9,20 @@ export default function Page() {
 
   return (
     <section className="py-10">
-      <h2 className="text-5xl font-extrabold text-brand.blue text-center mb-10">
+      <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] text-center mt-12 mb-10">
         NeoRecrut — La nouvelle ère du recrutement
-      </h2>
-      <div className="grid md:grid-cols-3 gap-6">
+      </h1>
+      <div className="flex gap-8 flex-wrap justify-center mt-10">
         {roles.map((r) => (
-          <Card key={r.title} className="border-t-4 shadow-card hover:shadow-lg transition" style={{ borderTopColor: "var(--nc-blue)" }}>
-            <CardHeader>
-              <h3 className="text-xl font-semibold text-gray-800">{r.title}</h3>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600 leading-relaxed">{r.desc}</p>
-            </CardContent>
-          </Card>
+          <div
+            key={r.title}
+            className="bg-[var(--nc-white)] rounded-xl shadow-[0_6px_18px_rgba(0,0,0,0.06)] border border-[var(--nc-gray)] 
+                       hover:shadow-lg hover:-translate-y-1 hover:scale-105 transition-all duration-200
+                       p-6 w-80 cursor-pointer flex flex-col gap-2"
+          >
+            <h3 className="text-xl font-bold text-[var(--nc-blue)] mb-1">{r.title}</h3>
+            <p className="text-gray-800">{r.desc}</p>
+          </div>
         ))}
       </div>
     </section>
