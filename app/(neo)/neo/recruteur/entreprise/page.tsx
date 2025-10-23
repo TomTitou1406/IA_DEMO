@@ -11,7 +11,6 @@ export default function RecruteurEntreprise() {
   const [showSavedMessage, setShowSavedMessage] = useState(false);
 
   // Actions
-
   const demarrerDiscussion = () => {
     setDiscussion(["Discussion démarrée... L’avatar IA vous écoute."]);
     setEtatDiscussion("active");
@@ -131,6 +130,39 @@ export default function RecruteurEntreprise() {
               Abandonner
             </button>
           )}
+        </div>
+
+        {/* Col 3: Finaliser ou Ajouter PDF */}
+        <div className="flex justify-center items-center">
+          {etatDiscussion === "stopped" && (
+            <button
+              onClick={finaliserPresentation}
+              className="bg-green-600 text-white px-3 py-1.5 rounded text-sm"
+            >
+              Finaliser
+            </button>
+          )}
+          {etatDiscussion === "finalized" && (
+            <button
+              disabled
+              className="bg-cyan-700 text-white px-3 py-1.5 rounded text-sm opacity-50 cursor-not-allowed whitespace-nowrap"
+              title="Ajout futur de documents"
+            >
+              Ajouter PDF
+            </button>
+          )}
+        </div>
+
+        {/* Col 4: Quitter ou Sauvegarder */}
+        <div className="flex justify-center items-center">
+          {etatDiscussion === "init" && (
+            <button
+              onClick={() => window.history.back()}
+              className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm whitespace-nowrap"
+            >
+              Quitter
+            </button>
+          )}
           {etatDiscussion === "finalized" && (
             <button
               onClick={sauvegarder}
@@ -139,41 +171,6 @@ export default function RecruteurEntreprise() {
               Sauvegarder
             </button>
           )}
-        </div>
-
-        {/* Col 3: Finaliser */}
-        <div className="flex justify-center items-center">
-          {etatDiscussion !== "finalized" && etatDiscussion !== "init" && (
-            <button
-              onClick={finaliserPresentation}
-              disabled={!canFinalize}
-              className={`px-3 py-1.5 rounded text-sm text-white ${
-                canFinalize ? "bg-green-600" : "bg-gray-400 cursor-not-allowed"
-              }`}
-            >
-              Finaliser
-            </button>
-          )}
-        </div>
-
-        {/* Col 4: Quitter ou Ajouter PDF */}
-        <div className="flex justify-center items-center">
-          {etatDiscussion === "init" ? (
-            <button
-              onClick={() => window.history.back()}
-              className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm whitespace-nowrap"
-            >
-              Quitter
-            </button>
-          ) : etatDiscussion === "stopped" ? (
-            <button
-              disabled
-              className="bg-cyan-700 text-white px-3 py-1.5 rounded text-sm opacity-50 cursor-not-allowed whitespace-nowrap"
-              title="Ajout futur de documents"
-            >
-              Ajouter PDF
-            </button>
-          ) : null}
         </div>
       </div>
 
