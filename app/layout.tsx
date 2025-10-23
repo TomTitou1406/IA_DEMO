@@ -3,7 +3,7 @@ import "../styles/globals.css";
 import type { ReactNode } from "react";
 
 export const metadata = {
-  title: "NeoRecrut",
+  title: "NeoRecrut - logo - v0.0",
   description: "La nouvelle ère du recrutement",
 };
 
