@@ -13,7 +13,6 @@ export default function RecruteurEntreprise() {
 
   const finaliserPresentation = () => {
     if (isActive) {
-      // Simulation synthèse IA
       setDiscussion((prev) => [
         ...prev,
         "Synthèse créée par l’IA. Présentation finalisée.",
@@ -27,16 +26,15 @@ export default function RecruteurEntreprise() {
   };
 
   return (
-    <section className="w-full max-w-3xl mx-auto p-4 flex flex-col gap-8 text-gray-800">
-      <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4">
+    <section className="w-full max-w-3xl mx-auto p-2 flex flex-col gap-2 text-gray-800">
+      <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] text-center mb-1 mt-2">
         Présenter votre entreprise
       </h1>
-
-      <p className="text-lg text-gray-700 mb-10 text-center">
-        Présentez votre entrepirse afin d'attirer les talents - L’IA vous assiste dans cette tâche
+      <p className="text-base text-gray-700 text-center mb-1 mt-0">
+        Présentez votre entreprise afin d'attirer les talents – L’IA vous assiste dans cette tâche.
       </p>
 
-      <div className="w-full aspect-video rounded-md bg-gray-200 overflow-hidden">
+      <div className="w-full aspect-[16/6] rounded-md bg-gray-200 overflow-hidden mx-auto mb-1">
         <img
           src="/avatar-placeholder-16x9.png"
           alt="Avatar interactif simulation"
@@ -45,38 +43,38 @@ export default function RecruteurEntreprise() {
         />
       </div>
 
-      <div className="flex justify-center gap-4">
+      <div className="flex justify-center gap-2 my-1">
         <button
           onClick={demarrerDiscussion}
           disabled={isActive}
-          className="bg-blue-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
+          className="bg-blue-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
         >
-          [translate:Démarrer la discussion]
+          Démarrer la discussion
         </button>
         <button
           onClick={finaliserPresentation}
           disabled={!isActive}
-          className="bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
+          className="bg-green-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
         >
           Finaliser la présentation
         </button>
         <button
           onClick={abandonnerDiscussion}
           disabled={!isActive}
-          className="bg-red-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
+          className="bg-red-600 text-white px-3 py-1.5 rounded text-sm disabled:bg-gray-400"
         >
           Abandonner la discussion
         </button>
       </div>
 
-      <div className="h-60 overflow-y-auto border rounded p-4 bg-white shadow-inner">
+      <div className="h-40 overflow-y-scroll border rounded p-3 bg-white shadow-inner scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-100">
         {discussion.length === 0 ? (
           <p className="text-gray-500 italic text-center">
             Le fil de discussion apparaîtra ici.
           </p>
         ) : (
           discussion.map((msg, idx) => (
-            <p key={idx} className="mb-2">
+            <p key={idx} className="mb-1">
               {msg}
             </p>
           ))
