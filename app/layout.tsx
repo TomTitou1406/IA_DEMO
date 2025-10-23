@@ -1,24 +1,26 @@
 // /app/layout.tsx
-
 import "../styles/globals.css";
-//... imports polices éventuels
+import type { ReactNode } from "react";
 
 export const metadata = {
   title: "NeoRecrut",
   description: "La nouvelle ère du recrutement",
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
       <body>
-        {children}
+        <header className="w-full bg-white border-b py-4 px-8">
+          <span className="text-2xl font-extrabold text-[var(--nc-blue)]">
+            NeoRecrut
+          </span>
+        </header>
+        <main>{children}</main>
+        <footer className="w-full bg-[#f3f4f6] text-xs py-4 text-center text-gray-500 mt-8">
+          © {new Date().getFullYear()} NeoRecrut - Tous droits réservés
+        </footer>
       </body>
     </html>
   );
 }
-
