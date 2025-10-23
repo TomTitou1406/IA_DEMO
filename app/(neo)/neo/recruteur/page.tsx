@@ -12,6 +12,7 @@ export default function Recruteur() {
           🏢
         </span>
       ),
+       href: "/neo/entreprise/",
     },
     {
       title: "Vos postes à pourvoir",
