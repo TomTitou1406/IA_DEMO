@@ -1,3 +1,16 @@
+:root {
+  --nc-blue: #1e40af;      /* Bleu profond */
+  --nc-cyan: #06b6d4;      /* Turquoise */
+  --nc-green: #10b981;     /* Succès */
+  --nc-white: #ffffff;     /* Fonds cartes */
+  --nc-gray: #f3f4f6;      /* Fond dashboard / séparateurs */
+  --nc-orange: #fdba74;    /* Alerte douce */
+  --nc-red: #ef4444;       /* Erreur */
+  --nc-radius: 12px;       /* Cards/boutons arrondis */
+}
+
+html, body { background: var(--nc-gray); color: #111827; }
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
