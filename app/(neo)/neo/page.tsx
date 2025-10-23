@@ -44,7 +44,7 @@ export default function Page() {
         La nouvelle ère du recrutement, fluide et intelligente
       </h1>
        <p className="text-lg text-gray-700 mb-10 text-center">
-        Pour un recrutement plus simple, plus rapide, assisté par l'IA sans perdre l'humain
+        Pour un recrutement plus simple, plus rapide, assisté par l'IA mais sans perdre l'humain !
       </p>
       <div className="flex flex-wrap gap-8 justify-center">
         {roles.map((r) => (
