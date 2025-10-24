@@ -13,7 +13,6 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  // Image : 321x214px / Carte : 321x428px (2x image)
   return (
     <div
       className={`bg-brand.white rounded-xl shadow-card border border-gray-200 flex flex-col overflow-hidden items-center relative ${className}`}
