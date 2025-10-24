@@ -1,4 +1,4 @@
-import React from "react";
+tretieimport React from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 
@@ -16,21 +16,21 @@ export default function Page() {
       desc: "Tous les détails sur l'entreprise et le poste à pourvoir. Validez l'étape de présélection.",
       color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
       image: "/cards/info_preselection_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/entretien/", 
     },
     {
       title: "Validation de vos compétences",
       desc: "Passez un entretien interactif où l’IA évalue vos compétences et recevez un feedback précis et immédiat sur votre candidature.",
       color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
       image: "/cards/validation_competences_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/entretien/", 
     },
     {
       title: "Conseils et préparation pour l'entretien",
       desc: "Profitez des conseils personnalisés de l’avatar IA : méthodologie, astuces de présentation, préparation mentale pour une expérience réussie !",
       color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
       image: "/cards/conseils_candidat_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/entretien/", 
     },
   ];
 
