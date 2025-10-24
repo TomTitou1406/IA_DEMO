@@ -36,14 +36,14 @@ export default function Page() {
 
   return (
     <main className="bg-[var(--nc-gray)] min-h-screen py-12 px-4">
-      <h1 className="text-4xl font-extrabold text-[var(--nc-cyan)] text-center mb-12">
+      <h1 className="text-4xl font-extrabold text-[var(--nc-cyan)] text-center mb-4">
         Espace Candidats
       </h1>
       {/* Lien Retour centré */}
       <div className="text-center mb-6">
         <Link 
           href="/neo/" 
-          className="text-[var(--nc-blue)] hover:text-[var(--nc-gray)] transition-colors duration-200 text-lg font-medium"
+          className="text-[var(--nc-cyan)] hover:text-[var(--nc-cyan)] transition-colors duration-200 text-lg font-medium"
         >
           ← Retour
         </Link>
