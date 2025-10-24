@@ -15,7 +15,20 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`bg-brand.white rounded-xl shadow-card border border-gray-200 flex flex-col overflow-hidden items-center relative ${className}`}
+      className={`
+        relative overflow-hidden 
+        bg-white                    // ← Fond blanc opaque
+        rounded-xl 
+        border border-[var(--nc-gray)] 
+        shadow-[0_6px_18px_rgba(0,0,0,0.06)] 
+        hover:border-[var(--nc-blue)] 
+        hover:shadow-2xl 
+        hover:-translate-y-2 
+        transition-all duration-200 
+        w-80 
+        flex flex-col
+        ${className}
+      `}
       style={{
         width: "321px",
         height: "428px",
