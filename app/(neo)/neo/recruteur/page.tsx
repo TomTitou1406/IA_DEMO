@@ -30,7 +30,7 @@ export default function Page() {
       desc: "Accédez à des conseils intelligents pour réussir chaque phase du recrutement. L’avatar IA est toujours présent pour vous épauler et vous orienter, même en cas de doute.",
       color: "var(--nc-blue)",           // ou "#1D5DFF", etc.
       image: "/cards/conseils_recruteur_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/entretien/",
     },
   ];
 
