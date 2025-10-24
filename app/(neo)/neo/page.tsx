@@ -14,21 +14,21 @@ export default function Page() {
     {
       title: "Espace Entreprises",
       desc: "Gérez vos recrutements avec des outils IA avancés. Créez des postes, suivez les candidatures et optimisez votre processus de sélection.",
-      color: "bg-[var(--nc-blue)]",
+      color: "var(--nc-blue)",           // ou "#1D5DFF", etc.
       image: "/cards/espace_entreprises_card.png",
       href: "/neo/recruteur/",
     },
     {
       title: "Espace Talents",
       desc: "Découvrez et postulez à des offres, participez aux entretiens virtuels IA et recevez des conseils personnalisés.",
-      color: "bg-[var(--nc-cyan)]",
+      color: "var(--nc-cyan)",           // variable ou couleur hex selon ta charte
       image: "/cards/espace_candidats_card.png",
       href: "/neo/entretien/",
     },
     {
       title: "Accès administrateur",
       desc: "Supervisez la plateforme, gérez les utilisateurs et analysez les performances avec des tableaux de bord complets.",
-      color: "bg-[var(--nc-green)]",
+      color: "var(--nc-green)",          // idem
       image: "/cards/espace_admins_card.png",
       href: "/neo/", // Ou une future route admin dédiée
     },
@@ -51,6 +51,7 @@ export default function Page() {
           >
             <Card
               image={r.image}
+              color={r.color}
               className="relative overflow-hidden w-80 p-0 cursor-pointer hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200"
             >
               {/* Barre colorée en haut */}
