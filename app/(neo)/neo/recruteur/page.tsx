@@ -27,7 +27,7 @@ export default function Page() {
     },
     {
       title: "Conseils pour recruter",
-      desc: "Accédez à des conseils intelligents pour réussir chaque phase du recrutement. L’avatar IA est toujours présent pour vous épauler et vous orienter, même en cas de doute.",title: "Accès administrateur",
+      desc: "Accédez à des conseils intelligents pour réussir chaque phase du recrutement. L’avatar IA est toujours présent pour vous épauler et vous orienter, même en cas de doute.",
       color: "var(--nc-blue)",           // ou "#1D5DFF", etc.
       image: "/cards/econseils_recruteur_card.png",
       href: "/neo/", // Ou une future route admin dédiée
