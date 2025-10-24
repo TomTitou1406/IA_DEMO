@@ -37,10 +37,10 @@ export default function Page() {
   return (
     <main className="bg-[var(--nc-gray)] min-h-screen py-12 px-4">
       <h1 className="text-4xl font-extrabold text-[var(--nc-cyan)] text-center mb-12">
-        Espace Entreprises
+        Espace Candidats
       </h1>
       <p className="text-lg text-gray-700 mb-10 text-center">
-        Gérez l'attractivité de votre entreprise et définissez vos besoins avec l'aide de l'IA.
+        Infos entreprises et postes à pourvoir - Préselection et validation des compéetnces assistés par avatars IA.
       </p>
       <div className="flex flex-wrap gap-8 justify-center">
         {roles.map((r) =>
