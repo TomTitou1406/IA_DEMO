@@ -13,6 +13,19 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
       <body className="min-h-screen flex flex-col">
+        {/* Image de fond subtile en pseudo-élément */}
+        <div 
+          className="fixed inset-0 z-0 pointer-events-none"
+          style={{
+            backgroundImage: 'url("/background-texture-5.webp")', // Image de fond
+            backgroundPosition: 'top center',
+            backgroundSize: 'cover',
+            backgroundRepeat: 'no-repeat',
+             backgroundAttachment: 'fixed',     // Reste fixe même au scroll
+            opacity: 0.03, // Très faible opacité (ajuste entre 0.02 et 0.08)
+            filter: 'grayscale(100%) brightness(1.5)', // Effet papier gaufré
+          }}
+        />
         {/* Header fixe en haut avec z-index élevé */}
         <header className="fixed top-0 left-0 w-full bg-white/50 backdrop-blur-md border-b z-50 shadow-sm">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
