@@ -8,25 +8,21 @@ export default function Page() {
       title: "Espace Entreprises",
       desc: "Gérez vos recrutements avec des outils IA avancés. Créez des postes, suivez les candidatures et optimisez votre processus de sélection.",
       color: "bg-[var(--nc-blue)]",
-      image: "/espace_entreprises_card.png",
+      image: "/cards/espace_entreprises_card.png",
       href: "/neo/recruteur/",
     },
     {
       title: "Espace Talents",
       desc: "Découvrez et postulez à des offres, participez aux entretiens virtuels IA et recevez des conseils personnalisés.",
       color: "bg-[var(--nc-cyan)]",
-      image: "/espace_candidats_card.png",
+      image: "/cards/espace_candidats_card.png",
       href: "/neo/entretien/",
     },
     {
       title: "Accès administrateur",
       desc: "Supervisez la plateforme, gérez les utilisateurs et analysez les performances avec des tableaux de bord complets.",
       color: "bg-[var(--nc-green)]",
-      icon: (
-        <span role="img" aria-label="Admin" className="text-4xl">
-          ⚙️
-        </span>
-      ),
+      image: "/cards/espace_admins_card.png",
       href: "/neo/", // Ou une future route admin dédiée
     },
   ];
