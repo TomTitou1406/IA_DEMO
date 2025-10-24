@@ -16,12 +16,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         {/* Header fixe en haut avec z-index élevé */}
         <header className="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md border-b z-50 shadow-sm">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
-            <span className="text-2xl font-extrabold text-[var(--nc-blue)] tracking-wide">
-              NeoRecrut
-            </span>
-            <span className="text-sm font-light text-gray-600 hidden md:inline">
-                 - Le Bon Talent dans la Bonne Entreprise
+            {/* Logo + baseline */}
+            <div className="flex items-baseline gap-2">
+              <span className="text-2xl font-extrabold text-[var(--nc-blue)] tracking-wide">
+                NeoRecrut
               </span>
+              <span className="text-2xl font-normal text-[var(--nc-blue)] tracking-wide hidden md:inline">
+                - Le Bon Talent dans la Bonne Entreprise
+              </span>
+            </div>
             <nav className="flex items-center gap-6">
               <a
                 href="/neo"
