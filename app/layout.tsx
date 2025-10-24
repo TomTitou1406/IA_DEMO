@@ -22,7 +22,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
              backgroundAttachment: 'fixed',     // Reste fixe même au scroll
-            opacity: 0.03, // Très faible opacité (ajuste entre 0.02 et 0.08)
+            opacity: 0.08, // Très faible opacité (ajuste entre 0.02 et 0.08)
             filter: 'grayscale(100%) brightness(1.5)', // Effet papier gaufré
           }}
         />
