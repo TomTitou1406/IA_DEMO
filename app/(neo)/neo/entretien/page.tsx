@@ -40,7 +40,7 @@ export default function Page() {
         Espace Candidats
       </h1>
       {/* Lien Retour centré */}
-      <div className="text-center mb-6">
+      <div className="text-center mb-4">
         <Link 
           href="/neo/" 
           className="text-[var(--nc-cyan)] hover:text-[var(--nc-cyan)] transition-colors duration-200 text-lg font-medium"
