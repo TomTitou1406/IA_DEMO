@@ -8,14 +8,14 @@ export default function Page() {
       title: "Espace Entreprises",
       desc: "Gérez vos recrutements avec des outils IA avancés. Créez des postes, suivez les candidatures et optimisez votre processus de sélection.",
       color: "bg-[var(--nc-blue)]",
-      image: "/images/espace_entreprises_card.png",
+      image: "/espace_entreprises_card.png",
       href: "/neo/recruteur/",
     },
     {
       title: "Espace Talents",
       desc: "Découvrez et postulez à des offres, participez aux entretiens virtuels IA et recevez des conseils personnalisés.",
       color: "bg-[var(--nc-cyan)]",
-      image: "/images/espace_candidats_card.png",
+      image: "/espace_candidats_card.png",
       href: "/neo/entretien/",
     },
     {
