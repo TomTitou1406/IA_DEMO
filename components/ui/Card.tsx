@@ -1,4 +1,3 @@
-// components/ui/Card.tsx
 import * as React from "react";
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -12,39 +11,35 @@ export function Card({
   children,
   ...props
 }: CardProps) {
-  // Dimensions fixes : largeur 320px, hauteur 320px (ratio carré 1/1 ajustable)
-  // Image prend 50% de la hauteur, ratio image strict 3/2 (largeur 100%, hauteur auto avec aspect-ratio)
   return (
     <div
       className={`bg-brand.white rounded-xl shadow-card border border-gray-200 flex flex-col overflow-hidden items-center ${className}`}
       style={{
-        width: "320px",
-        height: "320px",
-        minWidth: "320px",
-        minHeight: "320px",
-        maxWidth: "320px",
-        maxHeight: "320px",
+        width: "321px",
+        height: "428px", // 2 x 214px
+        minWidth: "321px",
+        minHeight: "428px",
+        maxWidth: "321px",
+        maxHeight: "428px",
         ...style,
       }}
       {...props}
     >
       {image && (
-        <div
-          className="w-full px-3 pt-3 pb-0"
-          style={{
-            height: "50%",
-            boxSizing: "border-box"
-          }}
-        >
+        <div className="w-full flex justify-center items-start px-3 pt-3">
           <img
             src={image}
             alt=""
-            className="w-full h-full rounded-t-xl border border-gray-300 object-cover"
+            width={321}
+            height={214}
+            className="rounded-t-xl border border-gray-300"
             style={{
-              aspectRatio: "3 / 2",
-              display: "block",
+              width: "100%",
+              height: "214px",
+              maxWidth: "100%",
               objectFit: "cover",
-              objectPosition: "center"
+              aspectRatio: "3 / 2",
+              backgroundColor: "#eef3f7"
             }}
             loading="lazy"
           />
@@ -71,12 +66,12 @@ export function CardContent({
   style = {},
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  // Zone texte scrollable si trop long, pour garder la taille compacte
+  // Texte scrollable si trop long
   return (
     <div
       className={`w-full text-center overflow-y-auto ${className}`}
       style={{
-        maxHeight: "4.5rem", // limite la hauteur (environ 3 lignes)
+        maxHeight: "54px", // 3 lignes environ
         ...style,
       }}
       {...props}
