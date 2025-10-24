@@ -30,7 +30,7 @@ export default function Page() {
       desc: "Supervisez la plateforme, gérez les utilisateurs et analysez les performances avec des tableaux de bord complets.",
       color: "var(--nc-green)",          // idem
       image: "/cards/espace_admins_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/admin/",
     },
   ];
 
