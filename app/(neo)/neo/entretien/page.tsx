@@ -26,7 +26,7 @@ export default function Page() {
       href: "/neo/", // Ou une future route admin dédiée
     },
     {
-      title: "Conseils et préparation",
+      title: "Conseils et préparation pour l'entretien",
       desc: "Profitez des conseils personnalisés de l’avatar IA : méthodologie, astuces de présentation, préparation mentale pour une expérience réussie !",
       color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
       image: "/cards/conseils_candidat_card.png",
