@@ -112,7 +112,7 @@ export default function RecruteurEntreprise() {
       avatar={
         <div className="mx-auto w-full max-w-xl aspect-video rounded-md bg-gray-200 overflow-hidden mb-1">
           <img
-            src="/avatar_interactif_entreprise_16_9.png"
+            src="/avatars/avatar_interactif_entreprise_16_9.png"
             alt="Avatar interactif simulation"
             className="object-cover w-full h-full"
             loading="lazy"
