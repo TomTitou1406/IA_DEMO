@@ -2,8 +2,7 @@
 
 import React, { useState } from "react";
 import InteractiveBlock from "@/components/ui/InteractiveBlock";
-import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock"; // à créer comme vu précédemment
-import { Card } from "@/components/ui/Card";
+import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
 
 export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
@@ -35,39 +34,76 @@ export default function RecruteurEntreprise() {
     }, 3000);
   };
 
-  // Pour mode chat écrit : gardons un fil distinct pour test
+  // Pour mode chat écrit
   const [discussionChat, setDiscussionChat] = useState<string[]>([]);
-
   const handleSendMessage = (msg: string) => {
     setDiscussionChat(d => [...d, `Vous : ${msg}`, `IA : réponse générée pour "${msg}"`]);
   };
 
   if (!modeChoisi) {
-    return (
-      <section className="max-w-4xl mx-auto p-4 grid grid-cols-2 gap-6">
-        <Card className="cursor-pointer p-6" onClick={() => setModeChoisi("vocal")}>
-          <h3 className="text-xl font-bold mb-2">Mode vocal avec avatar</h3>
-          <p>Vous êtes dans un espace calme, un micro est disponible pour dialoguer à voix haute.</p>
-          <div className="mt-4 text-center">
-            <img src="/icons/microphone.svg" alt="Micro" className="mx-auto h-12" />
-          </div>
-        </Card>
+    const modes = [
+      {
+        key: "vocal",
+        title: "Mode vocal avec avatar",
+        desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L’IA anime un avatar interactif pour échanger en temps réel.",
+        color: "bg-[var(--nc-blue)]",
+        icon: (
+          <span className="text-5xl" role="img" aria-label="Microphone">
+            🎤
+          </span>
+        ),
+      },
+      {
+        key: "ecrit",
+        title: "Mode écrit conversationnel",
+        desc: "Dialoguez par texte sans prise de parole. L’IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
+        color: "bg-[var(--nc-cyan)]",
+        icon: (
+          <span className="text-5xl" role="img" aria-label="Bulle de chat">
+            💬
+          </span>
+        ),
+      },
+    ];
 
-        <Card className="cursor-pointer p-6" onClick={() => setModeChoisi("ecrit")}>
-          <h3 className="text-xl font-bold mb-2">Mode écrit conversationnel</h3>
-          <p>Aucun échange vocal, discutez via textes et réponses écrites.</p>
-          <div className="mt-4 text-center">
-            <img src="/icons/chat.svg" alt="Chat" className="mx-auto h-12" />
-          </div>
-        </Card>
-      </section>
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] py-10">
+        <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
+          Choisissez votre mode de présentation
+        </h1>
+        <p className="text-lg text-gray-700 mb-10 text-center max-w-2xl">
+          Sélectionnez la méthode la plus adaptée à votre environnement et vos outils. <br />
+          Vous pourrez ensuite dialoguer avec l’IA soit à l’oral avec un avatar animé, soit par écrit.
+        </p>
+        <div className="flex gap-8 flex-wrap justify-center">
+          {modes.map(m => (
+            <div
+              key={m.key}
+              className="relative overflow-hidden bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)] hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200 w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer group"
+              style={{ willChange: "transform, box-shadow" }}
+              onClick={() => setModeChoisi(m.key as "vocal" | "ecrit")}
+              tabIndex={0}
+              role="button"
+            >
+              <div className={`${m.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200`} style={{ marginTop: "-2px" }} />
+              <div className="mb-5">
+                <div className="mx-auto w-24 h-24 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
+                  {m.icon}
+                </div>
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">{m.title}</h3>
+              <p className="text-gray-700">{m.desc}</p>
+            </div>
+          ))}
+        </div>
+      </div>
     );
   }
 
   return modeChoisi === "vocal" ? (
     <InteractiveBlock
       title="Présenter votre entreprise - Mode vocal"
-      subtitle="L’ IA vous assiste vocale avec un avatar interactif."
+      subtitle="L’IA vous assiste vocalement avec un avatar interactif."
       avatar={
         <div className="mx-auto w-full max-w-xl aspect-video rounded-md bg-gray-200 overflow-hidden mb-1">
           <img
