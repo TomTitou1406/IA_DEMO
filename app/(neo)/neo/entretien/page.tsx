@@ -39,6 +39,15 @@ export default function Page() {
       <h1 className="text-4xl font-extrabold text-[var(--nc-cyan)] text-center mb-12">
         Espace Candidats
       </h1>
+      {/* Lien Retour centré */}
+      <div className="text-center mb-6">
+        <Link 
+          href="/neo/" 
+          className="text-[var(--nc-blue)] hover:text-[var(--nc-gray)] transition-colors duration-200 text-lg font-medium"
+        >
+          ← Retour
+        </Link>
+      </div>
       <p className="text-lg text-gray-700 mb-10 text-center">
         Infos entreprises et postes à pourvoir - Préselection et validation des compétences assistés par avatars IA.
       </p>
