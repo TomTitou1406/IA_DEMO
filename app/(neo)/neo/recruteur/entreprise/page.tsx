@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import InteractiveBlock from "@/components/ui/InteractiveBlock";
 import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
+import Link from "next/link";
 
 export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
@@ -74,11 +75,19 @@ export default function RecruteurEntreprise() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] py-10">
         <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
-          Choisissez votre mode de présentation
+          Choisissez votre mode de travail avec l'IA
         </h1>
+         {/* Lien Retour centré */}
+        <div className="text-center mb-4">
+          <Link 
+            href="/neo/" 
+            className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] transition-colors duration-200 text-lg font-medium"
+          >
+            ← Retour
+          </Link>
+        </div>
         <p className="text-lg text-gray-700 mb-10 text-center max-w-2xl">
-          Sélectionnez la méthode la plus adaptée à votre environnement et vos outils. <br />
-          Vous pourrez ensuite dialoguer avec l’IA soit à l’oral avec un avatar animé, soit par écrit.
+          Quelle est la méthode la plus adaptée à votre environnement et à vos outils ?
         </p>
         <div className="flex gap-8 flex-wrap justify-center">
           {modes.map(m => (
