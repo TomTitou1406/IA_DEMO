@@ -40,7 +40,7 @@ export default function Page() {
         Espace Candidats
       </h1>
       <p className="text-lg text-gray-700 mb-10 text-center">
-        Infos entreprises et postes à pourvoir - Préselection et validation des compéetnces assistés par avatars IA.
+        Infos entreprises et postes à pourvoir - Préselection et validation des compétences assistés par avatars IA.
       </p>
       <div className="flex flex-wrap gap-8 justify-center">
         {roles.map((r) =>
