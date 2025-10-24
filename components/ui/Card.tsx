@@ -2,7 +2,7 @@
 import * as React from "react";
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
-  image?: string; // nouvelle prop
+  image?: string;
 };
 
 export function Card({
@@ -14,22 +14,24 @@ export function Card({
 }: CardProps) {
   return (
     <div
-      className={`bg-brand.white rounded-xl shadow-card border border-gray-200 ${className}`}
-      style={{ minHeight: "20rem", maxHeight: "20rem", overflow: "hidden", ...style }}
+      className={`bg-brand.white rounded-xl shadow-card border border-gray-200 flex flex-col overflow-hidden ${className}`}
+      style={{ minHeight: "20rem", maxHeight: "20rem", ...style }}
       {...props}
     >
       {image && (
-        <div className="mb-5 flex justify-center">
+        <div className="relative w-full h-1/2 overflow-hidden">
           <img
             src={image}
             alt=""
-            className="w-24 h-24 object-cover rounded-full shadow-sm mt-6"
-            style={{ backgroundColor: "#e5e7eb" }}
+            className="object-cover w-full h-full rounded-t-xl border border-gray-300 mx-2 my-2"
+            style={{ aspectRatio: "2 / 3" }}
             loading="lazy"
           />
         </div>
       )}
-      {children}
+      <div className="flex flex-col justify-center items-center flex-1 px-4 text-center py-3">
+        {children}
+      </div>
     </div>
   );
 }
@@ -38,7 +40,7 @@ export function CardHeader({
   className = "",
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={`px-4 pt-4 pb-2 ${className}`} {...props} />;
+  return <div className={`mb-2 ${className}`} {...props} />;
 }
 
 export function CardContent({
@@ -48,8 +50,8 @@ export function CardContent({
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
-      className={`px-4 pb-4 ${className}`}
-      style={{ overflowY: "auto", maxHeight: "calc(20rem - 3rem)", ...style }}
+      className={className}
+      style={{ overflowY: "auto", maxHeight: "calc(10rem)", ...style }}
       {...props}
     />
   );
