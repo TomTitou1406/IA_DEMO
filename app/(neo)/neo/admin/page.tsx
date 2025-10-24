@@ -16,21 +16,21 @@ export default function Page() {
       desc: "Gestion des utilisateurs identifiés et droits d'accès - Suivi des logs et traçabilité.",
       color: "var(--nc-green)",           // ou "#1D5DFF", etc.
       image: "/cards/user_logs_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/admin/", 
     },
     {
       title: "Gestion des prompts systems et avatars",
       desc: "Gestion des prompts de tous les scénarios IA et comportements des avatars + paramètres.",
       color: "var(--nc-green)",           // ou "#1D5DFF", etc.
       image: "/cards/admin_prompt_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/admin/", 
     },
     {
       title: "Gestion Bases de données et connaissances",
       desc: "Gestion des tables et fichiers de connaissances partagées.",
       color: "var(--nc-green)",           // ou "#1D5DFF", etc.
       image: "/cards/bdd_connaissances_card.png",
-      href: "/neo/", // Ou une future route admin dédiée
+      href: "/neo/admin/", 
     },
      {
       title: "Autres paramétrages spécifiques",
