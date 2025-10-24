@@ -13,7 +13,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="fr">
       <body className="min-h-screen flex flex-col">
-        <header className="w-full bg-white border-b">
+        {/* Header fixe en haut avec z-index élevé */}
+        <header className="fixed top-0 left-0 w-full bg-white border-b z-50 shadow-sm">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
             <span className="text-2xl font-extrabold text-[var(--nc-blue)] tracking-wide">
               NeoRecrut
@@ -22,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
               <a
                 href="/neo"
                 className="text-[var(--nc-blue)] text-sm font-semibold hover:underline whitespace-nowrap"
-                aria-label="Retour à l’accueil NeoRecrut"
+                aria-label="Retour à l'accueil NeoRecrut"
               >
                 ← Accueil
               </a>
@@ -45,7 +46,8 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           </div>
         </header>
 
-        <main className="flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-6">
+        {/* Contenu principal avec padding-top pour compenser le header fixe */}
+        <main className="flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-6 pt-24">
           {children}
         </main>
 
