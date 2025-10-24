@@ -21,13 +21,21 @@
 -------------------------------------------------- */
 @media (prefers-color-scheme: dark) {
   :root {
-    --nc-gray: #1f2937;     /* Gris foncé */
-    --nc-white: #111827;    /* Fond cartes sombre */
-    --nc-blue: #3b82f6;     /* Bleu plus lumineux */
-    --nc-cyan: #22d3ee;     /* Cyan plus vif */
-    --nc-green: #34d399;
-    --nc-orange: #fbbf24;
-    --nc-red: #f87171;
+    /* --nc-gray: #1f2937;     Gris foncé */
+    /* --nc-white: #111827;    Fond cartes sombre */
+    /* --nc-blue: #3b82f6;     Bleu plus lumineux */
+    /* --nc-cyan: #22d3ee;     Cyan plus vif */
+    /* --nc-green: #34d399; */
+    /* --nc-orange: #fbbf24; */
+    /* --nc-red: #f87171; */
+    --nc-gray: #f3f4f6;     /* Garde fond clair */
+    --nc-white: #ffffff;    /* Garde blanc pur */
+    --nc-blue: #1e40af;     /* Garde bleu original */
+    --nc-cyan: #06b6d4;     /* Garde cyan original */
+    --nc-green: #10b981;    /* Garde vert original */
+    --nc-orange: #fdba74;   /* Garde orange original */
+    --nc-red: #ef4444;      /* Garde rouge original */
+    --nc-charcoal: #1f2937; /* Garde texte foncé */
   }
 
   html, body { color: #f3f4f6; }
