@@ -1,17 +1,36 @@
 // components/ui/Card.tsx
 import * as React from "react";
 
+type CardProps = React.HTMLAttributes<HTMLDivElement> & {
+  image?: string; // nouvelle prop
+};
+
 export function Card({
   className = "",
   style = {},
+  image,
+  children,
   ...props
-}: React.HTMLAttributes<HTMLDivElement>) {
+}: CardProps) {
   return (
     <div
       className={`bg-brand.white rounded-xl shadow-card border border-gray-200 ${className}`}
       style={{ minHeight: "20rem", maxHeight: "20rem", overflow: "hidden", ...style }}
       {...props}
-    />
+    >
+      {image && (
+        <div className="mb-5 flex justify-center">
+          <img
+            src={image}
+            alt=""
+            className="w-24 h-24 object-cover rounded-full shadow-sm mt-6"
+            style={{ backgroundColor: "#e5e7eb" }}
+            loading="lazy"
+          />
+        </div>
+      )}
+      {children}
+    </div>
   );
 }
 
