@@ -36,9 +36,18 @@ export default function Page() {
 
   return (
     <main className="bg-[var(--nc-gray)] min-h-screen py-12 px-4">
-      <h1 className="text-4xl font-extrabold text-[var(--nc-blue)] text-center mb-12">
+      <h1 className="text-4xl font-extrabold text-[var(--nc-blue)] text-center mb-4">
         Espace Entreprises
       </h1>
+       {/* Lien Retour centré */}
+      <div className="text-center mb-4">
+        <Link 
+          href="/neo/" 
+          className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] transition-colors duration-200 text-lg font-medium"
+        >
+          ← Retour
+        </Link>
+      </div>
       <p className="text-lg text-gray-700 mb-10 text-center">
         Gérez l'attractivité de votre entreprise et définissez vos besoins avec l'aide de l'IA.
       </p>
