@@ -3,7 +3,14 @@ import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 
 export default function Page() {
-  const roles = [
+  const roles: {
+      title: string;
+      desc: string;
+      color: string;
+      image?: string;
+      icon?: React.ReactNode;
+      href: string;
+    }[] = [ 
     {
       title: "Espace Entreprises",
       desc: "Gérez vos recrutements avec des outils IA avancés. Créez des postes, suivez les candidatures et optimisez votre processus de sélection.",
