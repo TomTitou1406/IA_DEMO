@@ -34,7 +34,7 @@ export function Card({
           position: "absolute",
           top: 0,
           left: 0,
-          height: "12px", // épaisseur
+          height: "4px", // épaisseur
           width: "100%",
           background: color,
           borderTopLeftRadius: "1rem",
@@ -75,7 +75,7 @@ export function CardHeader({
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
-    <div className={`mb-2 w-full text-center font-bold text-lg ${className}`} {...props} />
+    <div className={`mb-2 mt-2 w-full text-center font-bold text-lg ${className}`} {...props} />
   );
 }
 
