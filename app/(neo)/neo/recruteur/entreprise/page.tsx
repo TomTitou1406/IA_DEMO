@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import InteractiveBlock from "@/components/ui/InteractiveBlock";
 import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
 import Link from "next/link";
+import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 
 export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
@@ -47,28 +48,27 @@ export default function RecruteurEntreprise() {
   };
 
   if (!modeChoisi) {
-    const modes = [
+    const modes: {
+      key: "vocal" | "ecrit";
+      title: string;
+      desc: string;
+      color: string;
+      image?: string;
+      icon?: React.ReactNode;
+    }[] = [
       {
         key: "vocal",
-        title: "Mode vocal avec avatar",
-        desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L’IA anime un avatar interactif pour échanger en temps réel.",
-        color: "bg-[var(--nc-blue)]",
-        icon: (
-          <span className="text-5xl" role="img" aria-label="Microphone">
-            🎤
-          </span>
-        ),
+        title: "Mode vocal avec avatar on",
+        desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif pour échanger en temps réel.",
+        color: "var(--nc-blue)",
+        image: "/cards/mode_vocal_card.png", // Remplace par ton chemin d'image réel
       },
       {
         key: "ecrit",
         title: "Mode écrit conversationnel",
-        desc: "Dialoguez par texte sans prise de parole. L’IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
-        color: "bg-[var(--nc-cyan)]",
-        icon: (
-          <span className="text-5xl" role="img" aria-label="Bulle de chat">
-            💬
-          </span>
-        ),
+        desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
+        color: "var(--nc-cyan)",
+        image: "/cards/mode_ecrit_card.png", // Remplace par ton chemin d'image réel
       },
     ];
 
@@ -77,11 +77,11 @@ export default function RecruteurEntreprise() {
         <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
           Choisissez votre mode de travail avec l'IA
         </h1>
-         {/* Lien Retour centré */}
+        {/* Lien Retour centré */}
         <div className="text-center mb-4">
           <Link 
             href="/neo/" 
-            className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] transition-colors duration-200 text-lg font-medium"
+            className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] hover:underline transition-all duration-200 text-lg font-medium"
           >
             ← Retour
           </Link>
@@ -93,20 +93,29 @@ export default function RecruteurEntreprise() {
           {modes.map(m => (
             <div
               key={m.key}
-              className="relative overflow-hidden bg-[var(--nc-white)] rounded-xl border border-[var(--nc-gray)] shadow-[0_6px_18px_rgba(0,0,0,0.06)] hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200 w-80 p-8 pt-12 flex flex-col items-center text-center cursor-pointer group"
-              style={{ willChange: "transform, box-shadow" }}
-              onClick={() => setModeChoisi(m.key as "vocal" | "ecrit")}
-              tabIndex={0}
-              role="button"
+              onClick={() => setModeChoisi(m.key)}
+              className="cursor-pointer"
             >
-              <div className={`${m.color} absolute top-0 left-0 h-1 w-full rounded-t-xl transition-all duration-200`} style={{ marginTop: "-2px" }} />
-              <div className="mb-5">
-                <div className="mx-auto w-24 h-24 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
-                  {m.icon}
-                </div>
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">{m.title}</h3>
-              <p className="text-gray-700">{m.desc}</p>
+              <Card
+                image={m.image}
+                color={m.color}
+                className="hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200"
+              >
+                {/* Si pas d'image, afficher l'icône */}
+                {!m.image && m.icon && (
+                  <div className="mb-5 flex justify-center">
+                    <div className="mx-auto w-20 h-20 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
+                      {m.icon}
+                    </div>
+                  </div>
+                )}
+                <CardHeader>
+                  <h3 className="text-xl font-bold text-gray-900">{m.title}</h3>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-700">{m.desc}</p>
+                </CardContent>
+              </Card>
             </div>
           ))}
         </div>
@@ -117,7 +126,7 @@ export default function RecruteurEntreprise() {
   return modeChoisi === "vocal" ? (
     <InteractiveBlock
       title="Présenter votre entreprise - Mode vocal"
-      subtitle="L’IA vous assiste vocalement avec un avatar interactif."
+      subtitle="L'IA vous assiste vocalement avec un avatar interactif."
       avatar={
         <div className="mx-auto w-full max-w-xl aspect-video rounded-md bg-gray-200 overflow-hidden mb-1">
           <img
@@ -141,19 +150,19 @@ export default function RecruteurEntreprise() {
     />
   ) : (
     <InteractiveChatBlock
-    title="Présenter votre entreprise - Mode écrit"
-    subtitle="Discutez avec l'IA via un chat textuel."
-    discussion={discussionChat}
-    etatDiscussion={etatDiscussion}
-    setEtatDiscussion={setEtatDiscussion}
-    setDiscussion={setDiscussionChat}
-    onSendMessage={handleSendMessage}
-    onAbandonner={onAbandonner}
-    onConfirmerAbandon={onConfirmerAbandon}
-    showConfirmation={showConfirmation}
-    onFinaliser={onFinaliser}
-    onSauvegarder={onSauvegarder}
-    showSavedMessage={showSavedMessage}
-  />
+      title="Présenter votre entreprise - Mode écrit"
+      subtitle="Discutez avec l'IA via un chat textuel."
+      discussion={discussionChat}
+      etatDiscussion={etatDiscussion}
+      setEtatDiscussion={setEtatDiscussion}
+      setDiscussion={setDiscussionChat}
+      onSendMessage={handleSendMessage}
+      onAbandonner={onAbandonner}
+      onConfirmerAbandon={onConfirmerAbandon}
+      showConfirmation={showConfirmation}
+      onFinaliser={onFinaliser}
+      onSauvegarder={onSauvegarder}
+      showSavedMessage={showSavedMessage}
+    />
   );
 }
