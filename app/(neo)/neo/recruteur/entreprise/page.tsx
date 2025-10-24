@@ -61,14 +61,14 @@ export default function RecruteurEntreprise() {
         title: "Mode vocal avec avatar on",
         desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif pour échanger en temps réel.",
         color: "var(--nc-blue)",
-        image: "/cards/mode_vocal_card.png", // Remplace par ton chemin d'image réel
+        image: "/cards/mode_avatar_card.png", 
       },
       {
         key: "ecrit",
         title: "Mode écrit conversationnel",
         desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
         color: "var(--nc-cyan)",
-        image: "/cards/mode_ecrit_card.png", // Remplace par ton chemin d'image réel
+        image: "/cards/mode_chat_card.png", 
       },
     ];
 
