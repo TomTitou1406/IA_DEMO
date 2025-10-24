@@ -12,35 +12,42 @@ export default function Page() {
       href: string;
     }[] = [ 
     {
-      title: "Informations et critères de présélection",
-      desc: "Tous les détails sur l'entreprise et le poste à pourvoir. Validez l'étape de présélection.",
-      color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
-      image: "/cards/info_preselection_card.png",
+      title: "Gestion des utilisateurs et profils - Logs",
+      desc: "Gestion des utilisateurs identifiés et droits d'accès - Suivi des logs et traçabilité.",
+      color: "var(--nc-green)",           // ou "#1D5DFF", etc.
+      image: "/cards/user_logs_card.png",
       href: "/neo/", // Ou une future route admin dédiée
     },
     {
-      title: "Validation de vos compétences",
-      desc: "Passez un entretien interactif où l’IA évalue vos compétences et recevez un feedback précis et immédiat sur votre candidature.",
-      color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
-      image: "/cards/validation_competences_card.png",
+      title: "Gestion des prompts systems et avatars",
+      desc: "Gestion des prompts de tous les scénarios IA et comportements des avatars + paramètres.",
+      color: "var(--nc-green)",           // ou "#1D5DFF", etc.
+      image: "/cards/admin_prompt_card.png",
       href: "/neo/", // Ou une future route admin dédiée
     },
     {
-      title: "Conseils et préparation pour l'entretien",
-      desc: "Profitez des conseils personnalisés de l’avatar IA : méthodologie, astuces de présentation, préparation mentale pour une expérience réussie !",
-      color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
-      image: "/cards/conseils_candidat_card.png",
+      title: "Gestion Bases de données et connaissances",
+      desc: "Gestion des tables et fichiers de connaissances partagées.",
+      color: "var(--nc-green)",           // ou "#1D5DFF", etc.
+      image: "/cards/bdd_connaissances_card.png",
+      href: "/neo/", // Ou une future route admin dédiée
+    },
+     {
+      title: "Autres paramétrages spécifiques",
+      desc: "Autres fonctionnalités utiles à la gestion de l'applicatif.",
+      color: "var(--nc-green)",           // ou "#1D5DFF", etc.
+      image: "/cards/autres_parametres_card.png",
       href: "/neo/", // Ou une future route admin dédiée
     },
   ];
 
   return (
     <main className="bg-[var(--nc-gray)] min-h-screen py-12 px-4">
-      <h1 className="text-4xl font-extrabold text-[var(--nc-cyan)] text-center mb-12">
-        Espace Entreprises
+      <h1 className="text-4xl font-extrabold text-[var(--nc-green)] text-center mb-12">
+        Espace Administrateurs
       </h1>
       <p className="text-lg text-gray-700 mb-10 text-center">
-        Gérez l'attractivité de votre entreprise et définissez vos besoins avec l'aide de l'IA.
+        Gestion de l'ensemble des paramètres globaux de l'applicatif.
       </p>
       <div className="flex flex-wrap gap-8 justify-center">
         {roles.map((r) =>
