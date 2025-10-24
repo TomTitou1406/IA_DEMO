@@ -12,7 +12,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
 
   return (
     <html lang="fr">
-      <body className="min-h-screen flex flex-col">
+      <body className="min-h-screen flex flex-col relative bg-[var(--nc-gray)]">
         {/* Image de fond subtile en pseudo-élément */}
         <div 
           className="fixed inset-0 z-0 pointer-events-none"
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             backgroundPosition: 'top center',
             backgroundSize: 'cover',
             backgroundRepeat: 'no-repeat',
-             backgroundAttachment: 'fixed',     // Reste fixe même au scroll
+            backgroundAttachment: 'fixed',     // Reste fixe même au scroll
             opacity: 0.08, // Très faible opacité (ajuste entre 0.02 et 0.08)
             filter: 'grayscale(100%) brightness(1.5)', // Effet papier gaufré
           }}
