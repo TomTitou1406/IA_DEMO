@@ -34,10 +34,15 @@ export default function RecruteurEntreprise() {
     }, 3000);
   };
 
-  // Pour mode chat écrit
-  const [discussionChat, setDiscussionChat] = useState<string[]>([]);
+  // Pour mode chat écrit (NOUVEAU FORMAT)
+  const [discussionChat, setDiscussionChat] = useState<{role:"user"|"assistant",content:string}[]>([]);
+  
   const handleSendMessage = (msg: string) => {
-    setDiscussionChat(d => [...d, `Vous : ${msg}`, `IA : réponse générée pour "${msg}"`]);
+    setDiscussionChat(d => [
+      ...d,
+      {role: "user", content: msg},
+      {role: "assistant", content: `Réponse IA à "${msg}"`}
+    ]);
   };
 
   if (!modeChoisi) {
@@ -127,10 +132,19 @@ export default function RecruteurEntreprise() {
     />
   ) : (
     <InteractiveChatBlock
-      title="Présenter votre entreprise - Mode écrit"
-      subtitle="Discutez avec l'IA via un chat textuel."
-      discussion={discussionChat}
-      onSendMessage={handleSendMessage}
-    />
+    title="Présenter votre entreprise - Mode écrit"
+    subtitle="Discutez avec l'IA via un chat textuel."
+    discussion={discussionChat}
+    etatDiscussion={etatDiscussion}
+    setEtatDiscussion={setEtatDiscussion}
+    setDiscussion={setDiscussionChat}
+    onSendMessage={handleSendMessage}
+    onAbandonner={onAbandonner}
+    onConfirmerAbandon={onConfirmerAbandon}
+    showConfirmation={showConfirmation}
+    onFinaliser={onFinaliser}
+    onSauvegarder={onSauvegarder}
+    showSavedMessage={showSavedMessage}
+  />
   );
 }
