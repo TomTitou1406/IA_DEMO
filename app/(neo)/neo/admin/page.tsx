@@ -43,9 +43,18 @@ export default function Page() {
 
   return (
     <main className="bg-[var(--nc-gray)] min-h-screen py-12 px-4">
-      <h1 className="text-4xl font-extrabold text-[var(--nc-green)] text-center mb-12">
+      <h1 className="text-4xl font-extrabold text-[var(--nc-green)] text-center mb-4">
         Espace Administrateurs
       </h1>
+       {/* Lien Retour centré */}
+      <div className="text-center mb-4">
+        <Link 
+          href="/neo/" 
+          className="text-[var(--nc-green)] hover:text-[var(--nc-green)] transition-colors duration-200 text-lg font-medium"
+        >
+          ← Retour
+        </Link>
+      </div>
       <p className="text-lg text-gray-700 mb-10 text-center">
         Gestion de l'ensemble des paramètres globaux de l'applicatif.
       </p>
