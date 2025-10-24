@@ -3,11 +3,13 @@ import * as React from "react";
 
 export function Card({
   className = "",
+  style = {},
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
   return (
     <div
       className={`bg-brand.white rounded-xl shadow-card border border-gray-200 ${className}`}
+      style={{ minHeight: "20rem", maxHeight: "20rem", overflow: "hidden", ...style }}
       {...props}
     />
   );
@@ -22,7 +24,14 @@ export function CardHeader({
 
 export function CardContent({
   className = "",
+  style = {},
   ...props
 }: React.HTMLAttributes<HTMLDivElement>) {
-  return <div className={`px-4 pb-4 ${className}`} {...props} />;
+  return (
+    <div
+      className={`px-4 pb-4 ${className}`}
+      style={{ overflowY: "auto", maxHeight: "calc(20rem - 3rem)", ...style }}
+      {...props}
+    />
+  );
 }
