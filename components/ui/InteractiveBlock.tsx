@@ -173,25 +173,26 @@ export default function InteractiveBlock({
                     </>
                   )}
                 </div>
-              </div>  
-              {/* Boutons pour état inactif */}
-              {workflowState === "inactive" && (
-                <div className="flex gap-3 justify-center mt-4">
-                  <button
-                    onClick={handleDiscuter}
-                    className="bg-[var(--nc-blue)] text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-[var(--nc-cyan)] transition shadow-lg"
-                  >
-                    Discuter
-                  </button>
-                  <button
-                    onClick={() => window.history.back()}
-                    className="bg-gray-700/80 text-white px-6 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition shadow-lg backdrop-blur-sm"
-                  >
-                    Quitter
-                  </button>
+                
+                {/* Boutons pour état inactif */}
+                {workflowState === "inactive" && (
+                  <div className="flex gap-3 justify-center mt-4">
+                    <button
+                      onClick={handleDiscuter}
+                      className="bg-[var(--nc-blue)] text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-[var(--nc-cyan)] transition shadow-lg"
+                    >
+                      Discuter
+                    </button>
+                    <button
+                      onClick={() => window.history.back()}
+                      className="bg-gray-700/80 text-white px-6 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition shadow-lg backdrop-blur-sm"
+                    >
+                      Quitter
+                    </button>
+                  </div>
                 </div>
-              )}
-            </div>
+                )}
+              </div>
           )}
 
           {isLoading && (
