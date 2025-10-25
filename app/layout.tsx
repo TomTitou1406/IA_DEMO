@@ -66,10 +66,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </header>
 
         {/* Contenu principal avec padding-top pour compenser le header fixe */}
-        <main className="flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-6 pt-24">
+        <main className="relative z-10 flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-6 pt-20">
+          {/*                                                                             ↑ Était pt-24 */}
           {children}
         </main>
-
         <footer className="w-full bg-[#f3f4f6] text-xs py-4 text-center text-gray-500 mt-auto">
           © {new Date().getFullYear()} NeoRecrut - Tous droits réservés
         </footer>
