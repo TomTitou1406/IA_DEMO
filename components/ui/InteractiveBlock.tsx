@@ -60,7 +60,7 @@ export default function InteractiveBlock({
       await startSession();
       await startInitialSpeak(initialMessage);
       setTimeout(() => {
-        startInitialSpeak(initialMessage);
+        startInitialSpeak();
       }, 500); // 500ms d’attente
     }
     start();
@@ -237,6 +237,7 @@ export default function InteractiveBlock({
                 </button>
                 {/* Nouveau bouton interruption */}
                 <button
+                  <div className="text-xs text-gray-700 mb-1">Parlez pour reprendre</div>
                   onClick={handleInterrompre}
                   disabled={!isTalking}
                   className={`bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
