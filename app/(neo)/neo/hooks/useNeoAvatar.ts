@@ -183,71 +183,60 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   // ─────────────────────────────────────────────────────────────────────
 
   const startSession = useCallback(async () => {
-    if (sessionState === "loading" || sessionState === "active") {
-      console.warn("⚠️ Session déjà en cours");
-      return;
-    }
+  if (sessionState === "loading" || sessionState === "active") {
+    console.warn("⚠️ Session déjà en cours");
+    return;
+  }
 
-    try {
-      setSessionState("loading");
-      setError(null);
-      setChatHistory([]);
-      currentSenderRef.current = null;
+  try {
+    setSessionState("loading");
+    setError(null);
+    setChatHistory([]);
+    currentSenderRef.current = null;
 
-      console.log("🔄 Récupération du token...");
-      const token = await fetchAccessToken();
+    console.log("🔄 Récupération du token...");
+    const token = await fetchAccessToken();
 
-      console.log("🔄 Initialisation de l'avatar...");
-      const avatar = await initializeAvatar(token);
+    console.log("🔄 Initialisation de l'avatar...");
+    const avatar = await initializeAvatar(token);
 
-      // 🔥 CONFIGURATION AVEC KNOWLEDGE BASE (EN DUR POUR DEBUG)
-      const avatarConfig: StartAvatarRequest = {
-        quality: AvatarQuality.High,
-        avatarName: "Anastasia_Chair_Sitting_public",
-        language: "fr",
-        voice: {
-          rate: 1.2,
-          emotion: VoiceEmotion.FRIENDLY,
-        },
-        knowledgeBase: "19df36d7a9354a1aa664c34686256df1", // ← EN DUR
-      };
+    // 🔥 CONFIGURATION AVEC KNOWLEDGE ID (CORRIGÉE)
+    const avatarConfig: StartAvatarRequest = {
+      quality: AvatarQuality.High,
+      avatarName: "Anastasia_Chair_Sitting_public",
+      language: "fr",
+      voice: {
+        rate: 1.2,
+        emotion: VoiceEmotion.FRIENDLY,
+      },
+      knowledgeId: "19df36d7a9354a1aa664c34686256df1", // ← CORRIGÉ
+    };
 
-      // 🔥 LOG POUR VÉRIFIER LA CONFIG
-      console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
-      console.log("🔥 Knowledge Base ID:", avatarConfig.knowledgeBase);
+    // 🔥 LOG POUR VÉRIFIER LA CONFIG
+    console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
+    console.log("🔥 Knowledge ID:", avatarConfig.knowledgeId);
 
-      console.log("🔄 Démarrage de la session avec Knowledge Base...");
-      const sessionData = await avatar.createStartAvatar(avatarConfig);
+    console.log("🔄 Démarrage de la session avec Knowledge Base...");
+    const sessionData = await avatar.createStartAvatar(avatarConfig);
 
-      sessionIdRef.current = sessionData.session_id;
+    sessionIdRef.current = sessionData.session_id;
 
-      console.log("✅ Session démarrée:", sessionData.session_id);
-      console.log("✅ Knowledge Base appliquée:", avatarConfig.knowledgeBase);
-      
-      setSessionState("active");
+    console.log("✅ Session démarrée:", sessionData.session_id);
+    console.log("✅ Knowledge ID appliquée:", avatarConfig.knowledgeId);
+    
+    setSessionState("active");
 
-      console.log("🎤 Activation du micro...");
-      await avatar.startVoiceChat();
-      
-      // 🆕 ATTENDRE 1 SECONDE pour que le voice chat soit bien actif
-      await new Promise((resolve) => setTimeout(resolve, 1000));
-      
-      // 🆕 DÉCLENCHER LA CONVERSATION avec un message d'accueil
-      console.log("🚀 Déclenchement du message d'accueil...");
-      try {
-        // @ts-ignore - Force le type pour test
-        await avatar.speak({ text: "Bonjour" });
-        console.log("✅ Message d'accueil envoyé");
-      } catch (err) {
-        console.warn("⚠️ Impossible d'envoyer le message d'accueil:", err);
-      }
+    console.log("🎤 Activation du micro...");
+    await avatar.startVoiceChat();
+    
+    console.log("✅ Voice Chat actif - l'utilisateur peut parler");
+  } catch (err) {
+    console.error("❌ Erreur démarrage:", err);
+    setError(err instanceof Error ? err.message : "Erreur inconnue");
+    setSessionState("error");
+  }
+}, [sessionState, fetchAccessToken, initializeAvatar]);
 
-    } catch (err) {
-      console.error("❌ Erreur démarrage:", err);
-      setError(err instanceof Error ? err.message : "Erreur inconnue");
-      setSessionState("error");
-    }
-  }, [sessionState, fetchAccessToken, initializeAvatar]);
 
   // ─────────────────────────────────────────────────────────────────────
   // Arrêter la session
