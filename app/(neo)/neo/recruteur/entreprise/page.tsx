@@ -127,16 +127,6 @@ export default function RecruteurEntreprise() {
     <InteractiveBlock
       title="Présenter votre entreprise - Mode vocal"
       subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-      avatar={
-        <div className="mx-auto w-full max-w-xl aspect-video rounded-md bg-gray-200 overflow-hidden mb-1">
-          <img
-            src="/avatars/avatar_interactif_entreprise_16_9.png"
-            alt="Avatar interactif simulation"
-            className="object-cover w-full h-full"
-            loading="lazy"
-          />
-        </div>
-      }
       discussion={discussion}
       etatDiscussion={etatDiscussion}
       setEtatDiscussion={setEtatDiscussion}
