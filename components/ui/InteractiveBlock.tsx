@@ -190,9 +190,9 @@ export default function InteractiveBlock({
                       Quitter
                     </button>
                   </div>
-                </div>
                 )}
               </div>
+            </div>
           )}
 
           {isLoading && (
