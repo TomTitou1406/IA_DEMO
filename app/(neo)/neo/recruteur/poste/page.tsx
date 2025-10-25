@@ -88,28 +88,28 @@ export default function RecruteurEntreprise() {
         key: "vocal",
         title: "Mode vocal avec Avatar IA",
         desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif pour échanger en temps réel.",
-        color: "var(--nc-cyan)",
+        color: "var(--nc-blue)",
         image: "/cards/mode_avatar_card.png",
       },
       {
         key: "ecrit",
         title: "Mode écrit conversationnel",
         desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
-        color: "var(--nc-cyan)",
+        color: "var(--nc-blue)",
         image: "/cards/mode_chat_card.png",
       },
     ];
 
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] py-10">
-        <h1 className="text-3xl font-extrabold text-[var(--nc-cyan)] mb-4 text-center">
+        <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
           Choisissez votre mode de travail avec l'IA
         </h1>
         {/* Lien Retour */}
         <div className="text-center mb-4">
           <Link
             href="/neo/"
-            className="text-[var(--nc-cyan)] hover:text-[var(--nc-cyan)] hover:underline transition-all duration-200 text-lg font-medium"
+            className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] hover:underline transition-all duration-200 text-lg font-medium"
           >
             ← Retour
           </Link>
@@ -128,7 +128,7 @@ export default function RecruteurEntreprise() {
               <Card
                 image={m.image}
                 color={m.color}
-                className="hover:border-[var(--nc-cyan)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200"
+                className="hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200"
               >
                 {!m.image && m.icon && (
                   <div className="mb-5 flex justify-center">
