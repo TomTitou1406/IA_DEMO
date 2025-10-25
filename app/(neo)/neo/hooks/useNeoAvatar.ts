@@ -6,11 +6,8 @@ import StreamingAvatar, {
   StreamingEvents,
   VoiceEmotion,
   StartAvatarRequest,
+  TaskType,
 } from "@heygen/streaming-avatar";
-
-// ========================================================================
-// Types
-// ========================================================================
 
 type SessionState = "inactive" | "loading" | "active" | "error";
 
@@ -20,12 +17,12 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
-// 🆕 Interface pour la configuration du hook
 export interface UseNeoAvatarConfig {
   knowledgeId?: string;
   avatarName?: string;
   voiceRate?: number;
   language?: string;
+  initialMessage?: string; // Ajout optionnel message initial
 }
 
 interface UseNeoAvatarReturn {
@@ -37,30 +34,23 @@ interface UseNeoAvatarReturn {
   chatHistory: ChatMessage[];
   startSession: () => Promise<void>;
   stopSession: () => Promise<void>;
+  // Nouvelles méthodes exposées
+  interrupt: () => Promise<void>;
+  startInitialSpeak: (text: string) => Promise<void>;
 }
 
-// ========================================================================
-// Hook Principal
-// ========================================================================
-
 export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
-  // États
   const [sessionState, setSessionState] = useState<SessionState>("inactive");
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isTalking, setIsTalking] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
-  // Refs
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
   const isLoading = sessionState === "loading";
-
-  // ─────────────────────────────────────────────────────────────────────
-  // Handlers HeyGen-style (accumulation sans timer)
-  // ─────────────────────────────────────────────────────────────────────
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
@@ -114,10 +104,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     currentSenderRef.current = null;
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // Récupérer le token HeyGen
-  // ─────────────────────────────────────────────────────────────────────
-
   const fetchAccessToken = useCallback(async (): Promise<string> => {
     try {
       const response = await fetch("/api/get-access-token", {
@@ -136,40 +122,30 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // Initialiser l'instance StreamingAvatar
-  // ─────────────────────────────────────────────────────────────────────
-
   const initializeAvatar = useCallback(
     async (token: string) => {
       try {
         const avatar = new StreamingAvatar({ token });
 
-        // Événements de base
         avatar.on(StreamingEvents.STREAM_READY, (event) => {
-          console.log("✅ Stream prêt");
           if (event.detail) {
             setStream(event.detail);
           }
         });
 
         avatar.on(StreamingEvents.AVATAR_START_TALKING, () => {
-          console.log("🗣️ Avatar commence");
           setIsTalking(true);
         });
 
         avatar.on(StreamingEvents.AVATAR_STOP_TALKING, () => {
-          console.log("🤐 Avatar arrête");
           setIsTalking(false);
         });
 
         avatar.on(StreamingEvents.STREAM_DISCONNECTED, () => {
-          console.log("🔌 Stream déconnecté");
           setSessionState("inactive");
           setStream(null);
         });
 
-        // Événements HeyGen
         avatar.on(StreamingEvents.USER_TALKING_MESSAGE, handleUserTalkingMessage);
         avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleAvatarTalkingMessage);
         avatar.on(StreamingEvents.USER_END_MESSAGE, handleEndMessage);
@@ -185,29 +161,48 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
-  // ─────────────────────────────────────────────────────────────────────
-  // Démarrer la session
-  // ─────────────────────────────────────────────────────────────────────
+  // Méthode pour faire parler l'avatar (phrase initiale)
+  const startInitialSpeak = useCallback(async (text: string) => {
+    if (!avatarRef.current) {
+      console.warn("Avatar pas initialisé");
+      return;
+    }
+    try {
+      await avatarRef.current.speak({
+        text,
+        task_type: TaskType.TALK,
+      });
+    } catch (err) {
+      console.warn("⚠️ Erreur lors de l'envoi du message initial :", err);
+    }
+  }, []);
+
+  // Méthode pour interrompre la parole de l'avatar
+  const interrupt = useCallback(async () => {
+    if (!avatarRef.current) {
+      console.warn("Avatar pas initialisé");
+      return;
+    }
+    try {
+      await avatarRef.current.interrupt();
+    } catch (err) {
+      console.warn("⚠️ Erreur lors de l'interruption :", err);
+    }
+  }, []);
 
   const startSession = useCallback(async () => {
     if (sessionState === "loading" || sessionState === "active") {
-      console.warn("⚠️ Session déjà en cours");
       return;
     }
-
     try {
       setSessionState("loading");
       setError(null);
       setChatHistory([]);
       currentSenderRef.current = null;
 
-      console.log("🔄 Récupération du token...");
       const token = await fetchAccessToken();
-
-      console.log("🔄 Initialisation de l'avatar...");
       const avatar = await initializeAvatar(token);
 
-      // 🆕 CONFIGURATION DYNAMIQUE (avec valeurs par défaut)
       const avatarConfig: StartAvatarRequest = {
         quality: AvatarQuality.High,
         avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
@@ -219,46 +214,26 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         knowledgeId: config?.knowledgeId || undefined,
       };
 
-      // 🔥 LOG POUR VÉRIFIER LA CONFIG
-      console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
-      if (avatarConfig.knowledgeId) {
-        console.log("🔥 Knowledge ID:", avatarConfig.knowledgeId);
-      } else {
-        console.log("ℹ️ Aucune Knowledge Base (conversation générale)");
-      }
-
-      console.log("🔄 Démarrage de la session...");
       const sessionData = await avatar.createStartAvatar(avatarConfig);
-
       sessionIdRef.current = sessionData.session_id;
-
-      console.log("✅ Session démarrée:", sessionData.session_id);
       setSessionState("active");
 
-      console.log("🎤 Activation du micro...");
       await avatar.startVoiceChat();
 
-      console.log("✅ Voice Chat actif - l'utilisateur peut parler");
+      if (config?.initialMessage) {
+        await startInitialSpeak(config.initialMessage);
+      }
     } catch (err) {
-      console.error("❌ Erreur démarrage:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setSessionState("error");
     }
-  }, [sessionState, config, fetchAccessToken, initializeAvatar]);
-
-  // ─────────────────────────────────────────────────────────────────────
-  // Arrêter la session
-  // ─────────────────────────────────────────────────────────────────────
+  }, [sessionState, config, fetchAccessToken, initializeAvatar, startInitialSpeak]);
 
   const stopSession = useCallback(async () => {
     if (!avatarRef.current || !sessionIdRef.current) {
-      console.warn("⚠️ Aucune session active");
       return;
     }
-
     try {
-      console.log("🛑 Arrêt de la session...");
-
       await avatarRef.current.stopAvatar();
 
       avatarRef.current = null;
@@ -267,39 +242,29 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
-
-      console.log("✅ Session arrêtée");
     } catch (err) {
-      console.error("❌ Erreur arrêt:", err);
       setError("Impossible d'arrêter la session");
     }
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // Nettoyage au démontage
-  // ─────────────────────────────────────────────────────────────────────
-
   useEffect(() => {
     return () => {
       if (avatarRef.current && sessionIdRef.current) {
-        console.log("🧹 Nettoyage automatique");
         avatarRef.current.stopAvatar().catch(console.error);
       }
     };
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // Retour du hook
-  // ─────────────────────────────────────────────────────────────────────
-
   return {
     sessionState,
     stream,
-    isLoading,
+    isLoading: sessionState === "loading",
     error,
     isTalking,
     chatHistory,
     startSession,
     stopSession,
+    interrupt,
+    startInitialSpeak,
   };
 }
