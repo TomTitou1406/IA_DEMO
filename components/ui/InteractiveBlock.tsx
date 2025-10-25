@@ -8,6 +8,9 @@ type Props = {
   title: string;
   subtitle?: string;
   avatarPreviewImage?: string;
+  knowledgeId?: string; // ← Nouveau paramètre
+  avatarName?: string;  // ← Optionnel : pour changer l'avatar
+  voiceRate?: number;   // ← Optionnel : pour ajuster la vitesse
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
@@ -21,16 +24,21 @@ export default function InteractiveBlock({
   onSauvegarder,
   onAbandonner,
 }: Props) {
-  const {
-    sessionState,
-    stream,
-    isLoading,
-    error,
-    isTalking,
-    chatHistory,
-    startSession,
-    stopSession,
-  } = useNeoAvatar();
+    // 🆕 PASSAGE DE LA CONFIG AU HOOK
+    const {
+      sessionState,
+      stream,
+      isLoading,
+      error,
+      isTalking,
+      chatHistory,
+      startSession,
+      stopSession,
+    } = useNeoAvatar({
+      knowledgeId,
+      avatarName,
+      voiceRate,
+    });
 
   const [workflowState, setWorkflowState] = React.useState<
     "inactive" | "active" | "terminated"
