@@ -5,38 +5,22 @@
 import React, { useEffect, useRef } from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
-type EtatDiscussion = "init" | "active" | "pause" | "stopped" | "finalized";
-
 type Props = {
   title: string;
   subtitle?: string;
-  avatarPreviewImage?: string; // 🆕 Image de prévisualisation (avant démarrage)
-  discussion: string[];
-  etatDiscussion: EtatDiscussion;
-  setEtatDiscussion: React.Dispatch<React.SetStateAction<EtatDiscussion>>;
-  setDiscussion: React.Dispatch<React.SetStateAction<string[]>>;
-  onAbandonner: () => void;
-  onConfirmerAbandon: (confirmer: boolean) => void;
-  showConfirmation: boolean;
-  onFinaliser: () => void;
-  onSauvegarder: () => void;
-  showSavedMessage: boolean;
+  avatarPreviewImage?: string;
+  onFinaliser?: () => void;
+  onSauvegarder?: () => void;
+  onAbandonner?: () => void;
 };
 
 export default function InteractiveBlock({
   title,
   subtitle,
-  avatarPreviewImage = "/avatars/Anastasia.png", // Image par défaut
-  discussion,
-  etatDiscussion,
-  setEtatDiscussion,
-  setDiscussion,
-  onAbandonner,
-  onConfirmerAbandon,
-  showConfirmation,
+  avatarPreviewImage = "/avatars/Anastasia.png",
   onFinaliser,
   onSauvegarder,
-  showSavedMessage,
+  onAbandonner,
 }: Props) {
   // ─────────────────────────────────────────────────────────────────────
   // 🎣 Hook HeyGen
@@ -47,14 +31,23 @@ export default function InteractiveBlock({
     isLoading,
     error,
     isTalking,
+    chatHistory,
     startSession,
     stopSession,
   } = useNeoAvatar();
 
   // ─────────────────────────────────────────────────────────────────────
-  // 📹 Référence vidéo pour afficher le stream
+  // État local pour le workflow
+  // ─────────────────────────────────────────────────────────────────────
+  const [workflowState, setWorkflowState] = React.useState<
+    "inactive" | "active" | "terminated"
+  >("inactive");
+
+  // ─────────────────────────────────────────────────────────────────────
+  // 📹 Références
   // ─────────────────────────────────────────────────────────────────────
   const videoRef = useRef<HTMLVideoElement>(null);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
   // Mettre à jour la vidéo quand le stream change
   useEffect(() => {
@@ -66,95 +59,110 @@ export default function InteractiveBlock({
     }
   }, [stream]);
 
+  // Auto-scroll du chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatHistory]);
+
+  // Synchroniser workflow avec sessionState
+  useEffect(() => {
+    if (sessionState === "active") {
+      setWorkflowState("active");
+    } else if (sessionState === "inactive" && workflowState === "active") {
+      // Session fermée proprement
+      setWorkflowState("terminated");
+    }
+  }, [sessionState, workflowState]);
+
   // ─────────────────────────────────────────────────────────────────────
-  // 🎮 Handlers pour boutons (synchronisés avec HeyGen)
+  // 🎮 Handlers
   // ─────────────────────────────────────────────────────────────────────
-  const demarrerDiscussion = async () => {
-    try {
-      setDiscussion(["🔄 Connexion à l'avatar HeyGen en cours..."]);
-      await startSession();
-      setDiscussion((prev) => [
-        ...prev,
-        "✅ Avatar connecté ! Vous pouvez parler, Anastasia vous écoute.",
-      ]);
-      setEtatDiscussion("active");
-    } catch (err) {
-      setDiscussion((prev) => [
-        ...prev,
-        "❌ Erreur : Impossible de démarrer la session.",
-      ]);
-    }
+  const handleDiscuter = async () => {
+    setWorkflowState("active");
+    await startSession();
   };
 
-  const fairePause = () => {
-    if (etatDiscussion === "active") {
-      setDiscussion((prev) => [...prev, "⏸️ Discussion en pause."]);
-      setEtatDiscussion("pause");
-    }
+  const handleTerminer = async () => {
+    console.log("🛑 Fermeture propre de la session HeyGen...");
+    await stopSession();
+    // workflowState passera à "terminated" via useEffect
   };
 
-  const reprendreDiscussion = () => {
-    if (etatDiscussion === "pause") {
-      setDiscussion((prev) => [...prev, "▶️ Discussion reprise."]);
-      setEtatDiscussion("active");
-    }
+  const handleAjouterPDF = () => {
+    console.log("📎 Ajout de PDF");
+    // Logique d'ajout de PDF
   };
 
-  const stopperDiscussion = async () => {
-    if (etatDiscussion === "pause") {
-      setDiscussion((prev) => [...prev, "🛑 Arrêt de la session HeyGen..."]);
-      await stopSession();
-      setDiscussion((prev) => [...prev, "✅ Session arrêtée."]);
-      setEtatDiscussion("stopped");
-    }
+  const handleFinaliser = () => {
+    console.log("✅ Finalisation");
+    if (onFinaliser) onFinaliser();
   };
 
-  const canFinalize = etatDiscussion === "stopped";
+  const handleSauvegarder = () => {
+    console.log("💾 Sauvegarde");
+    if (onSauvegarder) onSauvegarder();
+  };
+
+  const handleAbandonner = () => {
+    console.log("❌ Abandon");
+    if (onAbandonner) onAbandonner();
+  };
 
   // ─────────────────────────────────────────────────────────────────────
   // 🎨 Render
   // ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col items-center gap-6 w-full max-w-5xl mx-auto px-4 py-6">
-      {/* ========== En-tête ========== */}
+    <div className="flex flex-col items-center gap-6 w-full max-w-5xl mx-auto px-4 py-2">
+      {/* En-tête */}
       <div className="text-center">
         <h1 className="text-3xl font-bold text-[var(--nc-blue)] mb-2">
           {title}
         </h1>
-        {subtitle && (
-          <p className="text-gray-600 text-sm">{subtitle}</p>
-        )}
+        {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
       </div>
 
-      {/* ========== Zone Avatar Vidéo (Centré, 16:9) ========== */}
+      {/* Zone Avatar Vidéo */}
       <div className="w-full max-w-3xl">
         <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
-          {/* État Inactif : Image de prévisualisation */}
-          {sessionState === "inactive" && !isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-              <div className="relative w-full h-full">
-                {/* Image de l'avatar */}
-                <img
-                  src={avatarPreviewImage}
-                  alt="Avatar preview"
-                  className="w-full h-full object-cover"
-                />
-                {/* Overlay avec texte */}
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                  <div className="text-center text-white px-4">
-                    <p className="text-xl font-medium mb-2">
-                      Cliquez sur &quot;Discuter&quot; pour démarrer
-                    </p>
-                    <p className="text-sm text-gray-300">
-                      L'avatar Anastasia sera prêt à vous écouter
-                    </p>
+          {/* État Inactif / Terminé : Image de prévisualisation */}
+          {(workflowState === "inactive" || workflowState === "terminated") &&
+            !isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+                <div className="relative w-full h-full">
+                  <img
+                    src={avatarPreviewImage}
+                    alt="Avatar preview"
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                    <div className="text-center text-white px-4">
+                      {workflowState === "inactive" && (
+                        <>
+                          <p className="text-xl font-medium mb-2">
+                            Cliquez sur &quot;Discuter&quot; pour démarrer
+                          </p>
+                          <p className="text-sm text-gray-300">
+                            L'avatar Anastasia sera prêt à vous écouter
+                          </p>
+                        </>
+                      )}
+                      {workflowState === "terminated" && (
+                        <>
+                          <p className="text-xl font-medium mb-2">
+                            ✅ Discussion terminée
+                          </p>
+                          <p className="text-sm text-gray-300">
+                            Session fermée proprement
+                          </p>
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* État Loading */}
+          {/* Loading */}
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
               <div className="text-center text-white">
@@ -164,7 +172,7 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* État Error */}
+          {/* Error */}
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-red-900/20">
               <div className="text-center text-white px-4">
@@ -175,170 +183,145 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Vidéo de l'avatar (Session active) */}
+          {/* Vidéo active */}
           <video
             ref={videoRef}
             autoPlay
             playsInline
             className={`w-full h-full object-cover transition-opacity duration-500 ${
-              sessionState === "active" ? "opacity-100" : "opacity-0"
+              workflowState === "active" ? "opacity-100" : "opacity-0"
             }`}
           />
 
-          {/* Indicateur "En train de parler" */}
-          {isTalking && sessionState === "active" && (
+          {/* Indicateurs */}
+          {isTalking && workflowState === "active" && (
             <div className="absolute bottom-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 animate-pulse">
               <span>🎤</span>
               Anastasia parle...
             </div>
           )}
 
-          {/* Indicateur "En écoute" */}
-          {sessionState === "active" && !isTalking && (
+          {workflowState === "active" && !isTalking && (
             <div className="absolute bottom-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
               🎧 En écoute
             </div>
           )}
         </div>
 
-        {/* Barre de boutons sous la vidéo */}
-        <div className="flex gap-2 justify-center flex-wrap mt-4">
-          {etatDiscussion === "init" && (
-            <button
-              onClick={demarrerDiscussion}
-              disabled={isLoading}
-              className="bg-[var(--nc-blue)] text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-[var(--nc-cyan)] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-            >
-              {isLoading ? "Connexion..." : "Discuter"}
-            </button>
-          )}
-
-          {etatDiscussion === "active" && (
-            <button
-              onClick={fairePause}
-              className="bg-orange-500 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-orange-600 transition shadow-md"
-            >
-              Faire pause
-            </button>
-          )}
-
-          {etatDiscussion === "pause" && (
+        {/* Boutons selon l'état */}
+        <div className="flex gap-3 justify-center flex-wrap mt-4">
+          {/* État INACTIF */}
+          {workflowState === "inactive" && (
             <>
               <button
-                onClick={reprendreDiscussion}
-                className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-green-700 transition shadow-md"
+                onClick={handleDiscuter}
+                disabled={isLoading}
+                className="bg-[var(--nc-blue)] text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-[var(--nc-cyan)] transition shadow-md disabled:opacity-50"
               >
-                Reprendre
+                {isLoading ? "Connexion..." : "Discuter"}
               </button>
               <button
-                onClick={stopperDiscussion}
-                className="bg-red-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-red-700 transition shadow-md"
+                onClick={() => window.history.back()}
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-700 transition shadow-md"
               >
-                Stopper
+                Quitter
               </button>
             </>
           )}
 
-          {etatDiscussion === "stopped" && (
+          {/* État ACTIVE (session ouverte) */}
+          {workflowState === "active" && (
             <>
               <button
-                onClick={onAbandonner}
-                className="bg-gray-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-gray-700 transition shadow-md"
+                onClick={handleTerminer}
+                className="bg-red-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-red-700 transition shadow-md"
+              >
+                Terminer
+              </button>
+              <button
+                onClick={() => window.history.back()}
+                className="bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-700 transition shadow-md"
+              >
+                Quitter
+              </button>
+            </>
+          )}
+
+          {/* État TERMINÉ (session fermée) */}
+          {workflowState === "terminated" && (
+            <>
+              <button
+                onClick={handleAjouterPDF}
+                className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-purple-700 transition shadow-md"
+              >
+                Ajouter PDF
+              </button>
+              <button
+                onClick={handleFinaliser}
+                className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-md"
+              >
+                Finaliser
+              </button>
+              <button
+                onClick={handleAbandonner}
+                className="bg-gray-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-700 transition shadow-md"
               >
                 Abandonner
               </button>
               <button
-                onClick={onFinaliser}
-                disabled={!canFinalize}
-                className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
-              >
-                Finaliser
-              </button>
-            </>
-          )}
-
-          {etatDiscussion === "finalized" && (
-            <>
-              <button className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-purple-700 transition shadow-md">
-                Ajouter PDF
-              </button>
-              <button
-                onClick={onSauvegarder}
-                className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-green-700 transition shadow-md"
+                onClick={handleSauvegarder}
+                className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-green-700 transition shadow-md"
               >
                 Sauvegarder
               </button>
             </>
           )}
-
-          {etatDiscussion === "init" && (
-            <button
-              onClick={() => window.history.back()}
-              className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-900 transition shadow-md"
-            >
-              Quitter
-            </button>
-          )}
         </div>
       </div>
 
-      {/* ========== Fil de discussion (Centré sous l'avatar) ========== */}
+      {/* Fil de discussion avec transcription */}
       <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl p-6 shadow-lg">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
           <span>📝</span> Fil de discussion
         </h3>
         <div className="max-h-96 overflow-y-auto">
-          {discussion.length === 0 ? (
+          {chatHistory.length === 0 ? (
             <p className="text-gray-400 text-center py-8">
-              Le fil de discussion apparaîtra ici.
+              {workflowState === "inactive"
+                ? "La conversation apparaîtra ici en temps réel."
+                : workflowState === "terminated"
+                ? "Discussion terminée. Historique préservé."
+                : "La conversation apparaîtra ici en temps réel."}
             </p>
           ) : (
             <div className="space-y-3">
-              {discussion.map((msg, idx) => (
+              {chatHistory.map((msg, idx) => (
                 <div
                   key={idx}
-                  className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 border-l-4 border-[var(--nc-cyan)] hover:bg-gray-100 transition"
+                  className={`p-3 rounded-lg text-sm ${
+                    msg.role === "user"
+                      ? "bg-blue-50 border-l-4 border-blue-500 ml-4"
+                      : "bg-green-50 border-l-4 border-green-500 mr-4"
+                  }`}
                 >
-                  {msg}
+                  <div className="flex items-start gap-2">
+                    <span className="text-lg">
+                      {msg.role === "user" ? "👤" : "🤖"}
+                    </span>
+                    <div className="flex-1">
+                      <p className="font-medium text-xs text-gray-500 mb-1">
+                        {msg.role === "user" ? "Vous" : "Anastasia"}
+                      </p>
+                      <p className="text-gray-800">{msg.content}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
+              <div ref={chatEndRef} />
             </div>
           )}
         </div>
       </div>
-
-      {/* ========== Confirmation abandon ========== */}
-      {showConfirmation && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white p-6 rounded-xl shadow-2xl max-w-md">
-            <p className="text-lg font-medium text-gray-800 mb-6">
-              Vous êtes sur le point d'abandonner cette tâche, confirmez-vous
-              votre souhait (Oui/Non) ?
-            </p>
-            <div className="flex gap-4">
-              <button
-                onClick={() => onConfirmerAbandon(true)}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition"
-              >
-                Oui
-              </button>
-              <button
-                onClick={() => onConfirmerAbandon(false)}
-                className="flex-1 bg-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-400 transition"
-              >
-                Non
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ========== Message sauvegarde ========== */}
-      {showSavedMessage && (
-        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-6 py-3 rounded-lg shadow-lg z-50 animate-bounce">
-          ✅ Sauvegarde de votre tâche effectuée
-        </div>
-      )}
     </div>
   );
 }
