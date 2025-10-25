@@ -1,4 +1,3 @@
-// components/ui/InteractiveBlock.tsx
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -20,7 +19,7 @@ export default function InteractiveBlock({
   title,
   subtitle,
   avatarPreviewImage,
-  knowledgeId,    // <-- récupérer ici dans params
+  knowledgeId,
   avatarName,
   voiceRate,
   onFinaliser,
@@ -36,13 +35,17 @@ export default function InteractiveBlock({
     chatHistory,
     startSession,
     stopSession,
+    interrupt,
+    startInitialSpeak,
   } = useNeoAvatar({
     knowledgeId,
     avatarName,
     voiceRate,
+    // Ici tu peux aussi passer initialMessage, si tu veux un message par défaut
+    initialMessage: "Bonjour ! Je suis là pour vous assister.",
   });
 
-  const [workflowState, setWorkflowState] = React.useState<
+  const [workflowState, setWorkflowState] = useState<
     "inactive" | "active" | "terminated"
   >("inactive");
 
@@ -76,8 +79,12 @@ export default function InteractiveBlock({
   };
 
   const handleTerminer = async () => {
-    console.log("🛑 Fermeture propre de la session HeyGen...");
     await stopSession();
+    setWorkflowState("terminated");
+  };
+
+  const handleInterrompre = async () => {
+    await interrupt();
   };
 
   const handleAjouterPDF = () => {
@@ -85,34 +92,26 @@ export default function InteractiveBlock({
   };
 
   const handleFinaliser = () => {
-    console.log("✅ Finalisation");
     if (onFinaliser) onFinaliser();
   };
 
   const handleSauvegarder = () => {
-    console.log("💾 Sauvegarde");
     if (onSauvegarder) onSauvegarder();
   };
 
   const handleAbandonner = () => {
-    console.log("❌ Abandon");
     if (onAbandonner) onAbandonner();
   };
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2">
-      {/* En-tête compact */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">
-          {title}
-        </h1>
+        <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">{title}</h1>
         {subtitle && <p className="text-gray-600 text-xs">{subtitle}</p>}
       </div>
 
-      {/* Zone Avatar Vidéo avec boutons en overlay */}
       <div className="w-full max-w-3xl">
         <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
-          {/* État Inactif / Terminé */}
           {(workflowState === "inactive" || workflowState === "terminated") &&
             !isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
@@ -130,7 +129,7 @@ export default function InteractiveBlock({
                             Cliquez sur &quot;Discuter&quot; pour démarrer
                           </p>
                           <p className="text-sm text-gray-300">
-                            L'avatar Anastasia sera prêt à vous écouter
+                            L'avatar sera prêt à vous écouter
                           </p>
                         </>
                       )}
@@ -150,7 +149,6 @@ export default function InteractiveBlock({
               </div>
             )}
 
-          {/* Loading */}
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
               <div className="text-center text-white">
@@ -160,7 +158,6 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Error */}
           {error && (
             <div className="absolute inset-0 flex items-center justify-center bg-red-900/20">
               <div className="text-center text-white px-4">
@@ -171,7 +168,6 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Vidéo active */}
           <video
             ref={videoRef}
             autoPlay
@@ -181,11 +177,10 @@ export default function InteractiveBlock({
             }`}
           />
 
-          {/* Indicateurs */}
           {isTalking && workflowState === "active" && (
             <div className="absolute top-4 left-4 bg-green-500/90 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 animate-pulse backdrop-blur-sm">
               <span>🎤</span>
-              Anastasia parle...
+              L'avatar parle...
             </div>
           )}
 
@@ -197,7 +192,6 @@ export default function InteractiveBlock({
 
           {/* BOUTONS EN OVERLAY */}
 
-          {/* Boutons état INACTIF */}
           {workflowState === "inactive" && !isLoading && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
               <div className="flex gap-3 justify-center">
@@ -217,21 +211,30 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Boutons état ACTIVE */}
           {workflowState === "active" && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
-              <div className="flex justify-center">
+              <div className="flex justify-center gap-3">
                 <button
                   onClick={handleTerminer}
                   className="bg-red-600 text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-lg"
                 >
                   Terminer
                 </button>
+                {/* Nouveau bouton interruption */}
+                <button
+                  onClick={handleInterrompre}
+                  disabled={!isTalking}
+                  className={`bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
+                    !isTalking ? "opacity-50 cursor-not-allowed" : ""
+                  }`}
+                  title="Interrompre la parole de l'avatar"
+                >
+                  Interrompre l’avatar
+                </button>
               </div>
             </div>
           )}
 
-          {/* Boutons état TERMINÉ */}
           {workflowState === "terminated" && !isLoading && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 backdrop-blur-sm">
               <div className="flex gap-2 justify-center flex-wrap">
@@ -265,9 +268,8 @@ export default function InteractiveBlock({
         </div>
       </div>
 
-      {/* Fil de discussion - RÉDUIT À 35vh + SANS NOMS */}
+      {/* Fil de discussion */}
       <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
-        {/* Header compact */}
         <div className="px-4 py-2 border-b border-gray-200 flex-shrink-0">
           <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
             <span>💬</span>
@@ -275,7 +277,6 @@ export default function InteractiveBlock({
           </h3>
         </div>
 
-        {/* Conteneur de messages */}
         <div className="flex-1 overflow-y-auto p-4">
           {chatHistory.length === 0 ? (
             <p className="text-gray-400 text-center py-6 text-xs">
@@ -301,7 +302,6 @@ export default function InteractiveBlock({
                         : "bg-green-100 border-l-4 border-green-500"
                     }`}
                   >
-                    {/* ✅ SUPPRESSION DES NOMS - Texte uniquement */}
                     <p className="text-gray-800 text-sm leading-relaxed">
                       {msg.content}
                     </p>
