@@ -13,6 +13,7 @@ type Props = {
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
+  initialMessage?: string;
 };
 
 export default function InteractiveBlock({
@@ -25,6 +26,7 @@ export default function InteractiveBlock({
   onFinaliser,
   onSauvegarder,
   onAbandonner,
+  initialMessage = "Bonjour, je suis prêt à vous aider.",
 }: Props) {
   const {
     sessionState,
@@ -52,6 +54,18 @@ export default function InteractiveBlock({
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
+  // Démarre la session + parle le message d'entrée
+  useEffect(() => {
+    async function start() {
+      await startSession();
+      await startInitialSpeak(initialMessage);
+      setTimeout(() => {
+        startInitialSpeak(initialMessage);
+      }, 500); // 500ms d’attente
+    }
+    start();
+  }, [knowledgeId]); //avec knowledgeId, si change
+
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
@@ -73,9 +87,10 @@ export default function InteractiveBlock({
     }
   }, [sessionState, workflowState]);
 
+  // Gère le bouton "Discuter"
   const handleDiscuter = async () => {
-    setWorkflowState("active");
     await startSession();
+    await startInitialSpeak(initialMessage);
   };
 
   const handleTerminer = async () => {
@@ -227,7 +242,7 @@ export default function InteractiveBlock({
                   className={`bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
                     !isTalking ? "opacity-50 cursor-not-allowed" : ""
                   }`}
-                  title="Interrompre la parole de l'avatar"
+                  title="Interrompre la parole"
                 >
                   Interrompre l’avatar
                 </button>
