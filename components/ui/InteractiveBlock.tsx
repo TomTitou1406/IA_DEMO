@@ -1,16 +1,16 @@
 // components/ui/InteractiveBlock.tsx
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 type Props = {
   title: string;
   subtitle?: string;
   avatarPreviewImage?: string;
-  knowledgeId?: string; // ← Nouveau paramètre
-  avatarName?: string;  // ← Optionnel : pour changer l'avatar
-  voiceRate?: number;   // ← Optionnel : pour ajuster la vitesse
+  knowledgeId?: string;  // <-- il faut déclarer ici
+  avatarName?: string;
+  voiceRate?: number;
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
@@ -19,26 +19,28 @@ type Props = {
 export default function InteractiveBlock({
   title,
   subtitle,
-  avatarPreviewImage = "/avatars/anastasia_16_9_preview.webp",
+  avatarPreviewImage,
+  knowledgeId,    // <-- récupérer ici dans params
+  avatarName,
+  voiceRate,
   onFinaliser,
   onSauvegarder,
   onAbandonner,
 }: Props) {
-    // 🆕 PASSAGE DE LA CONFIG AU HOOK
-    const {
-      sessionState,
-      stream,
-      isLoading,
-      error,
-      isTalking,
-      chatHistory,
-      startSession,
-      stopSession,
-    } = useNeoAvatar({
-      knowledgeId,
-      avatarName,
-      voiceRate,
-    });
+  const {
+    sessionState,
+    stream,
+    isLoading,
+    error,
+    isTalking,
+    chatHistory,
+    startSession,
+    stopSession,
+  } = useNeoAvatar({
+    knowledgeId,   // <-- passer en argument
+    avatarName,
+    voiceRate,
+  });
 
   const [workflowState, setWorkflowState] = React.useState<
     "inactive" | "active" | "terminated"
