@@ -8,7 +8,7 @@ type Props = {
   title: string;
   subtitle?: string;
   avatarPreviewImage?: string;
-  knowledgeId?: string;  // <-- il faut déclarer ici
+  knowledgeId?: string;
   avatarName?: string;
   voiceRate?: number;
   onFinaliser?: () => void;
@@ -37,7 +37,7 @@ export default function InteractiveBlock({
     startSession,
     stopSession,
   } = useNeoAvatar({
-    knowledgeId,   // <-- passer en argument
+    knowledgeId,
     avatarName,
     voiceRate,
   });
