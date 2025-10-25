@@ -20,6 +20,14 @@ export interface ChatMessage {
   timestamp: Date;
 }
 
+// 🆕 Interface pour la configuration du hook
+export interface UseNeoAvatarConfig {
+  knowledgeId?: string;
+  avatarName?: string;
+  voiceRate?: number;
+  language?: string;
+}
+
 interface UseNeoAvatarReturn {
   sessionState: SessionState;
   stream: MediaStream | null;
@@ -27,7 +35,6 @@ interface UseNeoAvatarReturn {
   error: string | null;
   isTalking: boolean;
   chatHistory: ChatMessage[];
-
   startSession: () => Promise<void>;
   stopSession: () => Promise<void>;
 }
@@ -36,7 +43,7 @@ interface UseNeoAvatarReturn {
 // Hook Principal
 // ========================================================================
 
-export function useNeoAvatar(): UseNeoAvatarReturn {
+export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   // États
   const [sessionState, setSessionState] = useState<SessionState>("inactive");
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -57,7 +64,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
-    
+
     if (currentSenderRef.current === "user") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -81,7 +88,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
-    
+
     if (currentSenderRef.current === "assistant") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -183,60 +190,61 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   // ─────────────────────────────────────────────────────────────────────
 
   const startSession = useCallback(async () => {
-  if (sessionState === "loading" || sessionState === "active") {
-    console.warn("⚠️ Session déjà en cours");
-    return;
-  }
+    if (sessionState === "loading" || sessionState === "active") {
+      console.warn("⚠️ Session déjà en cours");
+      return;
+    }
 
-  try {
-    setSessionState("loading");
-    setError(null);
-    setChatHistory([]);
-    currentSenderRef.current = null;
+    try {
+      setSessionState("loading");
+      setError(null);
+      setChatHistory([]);
+      currentSenderRef.current = null;
 
-    console.log("🔄 Récupération du token...");
-    const token = await fetchAccessToken();
+      console.log("🔄 Récupération du token...");
+      const token = await fetchAccessToken();
 
-    console.log("🔄 Initialisation de l'avatar...");
-    const avatar = await initializeAvatar(token);
+      console.log("🔄 Initialisation de l'avatar...");
+      const avatar = await initializeAvatar(token);
 
-    // 🔥 CONFIGURATION AVEC KNOWLEDGE ID (CORRIGÉE)
-    const avatarConfig: StartAvatarRequest = {
-      quality: AvatarQuality.High,
-      avatarName: "Anastasia_Chair_Sitting_public",
-      language: "fr",
-      voice: {
-        rate: 1.2,
-        emotion: VoiceEmotion.FRIENDLY,
-      },
-      knowledgeId: "19df36d7a9354a1aa664c34686256df1", // ← CORRIGÉ
-    };
+      // 🆕 CONFIGURATION DYNAMIQUE (avec valeurs par défaut)
+      const avatarConfig: StartAvatarRequest = {
+        quality: AvatarQuality.High,
+        avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
+        language: config?.language || "fr",
+        voice: {
+          rate: config?.voiceRate || 1.2,
+          emotion: VoiceEmotion.FRIENDLY,
+        },
+        knowledgeId: config?.knowledgeId || undefined,
+      };
 
-    // 🔥 LOG POUR VÉRIFIER LA CONFIG
-    console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
-    console.log("🔥 Knowledge ID:", avatarConfig.knowledgeId);
+      // 🔥 LOG POUR VÉRIFIER LA CONFIG
+      console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
+      if (avatarConfig.knowledgeId) {
+        console.log("🔥 Knowledge ID:", avatarConfig.knowledgeId);
+      } else {
+        console.log("ℹ️ Aucune Knowledge Base (conversation générale)");
+      }
 
-    console.log("🔄 Démarrage de la session avec Knowledge Base...");
-    const sessionData = await avatar.createStartAvatar(avatarConfig);
+      console.log("🔄 Démarrage de la session...");
+      const sessionData = await avatar.createStartAvatar(avatarConfig);
 
-    sessionIdRef.current = sessionData.session_id;
+      sessionIdRef.current = sessionData.session_id;
 
-    console.log("✅ Session démarrée:", sessionData.session_id);
-    console.log("✅ Knowledge ID appliquée:", avatarConfig.knowledgeId);
-    
-    setSessionState("active");
+      console.log("✅ Session démarrée:", sessionData.session_id);
+      setSessionState("active");
 
-    console.log("🎤 Activation du micro...");
-    await avatar.startVoiceChat();
-    
-    console.log("✅ Voice Chat actif - l'utilisateur peut parler");
-  } catch (err) {
-    console.error("❌ Erreur démarrage:", err);
-    setError(err instanceof Error ? err.message : "Erreur inconnue");
-    setSessionState("error");
-  }
-}, [sessionState, fetchAccessToken, initializeAvatar]);
+      console.log("🎤 Activation du micro...");
+      await avatar.startVoiceChat();
 
+      console.log("✅ Voice Chat actif - l'utilisateur peut parler");
+    } catch (err) {
+      console.error("❌ Erreur démarrage:", err);
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
+      setSessionState("error");
+    }
+  }, [sessionState, config, fetchAccessToken, initializeAvatar]);
 
   // ─────────────────────────────────────────────────────────────────────
   // Arrêter la session
