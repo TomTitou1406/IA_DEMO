@@ -3,7 +3,7 @@
 "use client";
 
 import React, { useEffect, useRef } from "react";
-import { useNeoAvatar } from "@/app/(neo)/hooks/useNeoAvatar";
+import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 type EtatDiscussion = "init" | "active" | "pause" | "stopped" | "finalized";
 
