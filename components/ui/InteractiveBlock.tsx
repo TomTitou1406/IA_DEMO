@@ -69,7 +69,6 @@ export default function InteractiveBlock({
     if (sessionState === "active") {
       setWorkflowState("active");
     } else if (sessionState === "inactive" && workflowState === "active") {
-      // Session fermée proprement
       setWorkflowState("terminated");
     }
   }, [sessionState, workflowState]);
@@ -85,12 +84,10 @@ export default function InteractiveBlock({
   const handleTerminer = async () => {
     console.log("🛑 Fermeture propre de la session HeyGen...");
     await stopSession();
-    // workflowState passera à "terminated" via useEffect
   };
 
   const handleAjouterPDF = () => {
     console.log("📎 Ajout de PDF");
-    // Logique d'ajout de PDF
   };
 
   const handleFinaliser = () => {
@@ -210,7 +207,7 @@ export default function InteractiveBlock({
 
         {/* Boutons selon l'état */}
         <div className="flex gap-3 justify-center flex-wrap mt-4">
-          {/* État INACTIF */}
+          {/* État INACTIF - Boutons : Discuter + Quitter */}
           {workflowState === "inactive" && (
             <>
               <button
@@ -229,25 +226,17 @@ export default function InteractiveBlock({
             </>
           )}
 
-          {/* État ACTIVE (session ouverte) */}
+          {/* État ACTIVE (session ouverte) - Bouton : Terminer SEULEMENT */}
           {workflowState === "active" && (
-            <>
-              <button
-                onClick={handleTerminer}
-                className="bg-red-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-red-700 transition shadow-md"
-              >
-                Terminer
-              </button>
-              <button
-                onClick={() => window.history.back()}
-                className="bg-gray-600 text-white px-6 py-3 rounded-lg text-sm font-medium hover:bg-gray-700 transition shadow-md"
-              >
-                Quitter
-              </button>
-            </>
+            <button
+              onClick={handleTerminer}
+              className="bg-red-600 text-white px-8 py-3 rounded-lg text-base font-medium hover:bg-red-700 transition shadow-md"
+            >
+              Terminer
+            </button>
           )}
 
-          {/* État TERMINÉ (session fermée) */}
+          {/* État TERMINÉ (session fermée) - Boutons : PDF + Finaliser + Abandonner + Sauvegarder */}
           {workflowState === "terminated" && (
             <>
               <button
@@ -279,12 +268,13 @@ export default function InteractiveBlock({
         </div>
       </div>
 
-      {/* Fil de discussion avec transcription */}
+      {/* Fil de discussion avec transcription - HAUTEUR FIXE */}
       <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl p-6 shadow-lg">
         <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
           <span>📝</span> Fil de discussion
         </h3>
-        <div className="max-h-96 overflow-y-auto">
+        {/* Conteneur avec hauteur fixe et scroll */}
+        <div className="h-96 overflow-y-auto">
           {chatHistory.length === 0 ? (
             <p className="text-gray-400 text-center py-8">
               {workflowState === "inactive"
@@ -298,22 +288,23 @@ export default function InteractiveBlock({
               {chatHistory.map((msg, idx) => (
                 <div
                   key={idx}
-                  className={`p-3 rounded-lg text-sm ${
-                    msg.role === "user"
-                      ? "bg-blue-50 border-l-4 border-blue-500 ml-4"
-                      : "bg-green-50 border-l-4 border-green-500 mr-4"
+                  className={`flex ${
+                    msg.role === "user" ? "justify-end" : "justify-start"
                   }`}
                 >
-                  <div className="flex items-start gap-2">
-                    <span className="text-lg">
-                      {msg.role === "user" ? "👤" : "🤖"}
-                    </span>
-                    <div className="flex-1">
-                      <p className="font-medium text-xs text-gray-500 mb-1">
-                        {msg.role === "user" ? "Vous" : "Anastasia"}
-                      </p>
-                      <p className="text-gray-800">{msg.content}</p>
-                    </div>
+                  <div
+                    className={`max-w-[75%] p-3 rounded-lg ${
+                      msg.role === "user"
+                        ? "bg-blue-100 border-l-4 border-blue-500"
+                        : "bg-green-100 border-l-4 border-green-500"
+                    }`}
+                  >
+                    <p className="font-medium text-xs text-gray-600 mb-1">
+                      {msg.role === "user" ? "Vous" : "Anastasia"}
+                    </p>
+                    <p className="text-gray-800 text-sm whitespace-pre-wrap break-words">
+                      {msg.content}
+                    </p>
                   </div>
                 </div>
               ))}
