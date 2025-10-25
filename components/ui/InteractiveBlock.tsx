@@ -10,6 +10,7 @@ type EtatDiscussion = "init" | "active" | "pause" | "stopped" | "finalized";
 type Props = {
   title: string;
   subtitle?: string;
+  avatarPreviewImage?: string; // 🆕 Image de prévisualisation (avant démarrage)
   discussion: string[];
   etatDiscussion: EtatDiscussion;
   setEtatDiscussion: React.Dispatch<React.SetStateAction<EtatDiscussion>>;
@@ -25,6 +26,7 @@ type Props = {
 export default function InteractiveBlock({
   title,
   subtitle,
+  avatarPreviewImage = "/avatars/Anastasia.png", // Image par défaut
   discussion,
   etatDiscussion,
   setEtatDiscussion,
@@ -88,7 +90,6 @@ export default function InteractiveBlock({
     if (etatDiscussion === "active") {
       setDiscussion((prev) => [...prev, "⏸️ Discussion en pause."]);
       setEtatDiscussion("pause");
-      // Note : On ne coupe pas la session HeyGen, juste l'état UI
     }
   };
 
@@ -114,9 +115,9 @@ export default function InteractiveBlock({
   // 🎨 Render
   // ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col gap-6 w-full max-w-7xl mx-auto">
+    <div className="flex flex-col items-center gap-6 w-full max-w-5xl mx-auto px-4 py-6">
       {/* ========== En-tête ========== */}
-      <div>
+      <div className="text-center">
         <h1 className="text-3xl font-bold text-[var(--nc-blue)] mb-2">
           {title}
         </h1>
@@ -125,174 +126,178 @@ export default function InteractiveBlock({
         )}
       </div>
 
-      {/* ========== Zone Avatar + Fil de discussion ========== */}
-      <div className="flex gap-6 items-start">
-        {/* Colonne Gauche : Avatar Vidéo */}
-        <div className="w-1/2 flex flex-col gap-4">
-          {/* Zone Vidéo Avatar */}
-          <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)]">
-            {sessionState === "inactive" && !isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                <div className="text-center text-white px-4">
-                  <div className="text-6xl mb-4">🤖</div>
-                  <p className="text-lg font-medium">
-                    Cliquez sur "Discuter" pour démarrer
-                  </p>
-                  <p className="text-sm text-gray-400 mt-2">
-                    L'avatar Anastasia sera prêt à vous écouter
-                  </p>
+      {/* ========== Zone Avatar Vidéo (Centré, 16:9) ========== */}
+      <div className="w-full max-w-3xl">
+        <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
+          {/* État Inactif : Image de prévisualisation */}
+          {sessionState === "inactive" && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+              <div className="relative w-full h-full">
+                {/* Image de l'avatar */}
+                <img
+                  src={avatarPreviewImage}
+                  alt="Avatar preview"
+                  className="w-full h-full object-cover"
+                />
+                {/* Overlay avec texte */}
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="text-center text-white px-4">
+                    <p className="text-xl font-medium mb-2">
+                      Cliquez sur &quot;Discuter&quot; pour démarrer
+                    </p>
+                    <p className="text-sm text-gray-300">
+                      L'avatar Anastasia sera prêt à vous écouter
+                    </p>
+                  </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
-                <div className="text-center text-white">
-                  <div className="animate-spin text-5xl mb-4">⏳</div>
-                  <p className="text-lg">Connexion en cours...</p>
-                </div>
+          {/* État Loading */}
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
+              <div className="text-center text-white">
+                <div className="animate-spin text-5xl mb-4">⏳</div>
+                <p className="text-lg">Connexion en cours...</p>
               </div>
-            )}
+            </div>
+          )}
 
-            {error && (
-              <div className="absolute inset-0 flex items-center justify-center bg-red-900/20">
-                <div className="text-center text-white px-4">
-                  <div className="text-5xl mb-4">❌</div>
-                  <p className="text-lg font-medium">Erreur</p>
-                  <p className="text-sm text-red-300 mt-2">{error}</p>
-                </div>
+          {/* État Error */}
+          {error && (
+            <div className="absolute inset-0 flex items-center justify-center bg-red-900/20">
+              <div className="text-center text-white px-4">
+                <div className="text-5xl mb-4">❌</div>
+                <p className="text-lg font-medium">Erreur</p>
+                <p className="text-sm text-red-300 mt-2">{error}</p>
               </div>
-            )}
+            </div>
+          )}
 
-            {/* Vidéo de l'avatar */}
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              className={`w-full h-full object-cover ${
-                sessionState === "active" ? "opacity-100" : "opacity-0"
-              }`}
-            />
+          {/* Vidéo de l'avatar (Session active) */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            className={`w-full h-full object-cover transition-opacity duration-500 ${
+              sessionState === "active" ? "opacity-100" : "opacity-0"
+            }`}
+          />
 
-            {/* Indicateur "En train de parler" */}
-            {isTalking && sessionState === "active" && (
-              <div className="absolute bottom-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                <span className="animate-pulse">🎤</span>
-                Anastasia parle...
-              </div>
-            )}
+          {/* Indicateur "En train de parler" */}
+          {isTalking && sessionState === "active" && (
+            <div className="absolute bottom-4 left-4 bg-green-500 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 animate-pulse">
+              <span>🎤</span>
+              Anastasia parle...
+            </div>
+          )}
 
-            {/* Indicateur Session Active */}
-            {sessionState === "active" && !isTalking && (
-              <div className="absolute bottom-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
-                🎧 En écoute
-              </div>
-            )}
-          </div>
+          {/* Indicateur "En écoute" */}
+          {sessionState === "active" && !isTalking && (
+            <div className="absolute bottom-4 left-4 bg-blue-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+              🎧 En écoute
+            </div>
+          )}
+        </div>
 
-          {/* Barre de boutons de contrôle */}
-          <div className="flex gap-2 justify-center flex-wrap">
-            {/* Colonne 1: Discuter, Faire pause, Reprendre */}
-            {etatDiscussion === "init" && (
-              <button
-                onClick={demarrerDiscussion}
-                disabled={isLoading}
-                className="bg-[var(--nc-blue)] text-white px-4 py-2 rounded text-sm font-medium hover:bg-[var(--nc-cyan)] transition disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {isLoading ? "Connexion..." : "Discuter"}
-              </button>
-            )}
+        {/* Barre de boutons sous la vidéo */}
+        <div className="flex gap-2 justify-center flex-wrap mt-4">
+          {etatDiscussion === "init" && (
+            <button
+              onClick={demarrerDiscussion}
+              disabled={isLoading}
+              className="bg-[var(--nc-blue)] text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-[var(--nc-cyan)] transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+            >
+              {isLoading ? "Connexion..." : "Discuter"}
+            </button>
+          )}
 
-            {etatDiscussion === "active" && (
-              <button
-                onClick={fairePause}
-                className="bg-orange-500 text-white px-4 py-2 rounded text-sm font-medium hover:bg-orange-600 transition"
-              >
-                Faire pause
-              </button>
-            )}
+          {etatDiscussion === "active" && (
+            <button
+              onClick={fairePause}
+              className="bg-orange-500 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-orange-600 transition shadow-md"
+            >
+              Faire pause
+            </button>
+          )}
 
-            {etatDiscussion === "pause" && (
+          {etatDiscussion === "pause" && (
+            <>
               <button
                 onClick={reprendreDiscussion}
-                className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 transition"
+                className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-green-700 transition shadow-md"
               >
                 Reprendre
               </button>
-            )}
-
-            {/* Colonne 2: Stopper / Abandonner */}
-            {etatDiscussion === "pause" && (
               <button
                 onClick={stopperDiscussion}
-                className="bg-red-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-red-700 transition"
+                className="bg-red-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-red-700 transition shadow-md"
               >
                 Stopper
               </button>
-            )}
+            </>
+          )}
 
-            {etatDiscussion === "stopped" && (
+          {etatDiscussion === "stopped" && (
+            <>
               <button
                 onClick={onAbandonner}
-                className="bg-gray-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-gray-700 transition"
+                className="bg-gray-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-gray-700 transition shadow-md"
               >
                 Abandonner
               </button>
-            )}
-
-            {/* Colonne 3: Ajouter PDF (finalized) */}
-            {etatDiscussion === "finalized" && (
-              <button className="bg-purple-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-purple-700 transition">
-                Ajouter PDF
-              </button>
-            )}
-
-            {/* Colonne 4: Quitter / Finaliser / Sauvegarder */}
-            {etatDiscussion === "init" && (
-              <button
-                onClick={() => window.history.back()}
-                className="bg-gray-800 text-white px-3 py-1.5 rounded text-sm whitespace-nowrap hover:bg-gray-900 transition"
-              >
-                Quitter
-              </button>
-            )}
-
-            {etatDiscussion === "stopped" && (
               <button
                 onClick={onFinaliser}
                 disabled={!canFinalize}
-                className="bg-blue-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-blue-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-blue-700 transition disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
               >
                 Finaliser
               </button>
-            )}
+            </>
+          )}
 
-            {etatDiscussion === "finalized" && (
+          {etatDiscussion === "finalized" && (
+            <>
+              <button className="bg-purple-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-purple-700 transition shadow-md">
+                Ajouter PDF
+              </button>
               <button
                 onClick={onSauvegarder}
-                className="bg-green-600 text-white px-4 py-2 rounded text-sm font-medium hover:bg-green-700 transition"
+                className="bg-green-600 text-white px-6 py-2.5 rounded-lg text-base font-medium hover:bg-green-700 transition shadow-md"
               >
                 Sauvegarder
               </button>
-            )}
-          </div>
-        </div>
+            </>
+          )}
 
-        {/* Colonne Droite : Fil de discussion */}
-        <div className="w-1/2 bg-white border border-gray-300 rounded-xl p-4 h-[600px] overflow-y-auto shadow-sm">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2">
-            📝 Fil de discussion
-          </h3>
+          {etatDiscussion === "init" && (
+            <button
+              onClick={() => window.history.back()}
+              className="bg-gray-800 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-900 transition shadow-md"
+            >
+              Quitter
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ========== Fil de discussion (Centré sous l'avatar) ========== */}
+      <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl p-6 shadow-lg">
+        <h3 className="text-lg font-semibold text-gray-800 mb-4 border-b pb-2 flex items-center gap-2">
+          <span>📝</span> Fil de discussion
+        </h3>
+        <div className="max-h-96 overflow-y-auto">
           {discussion.length === 0 ? (
-            <p className="text-gray-400 text-center mt-8">
+            <p className="text-gray-400 text-center py-8">
               Le fil de discussion apparaîtra ici.
             </p>
           ) : (
-            <div className="space-y-2">
+            <div className="space-y-3">
               {discussion.map((msg, idx) => (
                 <div
                   key={idx}
-                  className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 border-l-4 border-[var(--nc-cyan)]"
+                  className="bg-gray-50 p-3 rounded-lg text-sm text-gray-700 border-l-4 border-[var(--nc-cyan)] hover:bg-gray-100 transition"
                 >
                   {msg}
                 </div>
@@ -313,13 +318,13 @@ export default function InteractiveBlock({
             <div className="flex gap-4">
               <button
                 onClick={() => onConfirmerAbandon(true)}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded font-medium hover:bg-red-700 transition"
+                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg font-medium hover:bg-red-700 transition"
               >
                 Oui
               </button>
               <button
                 onClick={() => onConfirmerAbandon(false)}
-                className="flex-1 bg-gray-300 px-4 py-2 rounded font-medium hover:bg-gray-400 transition"
+                className="flex-1 bg-gray-300 px-4 py-2 rounded-lg font-medium hover:bg-gray-400 transition"
               >
                 Non
               </button>
