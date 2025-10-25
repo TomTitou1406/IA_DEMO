@@ -160,11 +160,14 @@ export default function RecruteurEntreprise() {
     // ────────────────────────────────────────────────────────────────
     <InteractiveBlock
       title="Présenter votre entreprise - Mode vocal"
-      subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-      avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
-      onFinaliser={handleFinaliser}
-      onSauvegarder={handleSauvegarder}
-      onAbandonner={handleAbandonner}
+        subtitle="L'IA vous assiste vocalement avec un avatar interactif."
+        avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
+        knowledgeId="19df36d7a9354a1aa664c34686256df1" // ID de ta base de connaissance
+        avatarName="Anastasia_Chair_Sitting_public" // nom de l'avatar (sert d'ID)
+        voiceRate={1.2} // vitesse de la voix
+        onFinaliser={handleFinaliser}
+        onSauvegarder={handleSauvegarder}
+        onAbandonner={handleAbandonner}
     />
   ) : (
     // ────────────────────────────────────────────────────────────────
