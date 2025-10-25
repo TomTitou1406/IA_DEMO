@@ -1,4 +1,4 @@
-// /app/(neo)/hooks/useNeoAvatar.ts
+// /app/(neo)/neo/hooks/useNeoAvatar.ts
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import StreamingAvatar, {
@@ -14,6 +14,12 @@ import StreamingAvatar, {
 
 type SessionState = "inactive" | "loading" | "active" | "error";
 
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
+
 interface UseNeoAvatarReturn {
   // États
   sessionState: SessionState;
@@ -21,6 +27,7 @@ interface UseNeoAvatarReturn {
   isLoading: boolean;
   error: string | null;
   isTalking: boolean;
+  chatHistory: ChatMessage[]; // 🆕 Historique des messages
 
   // Actions
   startSession: () => Promise<void>;
@@ -33,13 +40,13 @@ interface UseNeoAvatarReturn {
 
 const DEFAULT_AVATAR_CONFIG: StartAvatarRequest = {
   quality: AvatarQuality.High,
-  avatarName: "Anastasia_Grey_Shirt_public", // Avatar fixe
-  language: "fr", // Français par défaut
+  avatarName: "Anastasia_Grey_Shirt_public",
+  language: "fr",
   voice: {
-    rate: 1.0, // Vitesse normale
-    emotion: VoiceEmotion.FRIENDLY, // Émotion amicale
+    rate: 1.0,
+    emotion: VoiceEmotion.FRIENDLY,
   },
-  knowledgeBase: "", // Pas de base de connaissances pour l'instant
+  knowledgeBase: "",
 };
 
 // ========================================================================
@@ -54,9 +61,10 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isTalking, setIsTalking] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]); // 🆕
 
   // ─────────────────────────────────────────────────────────────────────
-  // Refs (ne provoquent pas de re-render)
+  // Refs
   // ─────────────────────────────────────────────────────────────────────
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
@@ -112,6 +120,32 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
         setIsTalking(false);
       });
 
+      // 🆕 Transcription de ce que dit l'avatar
+      avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, (event) => {
+        console.log("💬 Avatar dit:", event.detail.message);
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content: event.detail.message,
+            timestamp: new Date(),
+          },
+        ]);
+      });
+
+      // 🆕 Transcription de ce que dit l'utilisateur
+      avatar.on(StreamingEvents.USER_TALKING_MESSAGE, (event) => {
+        console.log("🎤 Utilisateur dit:", event.detail.message);
+        setChatHistory((prev) => [
+          ...prev,
+          {
+            role: "user",
+            content: event.detail.message,
+            timestamp: new Date(),
+          },
+        ]);
+      });
+
       avatar.on(StreamingEvents.STREAM_DISCONNECTED, () => {
         console.log("🔌 Stream déconnecté");
         setSessionState("inactive");
@@ -138,6 +172,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
     try {
       setSessionState("loading");
       setError(null);
+      setChatHistory([]); // Réinitialiser l'historique
 
       console.log("🔄 Récupération du token...");
       const token = await fetchAccessToken();
@@ -174,20 +209,20 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       console.warn("⚠️ Aucune session active à arrêter");
       return;
     }
-  
+
     try {
       console.log("🛑 Arrêt de la session...");
-  
-      // Stopper l'avatar (cela arrête automatiquement le voice chat)
+
+      // Stopper l'avatar (arrête automatiquement le voice chat)
       await avatarRef.current.stopAvatar();
-  
+
       // Nettoyer
       avatarRef.current = null;
       sessionIdRef.current = null;
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
-  
+
       console.log("✅ Session arrêtée avec succès");
     } catch (err) {
       console.error("❌ Erreur lors de l'arrêt de la session:", err);
@@ -198,11 +233,11 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   // ─────────────────────────────────────────────────────────────────────
   // 5️⃣ Nettoyage automatique au démontage du composant
   // ─────────────────────────────────────────────────────────────────────
-    useEffect(() => {
+  useEffect(() => {
     return () => {
       if (avatarRef.current && sessionIdRef.current) {
         console.log("🧹 Nettoyage automatique de la session");
-        avatarRef.current.stopAvatar().catch(console.error);  // ✅ GARDER seulement ça
+        avatarRef.current.stopAvatar().catch(console.error);
       }
     };
   }, []);
@@ -217,6 +252,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
     isLoading,
     error,
     isTalking,
+    chatHistory, // 🆕
 
     // Actions
     startSession,
