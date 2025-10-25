@@ -127,6 +127,7 @@ export default function RecruteurEntreprise() {
     <InteractiveBlock
       title="Présenter votre entreprise - Mode vocal"
       subtitle="L'IA vous assiste vocalement avec un avatar interactif."
+      avatarPreviewImage="/avatars/anastasia_16_9_preview.webp" 
       discussion={discussion}
       etatDiscussion={etatDiscussion}
       setEtatDiscussion={setEtatDiscussion}
