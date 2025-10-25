@@ -235,15 +235,13 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       // 🆕 DÉCLENCHER LA CONVERSATION avec un message d'accueil
       console.log("🚀 Déclenchement du message d'accueil...");
       try {
-        await avatar.speak({
-          text: "Bonjour",
-          task_type: "repeat",
-        });
+        // @ts-ignore - Force le type pour test
+        await avatar.speak({ text: "Bonjour" });
         console.log("✅ Message d'accueil envoyé");
       } catch (err) {
         console.warn("⚠️ Impossible d'envoyer le message d'accueil:", err);
       }
-  
+
     } catch (err) {
       console.error("❌ Erreur démarrage:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
