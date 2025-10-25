@@ -8,7 +8,6 @@ type Props = {
   title: string;
   subtitle?: string;
   avatarPreviewImage?: string;
-  knowledgeBaseId?: string;
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
@@ -18,7 +17,6 @@ export default function InteractiveBlock({
   title,
   subtitle,
   avatarPreviewImage = "/avatars/anastasia_16_9_preview.webp",
-  knowledgeBaseId,
   onFinaliser,
   onSauvegarder,
   onAbandonner,
@@ -32,7 +30,7 @@ export default function InteractiveBlock({
     chatHistory,
     startSession,
     stopSession,
-  } = useNeoAvatar(knowledgeBaseId);
+  } = useNeoAvatar();
 
   const [workflowState, setWorkflowState] = React.useState<
     "inactive" | "active" | "terminated"
