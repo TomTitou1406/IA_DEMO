@@ -19,7 +19,7 @@ type Props = {
 export default function InteractiveBlock({
   title,
   subtitle,
-  avatarPreviewImage,
+  avatarPreviewImage = "/avatars/anastasia_16_9_preview.webp",
   knowledgeId,
   avatarName,
   voiceRate,
@@ -120,7 +120,7 @@ export default function InteractiveBlock({
           {/* Timer en overlay coin haut droit */}
           {(workflowState === "active" || workflowState === "terminated") && (
             <div className="absolute top-4 right-4 z-20">
-              <span className="bg-white/90 text-gray-800 px-3 py-1 rounded-full text-xs font-medium border shadow">
+              <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow">
                 {timerStr}
               </span>
             </div>
