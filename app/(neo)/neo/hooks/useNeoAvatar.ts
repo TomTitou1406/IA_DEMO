@@ -33,21 +33,6 @@ interface UseNeoAvatarReturn {
 }
 
 // ========================================================================
-// Configuration
-// ========================================================================
-
-const DEFAULT_AVATAR_CONFIG: StartAvatarRequest = {
-  quality: AvatarQuality.High,
-  avatarName: "Anastasia_Chair_Sitting_public",
-  language: "fr",
-  voice: {
-    rate: 1.2,
-    emotion: VoiceEmotion.FRIENDLY,
-  },
-  knowledgeBase: "19df36d7a9354a1aa664c34686256df1",
-};
-
-// ========================================================================
 // Hook Principal
 // ========================================================================
 
@@ -62,21 +47,18 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   // Refs
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
-  
-  // 🆕 LA CLÉ : Tracker le dernier expéditeur (comme HeyGen)
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
   const isLoading = sessionState === "loading";
 
   // ─────────────────────────────────────────────────────────────────────
-  // 🆕 Handlers HeyGen-style (accumulation sans timer)
+  // Handlers HeyGen-style (accumulation sans timer)
   // ─────────────────────────────────────────────────────────────────────
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
     
     if (currentSenderRef.current === "user") {
-      // Même expéditeur → Concaténer au dernier message
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
         {
@@ -85,7 +67,6 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
         },
       ]);
     } else {
-      // Nouvel expéditeur → Créer nouveau message
       currentSenderRef.current = "user";
       setChatHistory((prev) => [
         ...prev,
@@ -102,7 +83,6 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
     const word = event.detail.message;
     
     if (currentSenderRef.current === "assistant") {
-      // Même expéditeur → Concaténer au dernier message
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
         {
@@ -111,7 +91,6 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
         },
       ]);
     } else {
-      // Nouvel expéditeur → Créer nouveau message
       currentSenderRef.current = "assistant";
       setChatHistory((prev) => [
         ...prev,
@@ -125,7 +104,6 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   }, []);
 
   const handleEndMessage = useCallback(() => {
-    // Réinitialiser le tracker quand un message se termine
     currentSenderRef.current = null;
   }, []);
 
@@ -184,7 +162,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
           setStream(null);
         });
 
-        // 🆕 ÉVÉNEMENTS HEYGEN (avec accumulation intelligente)
+        // Événements HeyGen
         avatar.on(StreamingEvents.USER_TALKING_MESSAGE, handleUserTalkingMessage);
         avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleAvatarTalkingMessage);
         avatar.on(StreamingEvents.USER_END_MESSAGE, handleEndMessage);
@@ -214,7 +192,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       setSessionState("loading");
       setError(null);
       setChatHistory([]);
-      currentSenderRef.current = null; // Reset
+      currentSenderRef.current = null;
 
       console.log("🔄 Récupération du token...");
       const token = await fetchAccessToken();
@@ -222,12 +200,30 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       console.log("🔄 Initialisation de l'avatar...");
       const avatar = await initializeAvatar(token);
 
-      console.log("🔄 Démarrage de la session...");
-      const sessionData = await avatar.createStartAvatar(DEFAULT_AVATAR_CONFIG);
+      // 🔥 CONFIGURATION AVEC KNOWLEDGE BASE (EN DUR POUR DEBUG)
+      const avatarConfig: StartAvatarRequest = {
+        quality: AvatarQuality.High,
+        avatarName: "Anastasia_Chair_Sitting_public",
+        language: "fr",
+        voice: {
+          rate: 1.2,
+          emotion: VoiceEmotion.FRIENDLY,
+        },
+        knowledgeBase: "19df36d7a9354a1aa664c34686256df1", // ← EN DUR
+      };
+
+      // 🔥 LOG POUR VÉRIFIER LA CONFIG
+      console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
+      console.log("🔥 Knowledge Base ID:", avatarConfig.knowledgeBase);
+
+      console.log("🔄 Démarrage de la session avec Knowledge Base...");
+      const sessionData = await avatar.createStartAvatar(avatarConfig);
 
       sessionIdRef.current = sessionData.session_id;
 
       console.log("✅ Session démarrée:", sessionData.session_id);
+      console.log("✅ Knowledge Base appliquée:", avatarConfig.knowledgeBase);
+      
       setSessionState("active");
 
       console.log("🎤 Activation du micro...");
@@ -256,7 +252,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
 
       avatarRef.current = null;
       sessionIdRef.current = null;
-      currentSenderRef.current = null; // Reset
+      currentSenderRef.current = null;
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
