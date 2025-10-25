@@ -23,7 +23,7 @@ export default function Page() {
       desc: "Publiez, décrivez et gérez vos offres d’emploi : profils, critères, compétences attendues, tout est centralisé ici. L’avatar IA vous accompagne à chaque étape pour ne rien oublier.",
       color: "var(--nc-blue)",           // ou "#1D5DFF", etc.
       image: "/cards/votre_poste_card.png",
-      href: "/neo/entretien/",
+      href: "/neo/entretien/poste/",
     },
     {
       title: "Conseils pour recruter",
