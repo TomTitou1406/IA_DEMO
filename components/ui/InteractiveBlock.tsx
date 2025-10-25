@@ -1,7 +1,7 @@
-// components/ui/InteractiveBlock.tsx - version avec paramètres
+// components/ui/InteractiveBlock.tsx
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 type Props = {
