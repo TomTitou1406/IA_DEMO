@@ -159,22 +159,21 @@ export default function InteractiveBlock({
                   alt="Avatar preview"
                   className="w-full h-full object-cover"
                 />
-                {/* Overlay texte/messages */}
-              </div>
-              <div className="text-center text-white px-4 mt-20">
-                {workflowState === "inactive" && (
-                  <>
-                    <p className="text-xl font-medium mb-2">Cliquez sur &quot;Discuter&quot; pour démarrer</p>
-                    <p className="text-sm text-gray-300">L'avatar sera prêt à vous écouter</p>
-                  </>
-                )}
-                {workflowState === "terminated" && (
-                  <>
-                    <p className="text-xl font-medium mb-2">✅ Discussion terminée</p>
-                    <p className="text-sm text-gray-300">Session fermée normalement</p>
-                  </>
-                )}
-              </div>
+                <div className="text-center text-white px-4 mt-20">
+                  {workflowState === "inactive" && (
+                    <>
+                      <p className="text-xl font-medium mb-2">Cliquez sur &quot;Discuter&quot; pour démarrer</p>
+                      <p className="text-sm text-gray-300">L'avatar sera prêt à vous écouter</p>
+                    </>
+                  )}
+                  {workflowState === "terminated" && (
+                    <>
+                      <p className="text-xl font-medium mb-2">✅ Discussion terminée</p>
+                      <p className="text-sm text-gray-300">Session fermée normalement</p>
+                    </>
+                  )}
+                </div>
+              </div>  
               {/* Boutons pour état inactif */}
               {workflowState === "inactive" && (
                 <div className="flex gap-3 justify-center mt-4">
