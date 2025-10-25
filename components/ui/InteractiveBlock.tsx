@@ -1,4 +1,4 @@
-// components/ui/InteractiveBlock.tsx
+// components/ui/InteractiveBlock.tsx - version avec paramètres
 "use client";
 
 import React from "react";
