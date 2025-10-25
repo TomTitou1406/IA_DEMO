@@ -60,7 +60,7 @@ export default function InteractiveBlock({
       await startSession();
       await startInitialSpeak(initialMessage);
       setTimeout(() => {
-        startInitialSpeak();
+        startInitialSpeak(initialMessage);
       }, 500); // 500ms d’attente
     }
     start();
