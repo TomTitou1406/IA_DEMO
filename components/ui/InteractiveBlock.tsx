@@ -153,6 +153,14 @@ export default function InteractiveBlock({
           {/* Overlays pour état INACTIF/TERMINÉ */}
           {(workflowState === "inactive" || workflowState === "terminated") && !isLoading && (
             <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/40 z-10">
+              <div className="relative w-full h-full">
+                <img
+                  src={avatarPreviewImage}
+                  alt="Avatar preview"
+                  className="w-full h-full object-cover"
+                />
+                {/* Overlay texte/messages */}
+              </div>
               <div className="text-center text-white px-4 mt-20">
                 {workflowState === "inactive" && (
                   <>
@@ -163,7 +171,7 @@ export default function InteractiveBlock({
                 {workflowState === "terminated" && (
                   <>
                     <p className="text-xl font-medium mb-2">✅ Discussion terminée</p>
-                    <p className="text-sm text-gray-300">Session fermée proprement</p>
+                    <p className="text-sm text-gray-300">Session fermée normalement</p>
                   </>
                 )}
               </div>
