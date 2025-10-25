@@ -228,6 +228,22 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
 
       console.log("🎤 Activation du micro...");
       await avatar.startVoiceChat();
+      
+      // 🆕 ATTENDRE 1 SECONDE pour que le voice chat soit bien actif
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      
+      // 🆕 DÉCLENCHER LA CONVERSATION avec un message d'accueil
+      console.log("🚀 Déclenchement du message d'accueil...");
+      try {
+        await avatar.speak({
+          text: "Bonjour",
+          task_type: "repeat",
+        });
+        console.log("✅ Message d'accueil envoyé");
+      } catch (err) {
+        console.warn("⚠️ Impossible d'envoyer le message d'accueil:", err);
+      }
+  
     } catch (err) {
       console.error("❌ Erreur démarrage:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
