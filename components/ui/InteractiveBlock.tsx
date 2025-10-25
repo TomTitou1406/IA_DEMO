@@ -26,7 +26,7 @@ export default function InteractiveBlock({
   onFinaliser,
   onSauvegarder,
   onAbandonner,
-  initialMessage,
+  initialMessage = "Bonjour ! Pouvez-vous m'assister ?",
 }: Props) {
   const {
     sessionState,
@@ -71,13 +71,15 @@ export default function InteractiveBlock({
   // Ajoute UN SEUL message assistant pour l'accueil quand session active
   useEffect(() => {
     if (sessionState === "active" && !initMessageAdded) {
-      chatHistory.push({
-        role: "assistant",
-        content: initialMessage,
-        timestamp: new Date(),
-      });
+      setChatHistory(prev => [
+        ...prev,
+        {
+          role: "assistant",
+          content: initialMessage,
+          timestamp: new Date(),
+        },
+      ]);
       setInitMessageAdded(true);
-      // Envoie le message à l'avatar ensuite si besoin
       startInitialSpeak(initialMessage);
     }
     // Réinitialise si inactive
