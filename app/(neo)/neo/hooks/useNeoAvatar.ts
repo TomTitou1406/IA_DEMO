@@ -9,7 +9,7 @@ import StreamingAvatar, {
 } from "@heygen/streaming-avatar";
 
 // ========================================================================
-// 🎯 Types
+// Types
 // ========================================================================
 
 type SessionState = "inactive" | "loading" | "active" | "error";
@@ -33,7 +33,7 @@ interface UseNeoAvatarReturn {
 }
 
 // ========================================================================
-// 🔧 Configuration par défaut
+// Configuration
 // ========================================================================
 
 const DEFAULT_AVATAR_CONFIG: StartAvatarRequest = {
@@ -48,139 +48,91 @@ const DEFAULT_AVATAR_CONFIG: StartAvatarRequest = {
 };
 
 // ========================================================================
-// 🎣 Hook Principal
+// Hook Principal
 // ========================================================================
 
 export function useNeoAvatar(): UseNeoAvatarReturn {
-  // ─────────────────────────────────────────────────────────────────────
   // États
-  // ─────────────────────────────────────────────────────────────────────
   const [sessionState, setSessionState] = useState<SessionState>("inactive");
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isTalking, setIsTalking] = useState(false);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
-  // ─────────────────────────────────────────────────────────────────────
   // Refs
-  // ─────────────────────────────────────────────────────────────────────
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
+  
+  // 🆕 LA CLÉ : Tracker le dernier expéditeur (comme HeyGen)
+  const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
-  // 🆕 Refs pour l'accumulation des messages
-  const avatarMessageBufferRef = useRef<string>("");
-  const avatarMessageTimerRef = useRef<NodeJS.Timeout | null>(null);
-  const userMessageBufferRef = useRef<string>("");
-  const userMessageTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // ─────────────────────────────────────────────────────────────────────
-  // Computed values
-  // ─────────────────────────────────────────────────────────────────────
   const isLoading = sessionState === "loading";
 
   // ─────────────────────────────────────────────────────────────────────
-  // 🆕 Fonction d'accumulation pour l'avatar
+  // 🆕 Handlers HeyGen-style (accumulation sans timer)
   // ─────────────────────────────────────────────────────────────────────
-  const accumulateAvatarMessage = useCallback((word: string) => {
-    // Ajouter le mot au buffer
-    avatarMessageBufferRef.current += (avatarMessageBufferRef.current ? " " : "") + word;
 
-    // Nettoyer le timer précédent
-    if (avatarMessageTimerRef.current) {
-      clearTimeout(avatarMessageTimerRef.current);
-    }
-
-    // Vérifier si c'est la fin d'une phrase (ponctuation)
-    const endsWithPunctuation = /[.!?]$/.test(word.trim());
-
-    if (endsWithPunctuation) {
-      // Fin de phrase détectée → Ajouter immédiatement
-      const completeMessage = avatarMessageBufferRef.current.trim();
-      if (completeMessage) {
-        console.log("💬 Avatar (phrase complète):", completeMessage);
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: completeMessage,
-            timestamp: new Date(),
-          },
-        ]);
-        avatarMessageBufferRef.current = "";
-      }
+  const handleUserTalkingMessage = useCallback((event: any) => {
+    const word = event.detail.message;
+    
+    if (currentSenderRef.current === "user") {
+      // Même expéditeur → Concaténer au dernier message
+      setChatHistory((prev) => [
+        ...prev.slice(0, -1),
+        {
+          ...prev[prev.length - 1],
+          content: prev[prev.length - 1].content + word,
+        },
+      ]);
     } else {
-      // Attendre 800ms de silence avant de considérer la phrase terminée
-      avatarMessageTimerRef.current = setTimeout(() => {
-        const completeMessage = avatarMessageBufferRef.current.trim();
-        if (completeMessage) {
-          console.log("💬 Avatar (timeout 800ms):", completeMessage);
-          setChatHistory((prev) => [
-            ...prev,
-            {
-              role: "assistant",
-              content: completeMessage,
-              timestamp: new Date(),
-            },
-          ]);
-          avatarMessageBufferRef.current = "";
-        }
-      }, 800);
+      // Nouvel expéditeur → Créer nouveau message
+      currentSenderRef.current = "user";
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: word,
+          timestamp: new Date(),
+        },
+      ]);
     }
   }, []);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 🆕 Fonction d'accumulation pour l'utilisateur
-  // ─────────────────────────────────────────────────────────────────────
-  const accumulateUserMessage = useCallback((word: string) => {
-    // Ajouter le mot au buffer
-    userMessageBufferRef.current += (userMessageBufferRef.current ? " " : "") + word;
-
-    // Nettoyer le timer précédent
-    if (userMessageTimerRef.current) {
-      clearTimeout(userMessageTimerRef.current);
-    }
-
-    // Vérifier si c'est la fin d'une phrase
-    const endsWithPunctuation = /[.!?]$/.test(word.trim());
-
-    if (endsWithPunctuation) {
-      // Fin de phrase détectée → Ajouter immédiatement
-      const completeMessage = userMessageBufferRef.current.trim();
-      if (completeMessage) {
-        console.log("🎤 Utilisateur (phrase complète):", completeMessage);
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            role: "user",
-            content: completeMessage,
-            timestamp: new Date(),
-          },
-        ]);
-        userMessageBufferRef.current = "";
-      }
+  const handleAvatarTalkingMessage = useCallback((event: any) => {
+    const word = event.detail.message;
+    
+    if (currentSenderRef.current === "assistant") {
+      // Même expéditeur → Concaténer au dernier message
+      setChatHistory((prev) => [
+        ...prev.slice(0, -1),
+        {
+          ...prev[prev.length - 1],
+          content: prev[prev.length - 1].content + word,
+        },
+      ]);
     } else {
-      // Attendre 1000ms de silence
-      userMessageTimerRef.current = setTimeout(() => {
-        const completeMessage = userMessageBufferRef.current.trim();
-        if (completeMessage) {
-          console.log("🎤 Utilisateur (timeout 1000ms):", completeMessage);
-          setChatHistory((prev) => [
-            ...prev,
-            {
-              role: "user",
-              content: completeMessage,
-              timestamp: new Date(),
-            },
-          ]);
-          userMessageBufferRef.current = "";
-        }
-      }, 1000);
+      // Nouvel expéditeur → Créer nouveau message
+      currentSenderRef.current = "assistant";
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: word,
+          timestamp: new Date(),
+        },
+      ]);
     }
   }, []);
 
+  const handleEndMessage = useCallback(() => {
+    // Réinitialiser le tracker quand un message se termine
+    currentSenderRef.current = null;
+  }, []);
+
   // ─────────────────────────────────────────────────────────────────────
-  // 1️⃣ Récupérer le token HeyGen
+  // Récupérer le token HeyGen
   // ─────────────────────────────────────────────────────────────────────
+
   const fetchAccessToken = useCallback(async (): Promise<string> => {
     try {
       const response = await fetch("/api/get-access-token", {
@@ -194,67 +146,36 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       const token = await response.text();
       return token;
     } catch (err) {
-      console.error("❌ Erreur lors de la récupération du token:", err);
+      console.error("❌ Erreur token:", err);
       throw new Error("Échec de connexion au serveur HeyGen");
     }
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────
-  // 2️⃣ Initialiser l'instance StreamingAvatar
+  // Initialiser l'instance StreamingAvatar
   // ─────────────────────────────────────────────────────────────────────
+
   const initializeAvatar = useCallback(
     async (token: string) => {
       try {
         const avatar = new StreamingAvatar({ token });
 
-        // Écouteurs d'événements HeyGen
+        // Événements de base
         avatar.on(StreamingEvents.STREAM_READY, (event) => {
-          console.log("✅ Stream prêt:", event);
+          console.log("✅ Stream prêt");
           if (event.detail) {
             setStream(event.detail);
           }
         });
 
         avatar.on(StreamingEvents.AVATAR_START_TALKING, () => {
-          console.log("🗣️ Avatar commence à parler");
+          console.log("🗣️ Avatar commence");
           setIsTalking(true);
         });
 
         avatar.on(StreamingEvents.AVATAR_STOP_TALKING, () => {
-          console.log("🤐 Avatar arrête de parler");
+          console.log("🤐 Avatar arrête");
           setIsTalking(false);
-
-          // Forcer l'ajout du message en cours si l'avatar s'arrête
-          if (avatarMessageTimerRef.current) {
-            clearTimeout(avatarMessageTimerRef.current);
-          }
-          const remaining = avatarMessageBufferRef.current.trim();
-          if (remaining) {
-            console.log("💬 Avatar (fin de parole):", remaining);
-            setChatHistory((prev) => [
-              ...prev,
-              {
-                role: "assistant",
-                content: remaining,
-                timestamp: new Date(),
-              },
-            ]);
-            avatarMessageBufferRef.current = "";
-          }
-        });
-
-        // 🆕 Transcription de l'avatar (mot par mot) → Accumulation
-        avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, (event) => {
-          const word = event.detail.message;
-          console.log("📝 Avatar mot:", word);
-          accumulateAvatarMessage(word);
-        });
-
-        // 🆕 Transcription utilisateur (mot par mot) → Accumulation
-        avatar.on(StreamingEvents.USER_TALKING_MESSAGE, (event) => {
-          const word = event.detail.message;
-          console.log("📝 User mot:", word);
-          accumulateUserMessage(word);
         });
 
         avatar.on(StreamingEvents.STREAM_DISCONNECTED, () => {
@@ -263,19 +184,26 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
           setStream(null);
         });
 
+        // 🆕 ÉVÉNEMENTS HEYGEN (avec accumulation intelligente)
+        avatar.on(StreamingEvents.USER_TALKING_MESSAGE, handleUserTalkingMessage);
+        avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleAvatarTalkingMessage);
+        avatar.on(StreamingEvents.USER_END_MESSAGE, handleEndMessage);
+        avatar.on(StreamingEvents.AVATAR_END_MESSAGE, handleEndMessage);
+
         avatarRef.current = avatar;
         return avatar;
       } catch (err) {
-        console.error("❌ Erreur lors de l'initialisation de l'avatar:", err);
+        console.error("❌ Erreur initialisation:", err);
         throw new Error("Impossible d'initialiser l'avatar");
       }
     },
-    [accumulateAvatarMessage, accumulateUserMessage]
+    [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
   // ─────────────────────────────────────────────────────────────────────
-  // 3️⃣ Démarrer la session vocale
+  // Démarrer la session
   // ─────────────────────────────────────────────────────────────────────
+
   const startSession = useCallback(async () => {
     if (sessionState === "loading" || sessionState === "active") {
       console.warn("⚠️ Session déjà en cours");
@@ -286,6 +214,7 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       setSessionState("loading");
       setError(null);
       setChatHistory([]);
+      currentSenderRef.current = null; // Reset
 
       console.log("🔄 Récupération du token...");
       const token = await fetchAccessToken();
@@ -293,113 +222,69 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       console.log("🔄 Initialisation de l'avatar...");
       const avatar = await initializeAvatar(token);
 
-      console.log("🔄 Démarrage de la session vocale...");
+      console.log("🔄 Démarrage de la session...");
       const sessionData = await avatar.createStartAvatar(DEFAULT_AVATAR_CONFIG);
 
       sessionIdRef.current = sessionData.session_id;
 
-      console.log("✅ Session démarrée avec succès:", sessionData.session_id);
+      console.log("✅ Session démarrée:", sessionData.session_id);
       setSessionState("active");
 
       console.log("🎤 Activation du micro...");
       await avatar.startVoiceChat();
     } catch (err) {
-      console.error("❌ Erreur lors du démarrage de la session:", err);
+      console.error("❌ Erreur démarrage:", err);
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setSessionState("error");
     }
   }, [sessionState, fetchAccessToken, initializeAvatar]);
 
   // ─────────────────────────────────────────────────────────────────────
-  // 4️⃣ Arrêter la session
+  // Arrêter la session
   // ─────────────────────────────────────────────────────────────────────
+
   const stopSession = useCallback(async () => {
     if (!avatarRef.current || !sessionIdRef.current) {
-      console.warn("⚠️ Aucune session active à arrêter");
+      console.warn("⚠️ Aucune session active");
       return;
     }
 
     try {
       console.log("🛑 Arrêt de la session...");
 
-      // Nettoyer les timers et buffers
-      if (avatarMessageTimerRef.current) {
-        clearTimeout(avatarMessageTimerRef.current);
-      }
-      if (userMessageTimerRef.current) {
-        clearTimeout(userMessageTimerRef.current);
-      }
-
-      // Ajouter les messages restants dans les buffers
-      const remainingAvatar = avatarMessageBufferRef.current.trim();
-      const remainingUser = userMessageBufferRef.current.trim();
-
-      if (remainingAvatar) {
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            role: "assistant",
-            content: remainingAvatar,
-            timestamp: new Date(),
-          },
-        ]);
-      }
-
-      if (remainingUser) {
-        setChatHistory((prev) => [
-          ...prev,
-          {
-            role: "user",
-            content: remainingUser,
-            timestamp: new Date(),
-          },
-        ]);
-      }
-
-      // Réinitialiser les buffers
-      avatarMessageBufferRef.current = "";
-      userMessageBufferRef.current = "";
-
-      // Stopper l'avatar
       await avatarRef.current.stopAvatar();
 
-      // Nettoyer
       avatarRef.current = null;
       sessionIdRef.current = null;
+      currentSenderRef.current = null; // Reset
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
 
-      console.log("✅ Session arrêtée avec succès");
+      console.log("✅ Session arrêtée");
     } catch (err) {
-      console.error("❌ Erreur lors de l'arrêt de la session:", err);
-      setError("Impossible d'arrêter la session proprement");
+      console.error("❌ Erreur arrêt:", err);
+      setError("Impossible d'arrêter la session");
     }
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────
-  // 5️⃣ Nettoyage automatique au démontage
+  // Nettoyage au démontage
   // ─────────────────────────────────────────────────────────────────────
+
   useEffect(() => {
     return () => {
       if (avatarRef.current && sessionIdRef.current) {
-        console.log("🧹 Nettoyage automatique de la session");
+        console.log("🧹 Nettoyage automatique");
         avatarRef.current.stopAvatar().catch(console.error);
-      }
-
-      // Nettoyer les timers
-      if (avatarMessageTimerRef.current) {
-        clearTimeout(avatarMessageTimerRef.current);
-      }
-      if (userMessageTimerRef.current) {
-        clearTimeout(userMessageTimerRef.current);
       }
     };
   }, []);
 
   // ─────────────────────────────────────────────────────────────────────
-  // 6️⃣ Retour du hook
+  // Retour du hook
   // ─────────────────────────────────────────────────────────────────────
+
   return {
     sessionState,
     stream,
