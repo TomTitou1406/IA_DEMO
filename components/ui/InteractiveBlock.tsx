@@ -1,5 +1,4 @@
 // components/ui/InteractiveBlock.tsx
-
 "use client";
 
 import React, { useEffect, useRef } from "react";
@@ -22,9 +21,6 @@ export default function InteractiveBlock({
   onSauvegarder,
   onAbandonner,
 }: Props) {
-  // ─────────────────────────────────────────────────────────────────────
-  // 🎣 Hook HeyGen
-  // ─────────────────────────────────────────────────────────────────────
   const {
     sessionState,
     stream,
@@ -36,20 +32,13 @@ export default function InteractiveBlock({
     stopSession,
   } = useNeoAvatar();
 
-  // ─────────────────────────────────────────────────────────────────────
-  // État local
-  // ─────────────────────────────────────────────────────────────────────
   const [workflowState, setWorkflowState] = React.useState<
     "inactive" | "active" | "terminated"
   >("inactive");
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 📹 Références
-  // ─────────────────────────────────────────────────────────────────────
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  // Mettre à jour la vidéo quand le stream change
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
@@ -59,12 +48,10 @@ export default function InteractiveBlock({
     }
   }, [stream]);
 
-  // Auto-scroll du chat
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chatHistory]);
 
-  // Synchroniser workflow avec sessionState
   useEffect(() => {
     if (sessionState === "active") {
       setWorkflowState("active");
@@ -73,9 +60,6 @@ export default function InteractiveBlock({
     }
   }, [sessionState, workflowState]);
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 🎮 Handlers
-  // ─────────────────────────────────────────────────────────────────────
   const handleDiscuter = async () => {
     setWorkflowState("active");
     await startSession();
@@ -105,23 +89,20 @@ export default function InteractiveBlock({
     if (onAbandonner) onAbandonner();
   };
 
-  // ─────────────────────────────────────────────────────────────────────
-  // 🎨 Render
-  // ─────────────────────────────────────────────────────────────────────
   return (
-    <div className="flex flex-col items-center gap-4 w-full max-w-5xl mx-auto px-4 py-2">
-      {/* En-tête */}
+    <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2">
+      {/* En-tête compact */}
       <div className="text-center">
-        <h1 className="text-3xl font-bold text-[var(--nc-blue)] mb-2">
+        <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">
           {title}
         </h1>
-        {subtitle && <p className="text-gray-600 text-sm">{subtitle}</p>}
+        {subtitle && <p className="text-gray-600 text-xs">{subtitle}</p>}
       </div>
 
       {/* Zone Avatar Vidéo avec boutons en overlay */}
       <div className="w-full max-w-3xl">
         <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
-          {/* État Inactif / Terminé : Image de prévisualisation */}
+          {/* État Inactif / Terminé */}
           {(workflowState === "inactive" || workflowState === "terminated") &&
             !isLoading && (
               <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
@@ -190,38 +171,35 @@ export default function InteractiveBlock({
             }`}
           />
 
-          {/* Indicateur "En train de parler" - Haut gauche */}
+          {/* Indicateurs */}
           {isTalking && workflowState === "active" && (
-            <div className="absolute top-4 left-4 bg-green-500/90 text-white px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2 animate-pulse backdrop-blur-sm">
+            <div className="absolute top-4 left-4 bg-green-500/90 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 animate-pulse backdrop-blur-sm">
               <span>🎤</span>
               Anastasia parle...
             </div>
           )}
 
-          {/* Indicateur "En écoute" - Haut gauche */}
           {workflowState === "active" && !isTalking && (
-            <div className="absolute top-4 left-4 bg-blue-500/90 text-white px-3 py-1 rounded-full text-sm font-medium backdrop-blur-sm">
+            <div className="absolute top-4 left-4 bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
               🎧 En écoute
             </div>
           )}
 
-          {/* ═══════════════════════════════════════════════════════ */}
-          {/* BOUTONS EN OVERLAY - BAS DE LA VIDÉO (GAIN DE PLACE)   */}
-          {/* ═══════════════════════════════════════════════════════ */}
+          {/* BOUTONS EN OVERLAY */}
 
           {/* Boutons état INACTIF */}
           {workflowState === "inactive" && !isLoading && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 backdrop-blur-sm">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
               <div className="flex gap-3 justify-center">
                 <button
                   onClick={handleDiscuter}
-                  className="bg-[var(--nc-blue)] text-white px-8 py-2.5 rounded-lg text-base font-medium hover:bg-[var(--nc-cyan)] transition shadow-lg"
+                  className="bg-[var(--nc-blue)] text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-[var(--nc-cyan)] transition shadow-lg"
                 >
                   Discuter
                 </button>
                 <button
                   onClick={() => window.history.back()}
-                  className="bg-gray-700/80 text-white px-6 py-2.5 rounded-lg text-sm font-medium hover:bg-gray-600 transition shadow-lg backdrop-blur-sm"
+                  className="bg-gray-700/80 text-white px-6 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition shadow-lg backdrop-blur-sm"
                 >
                   Quitter
                 </button>
@@ -231,11 +209,11 @@ export default function InteractiveBlock({
 
           {/* Boutons état ACTIVE */}
           {workflowState === "active" && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-4 backdrop-blur-sm">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
               <div className="flex justify-center">
                 <button
                   onClick={handleTerminer}
-                  className="bg-red-600 text-white px-8 py-2.5 rounded-lg text-base font-medium hover:bg-red-700 transition shadow-lg"
+                  className="bg-red-600 text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-lg"
                 >
                   Terminer
                 </button>
@@ -245,29 +223,29 @@ export default function InteractiveBlock({
 
           {/* Boutons état TERMINÉ */}
           {workflowState === "terminated" && !isLoading && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-4 backdrop-blur-sm">
+            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 backdrop-blur-sm">
               <div className="flex gap-2 justify-center flex-wrap">
                 <button
                   onClick={handleAjouterPDF}
-                  className="bg-purple-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-purple-700 transition shadow-lg"
+                  className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-700 transition shadow-lg"
                 >
                   Ajouter PDF
                 </button>
                 <button
                   onClick={handleFinaliser}
-                  className="bg-blue-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-blue-700 transition shadow-lg"
+                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition shadow-lg"
                 >
                   Finaliser
                 </button>
                 <button
                   onClick={handleAbandonner}
-                  className="bg-gray-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-gray-700 transition shadow-lg"
+                  className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition shadow-lg"
                 >
                   Abandonner
                 </button>
                 <button
                   onClick={handleSauvegarder}
-                  className="bg-green-600 text-white px-5 py-2 rounded-lg text-sm font-medium hover:bg-green-700 transition shadow-lg"
+                  className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition shadow-lg"
                 >
                   Sauvegarder
                 </button>
@@ -277,20 +255,20 @@ export default function InteractiveBlock({
         </div>
       </div>
 
-      {/* Fil de discussion - HAUTEUR DYNAMIQUE */}
-      <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[50vh]">
+      {/* Fil de discussion - RÉDUIT À 35vh + SANS NOMS */}
+      <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
         {/* Header compact */}
-        <div className="px-6 py-3 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-base font-semibold text-gray-800 flex items-center gap-2">
+        <div className="px-4 py-2 border-b border-gray-200 flex-shrink-0">
+          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
             <span>💬</span>
             <span>Discussion</span>
           </h3>
         </div>
 
-        {/* Conteneur de messages avec scroll */}
-        <div className="flex-1 overflow-y-auto p-6">
+        {/* Conteneur de messages */}
+        <div className="flex-1 overflow-y-auto p-4">
           {chatHistory.length === 0 ? (
-            <p className="text-gray-400 text-center py-8 text-sm">
+            <p className="text-gray-400 text-center py-6 text-xs">
               {workflowState === "inactive"
                 ? "La conversation apparaîtra ici en temps réel."
                 : workflowState === "terminated"
@@ -298,7 +276,7 @@ export default function InteractiveBlock({
                 : "La conversation apparaîtra ici en temps réel."}
             </p>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {chatHistory.map((msg, idx) => (
                 <div
                   key={idx}
@@ -307,15 +285,13 @@ export default function InteractiveBlock({
                   }`}
                 >
                   <div
-                    className={`max-w-[80%] p-3 rounded-lg shadow-sm ${
+                    className={`max-w-[85%] px-3 py-2 rounded-lg shadow-sm ${
                       msg.role === "user"
-                        ? "bg-blue-100 border-l-4 border-blue-500"
+                        ? "bg-blue-100 border-l-4 border-blue-500 text-right"
                         : "bg-green-100 border-l-4 border-green-500"
                     }`}
                   >
-                    <p className="font-medium text-xs text-gray-600 mb-1">
-                      {msg.role === "user" ? "Vous" : "Anastasia"}
-                    </p>
+                    {/* ✅ SUPPRESSION DES NOMS - Texte uniquement */}
                     <p className="text-gray-800 text-sm leading-relaxed">
                       {msg.content}
                     </p>
