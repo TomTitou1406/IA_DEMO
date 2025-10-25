@@ -1,189 +1,261 @@
-"use client";
+// /app/(neo)/neo/hooks/useNeoAvatar.ts
 
-import React, { useState } from "react";
-import InteractiveBlock from "@/components/ui/InteractiveBlock";
-import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
-import Link from "next/link";
-import { Card, CardHeader, CardContent } from "@/components/ui/Card";
+import { useState, useRef, useCallback, useEffect } from "react";
+import StreamingAvatar, {
+  AvatarQuality,
+  StreamingEvents,
+  VoiceEmotion,
+  StartAvatarRequest,
+} from "@heygen/streaming-avatar";
 
-export default function RecruteurEntreprise() {
-  const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
+type SessionState = "inactive" | "loading" | "active" | "error";
 
-  // ═══════════════════════════════════════════════════════════════════
-  // 🎤 MODE VOCAL - Handlers simplifiés (nouveau InteractiveBlock)
-  // ═══════════════════════════════════════════════════════════════════
-  const handleFinaliser = () => {
-    console.log("✅ Discussion finalisée");
-    // Logique de finalisation (navigation, API, etc.)
-  };
+export interface ChatMessage {
+  role: "user" | "assistant";
+  content: string;
+  timestamp: Date;
+}
 
-  const handleSauvegarder = () => {
-    console.log("💾 Discussion sauvegardée");
-    // Logique de sauvegarde
-  };
+export interface UseNeoAvatarConfig {
+  knowledgeId?: string;
+  avatarName?: string;
+  voiceRate?: number;
+  language?: string;
+}
 
-  const handleAbandonner = () => {
-    console.log("❌ Discussion abandonnée");
-    window.history.back();
-  };
+interface UseNeoAvatarReturn {
+  sessionState: SessionState;
+  stream: MediaStream | null;
+  isLoading: boolean;
+  error: string | null;
+  isTalking: boolean;
+  chatHistory: ChatMessage[];
+  startSession: () => Promise<void>;
+  stopSession: () => Promise<void>;
+}
 
-  // ═══════════════════════════════════════════════════════════════════
-  // ✍️ MODE ÉCRIT - États et handlers (ancien système conservé)
-  // ═══════════════════════════════════════════════════════════════════
-  const [discussionChat, setDiscussionChat] = useState<
-    { role: "user" | "assistant"; content: string }[]
-  >([]);
-  const [etatDiscussionChat, setEtatDiscussionChat] = useState<
-    "init" | "active" | "pause" | "stopped" | "finalized"
-  >("init");
-  const [showConfirmationChat, setShowConfirmationChat] = useState(false);
-  const [showSavedMessageChat, setShowSavedMessageChat] = useState(false);
+export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
+  const [sessionState, setSessionState] = useState<SessionState>("inactive");
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [isTalking, setIsTalking] = useState(false);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
 
-  const handleSendMessage = (msg: string) => {
-    setDiscussionChat((d) => [
-      ...d,
-      { role: "user", content: msg },
-      { role: "assistant", content: `Réponse IA à "${msg}"` },
-    ]);
-  };
+  const avatarRef = useRef<StreamingAvatar | null>(null);
+  const sessionIdRef = useRef<string | null>(null);
+  const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
-  const onAbandonnerChat = () => setShowConfirmationChat(true);
+  const isLoading = sessionState === "loading";
 
-  const onConfirmerAbandonChat = (confirmer: boolean) => {
-    setShowConfirmationChat(false);
-    if (confirmer) window.history.back();
-  };
+  const handleUserTalkingMessage = useCallback((event: any) => {
+    const word = event.detail.message;
 
-  const onFinaliserChat = () => {
-    if (etatDiscussionChat === "stopped") {
-      setDiscussionChat((prev) => [
-        ...prev,
-        { role: "assistant", content: "Présentation finalisée." },
+    if (currentSenderRef.current === "user") {
+      setChatHistory((prev) => [
+        ...prev.slice(0, -1),
+        {
+          ...prev[prev.length - 1],
+          content: prev[prev.length - 1].content + word,
+        },
       ]);
-      setEtatDiscussionChat("finalized");
+    } else {
+      currentSenderRef.current = "user";
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: "user",
+          content: word,
+          timestamp: new Date(),
+        },
+      ]);
     }
-  };
+  }, []);
 
-  const onSauvegarderChat = () => {
-    setShowSavedMessageChat(true);
-    setTimeout(() => {
-      setShowSavedMessageChat(false);
-      window.history.back();
-    }, 3000);
-  };
+  const handleAvatarTalkingMessage = useCallback((event: any) => {
+    const word = event.detail.message;
 
-  // ═══════════════════════════════════════════════════════════════════
-  // 🎨 RENDU : Sélection du mode
-  // ═══════════════════════════════════════════════════════════════════
-  if (!modeChoisi) {
-    const modes: {
-      key: "vocal" | "ecrit";
-      title: string;
-      desc: string;
-      color: string;
-      image?: string;
-      icon?: React.ReactNode;
-    }[] = [
-      {
-        key: "vocal",
-        title: "Mode vocal avec Avatar IA",
-        desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif pour échanger en temps réel.",
-        color: "var(--nc-blue)",
-        image: "/cards/mode_avatar_card.png",
-      },
-      {
-        key: "ecrit",
-        title: "Mode écrit conversationnel",
-        desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
-        color: "var(--nc-blue)",
-        image: "/cards/mode_chat_card.png",
-      },
-    ];
+    if (currentSenderRef.current === "assistant") {
+      setChatHistory((prev) => [
+        ...prev.slice(0, -1),
+        {
+          ...prev[prev.length - 1],
+          content: prev[prev.length - 1].content + word,
+        },
+      ]);
+    } else {
+      currentSenderRef.current = "assistant";
+      setChatHistory((prev) => [
+        ...prev,
+        {
+          role: "assistant",
+          content: word,
+          timestamp: new Date(),
+        },
+      ]);
+    }
+  }, []);
 
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] py-10">
-        <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
-          Choisissez votre mode de travail avec l'IA
-        </h1>
-        {/* Lien Retour */}
-        <div className="text-center mb-4">
-          <Link
-            href="/neo/"
-            className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] hover:underline transition-all duration-200 text-lg font-medium"
-          >
-            ← Retour
-          </Link>
-        </div>
-        <p className="text-lg text-gray-700 mb-10 text-center max-w-2xl">
-          Quelle est la méthode la plus adaptée à votre environnement et à vos
-          outils ?
-        </p>
-        <div className="flex gap-8 flex-wrap justify-center">
-          {modes.map((m) => (
-            <div
-              key={m.key}
-              onClick={() => setModeChoisi(m.key)}
-              className="cursor-pointer"
-            >
-              <Card
-                image={m.image}
-                color={m.color}
-                className="hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200"
-              >
-                {!m.image && m.icon && (
-                  <div className="mb-5 flex justify-center">
-                    <div className="mx-auto w-20 h-20 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
-                      {m.icon}
-                    </div>
-                  </div>
-                )}
-                <CardHeader>
-                  <h3 className="text-xl font-bold text-gray-900">{m.title}</h3>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-700">{m.desc}</p>
-                </CardContent>
-              </Card>
-            </div>
-          ))}
-        </div>
-      </div>
-    );
-  }
+  const handleEndMessage = useCallback(() => {
+    currentSenderRef.current = null;
+  }, []);
 
-  // ═══════════════════════════════════════════════════════════════════
-  // 🎨 RENDU : Mode choisi
-  // ═══════════════════════════════════════════════════════════════════
-  return modeChoisi === "vocal" ? (
-    // ────────────────────────────────────────────────────────────────
-    // 🎤 MODE VOCAL - Nouveau composant autonome
-    // ────────────────────────────────────────────────────────────────
-    <InteractiveBlock
-      title="Présenter votre entreprise - Mode vocal"
-      subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-      avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
-      onFinaliser={handleFinaliser}
-      onSauvegarder={handleSauvegarder}
-      onAbandonner={handleAbandonner}
-    />
-  ) : (
-    // ────────────────────────────────────────────────────────────────
-    // ✍️ MODE ÉCRIT - Ancien composant avec state management
-    // ────────────────────────────────────────────────────────────────
-    <InteractiveChatBlock
-      title="Présenter votre entreprise - Mode écrit"
-      subtitle="Discutez avec l'IA via un chat textuel."
-      discussion={discussionChat}
-      etatDiscussion={etatDiscussionChat}
-      setEtatDiscussion={setEtatDiscussionChat}
-      setDiscussion={setDiscussionChat}
-      onSendMessage={handleSendMessage}
-      onAbandonner={onAbandonnerChat}
-      onConfirmerAbandon={onConfirmerAbandonChat}
-      showConfirmation={showConfirmationChat}
-      onFinaliser={onFinaliserChat}
-      onSauvegarder={onSauvegarderChat}
-      showSavedMessage={showSavedMessageChat}
-    />
+  const fetchAccessToken = useCallback(async (): Promise<string> => {
+    try {
+      const response = await fetch("/api/get-access-token", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Impossible de récupérer le token HeyGen");
+      }
+
+      const token = await response.text();
+      return token;
+    } catch (err) {
+      console.error("❌ Erreur token:", err);
+      throw new Error("Échec de connexion au serveur HeyGen");
+    }
+  }, []);
+
+  const initializeAvatar = useCallback(
+    async (token: string) => {
+      try {
+        const avatar = new StreamingAvatar({ token });
+
+        avatar.on(StreamingEvents.STREAM_READY, (event) => {
+          console.log("✅ Stream prêt");
+          if (event.detail) {
+            setStream(event.detail);
+          }
+        });
+
+        avatar.on(StreamingEvents.AVATAR_START_TALKING, () => {
+          console.log("🗣️ Avatar commence");
+          setIsTalking(true);
+        });
+
+        avatar.on(StreamingEvents.AVATAR_STOP_TALKING, () => {
+          console.log("🤐 Avatar arrête");
+          setIsTalking(false);
+        });
+
+        avatar.on(StreamingEvents.STREAM_DISCONNECTED, () => {
+          console.log("🔌 Stream déconnecté");
+          setSessionState("inactive");
+          setStream(null);
+        });
+
+        avatar.on(StreamingEvents.USER_TALKING_MESSAGE, handleUserTalkingMessage);
+        avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleAvatarTalkingMessage);
+        avatar.on(StreamingEvents.USER_END_MESSAGE, handleEndMessage);
+        avatar.on(StreamingEvents.AVATAR_END_MESSAGE, handleEndMessage);
+
+        avatarRef.current = avatar;
+        return avatar;
+      } catch (err) {
+        console.error("❌ Erreur initialisation:", err);
+        throw new Error("Impossible d'initialiser l'avatar");
+      }
+    },
+    [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
+
+  const startSession = useCallback(async () => {
+    if (sessionState === "loading" || sessionState === "active") {
+      console.warn("⚠️ Session déjà en cours");
+      return;
+    }
+
+    try {
+      setSessionState("loading");
+      setError(null);
+      setChatHistory([]);
+      currentSenderRef.current = null;
+
+      console.log("🔄 Récupération du token...");
+      const token = await fetchAccessToken();
+
+      console.log("🔄 Initialisation de l'avatar...");
+      const avatar = await initializeAvatar(token);
+
+      const avatarConfig: StartAvatarRequest = {
+        quality: AvatarQuality.High,
+        avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
+        language: config?.language || "fr",
+        voice: {
+          rate: config?.voiceRate || 1.2,
+          emotion: VoiceEmotion.FRIENDLY,
+        },
+        knowledgeId: config?.knowledgeId || undefined,
+      };
+
+      console.log("🔥 Configuration envoyée à HeyGen:", avatarConfig);
+      if (avatarConfig.knowledgeId) {
+        console.log("🔥 Knowledge ID:", avatarConfig.knowledgeId);
+      } else {
+        console.log("ℹ️ Aucune Knowledge Base (conversation générale)");
+      }
+
+      console.log("🔄 Démarrage de la session...");
+      const sessionData = await avatar.createStartAvatar(avatarConfig);
+
+      sessionIdRef.current = sessionData.session_id;
+
+      console.log("✅ Session démarrée:", sessionData.session_id);
+      setSessionState("active");
+
+      console.log("🎤 Activation du micro...");
+      await avatar.startVoiceChat();
+
+      console.log("✅ Voice Chat actif - l'utilisateur peut parler");
+    } catch (err) {
+      console.error("❌ Erreur démarrage:", err);
+      setError(err instanceof Error ? err.message : "Erreur inconnue");
+      setSessionState("error");
+    }
+  }, [sessionState, config, fetchAccessToken, initializeAvatar]);
+
+  const stopSession = useCallback(async () => {
+    if (!avatarRef.current || !sessionIdRef.current) {
+      console.warn("⚠️ Aucune session active");
+      return;
+    }
+
+    try {
+      console.log("🛑 Arrêt de la session...");
+      await avatarRef.current.stopAvatar();
+
+      avatarRef.current = null;
+      sessionIdRef.current = null;
+      currentSenderRef.current = null;
+      setStream(null);
+      setSessionState("inactive");
+      setIsTalking(false);
+
+      console.log("✅ Session arrêtée");
+    } catch (err) {
+      console.error("❌ Erreur arrêt:", err);
+      setError("Impossible d'arrêter la session");
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      if (avatarRef.current && sessionIdRef.current) {
+        console.log("🧹 Nettoyage automatique");
+        avatarRef.current.stopAvatar().catch(console.error);
+      }
+    };
+  }, []);
+
+  return {
+    sessionState,
+    stream,
+    isLoading,
+    error,
+    isTalking,
+    chatHistory,
+    startSession,
+    stopSession,
+  };
 }
