@@ -43,7 +43,6 @@ export default function InteractiveBlock({
     knowledgeId,
     avatarName,
     voiceRate,
-    initialMessage: "Bonjour ! Pouvez-vous m'assister ?",
   });
 
   const [workflowState, setWorkflowState] = useState<
@@ -54,7 +53,7 @@ export default function InteractiveBlock({
   const [initMessageAdded, setInitMessageAdded] = useState(false);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Démarre le timer au début session, stop à l'arrêt
+  // Timer pour durée de la session
   useEffect(() => {
     if (sessionState === "active") {
       setTimerSec(0);
@@ -65,42 +64,22 @@ export default function InteractiveBlock({
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current);
+    };
   }, [sessionState]);
 
-  // Ajoute UN SEUL message assistant pour l'accueil quand session active
+  // Envoi unique du message initial à l'avatar quand session active
   useEffect(() => {
     if (sessionState === "active" && !initMessageAdded) {
-      setChatHistory(prev => [
-        ...prev,
-        {
-          role: "assistant",
-          content: initialMessage,
-          timestamp: new Date(),
-        },
-      ]);
+      if (initialMessage) startInitialSpeak(initialMessage);
       setInitMessageAdded(true);
-      startInitialSpeak(initialMessage);
     }
-    // Réinitialise si inactive
     if (sessionState === "inactive") setInitMessageAdded(false);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sessionState]);
-  
+  }, [sessionState, initMessageAdded, initialMessage, startInitialSpeak]);
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
-  // Démarre la session + parle le message d'entrée
-  useEffect(() => {
-    async function start() {
-      await startSession();
-      await startInitialSpeak(initialMessage);
-      setTimeout(() => {
-        startInitialSpeak(initialMessage);
-      }, 500); // 500ms d’attente
-    }
-    start();
-  }, [knowledgeId]); //avec knowledgeId, si change
 
   useEffect(() => {
     if (videoRef.current && stream) {
@@ -123,10 +102,10 @@ export default function InteractiveBlock({
     }
   }, [sessionState, workflowState]);
 
-  // Gère le bouton "Discuter"
+  // Boutons gestion
   const handleDiscuter = async () => {
     await startSession();
-    await startInitialSpeak(initialMessage);
+    // Le message initial sera envoyé via useEffect ci-dessus
   };
 
   const handleTerminer = async () => {
@@ -154,7 +133,6 @@ export default function InteractiveBlock({
     if (onAbandonner) onAbandonner();
   };
 
-  // Format timer MM:SS
   const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
 
   return (
@@ -165,50 +143,43 @@ export default function InteractiveBlock({
           {timerStr}
         </div>
       )}
-      
+
+      {/* En-tête */}
       <div className="text-center">
         <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">{title}</h1>
         {subtitle && <p className="text-gray-600 text-xs">{subtitle}</p>}
       </div>
-      
+
+      {/* Avatar zone */}
       <div className="w-full max-w-3xl">
         <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
-          {(workflowState === "inactive" || workflowState === "terminated") &&
-            !isLoading && (
-              <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
-                <div className="relative w-full h-full">
-                  <img
-                    src={avatarPreviewImage}
-                    alt="Avatar preview"
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
-                    <div className="text-center text-white px-4">
-                      {workflowState === "inactive" && (
-                        <>
-                          <p className="text-xl font-medium mb-2">
-                            Cliquez sur &quot;Discuter&quot; pour démarrer
-                          </p>
-                          <p className="text-sm text-gray-300">
-                            L'avatar sera prêt à vous écouter
-                          </p>
-                        </>
-                      )}
-                      {workflowState === "terminated" && (
-                        <>
-                          <p className="text-xl font-medium mb-2">
-                            ✅ Discussion terminée
-                          </p>
-                          <p className="text-sm text-gray-300">
-                            Session fermée proprement
-                          </p>
-                        </>
-                      )}
-                    </div>
+          {(workflowState === "inactive" || workflowState === "terminated") && !isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-gray-800 to-gray-900">
+              <div className="relative w-full h-full">
+                <img
+                  src={avatarPreviewImage}
+                  alt="Avatar preview"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                  <div className="text-center text-white px-4">
+                    {workflowState === "inactive" && (
+                      <>
+                        <p className="text-xl font-medium mb-2">Cliquez sur &quot;Discuter&quot; pour démarrer</p>
+                        <p className="text-sm text-gray-300">L'avatar sera prêt à vous écouter</p>
+                      </>
+                    )}
+                    {workflowState === "terminated" && (
+                      <>
+                        <p className="text-xl font-medium mb-2">✅ Discussion terminée</p>
+                        <p className="text-sm text-gray-300">Session fermée proprement</p>
+                      </>
+                    )}
                   </div>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-900">
@@ -238,29 +209,22 @@ export default function InteractiveBlock({
             }`}
           />
 
-          {isTalking && workflowState === "active" && (
-            <div className="absolute top-4 left-4 bg-green-500/90 text-white px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 animate-pulse backdrop-blur-sm">
-              <span>🎤</span>
-              L'avatar parle...
-            </div>
-          )}
-
-          /* Indicateur dynamique */}
+          {/* Indicateur dynamique - haut gauche */}
           {workflowState === "active" && (
             <div className="absolute top-4 left-4 flex flex-col gap-0 z-10">
               {isTalking ? (
                 <span className="bg-gray-500/90 text-white px-3 py-1 rounded-full text-xs font-medium">
-                  🎧 Discussion en cours...
+                  🎧 L’avatar parle...
                 </span>
               ) : (
                 <span className="bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium">
-                 🎧 En pause - Parlez pour reprendre
+                  🎧 En écoute (parlez pour répondre)
                 </span>
               )}
             </div>
           )}
 
-          {/* BOUTONS EN OVERLAY */}
+          {/* Boutons overlay */}
           {workflowState === "inactive" && !isLoading && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
               <div className="flex gap-3 justify-center">
