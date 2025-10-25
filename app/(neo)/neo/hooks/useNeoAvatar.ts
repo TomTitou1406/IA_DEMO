@@ -174,23 +174,20 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
       console.warn("⚠️ Aucune session active à arrêter");
       return;
     }
-
+  
     try {
       console.log("🛑 Arrêt de la session...");
-
-      // Arrêter le voice chat
-      await avatarRef.current.stopVoiceChat();
-
-      // Stopper l'avatar
+  
+      // Stopper l'avatar (cela arrête automatiquement le voice chat)
       await avatarRef.current.stopAvatar();
-
+  
       // Nettoyer
       avatarRef.current = null;
       sessionIdRef.current = null;
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
-
+  
       console.log("✅ Session arrêtée avec succès");
     } catch (err) {
       console.error("❌ Erreur lors de l'arrêt de la session:", err);
