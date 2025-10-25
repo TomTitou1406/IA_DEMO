@@ -162,7 +162,6 @@ export default function RecruteurEntreprise() {
       title="Présenter votre entreprise - Mode vocal"
       subtitle="L'IA vous assiste vocalement avec un avatar interactif."
       avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
-      knowledgeBaseId="19df36d7a9354a1aa664c34686256df1"
       onFinaliser={handleFinaliser}
       onSauvegarder={handleSauvegarder}
       onAbandonner={handleAbandonner}
