@@ -26,7 +26,7 @@ export default function InteractiveBlock({
   onFinaliser,
   onSauvegarder,
   onAbandonner,
-  initialMessage = "Bonjour, je suis prêt à vous aider.",
+  initialMessage,
 }: Props) {
   const {
     sessionState,
@@ -43,14 +43,48 @@ export default function InteractiveBlock({
     knowledgeId,
     avatarName,
     voiceRate,
-    // Ici tu peux aussi passer initialMessage, si tu veux un message par défaut
-    initialMessage: "Bonjour ! Je suis là pour vous assister.",
+    initialMessage: "Bonjour ! Pouvez-vous m'assister ?",
   });
 
   const [workflowState, setWorkflowState] = useState<
     "inactive" | "active" | "terminated"
   >("inactive");
 
+  const [timerSec, setTimerSec] = useState(0);
+  const [initMessageAdded, setInitMessageAdded] = useState(false);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Démarre le timer au début session, stop à l'arrêt
+  useEffect(() => {
+    if (sessionState === "active") {
+      setTimerSec(0);
+      timerRef.current = setInterval(() => {
+        setTimerSec((prev) => prev + 1);
+      }, 1000);
+    } else if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [sessionState]);
+
+  // Ajoute UN SEUL message assistant pour l'accueil quand session active
+  useEffect(() => {
+    if (sessionState === "active" && !initMessageAdded) {
+      chatHistory.push({
+        role: "assistant",
+        content: initialMessage,
+        timestamp: new Date(),
+      });
+      setInitMessageAdded(true);
+      // Envoie le message à l'avatar ensuite si besoin
+      startInitialSpeak(initialMessage);
+    }
+    // Réinitialise si inactive
+    if (sessionState === "inactive") setInitMessageAdded(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sessionState]);
+  
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
@@ -118,13 +152,23 @@ export default function InteractiveBlock({
     if (onAbandonner) onAbandonner();
   };
 
+  // Format timer MM:SS
+  const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
+
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2">
+      {/* Timer coin supérieur droit */}
+      {(workflowState === "active" || workflowState === "terminated") && (
+        <div className="absolute top-5 right-8 z-10 bg-white/70 text-xs rounded px-3 py-1 border shadow">
+          {timerStr}
+        </div>
+      )}
+      
       <div className="text-center">
         <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">{title}</h1>
         {subtitle && <p className="text-gray-600 text-xs">{subtitle}</p>}
       </div>
-
+      
       <div className="w-full max-w-3xl">
         <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
           {(workflowState === "inactive" || workflowState === "terminated") &&
@@ -199,14 +243,22 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {workflowState === "active" && !isTalking && (
-            <div className="absolute top-4 left-4 bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium backdrop-blur-sm">
-              🎧 En écoute
+          /* Indicateur dynamique */}
+          {workflowState === "active" && (
+            <div className="absolute top-4 left-4 flex flex-col gap-0 z-10">
+              {isTalking ? (
+                <span className="bg-gray-500/90 text-white px-3 py-1 rounded-full text-xs font-medium">
+                  🎧 Discussion en cours...
+                </span>
+              ) : (
+                <span className="bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium">
+                 🎧 En pause - Parlez pour reprendre
+                </span>
+              )}
             </div>
           )}
 
           {/* BOUTONS EN OVERLAY */}
-
           {workflowState === "inactive" && !isLoading && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
               <div className="flex gap-3 justify-center">
@@ -227,22 +279,22 @@ export default function InteractiveBlock({
           )}
 
           {workflowState === "active" && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 to-transparent p-3 backdrop-blur-sm">
-              <div className="flex justify-center gap-3">
-                <button
-                  onClick={handleTerminer}
-                  className="bg-red-600 text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-lg"
-                >
-                  Terminer
-                </button>
-                <div className="flex flex-col items-center gap-2">
-                  <div className="text-xs text-gray-700 mb-1">
-                    Parlez pour reprendre la main immédiatement.
-                  </div>
+            <div className="w-full mt-1">
+              <div className="flex flex-col items-center mb-2">
+                <div className="text-xs text-gray-700 mb-1 text-center">
+                  - Pour interrompre l’avatar, parlez simplement ou cliquez : -
+                </div>
+                <div className="flex flex-row gap-2 w-full justify-center">
+                  <button
+                    onClick={handleTerminer}
+                    className="w-40 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-lg"
+                  >
+                    Terminer
+                  </button>
                   <button
                     onClick={handleInterrompre}
                     disabled={!isTalking}
-                    className={`bg-yellow-600 text-white px-6 py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
+                    className={`w-40 bg-yellow-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
                       !isTalking ? "opacity-50 cursor-not-allowed" : ""
                     }`}
                     title="Interrompre la parole"
