@@ -198,12 +198,11 @@ export function useNeoAvatar(): UseNeoAvatarReturn {
   // ─────────────────────────────────────────────────────────────────────
   // 5️⃣ Nettoyage automatique au démontage du composant
   // ─────────────────────────────────────────────────────────────────────
-  useEffect(() => {
+    useEffect(() => {
     return () => {
       if (avatarRef.current && sessionIdRef.current) {
         console.log("🧹 Nettoyage automatique de la session");
-        avatarRef.current.stopVoiceChat().catch(console.error);
-        avatarRef.current.stopAvatar().catch(console.error);
+        avatarRef.current.stopAvatar().catch(console.error);  // ✅ GARDER seulement ça
       }
     };
   }, []);
