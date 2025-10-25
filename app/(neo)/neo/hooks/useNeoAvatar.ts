@@ -38,13 +38,13 @@ interface UseNeoAvatarReturn {
 
 const DEFAULT_AVATAR_CONFIG: StartAvatarRequest = {
   quality: AvatarQuality.High,
-  avatarName: "Anastasia_Grey_Shirt_public",
+  avatarName: "Anastasia_Chair_Sitting_public",
   language: "fr",
   voice: {
-    rate: 1.0,
+    rate: 1.2,
     emotion: VoiceEmotion.FRIENDLY,
   },
-  knowledgeBase: "",
+  knowledgeBase: "19df36d7a9354a1aa664c34686256df1",
 };
 
 // ========================================================================
