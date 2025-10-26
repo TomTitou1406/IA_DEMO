@@ -21,7 +21,7 @@ export function Card({
         rounded-2xl 
         border border-[var(--nc-gray)] 
         shadow-[0_6px_18px_rgba(0,0,0,0.06)] 
-        hover:border-[var(--nc-blue)] 
+        hover:border-[var(--nc-gray)] 
         hover:shadow-2xl 
         hover:-translate-y-2 
         transition-all duration-200 
