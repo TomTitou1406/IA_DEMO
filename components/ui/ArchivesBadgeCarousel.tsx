@@ -9,13 +9,22 @@ type Archive = {
   updated_at: string;
 };
 
-export default function ArchivesBadgeCarousel({
-  archives,
-  onSelect,
-}: {
+type Props = {
   archives: Archive[];
   onSelect: (conversationId: string) => void;
-}) {
+};
+
+function formatDate(dateString: string) {
+  const date = new Date(dateString);
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const year = String(date.getFullYear()).slice(-2);
+  const hours = String(date.getHours()).padStart(2, '0');
+  const minutes = String(date.getMinutes()).padStart(2, '0');
+  return `${day}/${month}/${year} - ${hours}:${minutes}`;
+}
+
+export default function ArchivesBadgeCarousel({ archives, onSelect }: Props) {
   const scrollRef = useRef<HTMLDivElement>(null);
 
   const scroll = (direction: "left" | "right") => {
@@ -27,6 +36,11 @@ export default function ArchivesBadgeCarousel({
       });
     }
   };
+
+  // Tri du plus récent au plus ancien
+  const sortedArchives = [...archives].sort(
+    (a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime()
+  );
 
   if (archives.length === 0) return null;
 
@@ -44,9 +58,9 @@ export default function ArchivesBadgeCarousel({
       <div
         className="flex overflow-x-auto no-scrollbar space-x-4"
         ref={scrollRef}
-        style={{ maxWidth: "700px" }}
+        style={{ maxWidth: 700 }}
       >
-        {archives.map((archive) => (
+        {sortedArchives.map((archive) => (
           <button
             key={archive.id}
             className="min-w-[200px] bg-blue-50 border border-blue-200 hover:bg-blue-100 rounded-lg px-4 py-2 text-left shadow transition cursor-pointer"
@@ -57,7 +71,7 @@ export default function ArchivesBadgeCarousel({
               {archive.title || "Sans titre"}
             </span>
             <span className="block text-xs text-gray-500 mb-1">
-              Modifiée le {new Date(archive.updated_at).toLocaleDateString()}
+              {formatDate(archive.updated_at)}
             </span>
             <span className="inline-block bg-blue-200 text-blue-800 text-xs px-2 py-0.5 rounded">
               {archive.type}
