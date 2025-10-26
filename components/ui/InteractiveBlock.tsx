@@ -32,7 +32,9 @@ export default function InteractiveBlock({
   onSauvegarder,
   onAbandonner,
   initialMessage = "Bonjour ! Pouvez-vous m'assister ?",
-}: Props) {
+  initialChatHistory = [], // <--- Nouveau prop
+}: Props & { initialChatHistory?: ChatMessage[] }) {
+
   const {
     sessionState,
     stream,
@@ -48,8 +50,10 @@ export default function InteractiveBlock({
     knowledgeId,
     avatarName,
     voiceRate,
+    initialMessage,
+    initialChatHistory, // <---- Passage
   });
-
+    
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
   const [timerSec, setTimerSec] = useState(0);
   const [initMessageSent, setInitMessageSent] = useState(false);
