@@ -31,7 +31,7 @@ export default function RecruteurEntreprise() {
         .from("conversations")
         .select("id, title, type, updated_at")
         .eq("user_id", DEFAULT_USER_ID)
-        .eq("type", "entreprise")
+        .eq("type", "poste")
         .order("updated_at", { ascending: false });
       setArchives(data ?? []);
       setLoadingArchives(false);
