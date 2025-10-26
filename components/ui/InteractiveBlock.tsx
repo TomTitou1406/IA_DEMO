@@ -114,7 +114,7 @@ export default function InteractiveBlock({
   async function saveConversation() {
   const { data, error } = await supabase.from('conversations').insert([
     {
-      user_id: null, // À gérer plus tard si authentification
+      user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
       type: 'entreprise', // ou 'poste' selon le contexte
       title,
       subtitle,
@@ -131,9 +131,12 @@ export default function InteractiveBlock({
   } else {
     setToastMessage("Conversation sauvegardée avec succès !");
     console.log('Conversation sauvegardée:', data);
+    setTimeout(() => {
+      setToastMessage(null);
+      window.history.back();
+    }, 2000); // Délai ajustable (ms)
   }
 }
-
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
