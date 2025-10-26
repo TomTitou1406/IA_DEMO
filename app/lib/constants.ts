@@ -55,5 +55,5 @@ export const STT_LANGUAGE_LIST = [
   { label: "Español", value: "es", key: "es" },
 ];
 
-export const DEFAULT_USER_ID = "default-user-0001";
+export const DEFAULT_USER_ID = "00000000-0000-0000-0000-000000000001";
 
