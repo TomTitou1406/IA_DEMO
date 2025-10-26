@@ -1,4 +1,5 @@
 // /app/(neo)/neo/hooks/useNeoAvatar.ts
+"use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
 import StreamingAvatar, {
@@ -23,6 +24,7 @@ export interface UseNeoAvatarConfig {
   voiceRate?: number;
   language?: string;
   initialMessage?: string; // Ajout optionnel message initial
+  initialChatHistory?: ChatMessage[]; // Nouveau : historique complet de chat
 }
 
 interface UseNeoAvatarReturn {
@@ -34,7 +36,6 @@ interface UseNeoAvatarReturn {
   chatHistory: ChatMessage[];
   startSession: () => Promise<void>;
   stopSession: () => Promise<void>;
-  // Nouvelles méthodes exposées
   interrupt: () => Promise<void>;
   startInitialSpeak: (text: string) => Promise<void>;
 }
@@ -51,6 +52,13 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
   const isLoading = sessionState === "loading";
+
+  // Initialize chat history from initialChatHistory if provided
+  useEffect(() => {
+    if (config?.initialChatHistory && config.initialChatHistory.length > 0) {
+      setChatHistory(config.initialChatHistory);
+    }
+  }, [config?.initialChatHistory]);
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
@@ -197,7 +205,8 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     try {
       setSessionState("loading");
       setError(null);
-      setChatHistory([]);
+      // Utilisation de l'historique initial si fourni, sinon vide
+      setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
 
       const token = await fetchAccessToken();
