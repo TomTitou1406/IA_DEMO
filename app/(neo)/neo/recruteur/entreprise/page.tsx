@@ -19,6 +19,10 @@ export default function RecruteurEntreprise() {
   const [archives, setArchives] = useState<any[]>([]);
   const [loadingArchives, setLoadingArchives] = useState(true);
 
+  // Nouveaux états pour l’historique chargé
+  const [chatHistory, setChatHistory] = useState<any[]>([]);
+  const [loadingChatHistory, setLoadingChatHistory] = useState(false);
+
   useEffect(() => {
     setLoadingArchives(true);
     (async () => {
@@ -33,8 +37,26 @@ export default function RecruteurEntreprise() {
     })();
   }, []);
 
-  // Handler pour archive
-  const handleSelectConversation = (id: string) => setSelectedConversationId(id);
+  // Handler pour archive modifié en async
+  const handleSelectConversation = async (id: string) => {
+    setSelectedConversationId(id);
+    setLoadingChatHistory(true);
+
+    const { data, error } = await supabase
+      .from("conversations")
+      .select("messages")
+      .eq("id", id)
+      .single();
+
+    if (error) {
+      console.error("Erreur chargement discussion :", error);
+      setChatHistory([]);
+    } else {
+      setChatHistory(data?.messages ?? []);
+    }
+
+    setLoadingChatHistory(false);
+  };
 
   // Modes disponibles
   const modes: {
@@ -179,16 +201,15 @@ export default function RecruteurEntreprise() {
   // ------ ÉTAT 3 : Archive sélectionnée ------
   if (selectedConversationId && selectedConversationId !== "new") {
     if (modeChoisi === "ecrit") {
-      // Ici : il faudra charger discussion depuis l’archive via l’ID, si implémenté plus tard
       return (
         <InteractiveChatBlock
           conversationId={selectedConversationId}
           title="Présenter votre entreprise - Mode écrit"
           subtitle="Discutez avec l'IA via un chat textuel."
-          discussion={[]}
+          discussion={chatHistory}  // passe l'historique chargé ici
           etatDiscussion="init"
           setEtatDiscussion={() => {}}
-          setDiscussion={() => {}}
+          setDiscussion={setChatHistory}  // pour modification
           onSendMessage={() => {}}
           onAbandonner={() => {}}
           onConfirmerAbandon={() => {}}
