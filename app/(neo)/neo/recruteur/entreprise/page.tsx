@@ -186,7 +186,7 @@ export default function RecruteurEntreprise() {
   if (modeChoisi === "ecrit") {
     return (
       <InteractiveChatBlock
-        conversationId={selectedConversationId}
+        conversationId={selectedConversationId ?? undefined}
         title="Présenter votre entreprise - Mode écrit"
         subtitle="Discutez avec l'IA via un chat textuel."
         discussion={discussionChat}
@@ -207,7 +207,7 @@ export default function RecruteurEntreprise() {
   // Adaptation pour mode vocal si besoin (idem précédemment) ou fallback simple
   return (
     <InteractiveBlock
-      conversationId={selectedConversationId}
+      conversationId={selectedConversationId ?? undefined}
       title="Présenter votre entreprise - Mode vocal"
       subtitle="L'IA vous assiste vocalement avec un avatar interactif."
       avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
