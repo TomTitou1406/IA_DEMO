@@ -9,6 +9,7 @@ type Props = {
   conversationId?: string;
   title: string;
   subtitle?: string;
+  loading?: boolean;
   discussion: { role: "user" | "assistant"; content: string }[];
   etatDiscussion: EtatDiscussion;
   setEtatDiscussion: React.Dispatch<React.SetStateAction<EtatDiscussion>>;
