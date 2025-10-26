@@ -6,7 +6,7 @@ import InteractiveBlock from "@/components/ui/InteractiveBlock";
 import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import { DEFAULT_USER_ID } from "@/lib/constants";
+import { DEFAULT_USER_ID } from "@/app/lib/constants";
 
 export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
