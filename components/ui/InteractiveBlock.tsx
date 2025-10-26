@@ -113,7 +113,7 @@ export default function InteractiveBlock({
 
   // Fonction de sauvegarde des conversations
   async function saveConversation() {
-    if (selectedConversationId && selectedConversationId !== "new") {
+    if (ConversationId && ConversationId !== "new") {
       // Update de la conversation existante
       const { error } = await supabase
         .from("conversations")
@@ -127,7 +127,7 @@ export default function InteractiveBlock({
           messages: chatHistory,
           updated_at: new Date(),
         })
-        .eq("id", selectedConversationId);
+        .eq("id", ConversationId);
   
       if (error) {
         console.error("Erreur de mise à jour de la conversation :", error);
