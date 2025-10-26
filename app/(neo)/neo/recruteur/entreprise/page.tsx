@@ -158,7 +158,7 @@ export default function RecruteurEntreprise() {
             <h2 className="text-lg font-semibold mb-4">Mes présentations archivées</h2>
             <ConversationList
               userId={DEFAULT_USER_ID}
-              filterType="presentation"
+              filterType="entreprise"
               onSelect={handleSelectConversation}
             />
           </div>
@@ -171,7 +171,7 @@ export default function RecruteurEntreprise() {
           <h2 className="text-lg font-semibold mb-4">Mes présentations archivées</h2>
           <ConversationList
             userId={DEFAULT_USER_ID}
-            filterType="presentation"
+            filterType="entreprise"
             onSelect={handleSelectConversation}
           />
         </div>
