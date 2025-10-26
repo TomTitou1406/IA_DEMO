@@ -6,7 +6,7 @@ import React from "react";
 type EtatDiscussion = "init" | "active" | "pause" | "stopped" | "finalized";
 
 type Props = {
-  conversationId?: string;
+  conversationId: string | null;
   title: string;
   subtitle?: string;
   loading?: boolean;
