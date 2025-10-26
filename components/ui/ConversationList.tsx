@@ -51,24 +51,25 @@ export default function ConversationList({
   }
 
   if (conversations.length === 0) {
-    return <p>Aucune conversation trouvée.</p>;
+    return <p className="text-center text-gray-600">Aucune conversation trouvée.</p>;
   }
 
   return (
-    <div className="space-y-2">
+    <div className="flex flex-wrap gap-4 justify-center">
       {conversations.map(({ id, title, type, updated_at }) => (
         <div
           key={id}
-          className="flex justify-between items-center border rounded p-3 cursor-pointer hover:bg-gray-100"
           onClick={() => onSelect(id)}
+          className="cursor-pointer border rounded-lg p-4 shadow hover:shadow-lg transition-shadow bg-white max-w-xs w-full"
+          role="button"
+          tabIndex={0}
+          onKeyPress={(e) => e.key === "Enter" && onSelect(id)}
         >
-          <div>
-            <p className="font-semibold">{title || "Sans titre"}</p>
-            <p className="text-xs text-gray-500">
-              Modifiée le {new Date(updated_at).toLocaleDateString()}
-            </p>
-          </div>
-          <span className="bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded">
+          <h3 className="font-semibold text-lg mb-2">{title || "Sans titre"}</h3>
+          <p className="text-sm text-gray-500 mb-2">
+            Modifiée le {new Date(updated_at).toLocaleDateString()}
+          </p>
+          <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
             {type}
           </span>
         </div>
