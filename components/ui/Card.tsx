@@ -18,7 +18,7 @@ export function Card({
       className={`
         relative overflow-hidden 
         bg-white                    // ← Fond blanc opaque
-        rounded-xl 
+        rounded-2xl 
         border border-[var(--nc-gray)] 
         shadow-[0_6px_18px_rgba(0,0,0,0.06)] 
         hover:border-[var(--nc-blue)] 
@@ -49,8 +49,8 @@ export function Card({
           height: "4px", // épaisseur
           width: "100%",
           background: color,
-          borderTopLeftRadius: "1rem",
-          borderTopRightRadius: "1rem",
+          borderTopLeftRadius: "1.5rem",
+          borderTopRightRadius: "1.5rem",
           zIndex: 2,
         }}
       />
@@ -102,11 +102,11 @@ export function CardContent({
       className={`w-full text-center leading-snug overflow-hidden ${className}`}
       style={{
         display: "box",
-        WebkitLineClamp: 3,
+        WebkitLineClamp: 5,
         WebkitBoxOrient: "vertical",
-        lineClamp: 3,
+        lineClamp: 5,
         boxOrient: "vertical",
-        maxHeight: "4.5em", // ~3 lignes
+        maxHeight: "7.5em", // ~5 lignes
         ...style,
       }}
       {...props}
