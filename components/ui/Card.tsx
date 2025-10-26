@@ -1,7 +1,5 @@
 import * as React from "react";
 
-const [hovered, setHovered] = React.useState(false);
-
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
   image?: string;
   color?: string; // pour la bordure haute colorée personnalisable
@@ -15,6 +13,7 @@ export function Card({
   children,
   ...props
 }: CardProps) {
+  const [hovered, setHovered] = React.useState(false);
   return (
     <div
       onMouseEnter={() => setHovered(true)}
