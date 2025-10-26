@@ -113,32 +113,57 @@ export default function InteractiveBlock({
 
   // Fonction de sauvegarde des conversations
   async function saveConversation() {
-  const { data, error } = await supabase.from('conversations').insert([
-    {
-      user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
-      type: 'entreprise', // ou 'poste' selon le contexte
-      title,
-      subtitle,
-      avatar_preview_image: avatarPreviewImage,
-      avatar_name: avatarName,
-      knowledge_id: knowledgeId,
-      initial_message: initialMessage,
-      messages: chatHistory,
+    if (selectedConversationId && selectedConversationId !== "new") {
+      // Update de la conversation existante
+      const { error } = await supabase
+        .from("conversations")
+        .update({
+          title,
+          subtitle,
+          avatar_preview_image: avatarPreviewImage,
+          avatar_name: avatarName,
+          knowledge_id: knowledgeId,
+          initial_message: initialMessage,
+          messages: chatHistory,
+          updated_at: new Date(),
+        })
+        .eq("id", selectedConversationId);
+  
+      if (error) {
+        console.error("Erreur de mise à jour de la conversation :", error);
+        setToastMessage("Erreur lors de la mise à jour de la conversation.");
+        return;
+      }
+    } else {
+      // Insertion d’une nouvelle conversation
+      const { data, error } = await supabase.from("conversations").insert([
+        {
+          user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
+          type: "entreprise", // ou 'poste' selon le contexte
+          title,
+          subtitle,
+          avatar_preview_image: avatarPreviewImage,
+          avatar_name: avatarName,
+          knowledge_id: knowledgeId,
+          initial_message: initialMessage,
+          messages: chatHistory,
+        },
+      ]);
+  
+      if (error) {
+        console.error("Erreur de sauvegarde de la conversation :", error);
+        setToastMessage("Erreur lors de la sauvegarde de la conversation.");
+        return;
+      }
     }
-  ]);
-   if (error) {
-    console.error('Erreur de sauvegarde de la conversation :', error);
-    setToastMessage("Erreur lors de la sauvegarde de la conversation.");
-  } else {
+  
     setToastMessage("Conversation sauvegardée avec succès !");
-    console.log('Conversation sauvegardée:', data);
+    console.log("Conversation sauvegardée");
     setTimeout(() => {
       setToastMessage(null);
       window.history.back();
     }, 2000); // Délai ajustable (ms)
   }
-}
-
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
       {/* En-tête */}
