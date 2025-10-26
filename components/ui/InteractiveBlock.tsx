@@ -5,6 +5,7 @@ import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
+import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 type Props = {
   conversationId: string | null;
