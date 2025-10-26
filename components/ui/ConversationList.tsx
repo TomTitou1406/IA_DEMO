@@ -26,12 +26,13 @@ export default function ConversationList({
       let query = supabase
         .from("conversations")
         .select("id, title, type, updated_at")
-        .eq("user_id", userId)
-        .order("updated_at", { ascending: false });
+        .eq("user_id", userId);
 
       if (filterType) {
         query = query.eq("type", filterType);
       }
+
+      query = query.order("updated_at", { ascending: false });
 
       const { data, error } = await query;
 
@@ -63,7 +64,9 @@ export default function ConversationList({
         >
           <div>
             <p className="font-semibold">{title || "Sans titre"}</p>
-            <p className="text-xs text-gray-500">Modifiée le {new Date(updated_at).toLocaleDateString()}</p>
+            <p className="text-xs text-gray-500">
+              Modifiée le {new Date(updated_at).toLocaleDateString()}
+            </p>
           </div>
           <span className="bg-blue-200 text-blue-800 text-xs px-2 py-1 rounded">
             {type}
