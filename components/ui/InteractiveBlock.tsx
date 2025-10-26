@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 import { supabase } from "@/app/lib/supabaseClient";
-import Toast from "@/components/ui/Toast"; 
+const [toastMessage, setToastMessage] = useState<string | null>(null);
 
 type Props = {
   title: string;
