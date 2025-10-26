@@ -59,13 +59,13 @@ export default function RecruteurEntreprise() {
   if (!selectedConversationId) {
     if (!modeChoisi) {
       return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] py-10">
-          <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-4 text-center">
+        <div className="flex flex-col items-center justify-center min-h-[60vh] py-4">
+          <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-2 text-center">
             Choisissez votre mode de travail avec l'IA
           </h1>
 
           {/* Lien retour */}
-          <div className="text-center mb-4">
+          <div className="text-center mb-2">
             <Link
               href="/neo/"
               className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] hover:underline transition-all duration-200 text-lg font-medium"
@@ -87,7 +87,7 @@ export default function RecruteurEntreprise() {
             </>
           )}
 
-          <p className="text-lg text-gray-700 mb-10 text-center max-w-2xl">
+          <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
             Quelle est la méthode la plus adaptée à votre environnement et à vos outils ?
           </p>
 
@@ -119,16 +119,6 @@ export default function RecruteurEntreprise() {
                 </Card>
               </div>
             ))}
-          </div>
-
-          {/* Liste des présentations archivées sous la liste des modes */}
-          <div className="mt-10 w-full max-w-xl">
-            <h2 className="text-lg font-semibold mb-4">Mes présentations archivées</h2>
-            <ConversationList
-              userId={DEFAULT_USER_ID}
-              filterType="presentation"
-              onSelect={handleSelectConversation}
-            />
           </div>
         </div>
       );
