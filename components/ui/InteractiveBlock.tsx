@@ -4,6 +4,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
+import { DEFAULT_USER_ID } from "@/app/lib/constants";
 
 type Props = {
   conversationId?: string;
