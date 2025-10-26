@@ -4,6 +4,7 @@ import React from "react";
 type EtatDiscussion = "init" | "active" | "pause" | "stopped" | "finalized";
 
 type Props = {
+  conversationId: string;
   title: string;
   subtitle?: string;
   discussion: { role: "user" | "assistant"; content: string }[];
@@ -21,6 +22,7 @@ type Props = {
 };
 
 export default function InteractiveChatBlock({
+  conversationId,
   title,
   subtitle,
   discussion,
