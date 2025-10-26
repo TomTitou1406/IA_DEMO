@@ -1,5 +1,7 @@
 import * as React from "react";
 
+const [hovered, setHovered] = React.useState(false);
+
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
   image?: string;
   color?: string; // pour la bordure haute colorée personnalisable
@@ -15,6 +17,8 @@ export function Card({
 }: CardProps) {
   return (
     <div
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
       className={`
         relative overflow-hidden 
         bg-white                    // ← Fond blanc opaque
@@ -30,8 +34,9 @@ export function Card({
         ${className}
       `}
       style={{
+        borderColor: hovered ? color : "var(--nc-gray)",
         width: "321px",
-        height: "428px",
+        height: "400px",
         minWidth: "321px",
         minHeight: "428px",
         maxWidth: "321px",
@@ -46,7 +51,7 @@ export function Card({
           position: "absolute",
           top: 0,
           left: 0,
-          height: "4px", // épaisseur
+          height: "5px", // épaisseur
           width: "100%",
           background: color,
           borderTopLeftRadius: "1.5rem",
