@@ -188,7 +188,7 @@ export default function RecruteurEntreprise() {
         conversationId={conversationId}
         title="Nouveau poste - Mode vocal"
         subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-        avatarPreviewImage="/avatars/waybe_16_9_preview.webp"
+        avatarPreviewImage="/avatars/wayne_16_9_preview.webp"
         knowledgeId="a017cb4ee5a54922a50344a6559b80c3"
         avatarName="Wayne_20240711"
         voiceRate={1.2}
