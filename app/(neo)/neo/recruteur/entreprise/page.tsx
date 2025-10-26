@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useState, useEffect } from "react";
 import ConversationList from "@/components/ui/ConversationList";
 import ArchivesBadgeCarousel from "@/components/ui/ArchivesBadgeCarousel";
