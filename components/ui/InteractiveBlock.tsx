@@ -2,6 +2,7 @@
 
 import React, { useEffect, useRef, useState } from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
+import { supabase } from "@/app/lib/supabaseClient";
 
 type Props = {
   title: string;
@@ -104,6 +105,32 @@ export default function InteractiveBlock({
   const handleAbandonner = () => { if (onAbandonner) onAbandonner(); };
 
   const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
+
+  // Fonction de sauvegarde des conversations
+  async function saveConversation() {
+  const { data, error } = await supabase.from('conversations').insert([
+    {
+      user_id: null, // À gérer plus tard si authentification
+      type: 'entreprise', // ou 'poste' selon le contexte
+      title,
+      subtitle,
+      avatar_preview_image: avatarPreviewImage,
+      avatar_name: avatarName,
+      knowledge_id: knowledgeId,
+      initial_message: initialMessage,
+      messages: chatHistory,
+    }
+  ]);
+
+  if (error) {
+    console.error('Erreur sauvegarde conversation Supabase :', error);
+    alert("Erreur lors de la sauvegarde, regarde la console.");
+  } else {
+    alert("Conversation sauvegardée avec succès !");
+    console.log('Conversation sauvegardée:', data);
+  }
+}
+
 
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
@@ -268,7 +295,7 @@ export default function InteractiveBlock({
                   Abandonner
                 </button>
                 <button
-                  onClick={handleSauvegarder}
+                  onClick={saveConversation}
                   className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition shadow-lg"
                 >
                   Sauvegarder
