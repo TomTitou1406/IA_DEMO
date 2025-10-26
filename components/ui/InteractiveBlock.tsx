@@ -7,6 +7,7 @@ import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 
 type Props = {
+  selectedConversationId: string | null;
   conversationId?: string;
   title: string;
   subtitle?: string;
