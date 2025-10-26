@@ -12,7 +12,8 @@ import { DEFAULT_USER_ID } from "@/app/lib/constants";
 
 export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>(null);
+  // "new" = création, string = archive supabase, null = aucune sélection
+  const [selectedConversationId, setSelectedConversationId] = useState<string | null>("");
 
   // Chargement des archives pour badges
   const [archives, setArchives] = useState<any[]>([]);
@@ -28,10 +29,10 @@ export default function RecruteurEntreprise() {
     })();
   }, []);
 
-  // Gestion du choix de conversation
+  // Handler pour archive
   const handleSelectConversation = (id: string) => setSelectedConversationId(id);
 
-  // Typage strict des modes pour éviter erreur TS
+  // Modes disponibles
   const modes: {
     key: "vocal" | "ecrit";
     title: string;
@@ -42,20 +43,21 @@ export default function RecruteurEntreprise() {
   }[] = [
     {
       key: "vocal",
-      title: "Nouvelle convresation en mode vocal",
-      desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif.",
+      title: "Nouvelle conversation en mode vocal",
+      desc: "Exprimez-vous à voix haute avec un micro. L'IA anime un avatar interactif.",
       color: "var(--nc-blue)",
       image: "/cards/mode_avatar_card.png",
     },
     {
       key: "ecrit",
-      title: "Nouvelle convresation en mode texte",
+      title: "Nouvelle conversation en mode texte",
       desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit dans le fil de discussion.",
       color: "var(--nc-blue)",
       image: "/cards/mode_chat_card.png",
     },
   ];
 
+  // ------ ÉTAT 1 : Choix / badges / création ------
   if (!selectedConversationId) {
     if (!modeChoisi) {
       return (
@@ -63,8 +65,6 @@ export default function RecruteurEntreprise() {
           <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-2 text-center">
             Poursuivre ou créer une nouvelle discussion assistée par l'IA
           </h1>
-
-          {/* Lien retour */}
           <div className="text-center mb-2">
             <Link
               href="/neo/"
@@ -73,8 +73,7 @@ export default function RecruteurEntreprise() {
               ← Retour
             </Link>
           </div>
-
-          {/* Affichage du carrousel de badges si archives */}
+          {/* Badges d'archives */}
           {archives.length > 0 && (
             <>
               <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
@@ -86,16 +85,17 @@ export default function RecruteurEntreprise() {
               />
             </>
           )}
-
           <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
             Poursuivre ou créer une nouvelle discussion assistée par l'IA
           </p>
-
           <div className="flex gap-8 flex-wrap justify-center">
             {modes.map((m) => (
               <div
                 key={m.key}
-                onClick={() => setModeChoisi(m.key)}
+                onClick={() => {
+                  setModeChoisi(m.key);
+                  setSelectedConversationId("new"); // nouvelle conversation
+                }}
                 className="cursor-pointer"
               >
                 <Card
@@ -123,55 +123,89 @@ export default function RecruteurEntreprise() {
         </div>
       );
     } else {
-      // Mode choisi mais pas de conversation sélectionnée, on affiche la liste seulement
-      return (
-        <div className="mt-10 w-full max-w-xl mx-auto">
-          <h2 className="text-lg font-semibold mb-4">Mes présentations archivées</h2>
-          <ConversationList
-            userId={DEFAULT_USER_ID}
-            filterType="presentation"
-            onSelect={handleSelectConversation}
-          />
-        </div>
-      );
+      // Cas rare : mode choisi, pas encore d'ID (ex: après reset)
+      return null;
     }
   }
 
-  // Si conversation sélectionnée, affichage du chat selon mode
-  if (modeChoisi === "ecrit") {
+  // ------ ÉTAT 2 : Nouvelle conversation ------
+  if (selectedConversationId === "new") {
+    if (modeChoisi === "ecrit") {
+      return (
+        <InteractiveChatBlock
+          conversationId={undefined}
+          title="Nouvelle présentation - Mode écrit"
+          subtitle="Commencez à discuter avec l'IA."
+          discussion={[]}
+          etatDiscussion="init"
+          setEtatDiscussion={() => {}}
+          setDiscussion={() => {}}
+          onSendMessage={() => {}}
+          onAbandonner={() => {}}
+          onConfirmerAbandon={() => {}}
+          showConfirmation={false}
+          onFinaliser={() => {}}
+          onSauvegarder={() => {}}
+          showSavedMessage={false}
+        />
+      );
+    }
     return (
-      <InteractiveChatBlock
-        conversationId={selectedConversationId ?? undefined}
-        title="Présenter votre entreprise - Mode écrit"
-        subtitle="Discutez avec l'IA via un chat textuel."
-        discussion={[]}
-        etatDiscussion="init"
-        setEtatDiscussion={() => {}}
-        setDiscussion={() => {}}
-        onSendMessage={() => {}}
-        onAbandonner={() => {}}
-        onConfirmerAbandon={() => {}}
-        showConfirmation={false}
+      <InteractiveBlock
+        conversationId={undefined}
+        title="Nouvelle présentation - Mode vocal"
+        subtitle="L'IA vous assiste vocalement avec un avatar interactif."
+        avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
+        knowledgeId="19df36d7a9354a1aa664c34686256df1"
+        avatarName="Anastasia_Chair_Sitting_public"
+        voiceRate={1.2}
         onFinaliser={() => {}}
         onSauvegarder={() => {}}
-        showSavedMessage={false}
+        onAbandonner={() => {}}
       />
     );
   }
 
-  // Sinon fallback vers mode vocal
-  return (
-    <InteractiveBlock
-      conversationId={selectedConversationId ?? undefined}
-      title="Présenter votre entreprise - Mode vocal"
-      subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-      avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
-      knowledgeId="19df36d7a9354a1aa664c34686256df1"
-      avatarName="Anastasia_Chair_Sitting_public"
-      voiceRate={1.2}
-      onFinaliser={() => {}}
-      onSauvegarder={() => {}}
-      onAbandonner={() => {}}
-    />
-  );
+  // ------ ÉTAT 3 : Archive sélectionnée ------
+  if (selectedConversationId && selectedConversationId !== "new") {
+    if (modeChoisi === "ecrit") {
+      // Ici : il faudra charger discussion depuis l’archive via l’ID, si implémenté plus tard
+      return (
+        <InteractiveChatBlock
+          conversationId={selectedConversationId}
+          title="Présenter votre entreprise - Mode écrit"
+          subtitle="Discutez avec l'IA via un chat textuel."
+          discussion={[]}
+          etatDiscussion="init"
+          setEtatDiscussion={() => {}}
+          setDiscussion={() => {}}
+          onSendMessage={() => {}}
+          onAbandonner={() => {}}
+          onConfirmerAbandon={() => {}}
+          showConfirmation={false}
+          onFinaliser={() => {}}
+          onSauvegarder={() => {}}
+          showSavedMessage={false}
+        />
+      );
+    }
+    // Mode vocal archive
+    return (
+      <InteractiveBlock
+        conversationId={selectedConversationId}
+        title="Présenter votre entreprise - Mode vocal"
+        subtitle="L'IA vous assiste vocalement avec un avatar interactif."
+        avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
+        knowledgeId="19df36d7a9354a1aa664c34686256df1"
+        avatarName="Anastasia_Chair_Sitting_public"
+        voiceRate={1.2}
+        onFinaliser={() => {}}
+        onSauvegarder={() => {}}
+        onAbandonner={() => {}}
+      />
+    );
+  }
+
+  // Sécurité : fallback 
+  return null;
 }
