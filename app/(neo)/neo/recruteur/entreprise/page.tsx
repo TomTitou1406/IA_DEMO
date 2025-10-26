@@ -77,7 +77,7 @@ export default function RecruteurEntreprise() {
           {/* Affichage du carrousel de badges si archives */}
           {archives.length > 0 && (
             <>
-              <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl>
+              <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
                 Des conversations sont archivées, cliquez sur celle que vous souhaitez reprendre.
               </p>
               <ArchivesBadgeCarousel
