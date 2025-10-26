@@ -3,7 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useNeoAvatar } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 import { supabase } from "@/app/lib/supabaseClient";
-const [toastMessage, setToastMessage] = useState<string | null>(null);
+import Toast from '@/components/ui/Toast';
 
 type Props = {
   title: string;
@@ -53,7 +53,7 @@ export default function InteractiveBlock({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const [toastMessage, setToastMessage] = useState(null);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   // Timer
   useEffect(() => {
