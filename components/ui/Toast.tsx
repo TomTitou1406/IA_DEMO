@@ -1,8 +1,16 @@
 import React, { useEffect } from "react";
 
-export default function Toast({ message, onClose, duration = 2000 }) {
+interface ToastProps {
+  message: string;
+  onClose: () => void;
+  duration?: number;
+}
+
+export default function Toast({ message, onClose, duration = 2000 }: ToastProps) {
   useEffect(() => {
-    const timer = setTimeout(onClose, duration);
+    const timer = setTimeout(() => {
+      onClose();
+    }, duration);
     return () => clearTimeout(timer);
   }, [duration, onClose]);
 
@@ -12,7 +20,7 @@ export default function Toast({ message, onClose, duration = 2000 }) {
         position: "fixed",
         bottom: 32,
         right: 32,
-        background: "#22c55e", // vert tailwind success
+        background: "#22c55e",
         color: "white",
         padding: "12px 24px",
         borderRadius: 8,
