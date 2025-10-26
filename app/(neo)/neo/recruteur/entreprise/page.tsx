@@ -42,15 +42,15 @@ export default function RecruteurEntreprise() {
   }[] = [
     {
       key: "vocal",
-      title: "Mode vocal avec Avatar IA",
-      desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif pour échanger en temps réel.",
+      title: "Nouvelle convresation en mode vocal",
+      desc: "Exprimez-vous à voix haute avec un micro, dans un espace calme. L'IA anime un avatar interactif.",
       color: "var(--nc-blue)",
       image: "/cards/mode_avatar_card.png",
     },
     {
       key: "ecrit",
-      title: "Mode écrit conversationnel",
-      desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit et le fil de discussion reste disponible à tout moment.",
+      title: "Nouvelle convresation en mode texte",
+      desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit dans le fil de discussion.",
       color: "var(--nc-blue)",
       image: "/cards/mode_chat_card.png",
     },
@@ -61,7 +61,7 @@ export default function RecruteurEntreprise() {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] py-4">
           <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-2 text-center">
-            Choisissez votre mode de travail avec l'IA
+            Poursuivre ou créer une nouvelle discussion assistée par l'IA
           </h1>
 
           {/* Lien retour */}
@@ -77,7 +77,7 @@ export default function RecruteurEntreprise() {
           {/* Affichage du carrousel de badges si archives */}
           {archives.length > 0 && (
             <>
-              <p className="text-center mb-4">
+              <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl>
                 Des conversations sont archivées, cliquez sur celle que vous souhaitez reprendre.
               </p>
               <ArchivesBadgeCarousel
@@ -88,7 +88,7 @@ export default function RecruteurEntreprise() {
           )}
 
           <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
-            Quelle est la méthode la plus adaptée à votre environnement et à vos outils ?
+            Poursuivre ou créer une nouvelle discussion assistée par l'IA
           </p>
 
           <div className="flex gap-8 flex-wrap justify-center">
