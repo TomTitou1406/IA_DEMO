@@ -13,7 +13,7 @@ import { DEFAULT_USER_ID } from "@/app/lib/constants";
 export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
   // "new" = création, string = archive supabase, null = aucune sélection
-  const [selectedConversationId, setSelectedConversationId] = useState<string | null>("");
+  const [conversationId, setConversationId] = useState<string | null>("");
 
   // Chargement des archives pour badges
   const [archives, setArchives] = useState<any[]>([]);
@@ -39,7 +39,7 @@ export default function RecruteurEntreprise() {
 
   // Handler pour archive modifié en async
   const handleSelectConversation = async (id: string) => {
-    setSelectedConversationId(id);
+    setConversationId(id);
     setLoadingChatHistory(true);
 
     const { data, error } = await supabase
@@ -84,7 +84,7 @@ export default function RecruteurEntreprise() {
   ];
 
   // ------ ÉTAT 1 : Choix / badges / création ------
-  if (!selectedConversationId) {
+  if (!conversationId) {
     if (!modeChoisi) {
       return (
         <div className="flex flex-col items-center justify-center min-h-[60vh] py-4">
@@ -126,7 +126,7 @@ export default function RecruteurEntreprise() {
                 key={m.key}
                 onClick={() => {
                   setModeChoisi(m.key);
-                  setSelectedConversationId("new"); // nouvelle conversation
+                  setConversationId("new"); // nouvelle conversation
                 }}
                 className="cursor-pointer"
               >
@@ -161,11 +161,11 @@ export default function RecruteurEntreprise() {
   }
 
   // ------ ÉTAT 2 : Nouvelle conversation ------
-  if (selectedConversationId === "new") {
+  if (conversationId === "new") {
     if (modeChoisi === "ecrit") {
       return (
         <InteractiveChatBlock
-          conversationId={selectedConversationId}
+          conversationId={conversationId}
           title="Nouvelle présentation - Mode écrit"
           subtitle="Commencez à discuter avec l'IA."
           discussion={[]}
@@ -184,7 +184,7 @@ export default function RecruteurEntreprise() {
     }
     return (
       <InteractiveBlock
-        conversationId={selectedConversationId}
+        conversationId={conversationId}
         title="Nouvelle présentation - Mode vocal"
         subtitle="L'IA vous assiste vocalement avec un avatar interactif."
         avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
@@ -199,11 +199,11 @@ export default function RecruteurEntreprise() {
   }
 
   // ------ ÉTAT 3 : Archive sélectionnée ------
-  if (selectedConversationId && selectedConversationId !== "new") {
+  if (conversationId && conversationId !== "new") {
     if (modeChoisi === "ecrit") {
       return (
         <InteractiveChatBlock
-          conversationId={selectedConversationId}
+          conversationId={conversationId}
           title="Présenter votre entreprise - Mode écrit"
           subtitle="Discutez avec l'IA via un chat textuel."
           discussion={chatHistory}  // passe l'historique chargé ici
@@ -224,7 +224,7 @@ export default function RecruteurEntreprise() {
     // Mode vocal archive
     return (
       <InteractiveBlock
-        conversationId={selectedConversationId}
+        conversationId={conversationId}
         title="Présenter votre entreprise - Mode vocal"
         subtitle="L'IA vous assiste vocalement avec un avatar interactif."
         avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
