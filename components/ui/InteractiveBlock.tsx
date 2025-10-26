@@ -6,6 +6,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
 
 type Props = {
+  conversationId?: string;
   title: string;
   subtitle?: string;
   avatarPreviewImage?: string;
@@ -19,6 +20,7 @@ type Props = {
 };
 
 export default function InteractiveBlock({
+  conversationId,
   title,
   subtitle,
   avatarPreviewImage = "/avatars/anastasia_16_9_preview.webp",
