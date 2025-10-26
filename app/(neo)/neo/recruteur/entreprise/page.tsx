@@ -207,6 +207,7 @@ export default function RecruteurEntreprise() {
           title="Présenter votre entreprise - Mode écrit"
           subtitle="Discutez avec l'IA via un chat textuel."
           discussion={chatHistory}  // passe l'historique chargé ici
+          loading={loadingChatHistory} // <-- passe le booléen loading
           etatDiscussion="init"
           setEtatDiscussion={() => {}}
           setDiscussion={setChatHistory}  // pour modification
