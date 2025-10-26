@@ -1,3 +1,5 @@
+"use client";
+
 // components/ui/InteractiveChatBlock.tsx
 import React from "react";
 
