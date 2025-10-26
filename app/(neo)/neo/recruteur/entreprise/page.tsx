@@ -17,7 +17,10 @@ export default function RecruteurEntreprise() {
 
   // Chargement des archives pour badges
   const [archives, setArchives] = useState<any[]>([]);
+  const [loadingArchives, setLoadingArchives] = useState(true);
+
   useEffect(() => {
+    setLoadingArchives(true);
     (async () => {
       const { data } = await supabase
         .from("conversations")
@@ -26,6 +29,7 @@ export default function RecruteurEntreprise() {
         .eq("type", "entreprise")
         .order("updated_at", { ascending: false });
       setArchives(data ?? []);
+      setLoadingArchives(false);
     })();
   }, []);
 
@@ -73,18 +77,24 @@ export default function RecruteurEntreprise() {
               ← Retour
             </Link>
           </div>
-          {/* Badges d'archives */}
-          {archives.length > 0 && (
-            <>
-              <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
-                Des conversations sont archivées, cliquez sur celle que vous souhaitez reprendre.
-              </p>
-              <ArchivesBadgeCarousel
-                archives={archives}
-                onSelect={handleSelectConversation}
-              />
-            </>
-          )}
+
+          {/* Zone toujours présente pour éviter les décalages */}
+          <div style={{ minHeight: 56, width: "100%" }} className="flex flex-col items-center justify-center mb-2">
+            {loadingArchives ? (
+              <span className="animate-spin text-2xl text-gray-400">⏳</span>
+            ) : archives.length > 0 ? (
+              <>
+                <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
+                  Des conversations sont archivées, cliquez sur celle que vous souhaitez reprendre.
+                </p>
+                <ArchivesBadgeCarousel
+                  archives={archives}
+                  onSelect={handleSelectConversation}
+                />
+              </>
+            ) : null}
+          </div>
+
           <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
             Poursuivre ou créer une nouvelle discussion assistée par l'IA
           </p>
