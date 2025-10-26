@@ -1,3 +1,5 @@
+"use client";
+
 import * as React from "react";
 
 type CardProps = React.HTMLAttributes<HTMLDivElement> & {
@@ -14,6 +16,7 @@ export function Card({
   ...props
 }: CardProps) {
   const [hovered, setHovered] = React.useState(false);
+  
   return (
     <div
       onMouseEnter={() => setHovered(true)}
