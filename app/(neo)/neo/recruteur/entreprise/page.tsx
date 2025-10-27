@@ -14,10 +14,11 @@ export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
   // "new" = création, string = archive supabase, null = aucune sélection
   const [conversationId, setConversationId] = useState<string | null>("");
-
+  
   // Chargement des archives pour badges
   const [archives, setArchives] = useState<any[]>([]);
   const [loadingArchives, setLoadingArchives] = useState(true);
+  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Nouveaux états pour l’historique chargé
   const [chatHistory, setChatHistory] = useState<any[]>([]);
