@@ -221,20 +221,32 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       // Si sessionId passé => reprise, sinon nouvelle session
       if (config?.sessionId) {
         sessionIdRef.current = config.sessionId;
-        console.log("[HOOK] Reprise de session avec session_id :", sessionIdRef.current);
-
-        // Démarre une session existante avec l'id
-        await avatar.startSession(sessionIdRef.current);
+        console.log("Reprise de session avec session_id", sessionIdRef.current);
+      
+        const resumedSessionData = await avatar.createStartAvatar({
+          ...avatarConfig,
+          sessionId: sessionIdRef.current,
+        });
+      
+        if (!resumedSessionData.session_id) {
+          throw new Error("Impossible de reprendre la session : session_id manquant");
+        }
+      
+        sessionIdRef.current = resumedSessionData.session_id;
+      
+        await avatar.startSession(); // Sans argument
       } else {
-        // Nouvelle session
-        sessionData = await avatar.newSession(avatarConfig);
+        const sessionData = await avatar.newSession(avatarConfig);
+      
         if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
           sessionIdRef.current = sessionData.session_id;
-          console.log("[HOOK] Nouvelle session créée avec session_id :", sessionIdRef.current);
+          console.log("Nouvelle session créée avec session_id", sessionIdRef.current);
         } else {
           sessionIdRef.current = null;
-          console.error("[HOOK] Problème - session_id absent dans la réponse :", sessionData);
+          console.error("Problème : session_id absent dans la réponse", sessionData);
         }
+      
+        await avatar.startSession(); // Sans argument
       }
 
       setSessionState("active");
