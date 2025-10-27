@@ -14,11 +14,10 @@ export default function RecruteurEntreprise() {
   const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
   // "new" = création, string = archive supabase, null = aucune sélection
   const [conversationId, setConversationId] = useState<string | null>("");
-  
+
   // Chargement des archives pour badges
   const [archives, setArchives] = useState<any[]>([]);
   const [loadingArchives, setLoadingArchives] = useState(true);
-  const [sessionId, setSessionId] = useState<string | null>(null);
 
   // Nouveaux états pour l’historique chargé
   const [chatHistory, setChatHistory] = useState<any[]>([]);
@@ -40,24 +39,22 @@ export default function RecruteurEntreprise() {
 
   // Handler pour archive modifié en async
   const handleSelectConversation = async (id: string) => {
+    setConversationId(id);
     setLoadingChatHistory(true);
-  
+
     const { data, error } = await supabase
       .from("conversations")
-      .select("messages, session_id")
+      .select("messages")
       .eq("id", id)
       .single();
-  
+
     if (error) {
       console.error("Erreur chargement discussion :", error);
       setChatHistory([]);
-      setSessionId(null);
     } else {
       setChatHistory(data?.messages ?? []);
-      setSessionId(data?.session_id ?? null);
-      setConversationId(id);
     }
-  
+
     setLoadingChatHistory(false);
   };
 
