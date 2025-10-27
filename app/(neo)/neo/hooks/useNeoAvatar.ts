@@ -110,21 +110,45 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     currentSenderRef.current = null;
   }, []);
 
+  // --- Correction principale ici : distinction création/reprise session ---
   const fetchAccessToken = useCallback(async (): Promise<string> => {
     try {
-      const response = await fetch("/api/get-access-token", {
-        method: "POST",
-      });
-      if (!response.ok) {
-        throw new Error("Impossible de récupérer le token HeyGen");
+      if (config?.sessionId) {
+        // Reprise de session : session_id connu => on récupère le session token
+        const response = await fetch("/api/get-session-token", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ session_id: config.sessionId }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Impossible de récupérer le token de session");
+        }
+        const data = await response.json();
+        if (!data.token) {
+          throw new Error("Token de session invalide");
+        }
+
+        return data.token;
+      } else {
+        // Création nouvelle session : token classique
+        const response = await fetch("/api/get-access-token", {
+          method: "POST",
+        });
+        if (!response.ok) {
+          throw new Error("Impossible de récupérer le token d'accès");
+        }
+        const token = await response.text();
+        return token;
       }
-      const token = await response.text();
-      return token;
     } catch (err) {
-      console.error("❌ Erreur token:", err);
+      console.error("❌ Erreur récupération token :", err);
       throw new Error("Échec de connexion au serveur HeyGen");
     }
-  }, []);
+  }, [config?.sessionId]);
+  // ------------------------------------------------------
 
   const initializeAvatar = useCallback(
     async (token: string) => {
@@ -192,7 +216,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
-  // Nouvelle méthode pour gérer création ou reprise de session selon config.sessionId
+  // Main session flow (reprendre la session selon token, pas dans l'objet config !)
   const startSession = useCallback(async () => {
     if (sessionState === "loading" || sessionState === "active") {
       return;
@@ -217,27 +241,25 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         knowledgeId: config?.knowledgeId || undefined,
       };
 
-      let sessionData;
-      // Si sessionId passé => reprise, sinon nouvelle session
+      // Nouveau : la reprise se fait par le token de session, pas par sessionId dans config
       if (config?.sessionId) {
+        // Mode REPRISE
         sessionIdRef.current = config.sessionId;
-        console.log("Reprise de session avec session_id", sessionIdRef.current);
-      
-        const resumedSessionData = await avatar.createStartAvatar({
-          ...avatarConfig,
-          sessionId: sessionIdRef.current,
-        });
-      
+        console.log("Reprise de session avec session_id & TOKEN", sessionIdRef.current);
+
+        // On demande au SDK de se synchroniser via le token, pas via la config
+        const resumedSessionData = await avatar.createStartAvatar(avatarConfig);
+
         if (!resumedSessionData.session_id) {
           throw new Error("Impossible de reprendre la session : session_id manquant");
         }
-      
         sessionIdRef.current = resumedSessionData.session_id;
-      
+
         await avatar.startSession(); // Sans argument
       } else {
+        // Mode CREATION
         const sessionData = await avatar.newSession(avatarConfig);
-      
+
         if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
           sessionIdRef.current = sessionData.session_id;
           console.log("Nouvelle session créée avec session_id", sessionIdRef.current);
@@ -245,7 +267,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           sessionIdRef.current = null;
           console.error("Problème : session_id absent dans la réponse", sessionData);
         }
-      
+
         await avatar.startSession(); // Sans argument
       }
 
