@@ -39,22 +39,24 @@ export default function RecruteurEntreprise() {
 
   // Handler pour archive modifié en async
   const handleSelectConversation = async (id: string) => {
-    setConversationId(id);
     setLoadingChatHistory(true);
-
+  
     const { data, error } = await supabase
       .from("conversations")
-      .select("messages")
+      .select("messages, session_id")
       .eq("id", id)
       .single();
-
+  
     if (error) {
       console.error("Erreur chargement discussion :", error);
       setChatHistory([]);
+      setSessionId(null);
     } else {
       setChatHistory(data?.messages ?? []);
+      setSessionId(data?.session_id ?? null);
+      setConversationId(id);
     }
-
+  
     setLoadingChatHistory(false);
   };
 
