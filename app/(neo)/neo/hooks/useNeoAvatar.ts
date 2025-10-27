@@ -1,3 +1,4 @@
+// /app/(neo)/neo/hooks/useNeoAvatar.ts
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -22,9 +23,8 @@ export interface UseNeoAvatarConfig {
   avatarName?: string;
   voiceRate?: number;
   language?: string;
-  initialMessage?: string;
-  initialChatHistory?: ChatMessage[];
-  sessionId?: string; // Pour reprise de session
+  initialMessage?: string; // Ajout optionnel message initial
+  initialChatHistory?: ChatMessage[]; // Nouveau : historique complet de chat
 }
 
 interface UseNeoAvatarReturn {
@@ -38,8 +38,6 @@ interface UseNeoAvatarReturn {
   stopSession: () => Promise<void>;
   interrupt: () => Promise<void>;
   startInitialSpeak: (text: string) => Promise<void>;
-  getSessionId: () => string | null;
-  getSessionToken: () => string | null; // Ajout du getter
 }
 
 export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
@@ -51,11 +49,11 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
-  const sessionTokenRef = useRef<string | null>(null); // Ajout de la ref token
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
   const isLoading = sessionState === "loading";
 
+  // Initialize chat history from initialChatHistory if provided
   useEffect(() => {
     if (config?.initialChatHistory && config.initialChatHistory.length > 0) {
       setChatHistory(config.initialChatHistory);
@@ -64,6 +62,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
+
     if (currentSenderRef.current === "user") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -87,6 +86,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
+
     if (currentSenderRef.current === "assistant") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -114,41 +114,21 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const fetchAccessToken = useCallback(async (): Promise<string> => {
     try {
-      if (config?.sessionId) {
-        const response = await fetch("/api/get-session-token", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ session_id: config.sessionId }),
-        });
+      const response = await fetch("/api/get-access-token", {
+        method: "POST",
+      });
 
-        if (!response.ok) {
-          throw new Error("Impossible de récupérer le token de session");
-        }
-        const data = await response.json();
-        if (!data.token) {
-          throw new Error("Token de session invalide");
-        }
-
-        sessionTokenRef.current = data.token; // Stockage du token
-        return data.token;
-      } else {
-        const response = await fetch("/api/get-access-token", {
-          method: "POST",
-        });
-        if (!response.ok) {
-          throw new Error("Impossible de récupérer le token d'accès");
-        }
-        const token = await response.text();
-        sessionTokenRef.current = token; // Stockage du token
-        return token;
+      if (!response.ok) {
+        throw new Error("Impossible de récupérer le token HeyGen");
       }
+
+      const token = await response.text();
+      return token;
     } catch (err) {
-      console.error("❌ Erreur récupération token :", err);
+      console.error("❌ Erreur token:", err);
       throw new Error("Échec de connexion au serveur HeyGen");
     }
-  }, [config?.sessionId]);
+  }, []);
 
   const initializeAvatar = useCallback(
     async (token: string) => {
@@ -189,6 +169,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
+  // Méthode pour faire parler l'avatar (phrase initiale)
   const startInitialSpeak = useCallback(async (text: string) => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -204,6 +185,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
+  // Méthode pour interrompre la parole de l'avatar
   const interrupt = useCallback(async () => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -223,6 +205,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     try {
       setSessionState("loading");
       setError(null);
+      // Utilisation de l'historique initial si fourni, sinon vide
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
 
@@ -240,55 +223,11 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         knowledgeId: config?.knowledgeId || undefined,
       };
 
-      if (config?.sessionId) {
-        // Mode REPRISE
-        sessionIdRef.current = config.sessionId;
-        console.log("Reprise de session avec session_id & TOKEN", sessionIdRef.current);
-
-        const resumedSessionData = await avatar.createStartAvatar(avatarConfig);
-
-        if (!resumedSessionData.session_id) {
-          throw new Error("Impossible de reprendre la session : session_id manquant");
-        }
-        sessionIdRef.current = resumedSessionData.session_id;
-
-        await avatar.startSession(); // Sans argument
-      } else {
-        // Mode CREATION
-        const sessionData = await avatar.newSession(avatarConfig);
-
-        if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
-          sessionIdRef.current = sessionData.session_id;
-          console.log("Nouvelle session créée avec session_id", sessionIdRef.current);
-
-          // Sauvegarde du session_id et token en base
-          try {
-            await fetch("/api/save-heygen-session", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                session_id: sessionData.session_id,
-                token: token,
-              }),
-            });
-            console.log("Session HeyGen sauvegardée avec succès");
-          } catch (err) {
-            console.error("Erreur sauvegarde session HeyGen", err);
-          }
-        } else {
-          sessionIdRef.current = null;
-          console.error("Problème : session_id absent dans la réponse", sessionData);
-        }
-
-        await avatar.startSession(); // Sans argument
-      }
-
+      const sessionData = await avatar.createStartAvatar(avatarConfig);
+      sessionIdRef.current = sessionData.session_id;
       setSessionState("active");
-      console.log("[HOOK] sessionState passé à active");
 
-      await avatar.startVoiceChat().catch((err) => {
-        console.error("[HOOK] Erreur startVoiceChat :", err);
-      });
+      await avatar.startVoiceChat();
 
       if (config?.initialMessage) {
         await startInitialSpeak(config.initialMessage);
@@ -325,19 +264,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     };
   }, []);
 
-  const getSessionId = useCallback((): string | null => {
-    return sessionIdRef.current;
-  }, []);
-
-  // --- AJOUT getSessionToken ---
-  const getSessionToken = useCallback((): string | null => {
-    return sessionTokenRef.current;
-  }, []);
-
   return {
     sessionState,
     stream,
-    isLoading,
+    isLoading: sessionState === "loading",
     error,
     isTalking,
     chatHistory,
@@ -345,7 +275,5 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     stopSession,
     interrupt,
     startInitialSpeak,
-    getSessionId,
-    getSessionToken, // Expose getSessionToken ici
   };
 }
