@@ -71,6 +71,7 @@ export default function InteractiveBlock({
   // Timer
   useEffect(() => {
     if (sessionState === "active") {
+      console.log("[HOOK] useEffect sessionState dans Timer :", sessionState);
       setTimerSec(0);
       timerRef.current = setInterval(() => setTimerSec((sec) => sec + 1), 1000);
     } else {
