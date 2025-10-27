@@ -51,8 +51,8 @@ export default function InteractiveBlock({
     knowledgeId,
     avatarName,
     voiceRate,
-    initialMessage,
-    initialChatHistory, // <---- Passage
+    initialMessage: initialMessage && initialChatHistory.length === 0 ? initialMessage : undefined,
+    initialChatHistory,
   });
     
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
