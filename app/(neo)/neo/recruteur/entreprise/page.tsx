@@ -232,7 +232,7 @@ export default function RecruteurEntreprise() {
         knowledgeId="19df36d7a9354a1aa664c34686256df1"
         avatarName="Anastasia_Chair_Sitting_public"
         voiceRate={1.2}
-        initialMessage={chatHistory.length > 0 ? chatHistory.map(m => m.content).join("\n") : "Bonjour ! Pouvez-vous m'assister ?"}
+        initialMessage={chatHistory.length > 0 ? "Bonjour, peut-on poursuivre cette conversation ?" : "Bonjour ! Pouvez-vous m'assister ?"}
         initialChatHistory={chatHistory}  // <---- Passage de l'historique
         onFinaliser={() => {}}
         onSauvegarder={() => {}}
