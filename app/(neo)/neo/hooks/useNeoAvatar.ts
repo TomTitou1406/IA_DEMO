@@ -212,43 +212,33 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
       
-      if (config?.sessionId) {
-        // Ne pas passer sessionId à startSession (pas supporté)
-        sessionIdRef.current = config.sessionId;
-        // Crée ou restaure via createStartAvatar (si possible)
-        const avatarConfig: StartAvatarRequest = {
-          quality: AvatarQuality.High,
-          avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
-          language: config?.language || "fr",
-          voice: {
-            rate: config?.voiceRate || 1.2,
-            emotion: VoiceEmotion.FRIENDLY,
-          },
-          knowledgeId: config?.knowledgeId || undefined,
-        };
-        const sessionData = await avatar.createStartAvatar(avatarConfig);
-        sessionIdRef.current = sessionData.session_id; // mise à jour session_id
-        console.log("[HOOK] Nouveau session_id retourné :", sessionData.session_id);
-      } else {
-        // Création classique sans sessionId
-        const avatarConfig: StartAvatarRequest = {
-          quality: AvatarQuality.High,
-          avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
-          language: config?.language || "fr",
-          voice: {
-            rate: config?.voiceRate || 1.2,
-            emotion: VoiceEmotion.FRIENDLY,
-          },
-          knowledgeId: config?.knowledgeId || undefined,
-        };
-        const sessionData = await avatar.createStartAvatar(avatarConfig);
+      const avatarConfig: StartAvatarRequest = {
+        quality: AvatarQuality.High,
+        avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
+        language: config?.language || "fr",
+        voice: {
+          rate: config?.voiceRate || 1.2,
+          emotion: VoiceEmotion.FRIENDLY,
+        },
+        knowledgeId: config?.knowledgeId || undefined,
+      };
+      
+      const sessionData = await avatar.createStartAvatar(avatarConfig);
+      
+      if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
         sessionIdRef.current = sessionData.session_id;
+        console.log("[HOOK] Nouveau session_id capturé :", sessionIdRef.current);
+      } else {
+        sessionIdRef.current = null;
+        console.error("[HOOK] Problème - session_id absent dans la réponse :", sessionData);
       }
-  
+    
       setSessionState("active");
       await avatar.startSession(); // Sans paramètre
-      await avatar.startVoiceChat();
-  
+      await avatar.startVoiceChat().catch((err) => {
+        console.error("[HOOK] Erreur startVoiceChat :", err);
+      });
+    
       if (config?.initialMessage) {
         await startInitialSpeak(config.initialMessage);
       }
