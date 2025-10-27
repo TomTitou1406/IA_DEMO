@@ -39,6 +39,7 @@ interface UseNeoAvatarReturn {
   interrupt: () => Promise<void>;
   startInitialSpeak: (text: string) => Promise<void>;
   getSessionId: () => string | null;
+  getSessionToken: () => string | null; // Ajout du getter
 }
 
 export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
@@ -50,6 +51,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
+  const sessionTokenRef = useRef<string | null>(null); // Ajout de la ref token
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
 
   const isLoading = sessionState === "loading";
@@ -129,6 +131,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           throw new Error("Token de session invalide");
         }
 
+        sessionTokenRef.current = data.token; // Stockage du token
         return data.token;
       } else {
         const response = await fetch("/api/get-access-token", {
@@ -138,6 +141,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           throw new Error("Impossible de récupérer le token d'accès");
         }
         const token = await response.text();
+        sessionTokenRef.current = token; // Stockage du token
         return token;
       }
     } catch (err) {
@@ -247,7 +251,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           throw new Error("Impossible de reprendre la session : session_id manquant");
         }
         sessionIdRef.current = resumedSessionData.session_id;
-        
+
         await avatar.startSession(); // Sans argument
       } else {
         // Mode CREATION
@@ -275,7 +279,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           sessionIdRef.current = null;
           console.error("Problème : session_id absent dans la réponse", sessionData);
         }
-        
+
         await avatar.startSession(); // Sans argument
       }
 
@@ -325,6 +329,11 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     return sessionIdRef.current;
   }, []);
 
+  // --- AJOUT getSessionToken ---
+  const getSessionToken = useCallback((): string | null => {
+    return sessionTokenRef.current;
+  }, []);
+
   return {
     sessionState,
     stream,
@@ -337,5 +346,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     interrupt,
     startInitialSpeak,
     getSessionId,
+    getSessionToken, // Expose getSessionToken ici
   };
 }
