@@ -1,4 +1,3 @@
-// /app/(neo)/neo/hooks/useNeoAvatar.ts
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -25,7 +24,7 @@ export interface UseNeoAvatarConfig {
   language?: string;
   initialMessage?: string; // Ajout optionnel message initial
   initialChatHistory?: ChatMessage[]; // Nouveau : historique complet de chat
-  sessionId?: string; // Ajout
+  sessionId?: string; // Ajout pour gestion session
 }
 
 interface UseNeoAvatarReturn {
@@ -39,6 +38,7 @@ interface UseNeoAvatarReturn {
   stopSession: () => Promise<void>;
   interrupt: () => Promise<void>;
   startInitialSpeak: (text: string) => Promise<void>;
+  getSessionId: () => string | null;  // Ajouté ici
 }
 
 export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
@@ -283,6 +283,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     };
   }, []);
 
+  const getSessionId = useCallback((): string | null => {
+    return sessionIdRef.current;
+  }, []);
+
   return {
     sessionState,
     stream,
@@ -294,5 +298,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     stopSession,
     interrupt,
     startInitialSpeak,
+    getSessionId, // Ajout exposé
   };
 }
