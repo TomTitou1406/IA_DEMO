@@ -50,7 +50,8 @@ export default function InteractiveBlock({
     stopSession,
     interrupt,
     startInitialSpeak,
-    getSessionId, // exposé dans useNeoAvatar
+    getSessionId,
+    getSessionToken,
   } = useNeoAvatar({
     knowledgeId,
     avatarName,
