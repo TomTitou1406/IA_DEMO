@@ -9,6 +9,7 @@ type Conversation = {
   title: string;
   type: string;
   updated_at: string;
+  session_id?: string; // Ajout du champ session_id
 };
 
 export default function ConversationList({
@@ -18,7 +19,8 @@ export default function ConversationList({
 }: {
   userId?: string;
   filterType?: string;
-  onSelect: (conversationId: string) => void;
+  // Modification : onSelect passe l’objet complet conversation pour récupérer session_id
+  onSelect: (conversation: Conversation) => void;
 }) {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -27,7 +29,7 @@ export default function ConversationList({
     async function loadConversations() {
       let query = supabase
         .from("conversations")
-        .select("id, title, type, updated_at")
+        .select("id, title, type, updated_at, session_id") // récupérer session_id
         .eq("user_id", userId);
 
       if (filterType) {
@@ -58,21 +60,21 @@ export default function ConversationList({
 
   return (
     <div className="flex flex-wrap gap-4 justify-center">
-      {conversations.map(({ id, title, type, updated_at }) => (
+      {conversations.map((conversation) => (
         <div
-          key={id}
-          onClick={() => onSelect(id)}
+          key={conversation.id}
+          onClick={() => onSelect(conversation)} // passage de l’objet complet
           className="cursor-pointer border rounded-lg p-4 shadow hover:shadow-lg transition-shadow bg-white max-w-xs w-full"
           role="button"
           tabIndex={0}
-          onKeyPress={(e) => e.key === "Enter" && onSelect(id)}
+          onKeyPress={(e) => e.key === "Enter" && onSelect(conversation)}
         >
-          <h3 className="font-semibold text-lg mb-2">{title || "Sans titre"}</h3>
+          <h3 className="font-semibold text-lg mb-2">{conversation.title || "Sans titre"}</h3>
           <p className="text-sm text-gray-500 mb-2">
-            Modifiée le {new Date(updated_at).toLocaleDateString()}
+            Modifiée le {new Date(conversation.updated_at).toLocaleDateString()}
           </p>
           <span className="inline-block bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-xs font-medium">
-            {type}
+            {conversation.type}
           </span>
         </div>
       ))}
