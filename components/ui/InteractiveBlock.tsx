@@ -20,7 +20,6 @@ type Props = {
   onAbandonner?: () => void;
   initialMessage?: string;
   initialChatHistory?: ChatMessage[];
-  sessionId?: string; // Ajout du sessionId lors du chargement si existant
 };
 
 export default function InteractiveBlock({
@@ -36,7 +35,6 @@ export default function InteractiveBlock({
   onAbandonner,
   initialMessage = "Bonjour ! Pouvez-vous m'assister ?",
   initialChatHistory = [],
-  sessionId = undefined, // Prise en compte en prop
 }: Props) {
 
   const {
@@ -50,15 +48,12 @@ export default function InteractiveBlock({
     stopSession,
     interrupt,
     startInitialSpeak,
-    getSessionId,
-    getSessionToken,
   } = useNeoAvatar({
     knowledgeId,
     avatarName,
     voiceRate,
     initialMessage: initialMessage && initialChatHistory.length === 0 ? initialMessage : undefined,
     initialChatHistory,
-    sessionId, // Passage de la sessionId pour reprise session
   });
     
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
@@ -72,7 +67,6 @@ export default function InteractiveBlock({
   // Timer
   useEffect(() => {
     if (sessionState === "active") {
-      console.log("[HOOK] useEffect sessionState dans Timer :", sessionState);
       setTimerSec(0);
       timerRef.current = setInterval(() => setTimerSec((sec) => sec + 1), 1000);
     } else {
@@ -123,32 +117,22 @@ export default function InteractiveBlock({
 
   const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
 
-  // Fonction de sauvegarde des conversations modifiée pour stocker session_id
+  // Fonction de sauvegarde des conversations
   async function saveConversation() {
-    const currentSessionId = getSessionId ? getSessionId() : null;
-    console.log("[DEBUG] Valeur session_id à sauvegarder :", currentSessionId);
-
-      // Ne pas enregistrer si sessionId null
-    if (!currentSessionId) {
-      setToastMessage("Impossible de sauvegarder : session_id absent ou invalide !");
-      return;
-    }
-
     if (conversationId && conversationId !== "new") {
+      // Update de la conversation existante
       const { error } = await supabase
         .from("conversations")
         .update({
-        title,
-        subtitle,
-        avatar_preview_image: avatarPreviewImage,
-        avatar_name: avatarName,
-        knowledge_id: knowledgeId,
-        initial_message: initialMessage,
-        messages: chatHistory,
-        session_id: currentSessionId ?? "",
-        token: getSessionToken ? getSessionToken() : "", // <-- AJOUT ICI
-        updated_at: new Date(),
-      })
+          title,
+          subtitle,
+          avatar_preview_image: avatarPreviewImage,
+          avatar_name: avatarName,
+          knowledge_id: knowledgeId,
+          initial_message: initialMessage,
+          messages: chatHistory,
+          updated_at: new Date(),
+        })
         .eq("id", conversationId);
   
       if (error) {
@@ -157,10 +141,11 @@ export default function InteractiveBlock({
         return;
       }
     } else {
+      // Insertion d’une nouvelle conversation
       const { data, error } = await supabase.from("conversations").insert([
         {
-          user_id: DEFAULT_USER_ID,
-          type: "entreprise",
+          user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
+          type: "entreprise", // ou 'poste' selon le contexte
           title,
           subtitle,
           avatar_preview_image: avatarPreviewImage,
@@ -168,8 +153,6 @@ export default function InteractiveBlock({
           knowledge_id: knowledgeId,
           initial_message: initialMessage,
           messages: chatHistory,
-          session_id: currentSessionId,
-          token: getSessionToken ? getSessionToken() : "", 
         },
       ]);
   
