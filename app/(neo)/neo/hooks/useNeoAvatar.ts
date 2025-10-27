@@ -208,15 +208,14 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       setError(null);
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
-  
+      
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
-  
+      
       if (config?.sessionId) {
-        // Reprendre session existante si sessionId fourni
+        // Ne pas passer sessionId à startSession (pas supporté)
         sessionIdRef.current = config.sessionId;
-        await avatar.startSession({ session_id: config.sessionId });
-      } else {
+        // Crée ou restaure via createStartAvatar (si possible)
         const avatarConfig: StartAvatarRequest = {
           quality: AvatarQuality.High,
           avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
@@ -227,11 +226,26 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           },
           knowledgeId: config?.knowledgeId || undefined,
         };
-  
+        const sessionData = await avatar.createStartAvatar(avatarConfig);
+        sessionIdRef.current = sessionData.session_id; // mise à jour session_id
+      } else {
+        // Création classique sans sessionId
+        const avatarConfig: StartAvatarRequest = {
+          quality: AvatarQuality.High,
+          avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
+          language: config?.language || "fr",
+          voice: {
+            rate: config?.voiceRate || 1.2,
+            emotion: VoiceEmotion.FRIENDLY,
+          },
+          knowledgeId: config?.knowledgeId || undefined,
+        };
         const sessionData = await avatar.createStartAvatar(avatarConfig);
         sessionIdRef.current = sessionData.session_id;
       }
+  
       setSessionState("active");
+      await avatar.startSession(); // Sans paramètre
       await avatar.startVoiceChat();
   
       if (config?.initialMessage) {
