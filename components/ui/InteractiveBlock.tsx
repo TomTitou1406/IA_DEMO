@@ -126,6 +126,12 @@ export default function InteractiveBlock({
     const currentSessionId = getSessionId ? getSessionId() : null;
     console.log("[DEBUG] Valeur session_id à sauvegarder :", currentSessionId);
 
+      // Ne pas enregistrer si sessionId null
+    if (!currentSessionId) {
+      setToastMessage("Impossible de sauvegarder : session_id absent ou invalide !");
+      return;
+    }
+
     if (conversationId && conversationId !== "new") {
       const { error } = await supabase
         .from("conversations")
