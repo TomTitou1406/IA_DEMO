@@ -228,6 +228,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         };
         const sessionData = await avatar.createStartAvatar(avatarConfig);
         sessionIdRef.current = sessionData.session_id; // mise à jour session_id
+        console.log("[HOOK] Nouveau session_id retourné :", sessionData.session_id);
       } else {
         // Création classique sans sessionId
         const avatarConfig: StartAvatarRequest = {
