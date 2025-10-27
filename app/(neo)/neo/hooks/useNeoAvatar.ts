@@ -25,6 +25,7 @@ export interface UseNeoAvatarConfig {
   language?: string;
   initialMessage?: string; // Ajout optionnel message initial
   initialChatHistory?: ChatMessage[]; // Nouveau : historique complet de chat
+  sessionId?: string; // Ajout
 }
 
 interface UseNeoAvatarReturn {
@@ -205,30 +206,34 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     try {
       setSessionState("loading");
       setError(null);
-      // Utilisation de l'historique initial si fourni, sinon vide
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
-
+  
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
-
-      const avatarConfig: StartAvatarRequest = {
-        quality: AvatarQuality.High,
-        avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
-        language: config?.language || "fr",
-        voice: {
-          rate: config?.voiceRate || 1.2,
-          emotion: VoiceEmotion.FRIENDLY,
-        },
-        knowledgeId: config?.knowledgeId || undefined,
-      };
-
-      const sessionData = await avatar.createStartAvatar(avatarConfig);
-      sessionIdRef.current = sessionData.session_id;
+  
+      if (config?.sessionId) {
+        // Reprendre session existante si sessionId fourni
+        sessionIdRef.current = config.sessionId;
+        await avatar.startSession({ session_id: config.sessionId });
+      } else {
+        const avatarConfig: StartAvatarRequest = {
+          quality: AvatarQuality.High,
+          avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
+          language: config?.language || "fr",
+          voice: {
+            rate: config?.voiceRate || 1.2,
+            emotion: VoiceEmotion.FRIENDLY,
+          },
+          knowledgeId: config?.knowledgeId || undefined,
+        };
+  
+        const sessionData = await avatar.createStartAvatar(avatarConfig);
+        sessionIdRef.current = sessionData.session_id;
+      }
       setSessionState("active");
-
       await avatar.startVoiceChat();
-
+  
       if (config?.initialMessage) {
         await startInitialSpeak(config.initialMessage);
       }
