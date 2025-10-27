@@ -234,6 +234,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       }
     
       setSessionState("active");
+      console.log("[HOOK] sessionState passé à active");
       await avatar.startSession(); // Sans paramètre
       await avatar.startVoiceChat().catch((err) => {
         console.error("[HOOK] Erreur startVoiceChat :", err);
