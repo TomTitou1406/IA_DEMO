@@ -18,7 +18,7 @@ type Props = {
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
-  initialMessage?: string;
+  initialChatHistory?: ChatMessage[];
 };
 
 export default function InteractiveBlock({
@@ -33,8 +33,8 @@ export default function InteractiveBlock({
   onSauvegarder,
   onAbandonner,
   initialMessage = "Bonjour ! Pouvez-vous m'assister ?",
-  initialChatHistory = [], // <--- Nouveau prop
-}: Props & { initialChatHistory?: ChatMessage[] }) {
+  initialChatHistory = [],
+}: Props) {
 
   const {
     sessionState,
