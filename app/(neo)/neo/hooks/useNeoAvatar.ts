@@ -22,9 +22,9 @@ export interface UseNeoAvatarConfig {
   avatarName?: string;
   voiceRate?: number;
   language?: string;
-  initialMessage?: string; // Ajout optionnel message initial
-  initialChatHistory?: ChatMessage[]; // Nouveau : historique complet de chat
-  sessionId?: string; // Ajout pour gestion session
+  initialMessage?: string;
+  initialChatHistory?: ChatMessage[];
+  sessionId?: string; // Pour reprise de session
 }
 
 interface UseNeoAvatarReturn {
@@ -38,7 +38,7 @@ interface UseNeoAvatarReturn {
   stopSession: () => Promise<void>;
   interrupt: () => Promise<void>;
   startInitialSpeak: (text: string) => Promise<void>;
-  getSessionId: () => string | null;  // Ajouté ici
+  getSessionId: () => string | null;
 }
 
 export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
@@ -54,7 +54,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const isLoading = sessionState === "loading";
 
-  // Initialize chat history from initialChatHistory if provided
   useEffect(() => {
     if (config?.initialChatHistory && config.initialChatHistory.length > 0) {
       setChatHistory(config.initialChatHistory);
@@ -63,7 +62,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
-
     if (currentSenderRef.current === "user") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -87,7 +85,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
-
     if (currentSenderRef.current === "assistant") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -118,11 +115,9 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       const response = await fetch("/api/get-access-token", {
         method: "POST",
       });
-
       if (!response.ok) {
         throw new Error("Impossible de récupérer le token HeyGen");
       }
-
       const token = await response.text();
       return token;
     } catch (err) {
@@ -170,7 +165,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
-  // Méthode pour faire parler l'avatar (phrase initiale)
   const startInitialSpeak = useCallback(async (text: string) => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -186,7 +180,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
-  // Méthode pour interrompre la parole de l'avatar
   const interrupt = useCallback(async () => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -199,6 +192,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
+  // Nouvelle méthode pour gérer création ou reprise de session selon config.sessionId
   const startSession = useCallback(async () => {
     if (sessionState === "loading" || sessionState === "active") {
       return;
@@ -208,10 +202,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       setError(null);
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
-      
+
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
-      
+
       const avatarConfig: StartAvatarRequest = {
         quality: AvatarQuality.High,
         avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
@@ -222,24 +216,34 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         },
         knowledgeId: config?.knowledgeId || undefined,
       };
-      
-      const sessionData = await avatar.createStartAvatar(avatarConfig);
-      
-      if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
-        sessionIdRef.current = sessionData.session_id;
-        console.log("[HOOK] Nouveau session_id capturé :", sessionIdRef.current);
+
+      let sessionData;
+      // Si sessionId passé => reprise, sinon nouvelle session
+      if (config?.sessionId) {
+        sessionIdRef.current = config.sessionId;
+        console.log("[HOOK] Reprise de session avec session_id :", sessionIdRef.current);
+
+        // Démarre une session existante avec l'id
+        await avatar.startSession(sessionIdRef.current);
       } else {
-        sessionIdRef.current = null;
-        console.error("[HOOK] Problème - session_id absent dans la réponse :", sessionData);
+        // Nouvelle session
+        sessionData = await avatar.newSession(avatarConfig);
+        if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
+          sessionIdRef.current = sessionData.session_id;
+          console.log("[HOOK] Nouvelle session créée avec session_id :", sessionIdRef.current);
+        } else {
+          sessionIdRef.current = null;
+          console.error("[HOOK] Problème - session_id absent dans la réponse :", sessionData);
+        }
       }
-    
+
       setSessionState("active");
       console.log("[HOOK] sessionState passé à active");
-      await avatar.startSession(); // Sans paramètre
+
       await avatar.startVoiceChat().catch((err) => {
         console.error("[HOOK] Erreur startVoiceChat :", err);
       });
-    
+
       if (config?.initialMessage) {
         await startInitialSpeak(config.initialMessage);
       }
@@ -282,7 +286,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   return {
     sessionState,
     stream,
-    isLoading: sessionState === "loading",
+    isLoading,
     error,
     isTalking,
     chatHistory,
@@ -290,6 +294,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     stopSession,
     interrupt,
     startInitialSpeak,
-    getSessionId, // Ajout exposé
+    getSessionId,
   };
 }
