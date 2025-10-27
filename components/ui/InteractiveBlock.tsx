@@ -18,6 +18,7 @@ type Props = {
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
+  initialMessage?: string;
   initialChatHistory?: ChatMessage[];
 };
 
