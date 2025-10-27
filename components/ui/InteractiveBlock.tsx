@@ -20,6 +20,7 @@ type Props = {
   onAbandonner?: () => void;
   initialMessage?: string;
   initialChatHistory?: ChatMessage[];
+  sessionId?: string; // Ajout du sessionId lors du chargement si existant
 };
 
 export default function InteractiveBlock({
@@ -35,6 +36,7 @@ export default function InteractiveBlock({
   onAbandonner,
   initialMessage = "Bonjour ! Pouvez-vous m'assister ?",
   initialChatHistory = [],
+  sessionId = undefined, // Prise en compte en prop
 }: Props) {
 
   const {
@@ -48,12 +50,14 @@ export default function InteractiveBlock({
     stopSession,
     interrupt,
     startInitialSpeak,
+    getSessionId, // exposé dans useNeoAvatar
   } = useNeoAvatar({
     knowledgeId,
     avatarName,
     voiceRate,
     initialMessage: initialMessage && initialChatHistory.length === 0 ? initialMessage : undefined,
     initialChatHistory,
+    sessionId, // Passage de la sessionId pour reprise session
   });
     
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
@@ -117,10 +121,11 @@ export default function InteractiveBlock({
 
   const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
 
-  // Fonction de sauvegarde des conversations
+  // Fonction de sauvegarde des conversations modifiée pour stocker session_id
   async function saveConversation() {
+    const currentSessionId = getSessionId ? getSessionId() : null;
+
     if (conversationId && conversationId !== "new") {
-      // Update de la conversation existante
       const { error } = await supabase
         .from("conversations")
         .update({
@@ -131,6 +136,7 @@ export default function InteractiveBlock({
           knowledge_id: knowledgeId,
           initial_message: initialMessage,
           messages: chatHistory,
+          session_id: currentSessionId, // Ajout du session_id enregistré
           updated_at: new Date(),
         })
         .eq("id", conversationId);
@@ -141,11 +147,10 @@ export default function InteractiveBlock({
         return;
       }
     } else {
-      // Insertion d’une nouvelle conversation
       const { data, error } = await supabase.from("conversations").insert([
         {
-          user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
-          type: "entreprise", // ou 'poste' selon le contexte
+          user_id: DEFAULT_USER_ID,
+          type: "entreprise",
           title,
           subtitle,
           avatar_preview_image: avatarPreviewImage,
@@ -153,6 +158,7 @@ export default function InteractiveBlock({
           knowledge_id: knowledgeId,
           initial_message: initialMessage,
           messages: chatHistory,
+          session_id: currentSessionId, // Et à l'insertion aussi  
         },
       ]);
   
