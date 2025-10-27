@@ -124,6 +124,7 @@ export default function InteractiveBlock({
   // Fonction de sauvegarde des conversations modifiée pour stocker session_id
   async function saveConversation() {
     const currentSessionId = getSessionId ? getSessionId() : null;
+    console.log("[DEBUG] Valeur session_id à sauvegarder :", currentSessionId);
 
     if (conversationId && conversationId !== "new") {
       const { error } = await supabase
@@ -136,7 +137,7 @@ export default function InteractiveBlock({
           knowledge_id: knowledgeId,
           initial_message: initialMessage,
           messages: chatHistory,
-          session_id: currentSessionId, // Ajout du session_id enregistré
+          session_id: currentSessionId ?? "", // Ajout du session_id enregistré
           updated_at: new Date(),
         })
         .eq("id", conversationId);
