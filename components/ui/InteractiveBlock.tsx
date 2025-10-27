@@ -137,16 +137,17 @@ export default function InteractiveBlock({
       const { error } = await supabase
         .from("conversations")
         .update({
-          title,
-          subtitle,
-          avatar_preview_image: avatarPreviewImage,
-          avatar_name: avatarName,
-          knowledge_id: knowledgeId,
-          initial_message: initialMessage,
-          messages: chatHistory,
-          session_id: currentSessionId ?? "", // Ajout du session_id enregistré
-          updated_at: new Date(),
-        })
+        title,
+        subtitle,
+        avatar_preview_image: avatarPreviewImage,
+        avatar_name: avatarName,
+        knowledge_id: knowledgeId,
+        initial_message: initialMessage,
+        messages: chatHistory,
+        session_id: currentSessionId ?? "",
+        token: getSessionToken ? getSessionToken() : "", // <-- AJOUT ICI
+        updated_at: new Date(),
+      })
         .eq("id", conversationId);
   
       if (error) {
@@ -166,7 +167,8 @@ export default function InteractiveBlock({
           knowledge_id: knowledgeId,
           initial_message: initialMessage,
           messages: chatHistory,
-          session_id: currentSessionId, // Et à l'insertion aussi  
+          session_id: currentSessionId,
+          token: getSessionToken ? getSessionToken() 
         },
       ]);
   
