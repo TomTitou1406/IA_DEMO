@@ -110,11 +110,9 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     currentSenderRef.current = null;
   }, []);
 
-  // --- Correction principale ici : distinction création/reprise session ---
   const fetchAccessToken = useCallback(async (): Promise<string> => {
     try {
       if (config?.sessionId) {
-        // Reprise de session : session_id connu => on récupère le session token
         const response = await fetch("/api/get-session-token", {
           method: "POST",
           headers: {
@@ -133,7 +131,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
         return data.token;
       } else {
-        // Création nouvelle session : token classique
         const response = await fetch("/api/get-access-token", {
           method: "POST",
         });
@@ -148,7 +145,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       throw new Error("Échec de connexion au serveur HeyGen");
     }
   }, [config?.sessionId]);
-  // ------------------------------------------------------
 
   const initializeAvatar = useCallback(
     async (token: string) => {
@@ -216,7 +212,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
-  // Main session flow (reprendre la session selon token, pas dans l'objet config !)
   const startSession = useCallback(async () => {
     if (sessionState === "loading" || sessionState === "active") {
       return;
@@ -241,20 +236,18 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         knowledgeId: config?.knowledgeId || undefined,
       };
 
-      // Nouveau : la reprise se fait par le token de session, pas par sessionId dans config
       if (config?.sessionId) {
         // Mode REPRISE
         sessionIdRef.current = config.sessionId;
         console.log("Reprise de session avec session_id & TOKEN", sessionIdRef.current);
 
-        // On demande au SDK de se synchroniser via le token, pas via la config
         const resumedSessionData = await avatar.createStartAvatar(avatarConfig);
 
         if (!resumedSessionData.session_id) {
           throw new Error("Impossible de reprendre la session : session_id manquant");
         }
         sessionIdRef.current = resumedSessionData.session_id;
-
+        
         await avatar.startSession(); // Sans argument
       } else {
         // Mode CREATION
@@ -263,11 +256,26 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         if (sessionData && typeof sessionData.session_id === "string" && sessionData.session_id.length > 0) {
           sessionIdRef.current = sessionData.session_id;
           console.log("Nouvelle session créée avec session_id", sessionIdRef.current);
+
+          // Sauvegarde du session_id et token en base
+          try {
+            await fetch("/api/save-heygen-session", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                session_id: sessionData.session_id,
+                token: token,
+              }),
+            });
+            console.log("Session HeyGen sauvegardée avec succès");
+          } catch (err) {
+            console.error("Erreur sauvegarde session HeyGen", err);
+          }
         } else {
           sessionIdRef.current = null;
           console.error("Problème : session_id absent dans la réponse", sessionData);
         }
-
+        
         await avatar.startSession(); // Sans argument
       }
 
