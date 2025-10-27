@@ -168,7 +168,7 @@ export default function InteractiveBlock({
           initial_message: initialMessage,
           messages: chatHistory,
           session_id: currentSessionId,
-          token: getSessionToken ? getSessionToken() 
+          token: getSessionToken ? getSessionToken() : "", 
         },
       ]);
   
