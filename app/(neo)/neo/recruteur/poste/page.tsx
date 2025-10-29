@@ -186,7 +186,7 @@ export default function RecruteurEntreprise() {
     return (
       <InteractiveBlock
         conversationId={conversationId}
-        conversationType="entreprise"
+        conversationType="poste"
         title="Nouveau poste - Mode vocal"
         subtitle="L'IA vous assiste vocalement avec un avatar interactif."
         avatarPreviewImage="/avatars/wayne_16_9_preview.webp"
@@ -227,7 +227,7 @@ export default function RecruteurEntreprise() {
     return (
       <InteractiveBlock
         conversationId={conversationId}
-        conversationType="entreprise"
+        conversationType="poste"
         title="Définir le poste à pourvoir - Mode vocal"
         subtitle="L'IA vous assiste vocalement avec un avatar interactif."
         avatarPreviewImage="/avatars/wayne_16_9_preview.webp"
