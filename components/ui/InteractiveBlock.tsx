@@ -6,38 +6,32 @@ import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
+import type { ConversationContext } from "@/app/lib/services/conversationContextService"; // 🆕 NOUVEAU
 
 type Props = {
   conversationId: string | null;
   conversationType: string;
-  title: string;
-  subtitle?: string;
-  avatarPreviewImage?: string;
-  knowledgeId?: string;
-  avatarName?: string;
-  voiceRate?: number;
+  context: ConversationContext; // 🆕 NOUVEAU : Tout vient du contexte
+  chatHistory?: ChatMessage[]; // 🆕 NOUVEAU : Optionnel, vide par défaut
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
-  initialMessage?: string;
-  initialChatHistory?: ChatMessage[];
 };
 
 export default function InteractiveBlock({
   conversationId,
   conversationType,
-  title,
-  subtitle,
-  avatarPreviewImage = "/avatars/anastasia_16_9_preview.webp",
-  knowledgeId,
-  avatarName,
-  voiceRate,
+  context, // 🆕 NOUVEAU
+  chatHistory = [], // 🆕 NOUVEAU : Par défaut vide
   onFinaliser,
   onSauvegarder,
   onAbandonner,
-  initialMessage = "Bonjour ! Pouvez-vous m'assister ?",
-  initialChatHistory = [],
 }: Props) {
+
+  // 🆕 NOUVEAU : Détermine le message initial selon historique
+  const initialMessage = chatHistory.length > 0 
+    ? context.initial_message_resume 
+    : context.initial_message_new;
 
   const {
     sessionState,
@@ -45,17 +39,18 @@ export default function InteractiveBlock({
     isLoading,
     error,
     isTalking,
-    chatHistory,
+    chatHistory: liveChatHistory,
     startSession,
     stopSession,
     interrupt,
     startInitialSpeak,
   } = useNeoAvatar({
-    knowledgeId,
-    avatarName,
-    voiceRate,
-    initialMessage: initialMessage && initialChatHistory.length === 0 ? initialMessage : undefined,
-    initialChatHistory,
+    knowledgeId: context.knowledge_id, // 🆕 DEPUIS CONTEXTE
+    avatarName: context.avatar_name || undefined, // 🆕 DEPUIS CONTEXTE
+    voiceRate: context.voice_rate, // 🆕 DEPUIS CONTEXTE
+    language: context.language, // 🆕 DEPUIS CONTEXTE
+    initialMessage: initialMessage, // 🆕 DYNAMIQUE
+    initialChatHistory: chatHistory, // 🆕 DEPUIS PROPS
   });
     
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
@@ -102,7 +97,7 @@ export default function InteractiveBlock({
 
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chatHistory]);
+  }, [liveChatHistory]);
 
   useEffect(() => {
     if (sessionState === "active") setWorkflowState("active");
@@ -126,13 +121,13 @@ export default function InteractiveBlock({
       const { error } = await supabase
         .from("conversations")
         .update({
-          title,
-          subtitle,
-          avatar_preview_image: avatarPreviewImage,
-          avatar_name: avatarName,
-          knowledge_id: knowledgeId,
-          initial_message: initialMessage,
-          messages: chatHistory,
+          title: context.title, // 🆕 DEPUIS CONTEXTE
+          subtitle: context.subtitle, // 🆕 DEPUIS CONTEXTE
+          avatar_preview_image: context.avatar_preview_image, // 🆕 DEPUIS CONTEXTE
+          avatar_name: context.avatar_name, // 🆕 DEPUIS CONTEXTE
+          knowledge_id: context.knowledge_id, // 🆕 DEPUIS CONTEXTE
+          initial_message: initialMessage, // 🆕 DYNAMIQUE
+          messages: liveChatHistory,
           updated_at: new Date(),
         })
         .eq("id", conversationId);
@@ -143,18 +138,18 @@ export default function InteractiveBlock({
         return;
       }
     } else {
-      // Insertion d’une nouvelle conversation
+      // Insertion d'une nouvelle conversation
       const { data, error } = await supabase.from("conversations").insert([
         {
-          user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
-          type: conversationType, // selon le contexte entreprise, poste...
-          title,
-          subtitle,
-          avatar_preview_image: avatarPreviewImage,
-          avatar_name: avatarName,
-          knowledge_id: knowledgeId,
-          initial_message: initialMessage,
-          messages: chatHistory,
+          user_id: DEFAULT_USER_ID,
+          type: conversationType,
+          title: context.title, // 🆕 DEPUIS CONTEXTE
+          subtitle: context.subtitle, // 🆕 DEPUIS CONTEXTE
+          avatar_preview_image: context.avatar_preview_image, // 🆕 DEPUIS CONTEXTE
+          avatar_name: context.avatar_name, // 🆕 DEPUIS CONTEXTE
+          knowledge_id: context.knowledge_id, // 🆕 DEPUIS CONTEXTE
+          initial_message: initialMessage, // 🆕 DYNAMIQUE
+          messages: liveChatHistory,
         },
       ]);
   
@@ -170,14 +165,18 @@ export default function InteractiveBlock({
     setTimeout(() => {
       setToastMessage(null);
       window.history.back();
-    }, 2000); // Délai ajustable (ms)
+    }, 2000);
   }
+
+  // 🆕 NOUVEAU : Avatar preview depuis contexte
+  const avatarPreviewImage = context.avatar_preview_image || "/avatars/anastasia_16_9_preview.webp";
+
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
       {/* En-tête */}
       <div className="text-center">
-        <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">{title}</h1>
-        {subtitle && <p className="text-gray-600 text-xs">{subtitle}</p>}
+        <h1 className="text-2xl font-bold text-[var(--nc-blue)] mb-1">{context.title}</h1>
+        {context.subtitle && <p className="text-gray-600 text-xs">{context.subtitle}</p>}
       </div>
 
       {/* Zone avatar principale */}
@@ -245,7 +244,7 @@ export default function InteractiveBlock({
             <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
               {isTalking ? (
                 <span className="bg-gray-500/90 text-white px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                  🎧 L’avatar parle...
+                  🎧 L'avatar parle...
                 </span>
               ) : (
                 <span className="bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
@@ -285,11 +284,11 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Boutons overlay pour état ACTIVE, TOUJOURS visibles devant la vidéo */}
+          {/* Boutons overlay pour état ACTIVE */}
           {workflowState === "active" && (
             <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center z-20">
               <div className="text-xs text-gray-700 mb-1 text-center">
-                - Pour interrompre l’avatar, parlez simplement ou cliquez :
+                - Pour interrompre l'avatar, parlez simplement ou cliquez :
               </div>
               <div className="flex flex-row gap-2 w-full justify-center">
                 <button
@@ -306,7 +305,7 @@ export default function InteractiveBlock({
                   }`}
                   title="Interrompre la parole"
                 >
-                  Interrompre l’avatar
+                  Interrompre l'avatar
                 </button>
               </div>
             </div>
@@ -356,7 +355,7 @@ export default function InteractiveBlock({
         </div>
 
         <div className="flex-1 overflow-y-auto p-4">
-          {chatHistory.length === 0 ? (
+          {liveChatHistory.length === 0 ? (
             <p className="text-gray-400 text-center py-6 text-xs">
               {workflowState === "inactive"
                 ? "La conversation apparaîtra ici en temps réel."
@@ -366,7 +365,7 @@ export default function InteractiveBlock({
             </p>
           ) : (
             <div className="space-y-2">
-              {chatHistory.map((msg, idx) => (
+              {liveChatHistory.map((msg, idx) => (
                 <div
                   key={idx}
                   className={`flex ${
