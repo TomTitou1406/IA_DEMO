@@ -227,6 +227,7 @@ export default function RecruteurEntreprise() {
     return (
       <InteractiveBlock
         conversationId={conversationId}
+        conversationType="entreprise"
         title="Présenter votre entreprise - Mode vocal"
         subtitle="L'IA vous assiste vocalement avec un avatar interactif."
         avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
