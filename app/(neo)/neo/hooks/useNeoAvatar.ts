@@ -23,8 +23,8 @@ export interface UseNeoAvatarConfig {
   avatarName?: string;
   voiceRate?: number;
   language?: string;
-  initialMessage?: string; // Ajout optionnel message initial
-  initialChatHistory?: ChatMessage[]; // Nouveau : historique complet de chat
+  initialMessage?: string;
+  initialChatHistory?: ChatMessage[];
 }
 
 interface UseNeoAvatarReturn {
@@ -50,6 +50,9 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
+  
+  // 🆕 NOUVEAU : Flag pour ignorer le premier message user (message initial)
+  const shouldIgnoreNextUserMessage = useRef(false);
 
   const isLoading = sessionState === "loading";
 
@@ -62,6 +65,13 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
+
+    // 🆕 NOUVEAU : Ignorer le message si c'est celui envoyé par initialMessage
+    if (shouldIgnoreNextUserMessage.current) {
+      console.log("🔇 Message initial ignoré (pas de doublon)");
+      shouldIgnoreNextUserMessage.current = false;
+      return;
+    }
 
     if (currentSenderRef.current === "user") {
       setChatHistory((prev) => [
@@ -176,12 +186,19 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       return;
     }
     try {
+      // 🆕 NOUVEAU : Activer le flag pour ignorer le prochain message user
+      shouldIgnoreNextUserMessage.current = true;
+
       await avatarRef.current.speak({
         text,
         task_type: TaskType.TALK,
       });
+      
+      console.log("✅ Message initial envoyé (sera ignoré du chat)");
     } catch (err) {
       console.warn("⚠️ Erreur lors de l'envoi du message initial :", err);
+      // Réinitialiser le flag en cas d'erreur
+      shouldIgnoreNextUserMessage.current = false;
     }
   }, []);
 
@@ -205,9 +222,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     try {
       setSessionState("loading");
       setError(null);
-      // Utilisation de l'historique initial si fourni, sinon vide
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
+      // 🆕 NOUVEAU : Réinitialiser le flag
+      shouldIgnoreNextUserMessage.current = false;
 
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
@@ -235,6 +253,8 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setSessionState("error");
+      // 🆕 NOUVEAU : Réinitialiser le flag en cas d'erreur
+      shouldIgnoreNextUserMessage.current = false;
     }
   }, [sessionState, config, fetchAccessToken, initializeAvatar, startInitialSpeak]);
 
@@ -248,6 +268,8 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       avatarRef.current = null;
       sessionIdRef.current = null;
       currentSenderRef.current = null;
+      // 🆕 NOUVEAU : Réinitialiser le flag
+      shouldIgnoreNextUserMessage.current = false;
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
