@@ -25,6 +25,7 @@ type Props = {
 
 export default function InteractiveBlock({
   conversationId,
+  conversationType,
   title,
   subtitle,
   avatarPreviewImage = "/avatars/anastasia_16_9_preview.webp",
