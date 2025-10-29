@@ -9,6 +9,7 @@ import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 type Props = {
   conversationId: string | null;
+  conversationType: string;
   title: string;
   subtitle?: string;
   avatarPreviewImage?: string;
@@ -145,7 +146,7 @@ export default function InteractiveBlock({
       const { data, error } = await supabase.from("conversations").insert([
         {
           user_id: DEFAULT_USER_ID, // À gérer plus tard si authentification
-          type: "entreprise", // ou 'poste' selon le contexte
+          type: conversationType, // selon le contexte entreprise, poste...
           title,
           subtitle,
           avatar_preview_image: avatarPreviewImage,
