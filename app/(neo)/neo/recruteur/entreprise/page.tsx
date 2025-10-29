@@ -192,7 +192,9 @@ export default function RecruteurEntreprise() {
         knowledgeId="19df36d7a9354a1aa664c34686256df1"
         avatarName="Anastasia_Chair_Sitting_public"
         voiceRate={1.2}
-        initialMessage="Bonjour ! Pouvez-vous m'assister ?"
+        initialMessage="Bonjour ! Je vais vous accompagner dans la création de la présentation de votre entreprise.
+        Nous allons ensemble mettre en valeur votre histoire, vos valeurs et ce qui vous rend unique.
+        Prêt à commencer ?"
         onFinaliser={() => {}}
         onSauvegarder={() => {}}
         onAbandonner={() => {}}
@@ -234,7 +236,11 @@ export default function RecruteurEntreprise() {
         knowledgeId="19df36d7a9354a1aa664c34686256df1"
         avatarName="Anastasia_Chair_Sitting_public"
         voiceRate={1.2}
-        initialMessage={chatHistory.length > 0 ? "Bonjour, peut-on poursuivre cette conversation ?" : "Bonjour ! Pouvez-vous m'assister ?"}
+        initialMessage={chatHistory.length > 0 
+        ? "? "Bonjour ! Je vois que nous avons déjà commencé à travailler ensemble. prêt à redémarrer ?" " 
+        : "Bonjour ! Je vais vous accompagner dans la création de la présentation de votre entreprise.
+        Nous allons ensemble mettre en valeur votre histoire, vos valeurs et ce qui vous rend unique.
+        Prêt à commencer ?"}
         initialChatHistory={chatHistory}  // <---- Passage de l'historique
         onFinaliser={() => {}}
         onSauvegarder={() => {}}
