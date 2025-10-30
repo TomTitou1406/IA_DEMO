@@ -69,21 +69,14 @@ export default function InteractiveBlock({
   onAbandonner,
 }: Props) {
 
-  // 🧪 TEST : Injecter un contexte poste fictif
-  const testContextePoste = `
-  CONTEXTE DU POSTE À PRÉSENTER :
-  - Titre : Développeur React Senior
-  - Localisation : Paris 75001  
-  - Salaire : 45 000 - 55 000 € brut/an
-  - Compétences requises : React, TypeScript, Node.js
-  - Critères bloquants : Bac+3 minimum, 3 ans d'expérience minimum
-  
-  Tu dois maintenant accueillir le candidat et discuter de CE poste en te basant sur ces informations.
-  `;
-  
+  // ============================================
+  // 🆕 v0.05 : Message initial pour forcer l'avatar à parler
+  // Note: Ce message sert à déclencher l'avatar (TaskType.TALK)
+  // Il ne sera PAS ajouté au chatHistory (géré par le hook)
+  // ============================================
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
-    : testContextePoste;
+    : context.initial_message_new;
 
   // ============================================
   // HOOK AVATAR
