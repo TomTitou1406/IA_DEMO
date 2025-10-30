@@ -1,11 +1,11 @@
 /**
- * HeyGen API Service v0.03
+ * HeyGen API Service v0.04
  * 
  * Service d'appel à l'API HeyGen pour la gestion des Knowledge Bases
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.03 - Correction URL API route (/api/update-kb)
+ * @version 0.04 - Utilisation URL absolue pour l'API route
  */
 
 // Types
@@ -32,8 +32,14 @@ export async function updateHeyGenKnowledgeBase(
   console.log(`📤 [HeyGen API] Mise à jour KB: ${kbId} (${content.length} caractères)`);
 
   try {
+    // Construire l'URL complète pour l'API route
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
+    const apiUrl = `${baseUrl}/api/update-kb`;
+    
+    console.log(`📤 [HeyGen API] Appel API route: ${apiUrl}`);
+    
     // Appel à l'API route côté serveur (sécurisé)
-    const response = await fetch('/api/update-kb', {
+    const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
