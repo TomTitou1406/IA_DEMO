@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.09
+ * Knowledge Base Compiler Service v0.10
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,11 +11,12 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.09 - Correction requête Supabase (2 requêtes séparées au lieu de jointure)
+ * @version 0.10 - Ajout étape 5 : Mise à jour API HeyGen
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
 import { assignKBToPoste, releaseKB, getAvailableKB } from '@/app/lib/services/knowledgeBasePoolService';
+import { updatePosteKnowledgeBases } from '@/app/lib/services/heygenApiService';
 
 // Types
 interface CompilationResult {
@@ -165,7 +166,25 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     // ====================================================================
     console.log(`🔄 [KB Compiler] Mise à jour API HeyGen...`);
     
-    // TODO: Appeler API HeyGen pour chaque KB
+    const updateResult = await updatePosteKnowledgeBases(
+      {
+        decouverte: kb_decouverte_id,
+        preselection: kb_preselection_id,
+        selection: kb_selection_id,
+      },
+      {
+        decouverte: decouverteContent,
+        preselection: preselectionContent,
+        selection: selectionContent,
+      }
+    );
+
+    if (!updateResult.success) {
+      throw new Error(`Erreur mise à jour HeyGen: ${updateResult.error}`);
+    }
+
+    console.log(`✅ [KB Compiler] Mise à jour HeyGen terminée`);
+
 
     // ====================================================================
     // ÉTAPE 6 : Sauvegarde en BDD
