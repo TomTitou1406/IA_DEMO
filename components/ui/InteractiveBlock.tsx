@@ -1,10 +1,11 @@
 /**
  * @file InteractiveBlock.tsx
- * @version v0.03
+ * @version v0.04
  * @date 30 octobre 2025
  * @description Composant principal pour l'interaction avec l'avatar HeyGen
  * @changelog 
- *   v0.03 - Désactivation startInitialSpeak (HeyGen gère le message via Opening Intro KB)
+ *   v0.04 - Suppression du passage d'initialMessage au hook (HeyGen gère tout via Opening Intro)
+ *   v0.03 - Désactivation startInitialSpeak
  *   v0.02 - Ajout types locaux et callback onConversationUpdate
  */
 
@@ -48,9 +49,9 @@ export interface ConversationContext {
 type Props = {
   conversationId: string | null;
   conversationType: string;
-  context: ConversationContext; // 🆕 Tout vient du contexte BDD
-  chatHistory?: ChatMessage[]; // 🆕 Historique pour reprise conversation
-  onConversationUpdate?: (messages: ChatMessage[]) => void; // 🆕 Callback optionnel
+  context: ConversationContext;
+  chatHistory?: ChatMessage[];
+  onConversationUpdate?: (messages: ChatMessage[]) => void;
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
@@ -60,7 +61,7 @@ export default function InteractiveBlock({
   conversationId,
   conversationType,
   context,
-  chatHistory = [], // Par défaut vide
+  chatHistory = [],
   onConversationUpdate,
   onFinaliser,
   onSauvegarder,
@@ -68,9 +69,8 @@ export default function InteractiveBlock({
 }: Props) {
 
   // ============================================
-  // 🆕 MESSAGE INITIAL (pour sauvegarde uniquement)
-  // Note: Le message initial est maintenant géré par HeyGen via l'Opening Intro de la KB
-  // On garde cette variable pour la sauvegarde en BDD
+  // 🆕 v0.04 : Message initial pour sauvegarde uniquement
+  // Note: On ne le passe PLUS au hook, HeyGen gère tout via Opening Intro
   // ============================================
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
@@ -78,6 +78,7 @@ export default function InteractiveBlock({
 
   // ============================================
   // HOOK AVATAR
+  // ❌ v0.04 : Plus de initialMessage passé au hook !
   // ============================================
   const {
     sessionState,
@@ -89,13 +90,12 @@ export default function InteractiveBlock({
     startSession,
     stopSession,
     interrupt,
-    // startInitialSpeak, // ❌ v0.03 : Plus utilisé, HeyGen gère le message
   } = useNeoAvatar({
     knowledgeId: context.knowledge_id,
     avatarName: context.avatar_name || undefined,
     voiceRate: context.voice_rate || 1.0,
     language: context.language || 'fr',
-    initialMessage: initialMessage, // Passé pour historique mais pas envoyé
+    // ❌ v0.04 : initialMessage retiré
     initialChatHistory: chatHistory,
   });
     
@@ -130,18 +130,6 @@ export default function InteractiveBlock({
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [sessionState]);
-
-  // ============================================
-  // EFFET : Message initial
-  // ❌ v0.03 : DÉSACTIVÉ - HeyGen gère le message via Opening Intro
-  // ============================================
-  // useEffect(() => {
-  //   if (sessionState === "active" && !initMessageSent && initialMessage) {
-  //     startInitialSpeak(initialMessage);
-  //     setInitMessageSent(true);
-  //   }
-  //   if (sessionState === "inactive") setInitMessageSent(false);
-  // }, [sessionState, initMessageSent, initialMessage, startInitialSpeak]);
 
   // ============================================
   // EFFET : Stream vidéo
