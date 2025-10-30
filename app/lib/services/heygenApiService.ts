@@ -1,11 +1,11 @@
 /**
- * HeyGen API Service v0.01
+ * HeyGen API Service v0.02
  * 
  * Service d'appel à l'API HeyGen pour la gestion des Knowledge Bases
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.01 - Création fonction updateKnowledgeBase
+ * @version 0.02 - Utilisation API route sécurisée au lieu d'appel direct
  */
 
 // Types
@@ -32,18 +32,10 @@ export async function updateHeyGenKnowledgeBase(
   console.log(`📤 [HeyGen API] Mise à jour KB: ${kbId} (${content.length} caractères)`);
 
   try {
-    // Récupérer l'API Key depuis les variables d'environnement
-    const apiKey = process.env.HEYGEN_API_KEY;
-
-    if (!apiKey) {
-      throw new Error('HEYGEN_API_KEY non configurée');
-    }
-
-    // Appel API HeyGen
-    const response = await fetch('https://api.heygen.com/v1/knowledge_base.update', {
-      method: 'PUT',
+    // Appel à l'API route côté serveur (sécurisé)
+    const response = await fetch('/api/heygen/update-kb', {
+      method: 'POST',
       headers: {
-        'X-Api-Key': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -56,11 +48,15 @@ export async function updateHeyGenKnowledgeBase(
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       console.error('❌ [HeyGen API] Erreur HTTP:', response.status, errorData);
-      throw new Error(`Erreur API HeyGen: ${response.status} - ${JSON.stringify(errorData)}`);
+      throw new Error(`Erreur API: ${response.status} - ${errorData.error || 'Erreur inconnue'}`);
     }
 
     // Parser la réponse
     const data = await response.json();
+
+    if (!data.success) {
+      throw new Error(data.error || 'Erreur inconnue');
+    }
 
     console.log(`✅ [HeyGen API] KB mise à jour avec succès: ${kbId}`);
 
