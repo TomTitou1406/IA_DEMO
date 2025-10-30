@@ -38,7 +38,7 @@ export async function POST(request: Request) {
 
     // Appel API HeyGen
     const response = await fetch('https://api.heygen.com/v1/streaming/knowledge_base/update', {
-      method: 'PUT',
+      method: 'POST', // ✅ Correction de la méthode
       headers: {
         'X-Api-Key': apiKey,
         'Content-Type': 'application/json',
@@ -47,6 +47,7 @@ export async function POST(request: Request) {
         knowledge_base_id,
         content,
       }),
+    });
     });
 
     // Vérifier le statut de la réponse
