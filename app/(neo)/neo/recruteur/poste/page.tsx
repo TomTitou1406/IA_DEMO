@@ -16,6 +16,7 @@ import InteractiveBlock, { ConversationContext } from "@/components/ui/Interacti
 import { getConversationContext } from "@/app/lib/services/conversationContextService";
 import KBPoolDebug from "@/components/debug/KBPoolDebug"; // 🧪 v0.03
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
+import KBCompilerDebug from "@/components/debug/KBCompilerDebug";
 
 // ============================================
 // COMPOSANT INTERNE (avec useSearchParams)
@@ -135,7 +136,8 @@ function PosteContent() {
     <div className="max-w-7xl mx-auto px-4 py-6">
       {/* 🧪 v0.03 : Composant de debug temporaire */}
       <KBPoolDebug />
-      
+      {/* 🧪 v0.04 : Composant de debug Compilation KB */}
+      <KBCompilerDebug />
       {/* Composant principal */}
       <InteractiveBlock
         conversationId={conversationId}
