@@ -1,7 +1,7 @@
 /**
  * API Route: Update HeyGen Knowledge Base
  * @file app/api/update-kb/route.ts
- * @version 0.08 - VERSION FINALE QUI FONCTIONNE
+ * @version 0.09 - VERSION FINALE QUI FONCTIONNE
  * @date 2025-10-30
  * 
  * Route sécurisée côté serveur pour mettre à jour les KB HeyGen
@@ -10,8 +10,10 @@
  * ENDPOINT CORRECT:
  * POST https://api.heygen.com/v1/streaming/knowledge_base/{knowledgeId}
  * 
- * BODY:
+ * BODY OBLIGATOIRE:
  * {
+ *   "name": "nom de la KB",
+ *   "opening": "message d'ouverture",
  *   "prompt": "contenu de la KB"
  * }
  */
@@ -21,7 +23,7 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     // Parser le body
-    const { knowledgeId, content } = await request.json();
+    const { knowledgeId, content, name, opening } = await request.json();
 
     // Validation des paramètres
     if (!knowledgeId || !content) {
@@ -53,7 +55,9 @@ export async function POST(request: Request) {
         'accept': 'application/json',
       },
       body: JSON.stringify({
-        prompt: content,  // Le contenu s'appelle "prompt" pas "content"
+        name: name || 'Knowledge Base',  // Champ obligatoire
+        opening: opening || 'Hello!',    // Champ optionnel mais recommandé
+        prompt: content,
       }),
     });
 
