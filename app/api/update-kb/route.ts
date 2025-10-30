@@ -1,19 +1,19 @@
 /**
  * API Route: Update HeyGen Knowledge Base
  * @file app/api/update-kb/route.ts
- * @version 0.07
+ * @version 0.08 - VERSION FINALE QUI FONCTIONNE
  * @date 2025-10-30
  * 
  * Route sécurisée côté serveur pour mettre à jour les KB HeyGen
  * L'API Key est lue depuis process.env côté serveur uniquement
  * 
- * CORRECTIONS:
- * - v0.02: URL corrigée vers /v1/streaming/knowledge_base/update
- * - v0.03: Méthode HTTP corrigée de PUT vers POST
- * - v0.04: ID de la KB ajouté dans l'URL (ERREUR)
- * - v0.05: ID de la KB dans le body avec le nom "knowledgeId" (CORRECT)
- * - v0.06: Uniformisation du nom du paramètre à "knowledgeId" partout
- * - v0.07: Correction domaine API: api2.heygen.com au lieu de api.heygen.com
+ * ENDPOINT CORRECT:
+ * POST https://api.heygen.com/v1/streaming/knowledge_base/{knowledgeId}
+ * 
+ * BODY:
+ * {
+ *   "prompt": "contenu de la KB"
+ * }
  */
 
 import { NextResponse } from 'next/server';
@@ -44,16 +44,16 @@ export async function POST(request: Request) {
 
     console.log(`📤 [API Route] Mise à jour KB HeyGen: ${knowledgeId} (${content.length} caractères)`);
 
-    // Appel API HeyGen - L'ID est dans le body avec le nom "knowledgeId"
-    const response = await fetch('https://api2.heygen.com/v1/streaming/knowledge_base/update', {
+    // Appel API HeyGen - L'ID est dans l'URL, pas dans le body
+    const response = await fetch(`https://api.heygen.com/v1/streaming/knowledge_base/${knowledgeId}`, {
       method: 'POST',
       headers: {
-        'X-Api-Key': apiKey,
+        'x-api-key': apiKey,
         'Content-Type': 'application/json',
+        'accept': 'application/json',
       },
       body: JSON.stringify({
-        knowledgeId: knowledgeId,
-        content,
+        prompt: content,  // Le contenu s'appelle "prompt" pas "content"
       }),
     });
 
