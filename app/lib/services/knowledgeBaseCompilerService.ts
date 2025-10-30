@@ -28,18 +28,47 @@ interface CompilationResult {
 interface PosteData {
   id: string;
   titre: string;
+  description: string | null;
   entreprise_id: string;
+  
+  // Localisation
+  ville: string | null;
+  pays: string | null;
+  remote_possible: boolean | null;
+  remote_partiel: boolean | null;
+  remote_complet: boolean | null;
+  
+  // Contrat
+  type_contrat: string | null;
+  date_debut_souhaitee: string | null;
+  
+  // Salaire
+  salaire_min: number | null;
+  salaire_max: number | null;
+  devise: string | null;
+  avantages: string | null;
+  
+  // Formation & Expérience
+  niveau_etude_min: string | null;
+  experience_min_annees: number | null;
+  seniorite: string | null;
+  
+  // Workflow phases
   definition_data: Record<string, any>;
   criteres_redhibitoires: Record<string, any>;
   competences: Record<string, any>;
   job_description: string | null;
   job_offer: string | null;
+  
+  // Entreprise (jointure)
   entreprise?: {
     nom: string;
-    secteur: string;
-    description: string;
-    ville: string;
-    pays: string;
+    secteur: string | null;
+    description: string | null;
+    ville: string | null;
+    pays: string | null;
+    taille: string | null;
+    site_web: string | null;
   };
 }
 
@@ -137,7 +166,22 @@ async function fetchPosteData(posteId: string): Promise<PosteData | null> {
     .select(`
       id,
       titre,
+      description,
       entreprise_id,
+      ville,
+      pays,
+      remote_possible,
+      remote_partiel,
+      remote_complet,
+      type_contrat,
+      date_debut_souhaitee,
+      salaire_min,
+      salaire_max,
+      devise,
+      avantages,
+      niveau_etude_min,
+      experience_min_annees,
+      seniorite,
       definition_data,
       criteres_redhibitoires,
       competences,
@@ -148,7 +192,9 @@ async function fetchPosteData(posteId: string): Promise<PosteData | null> {
         secteur,
         description,
         ville,
-        pays
+        pays,
+        taille,
+        site_web
       )
     `)
     .eq('id', posteId)
@@ -157,6 +203,15 @@ async function fetchPosteData(posteId: string): Promise<PosteData | null> {
   if (error) {
     console.error('❌ [KB Compiler] Erreur récupération poste:', error);
     return null;
+  }
+
+  // Validation des données critiques
+  if (!data.definition_data || Object.keys(data.definition_data).length === 0) {
+    console.warn('⚠️ [KB Compiler] Attention: definition_data vide');
+  }
+  
+  if (!data.job_description) {
+    console.warn('⚠️ [KB Compiler] Attention: job_description manquante');
   }
 
   return data as PosteData;
