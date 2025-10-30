@@ -6,13 +6,41 @@ import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
-import type { ConversationContext } from "@/app/lib/services/conversationContextService"; // 🆕 NOUVEAU
+
+// ============================================
+// 🆕 TYPES DÉFINIS LOCALEMENT
+// ============================================
+
+/**
+ * Contexte de conversation chargé depuis la BDD
+ * Correspond à la structure de conversation_contexts
+ */
+export interface ConversationContext {
+  id?: string;
+  context_key: string;
+  context_type: string;
+  title: string;
+  subtitle?: string | null;
+  avatar_preview_image?: string | null;
+  avatar_name?: string | null;
+  knowledge_id: string;
+  voice_rate?: number | null;
+  language?: string | null;
+  initial_message_new: string;
+  initial_message_resume?: string | null;
+  is_active?: boolean;
+}
+
+// ============================================
+// PROPS DU COMPOSANT
+// ============================================
 
 type Props = {
   conversationId: string | null;
   conversationType: string;
-  context: ConversationContext; // 🆕 NOUVEAU : Tout vient du contexte
-  chatHistory?: ChatMessage[]; // 🆕 NOUVEAU : Optionnel, vide par défaut
+  context: ConversationContext; // 🆕 Tout vient du contexte BDD
+  chatHistory?: ChatMessage[]; // 🆕 Historique pour reprise conversation
+  onConversationUpdate?: (messages: ChatMessage[]) => void; // 🆕 Callback optionnel
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
@@ -21,18 +49,24 @@ type Props = {
 export default function InteractiveBlock({
   conversationId,
   conversationType,
-  context, // 🆕 NOUVEAU
-  chatHistory = [], // 🆕 NOUVEAU : Par défaut vide
+  context,
+  chatHistory = [], // Par défaut vide
+  onConversationUpdate,
   onFinaliser,
   onSauvegarder,
   onAbandonner,
 }: Props) {
 
-  // 🆕 NOUVEAU : Détermine le message initial selon historique
+  // ============================================
+  // 🆕 MESSAGE INITIAL DYNAMIQUE (sécurisé)
+  // ============================================
   const initialMessage = chatHistory.length > 0 
-    ? context.initial_message_resume 
+    ? (context.initial_message_resume || context.initial_message_new) // Fallback si resume null
     : context.initial_message_new;
 
+  // ============================================
+  // HOOK AVATAR
+  // ============================================
   const {
     sessionState,
     stream,
@@ -45,23 +79,32 @@ export default function InteractiveBlock({
     interrupt,
     startInitialSpeak,
   } = useNeoAvatar({
-    knowledgeId: context.knowledge_id, // 🆕 DEPUIS CONTEXTE
-    avatarName: context.avatar_name || undefined, // 🆕 DEPUIS CONTEXTE
-    voiceRate: context.voice_rate, // 🆕 DEPUIS CONTEXTE
-    language: context.language, // 🆕 DEPUIS CONTEXTE
-    initialMessage: initialMessage, // 🆕 DYNAMIQUE
-    initialChatHistory: chatHistory, // 🆕 DEPUIS PROPS
+    knowledgeId: context.knowledge_id,
+    avatarName: context.avatar_name || undefined,
+    voiceRate: context.voice_rate || 1.0,
+    language: context.language || 'fr',
+    initialMessage: initialMessage,
+    initialChatHistory: chatHistory,
   });
     
+  // ============================================
+  // ÉTATS LOCAUX
+  // ============================================
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
   const [timerSec, setTimerSec] = useState(0);
   const [initMessageSent, setInitMessageSent] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  
+  // ============================================
+  // REFS
+  // ============================================
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Timer
+  // ============================================
+  // EFFET : Timer
+  // ============================================
   useEffect(() => {
     if (sessionState === "active") {
       setTimerSec(0);
@@ -77,7 +120,9 @@ export default function InteractiveBlock({
     };
   }, [sessionState]);
 
-  // Initial message
+  // ============================================
+  // EFFET : Message initial
+  // ============================================
   useEffect(() => {
     if (sessionState === "active" && !initMessageSent && initialMessage) {
       startInitialSpeak(initialMessage);
@@ -86,6 +131,9 @@ export default function InteractiveBlock({
     if (sessionState === "inactive") setInitMessageSent(false);
   }, [sessionState, initMessageSent, initialMessage, startInitialSpeak]);
 
+  // ============================================
+  // EFFET : Stream vidéo
+  // ============================================
   useEffect(() => {
     if (videoRef.current && stream) {
       videoRef.current.srcObject = stream;
@@ -95,40 +143,79 @@ export default function InteractiveBlock({
     }
   }, [stream]);
 
+  // ============================================
+  // EFFET : Auto-scroll chat
+  // ============================================
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [liveChatHistory]);
 
+  // ============================================
+  // EFFET : Workflow state
+  // ============================================
   useEffect(() => {
     if (sessionState === "active") setWorkflowState("active");
     else if (sessionState === "inactive" && workflowState === "active") setWorkflowState("terminated");
   }, [sessionState, workflowState]);
 
-  const handleDiscuter = async () => { await startSession(); };
-  const handleTerminer = async () => { await stopSession(); setWorkflowState("terminated");};
-  const handleInterrompre = async () => { await interrupt(); };
-  const handleAjouterPDF = () => { console.log("📎 Ajout de PDF"); };
-  const handleFinaliser = () => { if (onFinaliser) onFinaliser(); };
-  const handleSauvegarder = () => { if (onSauvegarder) onSauvegarder(); };
-  const handleAbandonner = () => { if (onAbandonner) onAbandonner(); };
+  // ============================================
+  // 🆕 EFFET : Notifier parent des changements
+  // ============================================
+  useEffect(() => {
+    if (onConversationUpdate && liveChatHistory.length > 0) {
+      onConversationUpdate(liveChatHistory);
+    }
+  }, [liveChatHistory, onConversationUpdate]);
 
-  const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
+  // ============================================
+  // HANDLERS
+  // ============================================
+  const handleDiscuter = async () => { 
+    await startSession(); 
+  };
+  
+  const handleTerminer = async () => { 
+    await stopSession(); 
+    setWorkflowState("terminated");
+  };
+  
+  const handleInterrompre = async () => { 
+    await interrupt(); 
+  };
+  
+  const handleAjouterPDF = () => { 
+    console.log("📎 Ajout de PDF"); 
+  };
+  
+  const handleFinaliser = () => { 
+    if (onFinaliser) onFinaliser(); 
+  };
+  
+  const handleSauvegarder = () => { 
+    if (onSauvegarder) onSauvegarder(); 
+  };
+  
+  const handleAbandonner = () => { 
+    if (onAbandonner) onAbandonner(); 
+  };
 
-  // Fonction de sauvegarde des conversations
+  // ============================================
+  // SAUVEGARDE CONVERSATION
+  // ============================================
   async function saveConversation() {
     if (conversationId && conversationId !== "new") {
       // Update de la conversation existante
       const { error } = await supabase
         .from("conversations")
         .update({
-          title: context.title, // 🆕 DEPUIS CONTEXTE
-          subtitle: context.subtitle, // 🆕 DEPUIS CONTEXTE
-          avatar_preview_image: context.avatar_preview_image, // 🆕 DEPUIS CONTEXTE
-          avatar_name: context.avatar_name, // 🆕 DEPUIS CONTEXTE
-          knowledge_id: context.knowledge_id, // 🆕 DEPUIS CONTEXTE
-          initial_message: initialMessage, // 🆕 DYNAMIQUE
+          title: context.title,
+          subtitle: context.subtitle,
+          avatar_preview_image: context.avatar_preview_image,
+          avatar_name: context.avatar_name,
+          knowledge_id: context.knowledge_id,
+          initial_message: initialMessage,
           messages: liveChatHistory,
-          updated_at: new Date(),
+          updated_at: new Date().toISOString(),
         })
         .eq("id", conversationId);
   
@@ -139,16 +226,16 @@ export default function InteractiveBlock({
       }
     } else {
       // Insertion d'une nouvelle conversation
-      const { data, error } = await supabase.from("conversations").insert([
+      const { error } = await supabase.from("conversations").insert([
         {
           user_id: DEFAULT_USER_ID,
           type: conversationType,
-          title: context.title, // 🆕 DEPUIS CONTEXTE
-          subtitle: context.subtitle, // 🆕 DEPUIS CONTEXTE
-          avatar_preview_image: context.avatar_preview_image, // 🆕 DEPUIS CONTEXTE
-          avatar_name: context.avatar_name, // 🆕 DEPUIS CONTEXTE
-          knowledge_id: context.knowledge_id, // 🆕 DEPUIS CONTEXTE
-          initial_message: initialMessage, // 🆕 DYNAMIQUE
+          title: context.title,
+          subtitle: context.subtitle,
+          avatar_preview_image: context.avatar_preview_image,
+          avatar_name: context.avatar_name,
+          knowledge_id: context.knowledge_id,
+          initial_message: initialMessage,
           messages: liveChatHistory,
         },
       ]);
@@ -168,9 +255,16 @@ export default function InteractiveBlock({
     }, 2000);
   }
 
-  // 🆕 NOUVEAU : Avatar preview depuis contexte
+  // ============================================
+  // HELPERS
+  // ============================================
+  const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
+  
   const avatarPreviewImage = context.avatar_preview_image || "/avatars/anastasia_16_9_preview.webp";
 
+  // ============================================
+  // RENDER
+  // ============================================
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
       {/* En-tête */}
@@ -388,7 +482,8 @@ export default function InteractiveBlock({
           )}
         </div>
       </div>
-      {/* TOAST EN FIN DE RENDU */}
+      
+      {/* TOAST */}
       {toastMessage && (
         <Toast message={toastMessage} onClose={() => setToastMessage(null)} />
       )}
