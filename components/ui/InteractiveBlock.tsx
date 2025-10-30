@@ -124,7 +124,15 @@ export default function InteractiveBlock({
   // EFFET : Message initial
   // ============================================
   useEffect(() => {
+    console.log('🔍 DEBUG Initial Message:', {
+    sessionState,
+    initMessageSent,
+    initialMessage,
+    chatHistoryLength: chatHistory.length,
+    contextKey: context.context_key
+    });
     if (sessionState === "active" && !initMessageSent && initialMessage) {
+      console.log('✅ Envoi message initial:', initialMessage);
       startInitialSpeak(initialMessage);
       setInitMessageSent(true);
     }
