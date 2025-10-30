@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.05
+ * Knowledge Base Compiler Service v0.06
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,11 +11,11 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.05 - Correction chemin import knowledgeBasePoolService
+ * @version 0.06 - Correction fonction releaseKB()
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
-import { assignKBToPoste, releaseKBFromPoste } from '@/app/lib/services/knowledgeBasePoolService';
+import { assignKBToPoste, releaseKB } from '@/app/lib/services/knowledgeBasePoolService';
 
 // Types
 interface CompilationResult {
@@ -178,8 +178,18 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     // Libérer les KB potentiellement assignées
     console.log('🔄 [KB Compiler] Libération des KB assignées...');
     try {
-      await releaseKBFromPoste(posteId);
-      console.log('✅ [KB Compiler] KB libérées avec succès');
+      // Récupérer les KB assignées à ce poste pour les libérer
+      const { data: assignedKBs } = await supabase
+        .from('knowledge_bases_pool')
+        .select('id, heygen_kb_id')
+        .eq('poste_id', posteId);
+      
+      if (assignedKBs && assignedKBs.length > 0) {
+        for (const kb of assignedKBs) {
+          await releaseKB(kb.id);
+        }
+        console.log(`✅ [KB Compiler] ${assignedKBs.length} KB libérée(s) avec succès`);
+      }
     } catch (releaseError) {
       console.error('❌ [KB Compiler] Erreur lors de la libération des KB:', releaseError);
     }
