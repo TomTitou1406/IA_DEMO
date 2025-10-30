@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.08
+ * Knowledge Base Compiler Service v0.09
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,7 +11,7 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.08 - Correction type entreprise (array to object)
+ * @version 0.09 - Correction requête Supabase (2 requêtes séparées au lieu de jointure)
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
@@ -220,65 +220,52 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
  * @returns Données du poste ou null si introuvable
  */
 async function fetchPosteData(posteId: string): Promise<PosteData | null> {
-  const { data, error } = await supabase
+  // Récupérer le poste
+  const { data: posteData, error: posteError } = await supabase
     .from('postes')
-    .select(`
-      id,
-      titre,
-      description,
-      entreprise_id,
-      ville,
-      pays,
-      remote_possible,
-      remote_partiel,
-      remote_complet,
-      type_contrat,
-      date_debut_souhaitee,
-      salaire_min,
-      salaire_max,
-      devise,
-      avantages,
-      niveau_etude_min,
-      experience_min_annees,
-      seniorite,
-      definition_data,
-      criteres_redhibitoires,
-      competences,
-      job_description,
-      job_offer,
-      entreprise:entreprises (
-        nom,
-        secteur,
-        description,
-        ville,
-        pays,
-        taille,
-        site_web
-      )
-    `)
+    .select('*')
     .eq('id', posteId)
     .single();
 
-  if (error) {
-    console.error('❌ [KB Compiler] Erreur récupération poste:', error);
+  if (posteError) {
+    console.error('❌ [KB Compiler] Erreur récupération poste:', posteError);
     return null;
   }
 
+  if (!posteData) {
+    console.error('❌ [KB Compiler] Poste introuvable');
+    return null;
+  }
+
+  // Récupérer l'entreprise associée
+  let entrepriseData = null;
+  if (posteData.entreprise_id) {
+    const { data: entreprise, error: entrepriseError } = await supabase
+      .from('entreprises')
+      .select('nom, description, ville, pays')
+      .eq('id', posteData.entreprise_id)
+      .single();
+
+    if (!entrepriseError && entreprise) {
+      entrepriseData = entreprise;
+    } else {
+      console.warn('⚠️ [KB Compiler] Entreprise non trouvée pour ce poste');
+    }
+  }
+
   // Validation des données critiques
-  if (!data.definition_data || Object.keys(data.definition_data).length === 0) {
+  if (!posteData.definition_data || Object.keys(posteData.definition_data).length === 0) {
     console.warn('⚠️ [KB Compiler] Attention: definition_data vide');
   }
   
-  if (!data.job_description) {
+  if (!posteData.job_description) {
     console.warn('⚠️ [KB Compiler] Attention: job_description manquante');
   }
 
-  // Transformer le tableau entreprise en objet unique
+  // Construire l'objet final
   return {
-    ...data,
-    entreprise: Array.isArray(data.entreprise) && data.entreprise.length > 0 
-      ? data.entreprise[0] 
-      : undefined
+    ...posteData,
+    entreprise: entrepriseData
   } as PosteData;
 }
 
