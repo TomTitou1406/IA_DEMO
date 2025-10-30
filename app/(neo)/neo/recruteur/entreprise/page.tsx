@@ -1,12 +1,23 @@
+/**
+ * @file page.tsx (Entreprise)
+ * @version v0.02
+ * @date 30 octobre 2025
+ * @description Page de création/édition d'entreprise avec avatar IA
+ * @changelog v0.02 - Ajout Suspense boundary pour Next.js 15
+ */
+
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InteractiveBlock, { ConversationContext } from "@/components/ui/InteractiveBlock";
 import { getConversationContext } from "@/app/lib/services/conversationContextService";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
-export default function EntreprisePage() {
+// ============================================
+// COMPOSANT INTERNE (avec useSearchParams)
+// ============================================
+function EntrepriseContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const conversationId = searchParams.get("conversationId");
@@ -128,5 +139,23 @@ export default function EntreprisePage() {
       onSauvegarder={handleSauvegarder}
       onAbandonner={handleAbandonner}
     />
+  );
+}
+
+// ============================================
+// COMPOSANT PRINCIPAL (avec Suspense)
+// ============================================
+export default function EntreprisePage() {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin text-6xl mb-4">⏳</div>
+          <p className="text-lg text-gray-600">Chargement...</p>
+        </div>
+      </div>
+    }>
+      <EntrepriseContent />
+    </Suspense>
   );
 }
