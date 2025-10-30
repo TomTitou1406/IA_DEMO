@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.02
+ * Knowledge Base Compiler Service v0.04
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,9 +11,10 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
+ * @version 0.04 - Correction import Supabase
  */
 
-import { createClient } from '@/utils/supabase/client';
+import { supabase } from "@/app/lib/supabaseClient";
 import { assignKBToPoste, releaseKBFromPoste } from './knowledgeBasePoolService';
 
 // Types
@@ -137,7 +138,15 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     // ====================================================================
     console.log(`📝 [KB Compiler] Formatage du contenu...`);
     
-    // TODO: Créer les templates de contenu
+    const decouverteContent = formatDecouverteContent(posteData);
+    console.log(`✅ [KB Compiler] Contenu Découverte formaté (${decouverteContent.length} caractères)`);
+    
+    const preselectionContent = formatPreselectionContent(posteData);
+    console.log(`✅ [KB Compiler] Contenu Présélection formaté (${preselectionContent.length} caractères)`);
+    
+    const selectionContent = formatSelectionContent(posteData);
+    console.log(`✅ [KB Compiler] Contenu Sélection formaté (${selectionContent.length} caractères)`);
+
 
     // ====================================================================
     // ÉTAPE 5 : Mise à jour via API HeyGen
@@ -189,8 +198,6 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
  * @returns Données du poste ou null si introuvable
  */
 async function fetchPosteData(posteId: string): Promise<PosteData | null> {
-  const supabase = createClient();
-
   const { data, error } = await supabase
     .from('postes')
     .select(`
@@ -254,8 +261,47 @@ async function fetchPosteData(posteId: string): Promise<PosteData | null> {
  * @returns Contenu formaté pour la KB
  */
 function formatDecouverteContent(posteData: PosteData): string {
-  // TODO: Implémenter le template Découverte
-  return '';
+  const entreprise = posteData.entreprise;
+  
+  return `# POSTE : ${posteData.titre}
+
+## 🏢 ENTREPRISE
+**Nom** : ${entreprise?.nom || 'Non renseigné'}
+**Secteur** : ${entreprise?.secteur || 'Non renseigné'}
+**Localisation** : ${entreprise?.ville || ''}, ${entreprise?.pays || ''}
+${entreprise?.taille ? `**Taille** : ${entreprise.taille}` : ''}
+${entreprise?.site_web ? `**Site web** : ${entreprise.site_web}` : ''}
+
+### À propos de l'entreprise
+${entreprise?.description || 'Non renseigné'}
+
+## 📍 LOCALISATION DU POSTE
+**Lieu** : ${posteData.ville || 'Non renseigné'}, ${posteData.pays || ''}
+${posteData.remote_complet ? '🏠 **Télétravail complet possible**' : ''}
+${posteData.remote_partiel ? '🏠 **Télétravail partiel possible**' : ''}
+${!posteData.remote_possible ? '🏢 **Poste en présentiel**' : ''}
+
+## 💼 TYPE DE CONTRAT
+**Type** : ${posteData.type_contrat || 'Non renseigné'}
+${posteData.date_debut_souhaitee ? `**Début souhaité** : ${posteData.date_debut_souhaitee}` : ''}
+
+## 💰 RÉMUNÉRATION
+${posteData.salaire_min && posteData.salaire_max 
+  ? `**Fourchette** : ${posteData.salaire_min} - ${posteData.salaire_max} ${posteData.devise || 'EUR'}` 
+  : 'À discuter selon profil'}
+${posteData.avantages ? `\n**Avantages** : ${posteData.avantages}` : ''}
+
+## 🎯 PRÉSENTATION DU POSTE
+${posteData.description || 'Description détaillée à venir'}
+
+## 📚 PROFIL RECHERCHÉ
+${posteData.niveau_etude_min ? `**Formation** : ${posteData.niveau_etude_min}` : ''}
+${posteData.experience_min_annees !== null ? `**Expérience** : ${posteData.experience_min_annees} ans minimum` : ''}
+${posteData.seniorite ? `**Niveau** : ${posteData.seniorite}` : ''}
+
+---
+*Acte 1 - Entretien de Découverte*
+`;
 }
 
 /**
@@ -265,8 +311,49 @@ function formatDecouverteContent(posteData: PosteData): string {
  * @returns Contenu formaté pour la KB
  */
 function formatPreselectionContent(posteData: PosteData): string {
-  // TODO: Implémenter le template Présélection
-  return '';
+  const entreprise = posteData.entreprise;
+  const criteres = posteData.criteres_redhibitoires || {};
+  const competences = posteData.competences || {};
+  
+  return `# POSTE : ${posteData.titre}
+**Entreprise** : ${entreprise?.nom || 'Non renseigné'}
+
+## ⚠️ CRITÈRES RÉDHIBITOIRES
+${Object.keys(criteres).length > 0 
+  ? Object.entries(criteres).map(([key, value]) => `- **${key}** : ${value}`).join('\n')
+  : 'Aucun critère rédhibitoire défini'}
+
+## 🎯 COMPÉTENCES REQUISES
+${Object.keys(competences).length > 0 
+  ? Object.entries(competences).map(([key, value]) => {
+      if (typeof value === 'object' && value !== null) {
+        const comp = value as any;
+        return `### ${key}
+**Niveau requis** : ${comp.niveau || 'Non spécifié'}
+**Importance** : ${comp.importance || 'Non spécifié'}
+${comp.description ? `**Description** : ${comp.description}` : ''}`;
+      }
+      return `- **${key}** : ${value}`;
+    }).join('\n\n')
+  : 'Compétences à définir'}
+
+## 💼 CONTEXTE DU POSTE
+${posteData.description || 'Non renseigné'}
+
+## 📚 FORMATION & EXPÉRIENCE
+${posteData.niveau_etude_min ? `**Formation minimum** : ${posteData.niveau_etude_min}` : ''}
+${posteData.experience_min_annees !== null ? `**Expérience minimum** : ${posteData.experience_min_annees} ans` : ''}
+${posteData.seniorite ? `**Niveau de séniorité** : ${posteData.seniorite}` : ''}
+
+## 🏢 LIEU DE TRAVAIL
+**Localisation** : ${posteData.ville || 'Non renseigné'}, ${posteData.pays || ''}
+${posteData.remote_complet ? '✅ Télétravail complet possible' : ''}
+${posteData.remote_partiel ? '✅ Télétravail partiel possible' : ''}
+
+---
+*Acte 2 - Entretien de Présélection*
+*Évaluation des compétences techniques et des critères obligatoires*
+`;
 }
 
 /**
@@ -276,6 +363,59 @@ function formatPreselectionContent(posteData: PosteData): string {
  * @returns Contenu formaté pour la KB
  */
 function formatSelectionContent(posteData: PosteData): string {
-  // TODO: Implémenter le template Sélection
-  return '';
+  const entreprise = posteData.entreprise;
+  const jobDescription = posteData.job_description;
+  const competences = posteData.competences || {};
+  
+  return `# FICHE DE POSTE COMPLÈTE : ${posteData.titre}
+
+## 🏢 ENTREPRISE
+**Nom** : ${entreprise?.nom || 'Non renseigné'}
+**Secteur** : ${entreprise?.secteur || 'Non renseigné'}
+**Localisation** : ${entreprise?.ville || ''}, ${entreprise?.pays || ''}
+${entreprise?.taille ? `**Taille** : ${entreprise.taille}` : ''}
+${entreprise?.site_web ? `**Site web** : ${entreprise.site_web}` : ''}
+
+${entreprise?.description ? `### À propos\n${entreprise.description}\n` : ''}
+
+## 📋 DESCRIPTION DÉTAILLÉE DU POSTE
+${jobDescription || posteData.description || 'Description non disponible'}
+
+## 🎯 COMPÉTENCES CLÉS
+${Object.keys(competences).length > 0 
+  ? Object.entries(competences).map(([key, value]) => {
+      if (typeof value === 'object' && value !== null) {
+        const comp = value as any;
+        return `### ${key}
+- **Niveau requis** : ${comp.niveau || 'Non spécifié'}
+- **Importance** : ${comp.importance || 'Non spécifié'}
+${comp.description ? `- **Description** : ${comp.description}` : ''}
+${comp.exemples ? `- **Exemples d'application** : ${comp.exemples}` : ''}`;
+      }
+      return `- **${key}** : ${value}`;
+    }).join('\n\n')
+  : 'Compétences à définir'}
+
+## 💼 CONDITIONS
+**Type de contrat** : ${posteData.type_contrat || 'Non renseigné'}
+${posteData.date_debut_souhaitee ? `**Début souhaité** : ${posteData.date_debut_souhaitee}` : ''}
+**Localisation** : ${posteData.ville || 'Non renseigné'}, ${posteData.pays || ''}
+${posteData.remote_complet ? '🏠 **Télétravail complet possible**' : ''}
+${posteData.remote_partiel ? '🏠 **Télétravail partiel possible**' : ''}
+
+## 💰 RÉMUNÉRATION & AVANTAGES
+${posteData.salaire_min && posteData.salaire_max 
+  ? `**Fourchette salariale** : ${posteData.salaire_min} - ${posteData.salaire_max} ${posteData.devise || 'EUR'}` 
+  : '**Rémunération** : À discuter selon profil et expérience'}
+${posteData.avantages ? `\n**Avantages** :\n${posteData.avantages}` : ''}
+
+## 📚 PROFIL RECHERCHÉ
+${posteData.niveau_etude_min ? `**Formation** : ${posteData.niveau_etude_min}` : ''}
+${posteData.experience_min_annees !== null ? `**Expérience** : ${posteData.experience_min_annees} ans minimum` : ''}
+${posteData.seniorite ? `**Niveau de séniorité** : ${posteData.seniorite}` : ''}
+
+---
+*Acte 3 - Entretien de Sélection*
+*Évaluation approfondie des compétences, soft skills et fit culturel*
+`;
 }
