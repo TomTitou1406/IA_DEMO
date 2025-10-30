@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.04
+ * Knowledge Base Compiler Service v0.05
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,11 +11,11 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.04 - Correction import Supabase
+ * @version 0.05 - Correction chemin import knowledgeBasePoolService
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
-import { assignKBToPoste, releaseKBFromPoste } from './knowledgeBasePoolService';
+import { assignKBToPoste, releaseKBFromPoste } from '@/app/lib/services/knowledgeBasePoolService';
 
 // Types
 interface CompilationResult {
