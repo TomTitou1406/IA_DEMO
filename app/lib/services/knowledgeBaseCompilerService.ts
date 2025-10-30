@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.07
+ * Knowledge Base Compiler Service v0.08
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,7 +11,7 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.07 - Correction assignation KB (getAvailableKB puis assignKBToPoste)
+ * @version 0.08 - Correction type entreprise (array to object)
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
@@ -273,7 +273,13 @@ async function fetchPosteData(posteId: string): Promise<PosteData | null> {
     console.warn('⚠️ [KB Compiler] Attention: job_description manquante');
   }
 
-  return data as PosteData;
+  // Transformer le tableau entreprise en objet unique
+  return {
+    ...data,
+    entreprise: Array.isArray(data.entreprise) && data.entreprise.length > 0 
+      ? data.entreprise[0] 
+      : undefined
+  } as PosteData;
 }
 
 /**
