@@ -1,3 +1,13 @@
+/**
+ * @file InteractiveBlock.tsx
+ * @version v0.03
+ * @date 30 octobre 2025
+ * @description Composant principal pour l'interaction avec l'avatar HeyGen
+ * @changelog 
+ *   v0.03 - Désactivation startInitialSpeak (HeyGen gère le message via Opening Intro KB)
+ *   v0.02 - Ajout types locaux et callback onConversationUpdate
+ */
+
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
@@ -58,10 +68,12 @@ export default function InteractiveBlock({
 }: Props) {
 
   // ============================================
-  // 🆕 MESSAGE INITIAL DYNAMIQUE (sécurisé)
+  // 🆕 MESSAGE INITIAL (pour sauvegarde uniquement)
+  // Note: Le message initial est maintenant géré par HeyGen via l'Opening Intro de la KB
+  // On garde cette variable pour la sauvegarde en BDD
   // ============================================
   const initialMessage = chatHistory.length > 0 
-    ? (context.initial_message_resume || context.initial_message_new) // Fallback si resume null
+    ? (context.initial_message_resume || context.initial_message_new)
     : context.initial_message_new;
 
   // ============================================
@@ -77,13 +89,13 @@ export default function InteractiveBlock({
     startSession,
     stopSession,
     interrupt,
-    startInitialSpeak,
+    // startInitialSpeak, // ❌ v0.03 : Plus utilisé, HeyGen gère le message
   } = useNeoAvatar({
     knowledgeId: context.knowledge_id,
     avatarName: context.avatar_name || undefined,
     voiceRate: context.voice_rate || 1.0,
     language: context.language || 'fr',
-    initialMessage: initialMessage,
+    initialMessage: initialMessage, // Passé pour historique mais pas envoyé
     initialChatHistory: chatHistory,
   });
     
@@ -92,7 +104,6 @@ export default function InteractiveBlock({
   // ============================================
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
   const [timerSec, setTimerSec] = useState(0);
-  const [initMessageSent, setInitMessageSent] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   // ============================================
@@ -122,22 +133,15 @@ export default function InteractiveBlock({
 
   // ============================================
   // EFFET : Message initial
+  // ❌ v0.03 : DÉSACTIVÉ - HeyGen gère le message via Opening Intro
   // ============================================
-  useEffect(() => {
-    console.log('🔍 DEBUG Initial Message:', {
-    sessionState,
-    initMessageSent,
-    initialMessage,
-    chatHistoryLength: chatHistory.length,
-    contextKey: context.context_key
-    });
-    if (sessionState === "active" && !initMessageSent && initialMessage) {
-      console.log('✅ Envoi message initial:', initialMessage);
-      startInitialSpeak(initialMessage);
-      setInitMessageSent(true);
-    }
-    if (sessionState === "inactive") setInitMessageSent(false);
-  }, [sessionState, initMessageSent, initialMessage, startInitialSpeak]);
+  // useEffect(() => {
+  //   if (sessionState === "active" && !initMessageSent && initialMessage) {
+  //     startInitialSpeak(initialMessage);
+  //     setInitMessageSent(true);
+  //   }
+  //   if (sessionState === "inactive") setInitMessageSent(false);
+  // }, [sessionState, initMessageSent, initialMessage, startInitialSpeak]);
 
   // ============================================
   // EFFET : Stream vidéo
