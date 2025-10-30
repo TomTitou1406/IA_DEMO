@@ -37,7 +37,7 @@ export async function POST(request: Request) {
     console.log(`📤 [API Route] Mise à jour KB HeyGen: ${knowledge_base_id} (${content.length} caractères)`);
 
     // Appel API HeyGen
-    const response = await fetch('https://api.heygen.com/v1/knowledge_base.update', {
+    const response = await fetch('https://api.heygen.com/v1/streaming/knowledge_base/update', {
       method: 'PUT',
       headers: {
         'X-Api-Key': apiKey,
