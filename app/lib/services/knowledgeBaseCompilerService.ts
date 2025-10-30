@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.06
+ * Knowledge Base Compiler Service v0.07
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -11,11 +11,11 @@
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.06 - Correction fonction releaseKB()
+ * @version 0.07 - Correction assignation KB (getAvailableKB puis assignKBToPoste)
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
-import { assignKBToPoste, releaseKB } from '@/app/lib/services/knowledgeBasePoolService';
+import { assignKBToPoste, releaseKB, getAvailableKB } from '@/app/lib/services/knowledgeBasePoolService';
 
 // Types
 interface CompilationResult {
@@ -108,30 +108,42 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     // ====================================================================
     console.log(`🎯 [KB Compiler] Assignation des KB depuis le pool...`);
     
-    // Assigner KB Découverte (Acte 1)
-    const kbDecouverte = await assignKBToPoste(posteId, 'decouverte', 'generique');
-    if (!kbDecouverte) {
+    // Récupérer et assigner KB Découverte (Acte 1)
+    const kbDecouverteAvailable = await getAvailableKB('decouverte', 'generique');
+    if (!kbDecouverteAvailable) {
       throw new Error('Aucune KB Découverte disponible dans le pool');
     }
-    console.log(`✅ [KB Compiler] KB Découverte assignée: ${kbDecouverte.heygen_kb_id}`);
+    const assignedDecouverte = await assignKBToPoste(kbDecouverteAvailable.id, posteId);
+    if (!assignedDecouverte) {
+      throw new Error('Erreur lors de l\'assignation de la KB Découverte');
+    }
+    console.log(`✅ [KB Compiler] KB Découverte assignée: ${kbDecouverteAvailable.heygen_kb_id}`);
     
-    // Assigner KB Présélection (Acte 2)
-    const kbPreselection = await assignKBToPoste(posteId, 'preselection', 'generique');
-    if (!kbPreselection) {
+    // Récupérer et assigner KB Présélection (Acte 2)
+    const kbPreselectionAvailable = await getAvailableKB('preselection', 'generique');
+    if (!kbPreselectionAvailable) {
       throw new Error('Aucune KB Présélection disponible dans le pool');
     }
-    console.log(`✅ [KB Compiler] KB Présélection assignée: ${kbPreselection.heygen_kb_id}`);
+    const assignedPreselection = await assignKBToPoste(kbPreselectionAvailable.id, posteId);
+    if (!assignedPreselection) {
+      throw new Error('Erreur lors de l\'assignation de la KB Présélection');
+    }
+    console.log(`✅ [KB Compiler] KB Présélection assignée: ${kbPreselectionAvailable.heygen_kb_id}`);
     
-    // Assigner KB Sélection (Acte 3)
-    const kbSelection = await assignKBToPoste(posteId, 'selection', 'generique');
-    if (!kbSelection) {
+    // Récupérer et assigner KB Sélection (Acte 3)
+    const kbSelectionAvailable = await getAvailableKB('selection', 'generique');
+    if (!kbSelectionAvailable) {
       throw new Error('Aucune KB Sélection disponible dans le pool');
     }
-    console.log(`✅ [KB Compiler] KB Sélection assignée: ${kbSelection.heygen_kb_id}`);
+    const assignedSelection = await assignKBToPoste(kbSelectionAvailable.id, posteId);
+    if (!assignedSelection) {
+      throw new Error('Erreur lors de l\'assignation de la KB Sélection');
+    }
+    console.log(`✅ [KB Compiler] KB Sélection assignée: ${kbSelectionAvailable.heygen_kb_id}`);
     
-    const kb_decouverte_id = kbDecouverte.heygen_kb_id;
-    const kb_preselection_id = kbPreselection.heygen_kb_id;
-    const kb_selection_id = kbSelection.heygen_kb_id;
+    const kb_decouverte_id = kbDecouverteAvailable.heygen_kb_id;
+    const kb_preselection_id = kbPreselectionAvailable.heygen_kb_id;
+    const kb_selection_id = kbSelectionAvailable.heygen_kb_id;
 
     // ====================================================================
     // ÉTAPE 4 : Formatage du contenu pour chaque KB
