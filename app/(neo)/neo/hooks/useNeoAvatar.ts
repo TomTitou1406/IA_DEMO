@@ -195,7 +195,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     try {
       await avatarRef.current.speak({
         text,
-        task_type: TaskType.TALK,
+        task_type: TaskType.REPEAT,
       });
     } catch (err) {
       console.warn("⚠️ Erreur lors de l'envoi du message initial :", err);
