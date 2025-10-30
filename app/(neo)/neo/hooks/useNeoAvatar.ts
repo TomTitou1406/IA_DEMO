@@ -1,6 +1,6 @@
 /**
  * @file useNeoAvatar.ts
- * @version v0.02
+ * @version v0.03
  * @date 30 octobre 2025
  * @description Hook pour gérer l'avatar HeyGen avec Knowledge Base
  * @changelog 
