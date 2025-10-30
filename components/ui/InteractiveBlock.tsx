@@ -1,10 +1,11 @@
 /**
  * @file InteractiveBlock.tsx
- * @version v0.04
+ * @version v0.05
  * @date 30 octobre 2025
  * @description Composant principal pour l'interaction avec l'avatar HeyGen
  * @changelog 
- *   v0.04 - Suppression du passage d'initialMessage au hook (HeyGen gère tout via Opening Intro)
+ *   v0.05 - Réactivation message initial avec startInitialSpeak (caché du chat)
+ *   v0.04 - Suppression du passage d'initialMessage (erreur : avatar passif)
  *   v0.03 - Désactivation startInitialSpeak
  *   v0.02 - Ajout types locaux et callback onConversationUpdate
  */
@@ -69,8 +70,9 @@ export default function InteractiveBlock({
 }: Props) {
 
   // ============================================
-  // 🆕 v0.04 : Message initial pour sauvegarde uniquement
-  // Note: On ne le passe PLUS au hook, HeyGen gère tout via Opening Intro
+  // 🆕 v0.05 : Message initial pour forcer l'avatar à parler
+  // Note: Ce message sert à déclencher l'avatar (TaskType.TALK)
+  // Il ne sera PAS ajouté au chatHistory (géré par le hook)
   // ============================================
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
@@ -78,7 +80,7 @@ export default function InteractiveBlock({
 
   // ============================================
   // HOOK AVATAR
-  // ❌ v0.04 : Plus de initialMessage passé au hook !
+  // ✅ v0.05 : initialMessage réactivé pour forcer l'avatar à parler
   // ============================================
   const {
     sessionState,
@@ -90,12 +92,13 @@ export default function InteractiveBlock({
     startSession,
     stopSession,
     interrupt,
+    startInitialSpeak,
   } = useNeoAvatar({
     knowledgeId: context.knowledge_id,
     avatarName: context.avatar_name || undefined,
     voiceRate: context.voice_rate || 1.0,
     language: context.language || 'fr',
-    // ❌ v0.04 : initialMessage retiré
+    initialMessage: initialMessage, // ✅ v0.05 : Réactivé
     initialChatHistory: chatHistory,
   });
     
@@ -104,6 +107,7 @@ export default function InteractiveBlock({
   // ============================================
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
   const [timerSec, setTimerSec] = useState(0);
+  const [initMessageSent, setInitMessageSent] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   
   // ============================================
@@ -130,6 +134,20 @@ export default function InteractiveBlock({
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, [sessionState]);
+
+  // ============================================
+  // ✅ v0.05 : EFFET Message initial (réactivé)
+  // Force l'avatar à parler en premier via startInitialSpeak
+  // Le hook gère l'envoi avec TaskType.TALK
+  // ============================================
+  useEffect(() => {
+    if (sessionState === "active" && !initMessageSent && initialMessage) {
+      console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
+      startInitialSpeak(initialMessage);
+      setInitMessageSent(true);
+    }
+    if (sessionState === "inactive") setInitMessageSent(false);
+  }, [sessionState, initMessageSent, initialMessage, startInitialSpeak]);
 
   // ============================================
   // EFFET : Stream vidéo
