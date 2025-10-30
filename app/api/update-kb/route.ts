@@ -1,7 +1,7 @@
 /**
  * API Route: Update HeyGen Knowledge Base
  * @file app/api/update-kb/route.ts
- * @version 0.03
+ * @version 0.05
  * @date 2025-10-30
  * 
  * Route sécurisée côté serveur pour mettre à jour les KB HeyGen
@@ -10,6 +10,8 @@
  * CORRECTIONS:
  * - v0.02: URL corrigée vers /v1/streaming/knowledge_base/update
  * - v0.03: Méthode HTTP corrigée de PUT vers POST
+ * - v0.04: ID de la KB ajouté dans l'URL (ERREUR)
+ * - v0.05: ID de la KB dans le body avec le nom "knowledgeId" (CORRECT)
  */
 
 import { NextResponse } from 'next/server';
@@ -40,7 +42,7 @@ export async function POST(request: Request) {
 
     console.log(`📤 [API Route] Mise à jour KB HeyGen: ${knowledge_base_id} (${content.length} caractères)`);
 
-    // Appel API HeyGen
+    // Appel API HeyGen - L'ID est dans le body avec le nom "knowledgeId"
     const response = await fetch('https://api.heygen.com/v1/streaming/knowledge_base/update', {
       method: 'POST',
       headers: {
@@ -48,7 +50,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        knowledge_base_id,
+        knowledgeId: knowledge_base_id,  // Nom du paramètre: knowledgeId
         content,
       }),
     });
