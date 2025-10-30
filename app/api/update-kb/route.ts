@@ -1,7 +1,7 @@
 /**
  * API Route: Update HeyGen Knowledge Base
  * @file app/api/update-kb/route.ts
- * @version 0.05
+ * @version 0.06
  * @date 2025-10-30
  * 
  * Route sécurisée côté serveur pour mettre à jour les KB HeyGen
@@ -12,6 +12,7 @@
  * - v0.03: Méthode HTTP corrigée de PUT vers POST
  * - v0.04: ID de la KB ajouté dans l'URL (ERREUR)
  * - v0.05: ID de la KB dans le body avec le nom "knowledgeId" (CORRECT)
+ * - v0.06: Uniformisation du nom du paramètre à "knowledgeId" partout
  */
 
 import { NextResponse } from 'next/server';
@@ -19,12 +20,12 @@ import { NextResponse } from 'next/server';
 export async function POST(request: Request) {
   try {
     // Parser le body
-    const { knowledge_base_id, content } = await request.json();
+    const { knowledgeId, content } = await request.json();
 
     // Validation des paramètres
-    if (!knowledge_base_id || !content) {
+    if (!knowledgeId || !content) {
       return NextResponse.json(
-        { error: 'knowledge_base_id et content requis' },
+        { error: 'knowledgeId et content requis' },
         { status: 400 }
       );
     }
@@ -40,7 +41,7 @@ export async function POST(request: Request) {
       );
     }
 
-    console.log(`📤 [API Route] Mise à jour KB HeyGen: ${knowledge_base_id} (${content.length} caractères)`);
+    console.log(`📤 [API Route] Mise à jour KB HeyGen: ${knowledgeId} (${content.length} caractères)`);
 
     // Appel API HeyGen - L'ID est dans le body avec le nom "knowledgeId"
     const response = await fetch('https://api.heygen.com/v1/streaming/knowledge_base/update', {
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        knowledgeId: knowledge_base_id,  // Nom du paramètre: knowledgeId
+        knowledgeId: knowledgeId,
         content,
       }),
     });
@@ -72,7 +73,7 @@ export async function POST(request: Request) {
     // Parser la réponse HeyGen
     const data = await response.json();
 
-    console.log(`✅ [API Route] KB mise à jour avec succès: ${knowledge_base_id}`);
+    console.log(`✅ [API Route] KB mise à jour avec succès: ${knowledgeId}`);
 
     return NextResponse.json({
       success: true,
