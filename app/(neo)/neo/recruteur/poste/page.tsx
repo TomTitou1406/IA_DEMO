@@ -1,9 +1,11 @@
 /**
  * @file page.tsx (Poste)
- * @version v0.02
+ * @version v0.03
  * @date 30 octobre 2025
  * @description Page de création/édition de poste avec avatar IA
- * @changelog v0.02 - Ajout Suspense boundary pour Next.js 15
+ * @changelog 
+ *   v0.03 - Ajout composant debug KB Pool pour test
+ *   v0.02 - Ajout Suspense boundary pour Next.js 15
  */
 
 "use client";
@@ -12,6 +14,7 @@ import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import InteractiveBlock, { ConversationContext } from "@/components/ui/InteractiveBlock";
 import { getConversationContext } from "@/app/lib/services/conversationContextService";
+import KBPoolDebug from "@/components/debug/KBPoolDebug"; // 🧪 v0.03
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 // ============================================
@@ -129,16 +132,22 @@ function PosteContent() {
 
   // Success
   return (
-    <InteractiveBlock
-      conversationId={conversationId}
-      conversationType="poste"
-      context={context}
-      chatHistory={chatHistory}
-      onConversationUpdate={handleConversationUpdate}
-      onFinaliser={handleFinaliser}
-      onSauvegarder={handleSauvegarder}
-      onAbandonner={handleAbandonner}
-    />
+    <div className="max-w-7xl mx-auto px-4 py-6">
+      {/* 🧪 v0.03 : Composant de debug temporaire */}
+      <KBPoolDebug />
+      
+      {/* Composant principal */}
+      <InteractiveBlock
+        conversationId={conversationId}
+        conversationType="poste"
+        context={context}
+        chatHistory={chatHistory}
+        onConversationUpdate={handleConversationUpdate}
+        onFinaliser={handleFinaliser}
+        onSauvegarder={handleSauvegarder}
+        onAbandonner={handleAbandonner}
+      />
+    </div>
   );
 }
 
