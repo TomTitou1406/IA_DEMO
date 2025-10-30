@@ -1,11 +1,11 @@
 /**
- * HeyGen API Service v0.04
+ * HeyGen API Service v0.05
  * 
  * Service d'appel à l'API HeyGen pour la gestion des Knowledge Bases
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.04 - Utilisation URL absolue pour l'API route
+ * @version 0.05 - Correction nom paramètre: knowledgeId au lieu de knowledge_base_id
  */
 
 // Types
@@ -45,7 +45,7 @@ export async function updateHeyGenKnowledgeBase(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        knowledge_base_id: kbId,
+        knowledgeId: kbId,  // Paramètre attendu par l'API route
         content: content,
       }),
     });
