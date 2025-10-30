@@ -97,13 +97,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   }, []);
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
-    const word = event.detail.message;
-
-    // 🆕 v0.02 : Ignorer le message initial
-    if (isInitialMessageRef.current) {
-      console.log('🔇 Message initial ignoré (pas de doublon)');
-      return;
-    }
+  const word = event.detail.message;
 
     if (currentSenderRef.current === "assistant") {
       setChatHistory((prev) => [
@@ -199,18 +193,12 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       return;
     }
     try {
-      // Activer le flag pour ignorer ce message dans le chat
-      isInitialMessageRef.current = true;
-      console.log('✅ Message initial envoyé (sera ignoré du chat)');
-      
-      // Utiliser TaskType.TALK pour que l'avatar génère une réponse naturelle
       await avatarRef.current.speak({
         text,
-        task_type: TaskType.TALK, // ✅ v0.02 : TALK au lieu de REPEAT
+        task_type: TaskType.TALK,
       });
     } catch (err) {
       console.warn("⚠️ Erreur lors de l'envoi du message initial :", err);
-      isInitialMessageRef.current = false; // Reset en cas d'erreur
     }
   }, []);
 
