@@ -1,3 +1,12 @@
+/**
+ * @file useNeoAvatar.ts
+ * @version v0.02
+ * @date 30 octobre 2025
+ * @description Hook pour gérer l'avatar HeyGen avec Knowledge Base
+ * @changelog 
+ *   v0.02 - Message initial caché du chat + utilisation TaskType.TALK
+ */
+
 // /app/(neo)/neo/hooks/useNeoAvatar.ts
 "use client";
 
@@ -51,8 +60,8 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   const sessionIdRef = useRef<string | null>(null);
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
   
-  // 🆕 NOUVEAU : Flag pour ignorer le premier message user (message initial)
-  const shouldIgnoreNextUserMessage = useRef(false);
+  // 🆕 v0.02 : Flag pour ignorer le premier message (message initial)
+  const isInitialMessageRef = useRef<boolean>(false);
 
   const isLoading = sessionState === "loading";
 
@@ -65,13 +74,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
-
-    // 🆕 NOUVEAU : Ignorer le message si c'est celui envoyé par initialMessage
-    if (shouldIgnoreNextUserMessage.current) {
-      console.log("🔇 Message initial ignoré (pas de doublon)");
-      shouldIgnoreNextUserMessage.current = false;
-      return;
-    }
 
     if (currentSenderRef.current === "user") {
       setChatHistory((prev) => [
@@ -97,6 +99,12 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   const handleAvatarTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
 
+    // 🆕 v0.02 : Ignorer le message initial
+    if (isInitialMessageRef.current) {
+      console.log('🔇 Message initial ignoré (pas de doublon)');
+      return;
+    }
+
     if (currentSenderRef.current === "assistant") {
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
@@ -119,6 +127,11 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   }, []);
 
   const handleEndMessage = useCallback(() => {
+    // 🆕 v0.02 : Réactiver l'écoute après le message initial
+    if (isInitialMessageRef.current) {
+      isInitialMessageRef.current = false;
+      console.log('✅ Message initial terminé, écoute réactivée');
+    }
     currentSenderRef.current = null;
   }, []);
 
@@ -179,26 +192,25 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
-  // Méthode pour faire parler l'avatar (phrase initiale)
+  // 🆕 v0.02 : Méthode modifiée pour utiliser TaskType.TALK
   const startInitialSpeak = useCallback(async (text: string) => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
       return;
     }
     try {
-      // 🆕 NOUVEAU : Activer le flag pour ignorer le prochain message user
-      shouldIgnoreNextUserMessage.current = true;
-
+      // Activer le flag pour ignorer ce message dans le chat
+      isInitialMessageRef.current = true;
+      console.log('✅ Message initial envoyé (sera ignoré du chat)');
+      
+      // Utiliser TaskType.TALK pour que l'avatar génère une réponse naturelle
       await avatarRef.current.speak({
         text,
-        task_type: TaskType.TALK,
+        task_type: TaskType.TALK, // ✅ v0.02 : TALK au lieu de REPEAT
       });
-      
-      console.log("✅ Message initial envoyé (sera ignoré du chat)");
     } catch (err) {
       console.warn("⚠️ Erreur lors de l'envoi du message initial :", err);
-      // Réinitialiser le flag en cas d'erreur
-      shouldIgnoreNextUserMessage.current = false;
+      isInitialMessageRef.current = false; // Reset en cas d'erreur
     }
   }, []);
 
@@ -224,8 +236,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       setError(null);
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
-      // 🆕 NOUVEAU : Réinitialiser le flag
-      shouldIgnoreNextUserMessage.current = false;
+      isInitialMessageRef.current = false; // Reset du flag
 
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
@@ -247,14 +258,13 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
       await avatar.startVoiceChat();
 
+      // 🆕 v0.02 : Envoi du message initial après démarrage
       if (config?.initialMessage) {
         await startInitialSpeak(config.initialMessage);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setSessionState("error");
-      // 🆕 NOUVEAU : Réinitialiser le flag en cas d'erreur
-      shouldIgnoreNextUserMessage.current = false;
     }
   }, [sessionState, config, fetchAccessToken, initializeAvatar, startInitialSpeak]);
 
@@ -268,8 +278,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       avatarRef.current = null;
       sessionIdRef.current = null;
       currentSenderRef.current = null;
-      // 🆕 NOUVEAU : Réinitialiser le flag
-      shouldIgnoreNextUserMessage.current = false;
+      isInitialMessageRef.current = false; // Reset du flag
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
