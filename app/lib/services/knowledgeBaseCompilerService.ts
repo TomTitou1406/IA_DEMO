@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.01
+ * Knowledge Base Compiler Service v0.02
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -14,6 +14,7 @@
  */
 
 import { createClient } from '@/utils/supabase/client';
+import { assignKBToPoste, releaseKBFromPoste } from './knowledgeBasePoolService';
 
 // Types
 interface CompilationResult {
@@ -106,10 +107,30 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     // ====================================================================
     console.log(`🎯 [KB Compiler] Assignation des KB depuis le pool...`);
     
-    // TODO: Appeler knowledgeBasePoolService.assignKBToPoste() pour chaque type
-    const kb_decouverte_id = null; // Placeholder
-    const kb_preselection_id = null; // Placeholder
-    const kb_selection_id = null; // Placeholder
+    // Assigner KB Découverte (Acte 1)
+    const kbDecouverte = await assignKBToPoste(posteId, 'decouverte', 'generique');
+    if (!kbDecouverte) {
+      throw new Error('Aucune KB Découverte disponible dans le pool');
+    }
+    console.log(`✅ [KB Compiler] KB Découverte assignée: ${kbDecouverte.heygen_kb_id}`);
+    
+    // Assigner KB Présélection (Acte 2)
+    const kbPreselection = await assignKBToPoste(posteId, 'preselection', 'generique');
+    if (!kbPreselection) {
+      throw new Error('Aucune KB Présélection disponible dans le pool');
+    }
+    console.log(`✅ [KB Compiler] KB Présélection assignée: ${kbPreselection.heygen_kb_id}`);
+    
+    // Assigner KB Sélection (Acte 3)
+    const kbSelection = await assignKBToPoste(posteId, 'selection', 'generique');
+    if (!kbSelection) {
+      throw new Error('Aucune KB Sélection disponible dans le pool');
+    }
+    console.log(`✅ [KB Compiler] KB Sélection assignée: ${kbSelection.heygen_kb_id}`);
+    
+    const kb_decouverte_id = kbDecouverte.heygen_kb_id;
+    const kb_preselection_id = kbPreselection.heygen_kb_id;
+    const kb_selection_id = kbSelection.heygen_kb_id;
 
     // ====================================================================
     // ÉTAPE 4 : Formatage du contenu pour chaque KB
@@ -144,6 +165,15 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
 
   } catch (error) {
     console.error('❌ [KB Compiler] Erreur lors de la compilation:', error);
+    
+    // Libérer les KB potentiellement assignées
+    console.log('🔄 [KB Compiler] Libération des KB assignées...');
+    try {
+      await releaseKBFromPoste(posteId);
+      console.log('✅ [KB Compiler] KB libérées avec succès');
+    } catch (releaseError) {
+      console.error('❌ [KB Compiler] Erreur lors de la libération des KB:', releaseError);
+    }
     
     return {
       success: false,
