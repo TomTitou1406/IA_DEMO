@@ -1,11 +1,11 @@
 /**
- * HeyGen API Service v0.05
+ * HeyGen API Service v0.06
  * 
  * Service d'appel à l'API HeyGen pour la gestion des Knowledge Bases
  * 
  * @author NeoRecrut Team
  * @date 2025-10-30
- * @version 0.05 - Correction nom paramètre: knowledgeId au lieu de knowledge_base_id
+ * @version 0.06 - Ajout paramètres name et opening obligatoires
  */
 
 // Types
@@ -20,14 +20,18 @@ interface UpdateKBResponse {
  * 
  * @param kbId - ID de la KB HeyGen à mettre à jour
  * @param content - Contenu texte à injecter dans la KB
+ * @param name - Nom de la KB (optionnel, conserve l'ancien si non fourni)
+ * @param opening - Message d'ouverture (optionnel)
  * @returns Résultat de la mise à jour
  * 
  * @example
- * const result = await updateHeyGenKnowledgeBase('782b26f0...', 'Contenu formaté...');
+ * const result = await updateHeyGenKnowledgeBase('782b26f0...', 'Contenu formaté...', 'Ma KB', 'Bonjour !');
  */
 export async function updateHeyGenKnowledgeBase(
   kbId: string,
-  content: string
+  content: string,
+  name?: string,
+  opening?: string
 ): Promise<UpdateKBResponse> {
   console.log(`📤 [HeyGen API] Mise à jour KB: ${kbId} (${content.length} caractères)`);
 
@@ -45,8 +49,10 @@ export async function updateHeyGenKnowledgeBase(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        knowledgeId: kbId,  // Paramètre attendu par l'API route
+        knowledgeId: kbId,
         content: content,
+        name: name,
+        opening: opening,
       }),
     });
 
@@ -106,7 +112,9 @@ export async function updatePosteKnowledgeBases(
     // Mise à jour KB Découverte
     const resultDecouverte = await updateHeyGenKnowledgeBase(
       kbIds.decouverte,
-      contents.decouverte
+      contents.decouverte,
+      'Découverte',
+      'Bonjour !'
     );
     if (!resultDecouverte.success) {
       throw new Error(`Erreur KB Découverte: ${resultDecouverte.error}`);
@@ -115,7 +123,9 @@ export async function updatePosteKnowledgeBases(
     // Mise à jour KB Présélection
     const resultPreselection = await updateHeyGenKnowledgeBase(
       kbIds.preselection,
-      contents.preselection
+      contents.preselection,
+      'Présélection',
+      'Bonjour !'
     );
     if (!resultPreselection.success) {
       throw new Error(`Erreur KB Présélection: ${resultPreselection.error}`);
@@ -124,7 +134,9 @@ export async function updatePosteKnowledgeBases(
     // Mise à jour KB Sélection
     const resultSelection = await updateHeyGenKnowledgeBase(
       kbIds.selection,
-      contents.selection
+      contents.selection,
+      'Sélection',
+      'Bonjour !'
     );
     if (!resultSelection.success) {
       throw new Error(`Erreur KB Sélection: ${resultSelection.error}`);
