@@ -1,254 +1,132 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
-import ConversationList from "@/components/ui/ConversationList";
-import ArchivesBadgeCarousel from "@/components/ui/ArchivesBadgeCarousel";
-import InteractiveBlock from "@/components/ui/InteractiveBlock";
-import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
-import Link from "next/link";
-import { Card, CardHeader, CardContent } from "@/components/ui/Card";
-import { supabase } from "@/app/lib/supabaseClient";
-import { DEFAULT_USER_ID } from "@/app/lib/constants";
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import InteractiveBlock, { ConversationContext } from "@/components/ui/InteractiveBlock";
+import { getConversationContext } from "@/app/lib/services/conversationContextService";
+import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
-export default function RecruteurEntreprise() {
-  const [modeChoisi, setModeChoisi] = useState<"vocal" | "ecrit" | null>(null);
-  // "new" = création, string = archive supabase, null = aucune sélection
-  const [conversationId, setConversationId] = useState<string | null>("");
+export default function EntreprisePage() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const conversationId = searchParams.get("conversationId");
 
-  // Chargement des archives pour badges
-  const [archives, setArchives] = useState<any[]>([]);
-  const [loadingArchives, setLoadingArchives] = useState(true);
+  // ============================================
+  // ÉTATS
+  // ============================================
+  const [context, setContext] = useState<ConversationContext | null>(null);
+  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Nouveaux états pour l’historique chargé
-  const [chatHistory, setChatHistory] = useState<any[]>([]);
-  const [loadingChatHistory, setLoadingChatHistory] = useState(false);
-
+  // ============================================
+  // CHARGEMENT DU CONTEXTE DEPUIS LA BDD
+  // ============================================
   useEffect(() => {
-    setLoadingArchives(true);
-    (async () => {
-      const { data } = await supabase
-        .from("conversations")
-        .select("id, title, type, updated_at")
-        .eq("user_id", DEFAULT_USER_ID)
-        .eq("type", "entreprise")
-        .order("updated_at", { ascending: false });
-      setArchives(data ?? []);
-      setLoadingArchives(false);
-    })();
-  }, []);
+    async function loadContext() {
+      try {
+        setLoading(true);
+        setError(null);
 
-  // Handler pour archive modifié en async
-  const handleSelectConversation = async (id: string) => {
-    setConversationId(id);
-    setLoadingChatHistory(true);
+        // Charger le contexte "entreprise.presentation" depuis la BDD
+        const contextData = await getConversationContext("entreprise.presentation");
 
-    const { data, error } = await supabase
-      .from("conversations")
-      .select("messages")
-      .eq("id", id)
-      .single();
+        if (!contextData) {
+          throw new Error("Contexte 'entreprise.presentation' introuvable en BDD");
+        }
 
-    if (error) {
-      console.error("Erreur chargement discussion :", error);
-      setChatHistory([]);
-    } else {
-      setChatHistory(data?.messages ?? []);
+        setContext(contextData);
+
+        // TODO: Si conversationId existe, charger l'historique depuis conversations.messages
+        if (conversationId && conversationId !== "new") {
+          // const { data } = await supabase
+          //   .from('conversations')
+          //   .select('messages')
+          //   .eq('id', conversationId)
+          //   .single();
+          // if (data?.messages) setChatHistory(data.messages);
+        }
+
+      } catch (err) {
+        console.error("Erreur chargement contexte entreprise:", err);
+        setError(err instanceof Error ? err.message : "Erreur inconnue");
+      } finally {
+        setLoading(false);
+      }
     }
 
-    setLoadingChatHistory(false);
+    loadContext();
+  }, [conversationId]);
+
+  // ============================================
+  // HANDLERS
+  // ============================================
+  const handleFinaliser = () => {
+    console.log("✅ Entreprise finalisée");
+    router.push("/neo/recruteur/entreprises");
   };
 
-  // Modes disponibles
-  const modes: {
-    key: "vocal" | "ecrit";
-    title: string;
-    desc: string;
-    color: string;
-    image?: string;
-    icon?: React.ReactNode;
-  }[] = [
-    {
-      key: "vocal",
-      title: "Nouvelle conversation en mode vocal",
-      desc: "Exprimez-vous à voix haute avec un micro. L'IA anime un avatar interactif.",
-      color: "var(--nc-blue)",
-      image: "/cards/mode_avatar_card.png",
-    },
-    {
-      key: "ecrit",
-      title: "Nouvelle conversation en mode texte",
-      desc: "Dialoguez par texte sans prise de parole. L'IA vous répond par écrit dans le fil de discussion.",
-      color: "var(--nc-blue)",
-      image: "/cards/mode_chat_card.png",
-    },
-  ];
+  const handleSauvegarder = () => {
+    console.log("💾 Entreprise sauvegardée");
+    // La sauvegarde est gérée dans InteractiveBlock
+  };
 
-  // ------ ÉTAT 1 : Choix / badges / création ------
-  if (!conversationId) {
-    if (!modeChoisi) {
-      return (
-        <div className="flex flex-col items-center justify-center min-h-[60vh] py-4">
-          <h1 className="text-3xl font-extrabold text-[var(--nc-blue)] mb-2 text-center">
-            Poursuivre ou créer une nouvelle discussion assistée par l'IA
-          </h1>
-          <div className="text-center mb-2">
-            <Link
-              href="/neo/"
-              className="text-[var(--nc-blue)] hover:text-[var(--nc-blue)] hover:underline transition-all duration-200 text-lg font-medium"
-            >
-              ← Retour
-            </Link>
-          </div>
+  const handleAbandonner = () => {
+    console.log("❌ Abandon");
+    router.push("/neo/recruteur/entreprises");
+  };
 
-          {/* Zone toujours présente pour éviter les décalages */}
-          <div style={{ minHeight: 56, width: "100%" }} className="flex flex-col items-center justify-center mb-2">
-            {loadingArchives ? (
-              <span className="animate-spin text-2xl text-gray-400">⏳</span>
-            ) : archives.length > 0 ? (
-              <>
-                <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
-                  Des conversations sont archivées, cliquez sur celle que vous souhaitez reprendre.
-                </p>
-                <ArchivesBadgeCarousel
-                  archives={archives}
-                  onSelect={handleSelectConversation}
-                />
-              </>
-            ) : null}
-          </div>
+  const handleConversationUpdate = (messages: ChatMessage[]) => {
+    // Optionnel : faire quelque chose quand les messages changent
+    console.log("📝 Conversation mise à jour:", messages.length, "messages");
+  };
 
-          <p className="text-lg text-gray-700 mb-4 text-center max-w-2xl">
-            Poursuivre ou créer une nouvelle discussion assistée par l'IA
-          </p>
-          <div className="flex gap-8 flex-wrap justify-center">
-            {modes.map((m) => (
-              <div
-                key={m.key}
-                onClick={() => {
-                  setModeChoisi(m.key);
-                  setConversationId("new"); // nouvelle conversation
-                }}
-                className="cursor-pointer"
-              >
-                <Card
-                  image={m.image}
-                  color={m.color}
-                  className="hover:border-[var(--nc-blue)] hover:shadow-2xl hover:-translate-y-2 transition-all duration-200"
-                >
-                  {!m.image && m.icon && (
-                    <div className="mb-5 flex justify-center">
-                      <div className="mx-auto w-20 h-20 flex items-center justify-center bg-[var(--nc-gray)] rounded-full shadow-sm">
-                        {m.icon}
-                      </div>
-                    </div>
-                  )}
-                  <CardHeader>
-                    <h3 className="text-xl font-bold text-gray-900">{m.title}</h3>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-700">{m.desc}</p>
-                  </CardContent>
-                </Card>
-              </div>
-            ))}
-          </div>
+  // ============================================
+  // RENDER
+  // ============================================
+
+  // Loading
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin text-6xl mb-4">⏳</div>
+          <p className="text-lg text-gray-600">Chargement du contexte...</p>
         </div>
-      );
-    } else {
-      // Cas rare : mode choisi, pas encore d'ID (ex: après reset)
-      return null;
-    }
-  }
-
-  // ------ ÉTAT 2 : Nouvelle conversation ------
-  if (conversationId === "new") {
-    if (modeChoisi === "ecrit") {
-      return (
-        <InteractiveChatBlock
-          conversationId={conversationId}
-          title="Nouvelle présentation - Mode écrit"
-          subtitle="Commencez à discuter avec l'IA."
-          discussion={[]}
-          etatDiscussion="init"
-          setEtatDiscussion={() => {}}
-          setDiscussion={() => {}}
-          onSendMessage={() => {}}
-          onAbandonner={() => {}}
-          onConfirmerAbandon={() => {}}
-          showConfirmation={false}
-          onFinaliser={() => {}}
-          onSauvegarder={() => {}}
-          showSavedMessage={false}
-        />
-      );
-    }
-    return (
-      <InteractiveBlock
-        conversationId={conversationId}
-        conversationType="entreprise"
-        title="Nouvelle présentation - Mode vocal"
-        subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-        avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
-        knowledgeId="19df36d7a9354a1aa664c34686256df1"
-        avatarName="Anastasia_Chair_Sitting_public"
-        voiceRate={1.2}
-        initialMessage="Bonjour ! Je vais vous accompagner dans la création de la présentation de votre entreprise.
-        Nous allons ensemble mettre en valeur votre histoire, vos valeurs et ce qui vous rend unique.
-        Prêt à commencer ?"
-        onFinaliser={() => {}}
-        onSauvegarder={() => {}}
-        onAbandonner={() => {}}
-      />
+      </div>
     );
   }
 
-  // ------ ÉTAT 3 : Archive sélectionnée ------
-  if (conversationId && conversationId !== "new") {
-    if (modeChoisi === "ecrit") {
-      return (
-        <InteractiveChatBlock
-          conversationId={conversationId}
-          title="Présenter votre entreprise - Mode écrit"
-          subtitle="Discutez avec l'IA via un chat textuel."
-          discussion={chatHistory}  // passe l'historique chargé ici
-          loading={loadingChatHistory} // <-- passe le booléen loading
-          etatDiscussion="init"
-          setEtatDiscussion={() => {}}
-          setDiscussion={setChatHistory}  // pour modification
-          onSendMessage={() => {}}
-          onAbandonner={() => {}}
-          onConfirmerAbandon={() => {}}
-          showConfirmation={false}
-          onFinaliser={() => {}}
-          onSauvegarder={() => {}}
-          showSavedMessage={false}
-        />
-      );
-    }
-    // Mode vocal archive
+  // Error
+  if (error || !context) {
     return (
-      <InteractiveBlock
-        conversationId={conversationId}
-        conversationType="entreprise"
-        title="Présenter votre entreprise - Mode vocal"
-        subtitle="L'IA vous assiste vocalement avec un avatar interactif."
-        avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"
-        knowledgeId="19df36d7a9354a1aa664c34686256df1"
-        avatarName="Anastasia_Chair_Sitting_public"
-        voiceRate={1.2}
-        initialMessage={chatHistory.length > 0 
-        ? "? "Bonjour ! Je vois que nous avons déjà commencé à travailler ensemble. prêt à redémarrer ?" " 
-        : "Bonjour ! Je vais vous accompagner dans la création de la présentation de votre entreprise.
-        Nous allons ensemble mettre en valeur votre histoire, vos valeurs et ce qui vous rend unique.
-        Prêt à commencer ?"}
-        initialChatHistory={chatHistory}  // <---- Passage de l'historique
-        onFinaliser={() => {}}
-        onSauvegarder={() => {}}
-        onAbandonner={() => {}}
-      />
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center text-red-600">
+          <div className="text-6xl mb-4">❌</div>
+          <p className="text-lg font-medium">Erreur</p>
+          <p className="text-sm mt-2">{error || "Contexte introuvable"}</p>
+          <button
+            onClick={() => router.push("/neo/recruteur/entreprises")}
+            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
+          >
+            Retour
+          </button>
+        </div>
+      </div>
     );
   }
 
-  // Sécurité : fallback 
-  return null;
+  // Success
+  return (
+    <InteractiveBlock
+      conversationId={conversationId}
+      conversationType="entreprise"
+      context={context}
+      chatHistory={chatHistory}
+      onConversationUpdate={handleConversationUpdate}
+      onFinaliser={handleFinaliser}
+      onSauvegarder={handleSauvegarder}
+      onAbandonner={handleAbandonner}
+    />
+  );
 }
