@@ -246,11 +246,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
       await avatar.startVoiceChat();
 
-      // 🆕 v0.02 : Envoi du message initial après démarrage
-      if (config?.initialMessage) {
-        await startInitialSpeak(config.initialMessage);
-      }
-    } catch (err) {
+      } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setSessionState("error");
     }
