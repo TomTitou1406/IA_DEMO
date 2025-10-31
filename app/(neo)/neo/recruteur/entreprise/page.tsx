@@ -2,7 +2,7 @@
 
 /**
  * Page Entreprise - Workflow de création
- * @version 0.04
+ * @version 0.05
  * @date 2025-10-31
  * 
  * Page de création d'entreprise avec workflow guidé en 10 étapes
@@ -14,7 +14,7 @@ import { useWorkflowManager } from '@/app/(neo)/neo/hooks/useWorkflowManager';
 import { 
   ENTREPRISE_WORKFLOW_STEPS, 
   ENTREPRISE_WORKFLOW_TITLE 
-} from '@/app/(neo)/neo/lib/config/entrepriseWorkflowConfig';
+} from '@/app/lib/config/entrepriseWorkflowConfig';
 import InteractiveAvatarWrapper from '@/components/InteractiveAvatar';
 
 export default function EntreprisePage() {
