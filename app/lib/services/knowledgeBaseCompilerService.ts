@@ -1,5 +1,5 @@
 /**
- * Knowledge Base Compiler Service v0.10
+ * Knowledge Base Compiler Service v0.11
  * 
  * Service de compilation et assignation des Knowledge Bases HeyGen pour les postes.
  * Orchestre le processus complet :
@@ -10,8 +10,8 @@
  * 5. Sauvegarde en BDD
  * 
  * @author NeoRecrut Team
- * @date 2025-10-30
- * @version 0.10 - Ajout étape 5 : Mise à jour API HeyGen
+ * @date 2025-10-31
+ * @version 0.11 - Ajout étape 5 : Sauvegarde BDD complète
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
@@ -191,7 +191,22 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     // ====================================================================
     console.log(`💾 [KB Compiler] Sauvegarde en BDD...`);
     
-    // TODO: Mettre à jour la table postes
+    const saveResult = await saveKBCompilationToBDD(
+      posteId,
+      kb_decouverte_id,
+      kb_preselection_id,
+      kb_selection_id,
+      decouverteContent,
+      preselectionContent,
+      selectionContent
+    );
+
+    if (!saveResult.success) {
+      console.warn('⚠️ [KB Compiler] Avertissement lors de la sauvegarde BDD:', saveResult.error);
+      // On continue quand même car les KB sont déjà mises à jour dans HeyGen
+    } else {
+      console.log(`✅ [KB Compiler] Sauvegarde BDD terminée`);
+    }
 
     console.log(`✅ [KB Compiler] Compilation terminée avec succès`);
 
@@ -228,6 +243,65 @@ export async function compileKnowledgeBases(posteId: string): Promise<Compilatio
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Erreur inconnue lors de la compilation'
+    };
+  }
+}
+
+/**
+ * Sauvegarde les résultats de la compilation KB dans la table postes
+ * 
+ * @param posteId - UUID du poste
+ * @param kb_decouverte_id - ID HeyGen de la KB Découverte
+ * @param kb_preselection_id - ID HeyGen de la KB Présélection
+ * @param kb_selection_id - ID HeyGen de la KB Sélection
+ * @param decouverteContent - Snapshot du contenu Découverte
+ * @param preselectionContent - Snapshot du contenu Présélection
+ * @param selectionContent - Snapshot du contenu Sélection
+ * @returns Résultat de la sauvegarde
+ */
+async function saveKBCompilationToBDD(
+  posteId: string,
+  kb_decouverte_id: string,
+  kb_preselection_id: string,
+  kb_selection_id: string,
+  decouverteContent: string,
+  preselectionContent: string,
+  selectionContent: string
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    const { data, error } = await supabase
+      .from('postes')
+      .update({
+        kb_decouverte_id: kb_decouverte_id,
+        kb_preselection_id: kb_preselection_id,
+        kb_selection_id: kb_selection_id,
+        kb_decouverte_content: decouverteContent,
+        kb_preselection_content: preselectionContent,
+        kb_selection_content: selectionContent,
+        kb_compiled_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', posteId);
+
+    if (error) {
+      console.error('❌ [KB Compiler] Erreur sauvegarde BDD:', error);
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+
+    console.log(`✅ [KB Compiler] Données sauvegardées en BDD pour le poste ${posteId}`);
+
+    return {
+      success: true
+    };
+
+  } catch (error) {
+    console.error('❌ [KB Compiler] Exception lors de la sauvegarde:', error);
+    return {
+      success: false,
+      error: error instanceof Error ? error.message : 'Erreur inconnue'
     };
   }
 }
