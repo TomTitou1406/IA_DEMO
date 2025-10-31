@@ -6,15 +6,12 @@
  * Sauvegarde progressive des données entreprise pendant la conversation
  */
 
-import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
-import { cookies } from 'next/headers';
+import { supabase } from "@/app/lib/supabaseClient";
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const supabase = createRouteHandlerClient({ cookies });
-    
-    // Vérifier l'authentification
+        // Vérifier l'authentification
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     
     if (authError || !user) {
