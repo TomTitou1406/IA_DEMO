@@ -14,10 +14,13 @@ import { useStaticKnowledgeBase } from '@/app/(neo)/neo/hooks/useStaticKnowledge
 import InteractiveBlock from '@/components/ui/InteractiveBlock';
 import type { ConversationContext } from '@/components/ui/InteractiveBlock';
 import type { ChatMessage } from '@/app/(neo)/neo/hooks/useNeoAvatar';
+import { supabase } from '@/app/lib/supabaseClient';
+import { DEFAULT_USER_ID } from '@/app/lib/constants';
 
 export default function EntreprisePage() {
   const router = useRouter();
   const [entrepriseId, setEntrepriseId] = useState<string | null>(null);
+  const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   
   // Charger la KB statique depuis BDD
@@ -25,30 +28,65 @@ export default function EntreprisePage() {
 
   // Créer l'entreprise en draft au chargement
   useEffect(() => {
-    async function createEntrepriseDraft() {
+    async function createEntrepriseAndConversation() {
       try {
+        // 1. Créer entreprise draft
         const response = await fetch('/api/entreprise/save', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            entreprise_id: null, // Création
+            entreprise_id: null,
             data: {
               nom: 'Entreprise sans nom',
               status: 'draft',
             },
           }),
         });
-
+    
         const result = await response.json();
-        if (result.success) {
-          setEntrepriseId(result.entreprise_id);
+        if (!result.success) {
+          throw new Error('Erreur création entreprise');
         }
+    
+        const newEntrepriseId = result.entreprise_id;
+        console.log('✅ Entreprise draft créée:', newEntrepriseId);
+    
+        // 2. Créer conversation liée
+        const { data: conversation, error } = await supabase
+          .from('conversations')
+          .insert({
+            user_id: DEFAULT_USER_ID,
+            type: 'acquisition_entreprise',
+            related_entity_id: newEntrepriseId,
+            title: '📋 Acquisition entreprise',
+            subtitle: 'Collecte informations entreprise',
+            messages: [],
+            statut: 'EN_COURS',
+          })
+          .select()
+          .single();
+    
+        if (error) {
+          console.error('❌ Erreur création conversation:', error);
+          throw error;
+        }
+    
+        console.log('✅ Conversation créée:', conversation.id);
+        console.log('📊 States après création:', {
+          entrepriseId: newEntrepriseId,
+          conversationId: conversation.id
+        });
+    
+        // 3. Stocker les 2 IDs
+        setEntrepriseId(newEntrepriseId);
+        setConversationId(conversation.id);
+    
       } catch (error) {
-        console.error('Erreur création entreprise draft:', error);
+        console.error('❌ Erreur init:', error);
       }
     }
-
-    createEntrepriseDraft();
+    
+    createEntrepriseAndConversation();
   }, []);
 
   // Handler mise à jour conversation
@@ -113,6 +151,11 @@ export default function EntreprisePage() {
     is_active: true,
   };
 
+  console.log('🔧 Passage à InteractiveBlock:', {   // ← AJOUTER ICI (ligne 153)
+    entrepriseId,
+    conversationId
+  })
+  
   return (
     <div className="w-full min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
@@ -129,7 +172,7 @@ export default function EntreprisePage() {
 
         {/* Composant InteractiveBlock */}
         <InteractiveBlock
-          conversationId={entrepriseId}
+          conversationId={conversationId}
           conversationType="acquisition_entreprise"
           context={contextConfig}
           chatHistory={chatHistory}
