@@ -113,6 +113,7 @@ export default function InteractiveBlock({
   const [timerSec, setTimerSec] = useState(0);
   const [initMessageSent, setInitMessageSent] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isSaving, setIsSaving] = useState(false);
   
   // ============================================
   // REFS
@@ -184,14 +185,21 @@ export default function InteractiveBlock({
   // EFFET : Auto-save toutes les 30s (2 tables)
   // ============================================
   useEffect(() => {
+    console.log('🔄 Auto-save useEffect déclenché', {
+      sessionState,
+      historyLength: liveChatHistory.length,
+      entrepriseId
+    });
+    
     if (sessionState !== "active" || liveChatHistory.length === 0 || !entrepriseId) {
+      console.log('⚠️ Auto-save pas activé:', { sessionState, historyLength: liveChatHistory.length, entrepriseId });
       return;
     }
-  
     console.log('🔄 Auto-save activé pour entreprise:', entrepriseId);
   
     const interval = setInterval(async () => {
       console.log('💾 Déclenchement auto-save...');
+      setIsSaving(true);
       
       try {
         // 1. Sauvegarder dans entreprises (données métier)
@@ -225,9 +233,11 @@ export default function InteractiveBlock({
         
         if (entrepriseResult.success && conversationResult.success) {
           console.log('✅ Auto-save réussi (2 tables)');
+          setTimeout(() => setIsSaving(false), 2000);
         }
       } catch (error) {
         console.error('❌ Erreur auto-save:', error);
+        setIsSaving(false);
       }
     }, 30000);
   
@@ -401,10 +411,15 @@ export default function InteractiveBlock({
 
           {/* Timer en overlay coin haut droit */}
           {(workflowState === "active" || workflowState === "terminated") && (
-            <div className="absolute top-4 right-4 z-20">
+            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
               <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow">
                 {timerStr}
               </span>
+              {isSaving && (
+                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow animate-pulse">
+                  💾 Sauvegarde...
+                </span>
+              )}
             </div>
           )}
 
