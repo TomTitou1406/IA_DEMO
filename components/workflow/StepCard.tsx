@@ -1,13 +1,12 @@
 /**
  * StepCard Component
- * @version 0.01
+ * @version 0.02
  * @date 2025-10-31
  * 
  * Carte affichant l'étape actuelle du workflow
  * Contient le titre, l'avatar et les actions
+ * Design NeoRecrut avec boutons natifs
  */
-
-import { Button } from "@/components/Button";
 
 interface StepCardProps {
   stepTitle: string;
@@ -68,8 +67,8 @@ export const StepCard: React.FC<StepCardProps> = ({
       {/* Footer Actions */}
       <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
         {onSave && (
-          <Button
-            className="!bg-gray-200 !text-gray-700 hover:!bg-gray-300"
+          <button
+            className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg text-sm font-medium hover:bg-gray-300 transition shadow disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={isSaving}
             onClick={onSave}
           >
@@ -83,16 +82,16 @@ export const StepCard: React.FC<StepCardProps> = ({
                 💾 Sauvegarder
               </>
             )}
-          </Button>
+          </button>
         )}
         <div className="flex-1" />
-        <Button
-          className="!bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500"
+        <button
+          className="bg-gradient-to-r from-[var(--nc-blue)] to-[var(--nc-cyan)] text-white px-8 py-2 rounded-lg text-sm font-medium hover:opacity-90 transition shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={isValidateDisabled}
           onClick={onValidate}
         >
           Valider l'étape →
-        </Button>
+        </button>
       </div>
     </div>
   );
