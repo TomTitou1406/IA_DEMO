@@ -145,14 +145,18 @@ export default function InteractiveBlock({
   // Force l'avatar à parler en premier via startInitialSpeak
   // Le hook gère l'envoi avec TaskType.TALK
   // ============================================
-    useEffect(() => {
-    if (sessionState === "active" && !initMessageSent && initialMessage) {
+  const initialMessageSentRef = useRef(false); // ← AJOUTER en haut avec les autres refs (ligne ~120)
+
+  useEffect(() => {
+    if (sessionState === "active" && !initialMessageSentRef.current && initialMessage) {
       console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
       startInitialSpeak(initialMessage);
-      setInitMessageSent(true);
+      initialMessageSentRef.current = true;
     }
-    if (sessionState === "inactive") setInitMessageSent(false);
-  }, [sessionState, initMessageSent]);
+    if (sessionState === "inactive") {
+      initialMessageSentRef.current = false;
+    }
+  }, [sessionState, initialMessage, startInitialSpeak]);
 
   // ============================================
   // EFFET : Stream vidéo
@@ -182,64 +186,106 @@ export default function InteractiveBlock({
   }, [sessionState, workflowState]);
 
   // ============================================
-  // EFFET : Auto-save toutes les 30s (2 tables)
+  // EFFET : Auto-save toutes les 30s
   // ============================================
   useEffect(() => {
-    console.log('🔄 Auto-save useEffect déclenché', {
-      sessionState,
-      historyLength: liveChatHistory.length,
-      entrepriseId
-    });
-    
-    if (sessionState !== "active" || liveChatHistory.length === 0 || !entrepriseId) {
-      console.log('⚠️ Auto-save pas activé:', { sessionState, historyLength: liveChatHistory.length, entrepriseId });
+    // Ne s'active QUE si session active
+    if (sessionState !== "active") {
+      console.log('⚠️ Auto-save désactivé: session pas active');
       return;
     }
-    console.log('🔄 Auto-save activé pour entreprise:', entrepriseId);
+    
+    console.log('✅ Auto-save ACTIVÉ', {
+      entrepriseId,
+      conversationId,
+      historyLength: liveChatHistory.length
+    });
   
     const interval = setInterval(async () => {
-      console.log('💾 Déclenchement auto-save...');
+      // Vérifier qu'on a bien des messages
+      if (liveChatHistory.length === 0) {
+        console.log('⏭️ Auto-save skip: pas de messages');
+        return;
+      }
+  
+      console.log('💾 Déclenchement auto-save...', {
+        messages: liveChatHistory.length,
+        entrepriseId
+      });
+      
       setIsSaving(true);
       
       try {
-        // 1. Sauvegarder dans entreprises (données métier)
-        const entrepriseResponse = await fetch('/api/entreprise/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            entreprise_id: entrepriseId,
-            data: {
-              raw_conversation: liveChatHistory,
-              last_save: new Date().toISOString(),
-            },
-          }),
-        });
+        // Sauvegarder dans conversations (comme le bouton manuel)
+        if (conversationId && conversationId !== "new") {
+          // Update existant
+          const { error } = await supabase
+            .from("conversations")
+            .update({
+              messages: liveChatHistory,
+              last_activity_at: new Date().toISOString(),
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", conversationId);
   
-        // 2. Sauvegarder dans conversations (traçabilité)
-        const conversationResponse = await fetch('/api/conversations/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            conversation_id: conversationId, // Peut être null la 1ère fois
-            type: 'acquisition_entreprise',
-            related_entity_id: entrepriseId,
-            messages: liveChatHistory,
-            statut: 'EN_COURS',
-          }),
-        });
+          if (error) {
+            console.error('❌ Erreur auto-save conversations:', error);
+          } else {
+            console.log('✅ Auto-save conversations OK');
+          }
+        } else {
+          // Créer nouvelle conversation
+          const { data, error } = await supabase
+            .from("conversations")
+            .insert({
+              user_id: DEFAULT_USER_ID,
+              type: conversationType,
+              related_entity_id: entrepriseId,
+              title: context.title,
+              messages: liveChatHistory,
+              statut: 'EN_COURS',
+            })
+            .select()
+            .single();
   
-        const entrepriseResult = await entrepriseResponse.json();
-        const conversationResult = await conversationResponse.json();
-        
-        if (entrepriseResult.success && conversationResult.success) {
-          console.log('✅ Auto-save réussi (2 tables)');
-          setTimeout(() => setIsSaving(false), 2000);
+          if (error) {
+            console.error('❌ Erreur création conversation:', error);
+          } else {
+            console.log('✅ Conversation créée:', data.id);
+            // TODO: Mettre à jour conversationId dans le parent
+          }
         }
+  
+        // Sauvegarder dans entreprises si entrepriseId existe
+        if (entrepriseId) {
+          const { error } = await supabase
+            .from("entreprises")
+            .update({
+              raw_conversation: liveChatHistory,
+              updated_at: new Date().toISOString(),
+            })
+            .eq("id", entrepriseId);
+  
+          if (error) {
+            console.error('❌ Erreur auto-save entreprises:', error);
+          } else {
+            console.log('✅ Auto-save entreprises OK');
+          }
+        }
+  
+        setTimeout(() => setIsSaving(false), 2000);
+        
       } catch (error) {
         console.error('❌ Erreur auto-save:', error);
         setIsSaving(false);
       }
-    }, 30000);
+    }, 30000); // 30 secondes
+  
+    return () => {
+      console.log('🛑 Auto-save interval nettoyé');
+      clearInterval(interval);
+    };
+  }, [sessionState]); // ← SEULEMENT sessionState !
   
     return () => clearInterval(interval);
   }, [sessionState, liveChatHistory, entrepriseId, conversationId]);
