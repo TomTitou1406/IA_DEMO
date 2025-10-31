@@ -142,14 +142,14 @@ export default function InteractiveBlock({
   // Force l'avatar à parler en premier via startInitialSpeak
   // Le hook gère l'envoi avec TaskType.TALK
   // ============================================
-  useEffect(() => {
+    useEffect(() => {
     if (sessionState === "active" && !initMessageSent && initialMessage) {
       console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
       startInitialSpeak(initialMessage);
       setInitMessageSent(true);
     }
     if (sessionState === "inactive") setInitMessageSent(false);
-  }, [sessionState, initMessageSent, initialMessage, startInitialSpeak]);
+  }, [sessionState, initMessageSent]);
 
   // ============================================
   // EFFET : Stream vidéo
