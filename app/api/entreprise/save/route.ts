@@ -30,7 +30,6 @@ export async function POST(request: Request) {
         .from('entreprises')
         .insert({
           recruiter_id: user.id,
-          nom: entrepriseData.nom || 'Entreprise sans nom',
           status: 'in_progress',
           completion_percentage: 0,
           ...mapDataToColumns(entrepriseData),
