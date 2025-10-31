@@ -123,6 +123,7 @@ export default function InteractiveBlock({
   const chatEndRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const liveChatHistoryRef = useRef<ChatMessage[]>([]);
   
   // ============================================
   // EFFET : Timer
@@ -149,14 +150,22 @@ export default function InteractiveBlock({
   // ============================================
   useEffect(() => {
     if (sessionState === "active" && !initialMessageSentRef.current && initialMessage) {
-      console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
-      startInitialSpeak(initialMessage);
-      initialMessageSentRef.current = true;
+      // Attendre 500ms pour que le micro soit initialisé
+      const timeout = setTimeout(() => {
+        if (sessionState === "active" && !initialMessageSentRef.current) {
+          console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
+          startInitialSpeak(initialMessage);
+          initialMessageSentRef.current = true;
+        }
+      }, 500);
+      
+      return () => clearTimeout(timeout);
     }
+    
     if (sessionState === "inactive") {
       initialMessageSentRef.current = false;
     }
-  }, [sessionState]); // ← PAS initialMessage ni startInitialSpeak !
+  }, [sessionState]);
 
   // ============================================
   // EFFET : Stream vidéo
@@ -175,6 +184,13 @@ export default function InteractiveBlock({
   // ============================================
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [liveChatHistory]);
+
+  // ============================================
+  // EFFET : Synchroniser chat history avec ref
+  // ============================================
+  useEffect(() => {
+    liveChatHistoryRef.current = liveChatHistory;
   }, [liveChatHistory]);
 
   // ============================================
@@ -205,8 +221,8 @@ export default function InteractiveBlock({
   
     // Créer le nouvel interval
     autoSaveIntervalRef.current = setInterval(async () => {
-      // Capturer les valeurs actuelles
-      const currentHistory = liveChatHistory;
+      // IMPORTANT : Lire depuis le ref pour avoir la valeur actuelle
+      const currentHistory = liveChatHistoryRef.current;
       const currentEntrepriseId = entrepriseId;
       const currentConversationId = conversationId;
   
@@ -218,13 +234,15 @@ export default function InteractiveBlock({
   
       // Vérifier qu'on a des messages
       if (currentHistory.length === 0) {
-        console.log('⏭️ Auto-save skip: pas de messages');
+        console.log('⏭️ Auto-save skip: pas de messages encore');
         return;
       }
   
       setIsSaving(true);
       
       try {
+        let saveSuccess = false;
+  
         // 1. Sauvegarder dans conversations
         if (currentConversationId && currentConversationId !== "new") {
           const { error } = await supabase
@@ -237,10 +255,13 @@ export default function InteractiveBlock({
             .eq("id", currentConversationId);
   
           if (error) {
-            console.error('❌ Erreur auto-save conversations:', error);
+            console.error('❌ Auto-save conversations error:', error);
           } else {
             console.log('✅ Auto-save conversations OK:', currentHistory.length, 'messages');
+            saveSuccess = true;
           }
+        } else {
+          console.log('ℹ️ Pas de conversationId, skip conversations');
         }
   
         // 2. Sauvegarder dans entreprises
@@ -254,19 +275,36 @@ export default function InteractiveBlock({
             .eq("id", currentEntrepriseId);
   
           if (error) {
-            console.error('❌ Erreur auto-save entreprises:', error);
+            console.error('❌ Auto-save entreprises error:', error);
           } else {
             console.log('✅ Auto-save entreprises OK');
+            saveSuccess = true;
           }
+        } else {
+          console.log('ℹ️ Pas d\'entrepriseId, skip entreprises');
         }
   
-        setTimeout(() => setIsSaving(false), 2000);
+        if (saveSuccess) {
+          setTimeout(() => setIsSaving(false), 2000);
+        } else {
+          setIsSaving(false);
+        }
         
       } catch (error) {
-        console.error('❌ Erreur auto-save:', error);
+        console.error('❌ Exception auto-save:', error);
         setIsSaving(false);
       }
     }, 30000); // 30 secondes
+  
+    // Cleanup
+    return () => {
+      if (autoSaveIntervalRef.current) {
+        console.log('🛑 Nettoyage auto-save interval');
+        clearInterval(autoSaveIntervalRef.current);
+        autoSaveIntervalRef.current = null;
+      }
+    };
+  }, [sessionState, entrepriseId, conversationId]); // ← Ajouter entrepriseId et conversationId
   
     // Cleanup
     return () => {
