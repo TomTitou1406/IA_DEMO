@@ -33,43 +33,43 @@ export const StepCard: React.FC<StepCardProps> = ({
   isSaving = false,
 }) => {
   return (
-    <div className="w-full bg-zinc-900 rounded-xl overflow-hidden shadow-xl border border-zinc-800">
+    <div className="w-full bg-white rounded-xl overflow-hidden shadow-lg border-t-4 border-blue-500">
       {/* Header */}
-      <div className="px-6 py-4 bg-gradient-to-r from-zinc-800 to-zinc-900 border-b border-zinc-700">
+      <div className="px-6 py-4 bg-gradient-to-r from-blue-50 to-cyan-50 border-b border-gray-200">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
             <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-8 h-8 rounded-full bg-indigo-500/20 border-2 border-indigo-500">
-                <span className="text-indigo-400 font-semibold text-sm">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-blue-100 border-2 border-blue-500">
+                <span className="text-blue-600 font-bold text-base">
                   {stepNumber}
                 </span>
               </div>
-              <h2 className="text-xl font-semibold text-white">
+              <h2 className="text-2xl font-bold text-blue-900">
                 {stepTitle}
               </h2>
             </div>
             {stepDescription && (
-              <p className="text-zinc-400 text-sm ml-11">
+              <p className="text-gray-600 text-sm ml-13">
                 {stepDescription}
               </p>
             )}
           </div>
-          <div className="text-zinc-500 text-sm">
+          <div className="text-gray-500 text-sm font-medium">
             Étape {stepNumber} / {totalSteps}
           </div>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-6">
+      <div className="p-6 bg-white">
         {children}
       </div>
 
       {/* Footer Actions */}
-      <div className="px-6 py-4 bg-zinc-800/50 border-t border-zinc-700 flex justify-between items-center">
+      <div className="px-6 py-4 bg-gray-50 border-t border-gray-200 flex justify-between items-center">
         {onSave && (
           <Button
-            className="!bg-zinc-700 hover:!bg-zinc-600"
+            className="!bg-gray-200 !text-gray-700 hover:!bg-gray-300"
             disabled={isSaving}
             onClick={onSave}
           >
@@ -87,7 +87,7 @@ export const StepCard: React.FC<StepCardProps> = ({
         )}
         <div className="flex-1" />
         <Button
-          className="!bg-gradient-to-r from-indigo-500 to-purple-500 hover:from-indigo-600 hover:to-purple-600"
+          className="!bg-gradient-to-r from-blue-500 to-cyan-400 hover:from-blue-600 hover:to-cyan-500"
           disabled={isValidateDisabled}
           onClick={onValidate}
         >
