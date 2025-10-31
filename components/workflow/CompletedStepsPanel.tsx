@@ -33,9 +33,9 @@ export const CompletedStepsPanel: React.FC<CompletedStepsPanelProps> = ({
   }
 
   return (
-    <div className="w-full bg-zinc-900 rounded-xl p-6 border border-zinc-800">
-      <h3 className="text-lg font-semibold text-white mb-4 flex items-center gap-2">
-        <span className="text-green-500">✓</span>
+    <div className="w-full bg-white rounded-xl p-6 shadow-lg border border-gray-200">
+      <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center gap-2">
+        <span className="text-green-500 text-xl">✓</span>
         Étapes complétées
       </h3>
 
@@ -46,29 +46,29 @@ export const CompletedStepsPanel: React.FC<CompletedStepsPanelProps> = ({
           return (
             <div
               key={step.stepKey}
-              className="bg-zinc-800 rounded-lg overflow-hidden border border-zinc-700 hover:border-zinc-600 transition-colors"
+              className="bg-gray-50 rounded-lg overflow-hidden border border-gray-200 hover:border-blue-300 transition-colors"
             >
               {/* Header cliquable */}
               <button
-                className="w-full px-4 py-3 flex items-center justify-between text-left"
+                className="w-full px-4 py-3 flex items-center justify-between text-left hover:bg-gray-100 transition-colors"
                 onClick={() =>
                   setExpandedStep(isExpanded ? null : step.stepKey)
                 }
               >
                 <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center w-6 h-6 rounded-full bg-green-500/20 border border-green-500">
-                    <span className="text-green-400 text-xs">✓</span>
+                  <div className="flex items-center justify-center w-7 h-7 rounded-full bg-green-100 border-2 border-green-500">
+                    <span className="text-green-600 text-sm font-bold">✓</span>
                   </div>
-                  <span className="text-white font-medium">
+                  <span className="text-gray-800 font-medium">
                     {step.stepTitle}
                   </span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="text-zinc-500 text-xs">
+                  <span className="text-gray-500 text-xs font-medium">
                     #{step.stepNumber}
                   </span>
                   <span
-                    className={`text-zinc-400 transition-transform ${
+                    className={`text-gray-400 transition-transform ${
                       isExpanded ? "rotate-180" : ""
                     }`}
                   >
@@ -79,21 +79,21 @@ export const CompletedStepsPanel: React.FC<CompletedStepsPanelProps> = ({
 
               {/* Contenu expandable */}
               {isExpanded && (
-                <div className="px-4 pb-3 border-t border-zinc-700">
+                <div className="px-4 pb-3 border-t border-gray-200 bg-white">
                   <div className="pt-3 flex flex-col gap-3">
                     {/* Résumé */}
-                    <div className="text-sm text-zinc-300">
+                    <div className="text-sm text-gray-700">
                       {step.summary}
                     </div>
 
                     {/* Actions */}
                     <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs text-zinc-500">
+                      <span className="text-xs text-gray-500">
                         Complété le {new Date(step.completedAt).toLocaleDateString('fr-FR')}
                       </span>
                       {onEdit && (
                         <button
-                          className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
+                          className="text-xs text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
                           onClick={() => onEdit(step.stepKey)}
                         >
                           ✏️ Modifier
