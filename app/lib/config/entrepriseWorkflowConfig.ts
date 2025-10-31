@@ -6,7 +6,7 @@
  * Définition des 10 étapes du workflow de création d'entreprise
  */
 
-import { WorkflowStep } from './useWorkflowManager';
+import { WorkflowStep } from '@/app/(neo)/neo/hooks/useWorkflowManager';
 
 export const ENTREPRISE_WORKFLOW_STEPS: WorkflowStep[] = [
   {
