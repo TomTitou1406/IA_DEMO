@@ -78,6 +78,11 @@ export default function InteractiveBlock({
   // Note: Ce message sert à déclencher l'avatar (TaskType.TALK)
   // Il ne sera PAS ajouté au chatHistory (géré par le hook)
   // ============================================
+  console.log('🎬 InteractiveBlock reçoit:', {
+    entrepriseId,
+    conversationId,
+    conversationType
+  });
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
     : context.initial_message_new;
@@ -111,7 +116,6 @@ export default function InteractiveBlock({
   // ============================================
   const [workflowState, setWorkflowState] = useState<"inactive" | "active" | "terminated">("inactive");
   const [timerSec, setTimerSec] = useState(0);
-  const [initMessageSent, setInitMessageSent] = useState(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   
@@ -124,7 +128,7 @@ export default function InteractiveBlock({
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
-  
+    
   // ============================================
   // EFFET : Timer
   // ============================================
@@ -144,20 +148,22 @@ export default function InteractiveBlock({
   }, [sessionState]);
 
   // ============================================
-  // ✅ v0.05 : EFFET Message initial (réactivé)
-  // Force l'avatar à parler en premier via startInitialSpeak
-  // Le hook gère l'envoi avec TaskType.TALK
+  // EFFET : Message initial (UNIQUE)
   // ============================================
   useEffect(() => {
-    if (sessionState === "active" && !initialMessageSentRef.current && initialMessage) {
-      // Attendre 500ms pour que le micro soit initialisé
+    if (
+      sessionState === "active" && 
+      !initialMessageSentRef.current && 
+      initialMessage &&
+      stream
+    ) {
       const timeout = setTimeout(() => {
         if (sessionState === "active" && !initialMessageSentRef.current) {
-          console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
+          console.log('🎤 Envoi message initial (UNIQUE):', initialMessage);
           startInitialSpeak(initialMessage);
           initialMessageSentRef.current = true;
         }
-      }, 500);
+      }, 1000);
       
       return () => clearTimeout(timeout);
     }
@@ -165,7 +171,7 @@ export default function InteractiveBlock({
     if (sessionState === "inactive") {
       initialMessageSentRef.current = false;
     }
-  }, [sessionState]);
+  }, [sessionState, stream]);
 
   // ============================================
   // EFFET : Stream vidéo
@@ -205,13 +211,11 @@ export default function InteractiveBlock({
   // EFFET : Auto-save toutes les 30s
   // ============================================
   useEffect(() => {
-    // Nettoyer l'interval précédent
     if (autoSaveIntervalRef.current) {
       clearInterval(autoSaveIntervalRef.current);
       autoSaveIntervalRef.current = null;
     }
   
-    // Ne s'active QUE si session active
     if (sessionState !== "active") {
       console.log('⚠️ Auto-save désactivé: session pas active');
       return;
@@ -219,9 +223,7 @@ export default function InteractiveBlock({
     
     console.log('✅ Auto-save ACTIVÉ');
   
-    // Créer le nouvel interval
     autoSaveIntervalRef.current = setInterval(async () => {
-      // IMPORTANT : Lire depuis le ref pour avoir la valeur actuelle
       const currentHistory = liveChatHistoryRef.current;
       const currentEntrepriseId = entrepriseId;
       const currentConversationId = conversationId;
@@ -232,7 +234,6 @@ export default function InteractiveBlock({
         conversationId: currentConversationId
       });
   
-      // Vérifier qu'on a des messages
       if (currentHistory.length === 0) {
         console.log('⏭️ Auto-save skip: pas de messages encore');
         return;
@@ -243,8 +244,7 @@ export default function InteractiveBlock({
       try {
         let saveSuccess = false;
   
-        // 1. Sauvegarder dans conversations
-        if (currentConversationId && currentConversationId !== "new") {
+        if (currentConversationId) {
           const { error } = await supabase
             .from("conversations")
             .update({
@@ -255,16 +255,13 @@ export default function InteractiveBlock({
             .eq("id", currentConversationId);
   
           if (error) {
-            console.error('❌ Auto-save conversations error:', error);
+            console.error('❌ Auto-save conversations:', error);
           } else {
             console.log('✅ Auto-save conversations OK:', currentHistory.length, 'messages');
             saveSuccess = true;
           }
-        } else {
-          console.log('ℹ️ Pas de conversationId, skip conversations');
         }
   
-        // 2. Sauvegarder dans entreprises
         if (currentEntrepriseId) {
           const { error } = await supabase
             .from("entreprises")
@@ -275,13 +272,11 @@ export default function InteractiveBlock({
             .eq("id", currentEntrepriseId);
   
           if (error) {
-            console.error('❌ Auto-save entreprises error:', error);
+            console.error('❌ Auto-save entreprises:', error);
           } else {
             console.log('✅ Auto-save entreprises OK');
             saveSuccess = true;
           }
-        } else {
-          console.log('ℹ️ Pas d\'entrepriseId, skip entreprises');
         }
   
         if (saveSuccess) {
@@ -294,9 +289,8 @@ export default function InteractiveBlock({
         console.error('❌ Exception auto-save:', error);
         setIsSaving(false);
       }
-    }, 30000); // 30 secondes
+    }, 30000);
   
-    // Cleanup
     return () => {
       if (autoSaveIntervalRef.current) {
         console.log('🛑 Nettoyage auto-save interval');
@@ -304,7 +298,7 @@ export default function InteractiveBlock({
         autoSaveIntervalRef.current = null;
       }
     };
-  }, [sessionState, entrepriseId, conversationId]); // ← Ajouter entrepriseId et conversationId
+  }, [sessionState, entrepriseId, conversationId]);
   
   // ============================================
   // HANDLERS
