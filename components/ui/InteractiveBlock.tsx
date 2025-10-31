@@ -53,6 +53,7 @@ type Props = {
   context: ConversationContext;
   chatHistory?: ChatMessage[];
   knowledgeBaseId?: string;
+  entrepriseId?: string | null;
   onConversationUpdate?: (messages: ChatMessage[]) => void;
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
@@ -65,6 +66,7 @@ export default function InteractiveBlock({
   context,
   chatHistory = [],
   knowledgeBaseId,
+  entrepriseId,
   onConversationUpdate,
   onFinaliser,
   onSauvegarder,
@@ -181,30 +183,47 @@ export default function InteractiveBlock({
   // ============================================
   // 🆕 EFFET : Notifier parent des changements
   // ============================================
-  useEffect(() => {
-    if (onConversationUpdate && liveChatHistory.length > 0) {
-      onConversationUpdate(liveChatHistory);
-    }
-  }, [liveChatHistory, onConversationUpdate]);
+   useEffect(() => {
+  // Ne sauvegarder que si session active et qu'on a des messages
+  if (sessionState !== "active" || liveChatHistory.length === 0 || !entrepriseId) {
+    return;
+  }
 
-  // Auto-save toutes les 30s
-  useEffect(() => {
-    if (sessionState !== "active") return;
+  console.log('🔄 Auto-save activé pour entreprise:', entrepriseId);
+
+  const interval = setInterval(async () => {
+    console.log('💾 Déclenchement auto-save...');
     
-    const interval = setInterval(async () => {
-      if (liveChatHistory.length > 0) {
-        await fetch('/api/entreprise/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            entreprise_id: conversationId,
-            data: extractDataFromChat(liveChatHistory),
-          }),
-        });
+    try {
+      const response = await fetch('/api/entreprise/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entreprise_id: entrepriseId,
+          data: {
+            raw_conversation: liveChatHistory,
+            last_save: new Date().toISOString(),
+          },
+        }),
+      });
+
+      const result = await response.json();
+      
+      if (result.success) {
+        console.log('✅ Auto-save réussi:', result);
+      } else {
+        console.error('❌ Erreur auto-save:', result);
       }
-    }, 30000); // 30s
-    return () => clearInterval(interval);
-  }, [sessionState, liveChatHistory, conversationId]);
+    } catch (error) {
+      console.error('❌ Erreur auto-save:', error);
+    }
+  }, 30000); // 30 secondes
+
+  return () => {
+    console.log('🛑 Auto-save désactivé');
+    clearInterval(interval);
+  };
+}, [sessionState, liveChatHistory, entrepriseId]);
 
   // ============================================
   // HANDLERS
