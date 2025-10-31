@@ -1,161 +1,127 @@
-/**
- * @file page.tsx (Entreprise)
- * @version v0.02
- * @date 30 octobre 2025
- * @description Page de création/édition d'entreprise avec avatar IA
- * @changelog v0.02 - Ajout Suspense boundary pour Next.js 15
- */
-
 "use client";
 
-import { Suspense, useEffect, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import InteractiveBlock, { ConversationContext } from "@/components/ui/InteractiveBlock";
-import { getConversationContext } from "@/app/lib/services/conversationContextService";
-import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
+/**
+ * Page Entreprise - Workflow de création
+ * @version 0.03
+ * @date 2025-10-31
+ * 
+ * Page de création d'entreprise avec workflow guidé en 10 étapes
+ */
 
-// ============================================
-// COMPOSANT INTERNE (avec useSearchParams)
-// ============================================
-function EntrepriseContent() {
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const conversationId = searchParams.get("conversationId");
+import { useState } from 'react';
+import { WorkflowLayout } from '@/components/workflow/WorkflowLayout';
+import { useWorkflowManager } from '@/app/hooks/useWorkflowManager';
+import { 
+  ENTREPRISE_WORKFLOW_STEPS, 
+  ENTREPRISE_WORKFLOW_TITLE 
+} from '@/app/lib/config/entrepriseWorkflowConfig';
+import InteractiveAvatarWrapper from '@/components/InteractiveAvatar';
 
-  // ============================================
-  // ÉTATS
-  // ============================================
-  const [context, setContext] = useState<ConversationContext | null>(null);
-  const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // ============================================
-  // CHARGEMENT DU CONTEXTE DEPUIS LA BDD
-  // ============================================
-  useEffect(() => {
-    async function loadContext() {
-      try {
-        setLoading(true);
-        setError(null);
-
-        // Charger le contexte "entreprise.presentation" depuis la BDD
-        const contextData = await getConversationContext("entreprise.presentation");
-
-        if (!contextData) {
-          throw new Error("Contexte 'entreprise.presentation' introuvable en BDD");
-        }
-
-        setContext(contextData);
-
-        // TODO: Si conversationId existe, charger l'historique depuis conversations.messages
-        if (conversationId && conversationId !== "new") {
-          // const { data } = await supabase
-          //   .from('conversations')
-          //   .select('messages')
-          //   .eq('id', conversationId)
-          //   .single();
-          // if (data?.messages) setChatHistory(data.messages);
-        }
-
-      } catch (err) {
-        console.error("Erreur chargement contexte entreprise:", err);
-        setError(err instanceof Error ? err.message : "Erreur inconnue");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadContext();
-  }, [conversationId]);
-
-  // ============================================
-  // HANDLERS
-  // ============================================
-  const handleFinaliser = () => {
-    console.log("✅ Entreprise finalisée");
-    router.push("/neo/recruteur/entreprises");
-  };
-
-  const handleSauvegarder = () => {
-    console.log("💾 Entreprise sauvegardée");
-    // La sauvegarde est gérée dans InteractiveBlock
-  };
-
-  const handleAbandonner = () => {
-    console.log("❌ Abandon");
-    router.push("/neo/recruteur/entreprises");
-  };
-
-  const handleConversationUpdate = (messages: ChatMessage[]) => {
-    // Optionnel : faire quelque chose quand les messages changent
-    console.log("📝 Conversation mise à jour:", messages.length, "messages");
-  };
-
-  // ============================================
-  // RENDER
-  // ============================================
-
-  // Loading
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin text-6xl mb-4">⏳</div>
-          <p className="text-lg text-gray-600">Chargement du contexte...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Error
-  if (error || !context) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center text-red-600">
-          <div className="text-6xl mb-4">❌</div>
-          <p className="text-lg font-medium">Erreur</p>
-          <p className="text-sm mt-2">{error || "Contexte introuvable"}</p>
-          <button
-            onClick={() => router.push("/neo/recruteur/entreprises")}
-            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700"
-          >
-            Retour
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  // Success
-  return (
-    <InteractiveBlock
-      conversationId={conversationId}
-      conversationType="entreprise"
-      context={context}
-      chatHistory={chatHistory}
-      onConversationUpdate={handleConversationUpdate}
-      onFinaliser={handleFinaliser}
-      onSauvegarder={handleSauvegarder}
-      onAbandonner={handleAbandonner}
-    />
-  );
-}
-
-// ============================================
-// COMPOSANT PRINCIPAL (avec Suspense)
-// ============================================
 export default function EntreprisePage() {
+  const [conversationData, setConversationData] = useState<Record<string, any>>({});
+
+  // Hook de gestion du workflow
+  const {
+    state,
+    currentStep,
+    totalSteps,
+    completedSteps,
+    isValidating,
+    isSaving,
+    validateStep,
+    saveProgress,
+    completeWorkflow,
+    editStep,
+  } = useWorkflowManager({
+    workflowType: 'entreprise',
+    steps: ENTREPRISE_WORKFLOW_STEPS,
+    onSave: async (data) => {
+      // TODO: Sauvegarder en BDD
+      console.log('💾 Sauvegarde entreprise:', data);
+    },
+    onComplete: async (data) => {
+      // TODO: Créer l'entreprise en BDD
+      console.log('✅ Création entreprise:', data);
+    },
+  });
+
+  // Gestion de la validation d'étape
+  const handleValidateStep = async () => {
+    // Récupérer les données de la conversation
+    const stepData = conversationData[currentStep.stepKey] || {};
+    
+    // Générer un résumé basique (TODO: améliorer avec IA)
+    const summary = `Informations collectées pour ${currentStep.stepTitle}`;
+
+    await validateStep(stepData, summary);
+  };
+
+  // Rendu selon le type d'étape
+  const renderStepContent = () => {
+    switch (currentStep.stepType) {
+      case 'conversation':
+        return (
+          <div className="w-full">
+            <div className="mb-4">
+              <p className="text-zinc-300 text-sm mb-2">
+                Clara va vous poser quelques questions pour mieux comprendre votre entreprise.
+              </p>
+            </div>
+            <InteractiveAvatarWrapper />
+          </div>
+        );
+
+      case 'validation':
+        return (
+          <div className="w-full bg-zinc-800 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-white mb-4">
+              📋 Récapitulatif de votre entreprise
+            </h3>
+            
+            <div className="space-y-4">
+              {completedSteps.map((step) => (
+                <div key={step.stepKey} className="bg-zinc-700 rounded-lg p-4">
+                  <h4 className="font-semibold text-white mb-2">
+                    {step.stepTitle}
+                  </h4>
+                  <p className="text-zinc-300 text-sm">
+                    {step.summary}
+                  </p>
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
+              <p className="text-green-400 text-sm">
+                ✓ Toutes les informations ont été collectées. 
+                Vous pouvez maintenant valider la création de votre entreprise.
+              </p>
+            </div>
+          </div>
+        );
+
+      default:
+        return (
+          <div className="text-zinc-400">
+            Type d'étape non géré : {currentStep.stepType}
+          </div>
+        );
+    }
+  };
+
   return (
-    <Suspense fallback={
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin text-6xl mb-4">⏳</div>
-          <p className="text-lg text-gray-600">Chargement...</p>
-        </div>
-      </div>
-    }>
-      <EntrepriseContent />
-    </Suspense>
+    <WorkflowLayout
+      completedSteps={completedSteps}
+      currentStep={currentStep}
+      isSaving={isSaving}
+      isValidateDisabled={isValidating}
+      title={ENTREPRISE_WORKFLOW_TITLE}
+      totalSteps={totalSteps}
+      onEditStep={editStep}
+      onSaveProgress={saveProgress}
+      onValidateStep={handleValidateStep}
+    >
+      {renderStepContent()}
+    </WorkflowLayout>
   );
 }
