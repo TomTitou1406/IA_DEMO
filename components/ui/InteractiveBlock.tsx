@@ -53,7 +53,6 @@ type Props = {
   context: ConversationContext;
   chatHistory?: ChatMessage[];
   knowledgeBaseId?: string;
-  knowledgeBaseId?: string;
   onConversationUpdate?: (messages: ChatMessage[]) => void;
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
