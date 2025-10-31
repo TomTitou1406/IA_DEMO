@@ -121,7 +121,9 @@ export default function InteractiveBlock({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
-
+  const initialMessageSentRef = useRef(false);
+  const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  
   // ============================================
   // EFFET : Timer
   // ============================================
@@ -145,8 +147,6 @@ export default function InteractiveBlock({
   // Force l'avatar à parler en premier via startInitialSpeak
   // Le hook gère l'envoi avec TaskType.TALK
   // ============================================
-  const initialMessageSentRef = useRef(false); // ← AJOUTER en haut avec les autres refs (ligne ~120)
-
   useEffect(() => {
     if (sessionState === "active" && !initialMessageSentRef.current && initialMessage) {
       console.log('🎤 Envoi message initial pour activer l\'avatar:', initialMessage);
@@ -156,7 +156,7 @@ export default function InteractiveBlock({
     if (sessionState === "inactive") {
       initialMessageSentRef.current = false;
     }
-  }, [sessionState, initialMessage, startInitialSpeak]);
+  }, [sessionState]); // ← PAS initialMessage ni startInitialSpeak !
 
   // ============================================
   // EFFET : Stream vidéo
@@ -189,82 +189,69 @@ export default function InteractiveBlock({
   // EFFET : Auto-save toutes les 30s
   // ============================================
   useEffect(() => {
+    // Nettoyer l'interval précédent
+    if (autoSaveIntervalRef.current) {
+      clearInterval(autoSaveIntervalRef.current);
+      autoSaveIntervalRef.current = null;
+    }
+  
     // Ne s'active QUE si session active
     if (sessionState !== "active") {
       console.log('⚠️ Auto-save désactivé: session pas active');
       return;
     }
     
-    console.log('✅ Auto-save ACTIVÉ', {
-      entrepriseId,
-      conversationId,
-      historyLength: liveChatHistory.length
-    });
+    console.log('✅ Auto-save ACTIVÉ');
   
-    const interval = setInterval(async () => {
-      // Vérifier qu'on a bien des messages
-      if (liveChatHistory.length === 0) {
+    // Créer le nouvel interval
+    autoSaveIntervalRef.current = setInterval(async () => {
+      // Capturer les valeurs actuelles
+      const currentHistory = liveChatHistory;
+      const currentEntrepriseId = entrepriseId;
+      const currentConversationId = conversationId;
+  
+      console.log('💾 Auto-save tick', {
+        messages: currentHistory.length,
+        entrepriseId: currentEntrepriseId,
+        conversationId: currentConversationId
+      });
+  
+      // Vérifier qu'on a des messages
+      if (currentHistory.length === 0) {
         console.log('⏭️ Auto-save skip: pas de messages');
         return;
       }
   
-      console.log('💾 Déclenchement auto-save...', {
-        messages: liveChatHistory.length,
-        entrepriseId
-      });
-      
       setIsSaving(true);
       
       try {
-        // Sauvegarder dans conversations (comme le bouton manuel)
-        if (conversationId && conversationId !== "new") {
-          // Update existant
+        // 1. Sauvegarder dans conversations
+        if (currentConversationId && currentConversationId !== "new") {
           const { error } = await supabase
             .from("conversations")
             .update({
-              messages: liveChatHistory,
+              messages: currentHistory,
               last_activity_at: new Date().toISOString(),
               updated_at: new Date().toISOString(),
             })
-            .eq("id", conversationId);
+            .eq("id", currentConversationId);
   
           if (error) {
             console.error('❌ Erreur auto-save conversations:', error);
           } else {
-            console.log('✅ Auto-save conversations OK');
-          }
-        } else {
-          // Créer nouvelle conversation
-          const { data, error } = await supabase
-            .from("conversations")
-            .insert({
-              user_id: DEFAULT_USER_ID,
-              type: conversationType,
-              related_entity_id: entrepriseId,
-              title: context.title,
-              messages: liveChatHistory,
-              statut: 'EN_COURS',
-            })
-            .select()
-            .single();
-  
-          if (error) {
-            console.error('❌ Erreur création conversation:', error);
-          } else {
-            console.log('✅ Conversation créée:', data.id);
-            // TODO: Mettre à jour conversationId dans le parent
+            console.log('✅ Auto-save conversations OK:', currentHistory.length, 'messages');
           }
         }
   
-        // Sauvegarder dans entreprises si entrepriseId existe
-        if (entrepriseId) {
+        // 2. Sauvegarder dans entreprises
+        if (currentEntrepriseId) {
           const { error } = await supabase
             .from("entreprises")
             .update({
-              raw_conversation: liveChatHistory,
+              raw_conversation: currentHistory,
               updated_at: new Date().toISOString(),
             })
-            .eq("id", entrepriseId);
+            .eq("id", currentEntrepriseId);
   
           if (error) {
             console.error('❌ Erreur auto-save entreprises:', error);
@@ -281,11 +268,15 @@ export default function InteractiveBlock({
       }
     }, 30000); // 30 secondes
   
+    // Cleanup
     return () => {
-      console.log('🛑 Auto-save interval nettoyé');
-      clearInterval(interval);
+      if (autoSaveIntervalRef.current) {
+        console.log('🛑 Nettoyage auto-save interval');
+        clearInterval(autoSaveIntervalRef.current);
+        autoSaveIntervalRef.current = null;
+      }
     };
-  }, [sessionState]); // ← SEULEMENT sessionState !
+  }, [sessionState]); // ← SEULEMENT sessionState
   
   // ============================================
   // HANDLERS
