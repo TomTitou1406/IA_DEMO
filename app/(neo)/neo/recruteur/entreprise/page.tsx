@@ -133,6 +133,7 @@ export default function EntreprisePage() {
           conversationType="acquisition_entreprise"
           context={contextConfig}
           chatHistory={chatHistory}
+          entrepriseId={entrepriseId}
           onConversationUpdate={handleChatUpdate}
           onFinaliser={handleFinaliser}
           onSauvegarder={handleSauvegarder}
