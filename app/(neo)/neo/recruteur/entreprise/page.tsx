@@ -2,7 +2,7 @@
 
 /**
  * Page Entreprise - Workflow de création
- * @version 0.03
+ * @version 0.04
  * @date 2025-10-31
  * 
  * Page de création d'entreprise avec workflow guidé en 10 étapes
@@ -10,11 +10,11 @@
 
 import { useState } from 'react';
 import { WorkflowLayout } from '@/components/workflow/WorkflowLayout';
-import { useWorkflowManager } from '@/app/hooks/useWorkflowManager';
+import { useWorkflowManager } from '@/app/(neo)/neo/hooks/useWorkflowManager';
 import { 
   ENTREPRISE_WORKFLOW_STEPS, 
   ENTREPRISE_WORKFLOW_TITLE 
-} from '@/app/lib/config/entrepriseWorkflowConfig';
+} from '@/app/(neo)/neo/lib/config/entrepriseWorkflowConfig';
 import InteractiveAvatarWrapper from '@/components/InteractiveAvatar';
 
 export default function EntreprisePage() {
@@ -63,7 +63,7 @@ export default function EntreprisePage() {
         return (
           <div className="w-full">
             <div className="mb-4">
-              <p className="text-zinc-300 text-sm mb-2">
+              <p className="text-gray-600 text-sm mb-2">
                 Clara va vous poser quelques questions pour mieux comprendre votre entreprise.
               </p>
             </div>
@@ -73,26 +73,26 @@ export default function EntreprisePage() {
 
       case 'validation':
         return (
-          <div className="w-full bg-zinc-800 rounded-lg p-6">
-            <h3 className="text-xl font-semibold text-white mb-4">
+          <div className="w-full bg-gray-100 rounded-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4">
               📋 Récapitulatif de votre entreprise
             </h3>
             
             <div className="space-y-4">
               {completedSteps.map((step) => (
-                <div key={step.stepKey} className="bg-zinc-700 rounded-lg p-4">
-                  <h4 className="font-semibold text-white mb-2">
+                <div key={step.stepKey} className="bg-white rounded-lg p-4 shadow">
+                  <h4 className="font-semibold text-gray-800 mb-2">
                     {step.stepTitle}
                   </h4>
-                  <p className="text-zinc-300 text-sm">
+                  <p className="text-gray-600 text-sm">
                     {step.summary}
                   </p>
                 </div>
               ))}
             </div>
 
-            <div className="mt-6 p-4 bg-green-500/10 border border-green-500/30 rounded-lg">
-              <p className="text-green-400 text-sm">
+            <div className="mt-6 p-4 bg-green-50 border border-green-200 rounded-lg">
+              <p className="text-green-700 text-sm">
                 ✓ Toutes les informations ont été collectées. 
                 Vous pouvez maintenant valider la création de votre entreprise.
               </p>
@@ -102,7 +102,7 @@ export default function EntreprisePage() {
 
       default:
         return (
-          <div className="text-zinc-400">
+          <div className="text-gray-500">
             Type d'étape non géré : {currentStep.stepType}
           </div>
         );
