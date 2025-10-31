@@ -181,49 +181,58 @@ export default function InteractiveBlock({
   }, [sessionState, workflowState]);
 
   // ============================================
-  // 🆕 EFFET : Notifier parent des changements
+  // EFFET : Auto-save toutes les 30s (2 tables)
   // ============================================
-   useEffect(() => {
-  // Ne sauvegarder que si session active et qu'on a des messages
-  if (sessionState !== "active" || liveChatHistory.length === 0 || !entrepriseId) {
-    return;
-  }
-
-  console.log('🔄 Auto-save activé pour entreprise:', entrepriseId);
-
-  const interval = setInterval(async () => {
-    console.log('💾 Déclenchement auto-save...');
-    
-    try {
-      const response = await fetch('/api/entreprise/save', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          entreprise_id: entrepriseId,
-          data: {
-            raw_conversation: liveChatHistory,
-            last_save: new Date().toISOString(),
-          },
-        }),
-      });
-
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ Auto-save réussi:', result);
-      } else {
-        console.error('❌ Erreur auto-save:', result);
-      }
-    } catch (error) {
-      console.error('❌ Erreur auto-save:', error);
+  useEffect(() => {
+    if (sessionState !== "active" || liveChatHistory.length === 0 || !entrepriseId) {
+      return;
     }
-  }, 30000); // 30 secondes
-
-  return () => {
-    console.log('🛑 Auto-save désactivé');
-    clearInterval(interval);
-  };
-}, [sessionState, liveChatHistory, entrepriseId]);
+  
+    console.log('🔄 Auto-save activé pour entreprise:', entrepriseId);
+  
+    const interval = setInterval(async () => {
+      console.log('💾 Déclenchement auto-save...');
+      
+      try {
+        // 1. Sauvegarder dans entreprises (données métier)
+        const entrepriseResponse = await fetch('/api/entreprise/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            entreprise_id: entrepriseId,
+            data: {
+              raw_conversation: liveChatHistory,
+              last_save: new Date().toISOString(),
+            },
+          }),
+        });
+  
+        // 2. Sauvegarder dans conversations (traçabilité)
+        const conversationResponse = await fetch('/api/conversations/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            conversation_id: conversationId, // Peut être null la 1ère fois
+            type: 'acquisition_entreprise',
+            related_entity_id: entrepriseId,
+            messages: liveChatHistory,
+            statut: 'EN_COURS',
+          }),
+        });
+  
+        const entrepriseResult = await entrepriseResponse.json();
+        const conversationResult = await conversationResponse.json();
+        
+        if (entrepriseResult.success && conversationResult.success) {
+          console.log('✅ Auto-save réussi (2 tables)');
+        }
+      } catch (error) {
+        console.error('❌ Erreur auto-save:', error);
+      }
+    }, 30000);
+  
+    return () => clearInterval(interval);
+  }, [sessionState, liveChatHistory, entrepriseId, conversationId]);
 
   // ============================================
   // HANDLERS
