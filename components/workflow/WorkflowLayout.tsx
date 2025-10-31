@@ -52,13 +52,16 @@ export const WorkflowLayout: React.FC<WorkflowLayoutProps> = ({
   isSaving = false,
 }) => {
   return (
-    <div className="w-full min-h-screen bg-black text-white p-6">
-      <div className="max-w-6xl mx-auto flex flex-col gap-6">
+    <div className="w-full min-h-screen bg-gray-50 text-gray-900 p-6">
+      <div className="max-w-7xl mx-auto flex flex-col gap-6">
         {/* Header avec titre et progression */}
         <div className="flex flex-col gap-4">
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-indigo-400 to-purple-400 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold text-blue-900">
             {title}
           </h1>
+          <p className="text-gray-600">
+            Pour un recrutement plus simple, plus rapide, assisté par l'IA mais sans perdre l'humain !
+          </p>
           <ProgressBar
             completedSteps={completedSteps.length}
             currentStep={currentStep.stepNumber}
