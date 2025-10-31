@@ -10,6 +10,8 @@ import { supabase } from "@/app/lib/supabaseClient";
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import { NextResponse } from 'next/server';
 
+console.log('🔍 API route chargée, DEFAULT_USER_ID:', DEFAULT_USER_ID);
+
 export async function POST(request: Request) {
   try {
     // Auth temporaire - utiliser DEFAULT_USER_ID
