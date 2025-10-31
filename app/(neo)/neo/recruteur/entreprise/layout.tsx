@@ -1,5 +1,20 @@
-// /app/(neo)/neo/recruteur/entreprise/layout.tsx
-import type { ReactNode } from "react";
-export default function Layout({ children }: { children: ReactNode }) {
-  return <>{children}</>;
+/**
+ * Layout Entreprise - Workflow dédié
+ * @version 0.01
+ * @date 2025-10-31
+ * 
+ * Layout minimaliste pour le workflow de création d'entreprise
+ * Conserve les couleurs et le style du projet, sans NavBar
+ */
+
+export default function EntrepriseLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-h-screen bg-black text-white">
+      {children}
+    </div>
+  );
 }
