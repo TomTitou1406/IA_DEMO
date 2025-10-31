@@ -306,16 +306,6 @@ export default function InteractiveBlock({
     };
   }, [sessionState, entrepriseId, conversationId]); // ← Ajouter entrepriseId et conversationId
   
-    // Cleanup
-    return () => {
-      if (autoSaveIntervalRef.current) {
-        console.log('🛑 Nettoyage auto-save interval');
-        clearInterval(autoSaveIntervalRef.current);
-        autoSaveIntervalRef.current = null;
-      }
-    };
-  }, [sessionState]); // ← SEULEMENT sessionState
-  
   // ============================================
   // HANDLERS
   // ============================================
