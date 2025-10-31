@@ -287,9 +287,6 @@ export default function InteractiveBlock({
     };
   }, [sessionState]); // ← SEULEMENT sessionState !
   
-    return () => clearInterval(interval);
-  }, [sessionState, liveChatHistory, entrepriseId, conversationId]);
-
   // ============================================
   // HANDLERS
   // ============================================
