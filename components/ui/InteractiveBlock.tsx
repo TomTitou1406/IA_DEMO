@@ -52,6 +52,7 @@ type Props = {
   conversationType: string;
   context: ConversationContext;
   chatHistory?: ChatMessage[];
+  knowledgeBaseId?: string;
   onConversationUpdate?: (messages: ChatMessage[]) => void;
   onFinaliser?: () => void;
   onSauvegarder?: () => void;
@@ -94,7 +95,7 @@ export default function InteractiveBlock({
     interrupt,
     startInitialSpeak,
   } = useNeoAvatar({
-    knowledgeId: context.knowledge_id,
+    knowledgeId: knowledgeBaseId || context.knowledge_id,
     avatarName: context.avatar_name || undefined,
     voiceRate: context.voice_rate || 1.0,
     language: context.language || 'fr',
@@ -185,6 +186,25 @@ export default function InteractiveBlock({
     }
   }, [liveChatHistory, onConversationUpdate]);
 
+  // Auto-save toutes les 30s
+  useEffect(() => {
+    if (sessionState !== "active") return;
+    
+    const interval = setInterval(async () => {
+      if (liveChatHistory.length > 0) {
+        await fetch('/api/entreprise/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            entreprise_id: conversationId,
+            data: extractDataFromChat(liveChatHistory),
+          }),
+        });
+      }
+    }, 30000); // 30s
+    return () => clearInterval(interval);
+  }, [sessionState, liveChatHistory, conversationId]);
+
   // ============================================
   // HANDLERS
   // ============================================
@@ -273,11 +293,19 @@ export default function InteractiveBlock({
     }, 2000);
   }
 
+  function extractDataFromChat(messages: ChatMessage[]) {
+    // TODO: Parser les messages pour extraire les données structurées
+    // Pour l'instant, retourner les messages bruts
+    return {
+      raw_conversation: messages,
+      // Les champs seront peuplés par traitement IA ultérieur
+    };
+  }
+
   // ============================================
   // HELPERS
   // ============================================
   const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
-  
   const avatarPreviewImage = context.avatar_preview_image || "/avatars/anastasia_16_9_preview.webp";
 
   // ============================================
