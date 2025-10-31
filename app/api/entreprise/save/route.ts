@@ -1,40 +1,58 @@
 /**
  * API Route - Sauvegarde entreprise
- * @version 1.0
+ * @version 1.1
  * @date 2025-10-31
  * 
  * Sauvegarde progressive des données entreprise pendant la conversation
  */
 
 import { supabase } from "@/app/lib/supabaseClient";
+import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import { NextResponse } from 'next/server';
 
 export async function POST(request: Request) {
   try {
-    const user = { id: 'temp-user-id' };
+    // Auth temporaire - utiliser DEFAULT_USER_ID
+    const tempUserId = DEFAULT_USER_ID;
+    
     const body = await request.json();
     const { entreprise_id, data: entrepriseData } = body;
 
+    console.log('📥 API entreprise/save:', {
+      entreprise_id,
+      hasData: !!entrepriseData
+    });
+
     // Si pas d'ID, créer nouvelle entreprise
     if (!entreprise_id) {
+      const insertData = {
+        recruiter_id: tempUserId,
+        status: 'in_progress',
+        completion_percentage: 0,
+        ...mapDataToColumns(entrepriseData),
+      };
+
+      console.log('➕ Création entreprise avec:', insertData);
+
       const { data: newEntreprise, error: createError } = await supabase
         .from('entreprises')
-        .insert({
-          recruiter_id: user.id,
-          status: 'in_progress',
-          completion_percentage: 0,
-          ...mapDataToColumns(entrepriseData),
-        })
+        .insert(insertData)
         .select()
         .single();
 
       if (createError) {
-        console.error('Erreur création entreprise:', createError);
+        console.error('❌ Erreur création entreprise:', createError);
         return NextResponse.json(
-          { error: 'Erreur création entreprise' },
+          { 
+            error: 'Erreur création entreprise',
+            details: createError.message,
+            code: createError.code
+          },
           { status: 500 }
         );
       }
+
+      console.log('✅ Entreprise créée:', newEntreprise.id);
 
       return NextResponse.json({
         success: true,
@@ -44,25 +62,33 @@ export async function POST(request: Request) {
     }
 
     // Sinon, mettre à jour entreprise existante
+    const updateData = {
+      ...mapDataToColumns(entrepriseData),
+      completion_percentage: calculateCompletion(entrepriseData),
+      updated_at: new Date().toISOString(),
+    };
+
+    console.log('🔄 Mise à jour entreprise:', entreprise_id);
+
     const { data: updatedEntreprise, error: updateError } = await supabase
       .from('entreprises')
-      .update({
-        ...mapDataToColumns(entrepriseData),
-        completion_percentage: calculateCompletion(entrepriseData),
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq('id', entreprise_id)
-      .eq('recruiter_id', user.id) // Sécurité: only owner
       .select()
       .single();
 
     if (updateError) {
-      console.error('Erreur MAJ entreprise:', updateError);
+      console.error('❌ Erreur MAJ entreprise:', updateError);
       return NextResponse.json(
-        { error: 'Erreur mise à jour entreprise' },
+        { 
+          error: 'Erreur mise à jour entreprise',
+          details: updateError.message 
+        },
         { status: 500 }
       );
     }
+
+    console.log('✅ Entreprise mise à jour');
 
     return NextResponse.json({
       success: true,
@@ -72,9 +98,12 @@ export async function POST(request: Request) {
     });
 
   } catch (error) {
-    console.error('Erreur API save:', error);
+    console.error('❌ Exception API save:', error);
     return NextResponse.json(
-      { error: 'Erreur serveur' },
+      { 
+        error: 'Erreur serveur',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }
@@ -86,24 +115,24 @@ export async function POST(request: Request) {
 function mapDataToColumns(data: any) {
   return {
     // Champs texte simples
-    nom: data.nom || data.entreprise_nom,
-    description: data.description,
-    histoire: data.histoire?.texte || data.histoire,
-    mission: data.mission?.texte || data.mission,
-    vision: data.mission?.vision || data.vision,
-    culture: data.culture?.description || data.culture,
+    nom: data.nom || data.entreprise_nom || 'Entreprise sans nom',
+    description: data.description || null,
+    histoire: data.histoire?.texte || data.histoire || null,
+    mission: data.mission?.texte || data.mission || null,
+    vision: data.mission?.vision || data.vision || null,
+    culture: data.culture?.description || data.culture || null,
     
     // Arrays
     valeurs: data.culture?.valeurs || data.valeurs || [],
     avantages: data.avantages?.liste || data.avantages || [],
     
     // Champs simples équipe/localisation
-    nb_employes: data.equipe?.taille || data.nb_employes,
-    taille: data.equipe?.taille_categorie || data.taille,
-    secteur_activite: data.marche?.secteur || data.secteur_activite,
-    ville: data.localisation?.ville || data.ville,
+    nb_employes: data.equipe?.taille || data.nb_employes || null,
+    taille: data.equipe?.taille_categorie || data.taille || null,
+    secteur_activite: data.marche?.secteur || data.secteur_activite || null,
+    ville: data.localisation?.ville || data.ville || null,
     pays: data.localisation?.pays || data.pays || 'France',
-    adresse: data.localisation?.adresse || data.adresse,
+    adresse: data.localisation?.adresse || data.adresse || null,
     
     // JSONB (données structurées)
     produits_services: data.produits || null,
@@ -111,6 +140,9 @@ function mapDataToColumns(data: any) {
     equipe_structure: data.equipe || null,
     localisation_details: data.localisation || null,
     perspectives: data.perspectives || null,
+    
+    // Conversation brute
+    raw_conversation: data.raw_conversation || null,
   };
 }
 
