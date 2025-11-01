@@ -211,40 +211,10 @@ export default function EntreprisePage() {
     setChatHistory(messages);
   };
 
-  // Handler finalisation
-  const handleFinaliser = async () => {
-    console.log('🎯 Finalisation en cours...');
-    
-    // 1. Extraire données structurées via API
-    try {
-      const response = await fetch('/api/entreprise/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          entreprise_id: entrepriseId,
-          raw_conversation: chatHistory,
-        }),
-      });
-  
-      const result = await response.json();
-      
-      if (result.success) {
-        console.log('✅ Extraction réussie');
-        // 2. Marquer entreprise comme complétée
-        await supabase
-          .from('entreprises')
-          .update({ status: 'completed' })
-          .eq('id', entrepriseId);
-        
-        // 3. Redirection
-        router.push('/neo/recruteur/entreprise/validation');
-      } else {
-        alert('Erreur lors de l\'extraction des données');
-      }
-    } catch (error) {
-      console.error('❌ Erreur finalisation:', error);
-      alert('Erreur lors de la finalisation');
-    }
+  const handleFinaliser = () => {
+    // TODO: Implémenter extraction OpenAI demain
+    console.log('🎯 Finalisation (extraction à implémenter)');
+    router.push('/neo/recruteur/entreprise/validation');
   };
 
   // Handler sauvegarde manuelle
