@@ -2,10 +2,11 @@
 
 /**
  * Page Entreprise - Conversation acquisition
- * @version 1.0
+ * @version 1.1
  * @date 2025-10-31
  * 
  * Conversation continue avec l'avatar pour collecter les infos entreprise
+ * Logique: 1 user = 1 entreprise (reprise si existe)
  */
 
 import { useState, useEffect } from 'react';
@@ -22,72 +23,138 @@ export default function EntreprisePage() {
   const [entrepriseId, setEntrepriseId] = useState<string | null>(null);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
   // Charger la KB statique depuis BDD
   const { kb, loading: kbLoading, error: kbError } = useStaticKnowledgeBase('acquisition_entreprise');
 
-  // Créer l'entreprise en draft au chargement
+  // Charger ou créer l'entreprise du user
   useEffect(() => {
-    async function createEntrepriseAndConversation() {
+    async function loadOrCreateEntreprise() {
       try {
-        // 1. Créer entreprise draft
-        const response = await fetch('/api/entreprise/save', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            entreprise_id: null,
-            data: {
-              nom: 'Entreprise sans nom',
-              status: 'draft',
-            },
-          }),
-        });
-    
-        const result = await response.json();
-        if (!result.success) {
-          throw new Error('Erreur création entreprise');
+        console.log('🔍 Recherche entreprise pour user:', DEFAULT_USER_ID);
+
+        // 1. Chercher L'entreprise du user (unique)
+        const { data: entreprise, error: searchError } = await supabase
+          .from('entreprises')
+          .select('id, nom, status')
+          .eq('recruiter_id', DEFAULT_USER_ID)
+          .maybeSingle(); // ← maybeSingle au lieu de single (pas d'erreur si vide)
+
+        if (entreprise) {
+          // Entreprise existe
+          console.log('📂 Entreprise trouvée:', {
+            id: entreprise.id,
+            nom: entreprise.nom,
+            status: entreprise.status
+          });
+          
+          setEntrepriseId(entreprise.id);
+
+          // Charger la conversation si status = in_progress
+          if (entreprise.status === 'in_progress' || entreprise.status === 'draft') {
+            console.log('💬 Recherche conversation en cours...');
+            
+            const { data: conv, error: convError } = await supabase
+              .from('conversations')
+              .select('id, messages')
+              .eq('related_entity_id', entreprise.id)
+              .eq('type', 'acquisition_entreprise')
+              .maybeSingle();
+
+            if (conv) {
+              console.log('✅ Conversation chargée:', conv.messages?.length || 0, 'messages');
+              setConversationId(conv.id);
+              setChatHistory(conv.messages || []);
+            } else {
+              console.log('ℹ️ Pas de conversation, création...');
+              await createConversation(entreprise.id);
+            }
+          } else {
+            console.log('ℹ️ Entreprise complétée, pas de reprise');
+          }
+        } else {
+          // Pas d'entreprise → créer
+          console.log('🆕 Aucune entreprise trouvée, création...');
+          await createEntrepriseAndConversation();
         }
-    
-        const newEntrepriseId = result.entreprise_id;
-        console.log('✅ Entreprise draft créée:', newEntrepriseId);
-    
-        // 2. Créer conversation liée
-        const { data: conversation, error } = await supabase
-          .from('conversations')
-          .insert({
-            user_id: DEFAULT_USER_ID,
-            type: 'acquisition_entreprise',
-            related_entity_id: newEntrepriseId,
-            title: '📋 Acquisition entreprise',
-            subtitle: 'Collecte informations entreprise',
-            messages: [],
-            statut: 'EN_COURS',
-          })
-          .select()
-          .single();
-    
-        if (error) {
-          console.error('❌ Erreur création conversation:', error);
-          throw error;
-        }
-    
-        console.log('✅ Conversation créée:', conversation.id);
-        console.log('📊 States après création:', {
-          entrepriseId: newEntrepriseId,
-          conversationId: conversation.id
-        });
-    
-        // 3. Stocker les 2 IDs
-        setEntrepriseId(newEntrepriseId);
-        setConversationId(conversation.id);
-    
+
+        setIsLoading(false);
+
       } catch (error) {
-        console.error('❌ Erreur init:', error);
+        console.error('❌ Erreur chargement entreprise:', error);
+        setIsLoading(false);
       }
     }
-    
-    createEntrepriseAndConversation();
+
+    loadOrCreateEntreprise();
   }, []);
+
+  // Fonction: Créer entreprise + conversation
+  async function createEntrepriseAndConversation() {
+    try {
+      // 1. Créer entreprise
+      const response = await fetch('/api/entreprise/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          entreprise_id: null,
+          data: {
+            nom: 'Entreprise sans nom',
+            status: 'draft',
+          },
+        }),
+      });
+  
+      const result = await response.json();
+      if (!result.success) {
+        throw new Error('Erreur création entreprise');
+      }
+  
+      const newEntrepriseId = result.entreprise_id;
+      console.log('✅ Entreprise créée:', newEntrepriseId);
+  
+      setEntrepriseId(newEntrepriseId);
+
+      // 2. Créer conversation
+      await createConversation(newEntrepriseId);
+  
+    } catch (error) {
+      console.error('❌ Erreur création:', error);
+      throw error;
+    }
+  }
+
+  // Fonction: Créer conversation
+  async function createConversation(entrepriseIdParam: string) {
+    try {
+      const { data: conversation, error } = await supabase
+        .from('conversations')
+        .insert({
+          user_id: DEFAULT_USER_ID,
+          type: 'acquisition_entreprise',
+          related_entity_id: entrepriseIdParam,
+          title: '📋 Acquisition entreprise',
+          subtitle: 'Collecte informations entreprise',
+          messages: [],
+          statut: 'EN_COURS',
+        })
+        .select()
+        .single();
+  
+      if (error) {
+        console.error('❌ Erreur création conversation:', error);
+        throw error;
+      }
+  
+      console.log('✅ Conversation créée:', conversation.id);
+      setConversationId(conversation.id);
+
+    } catch (error) {
+      console.error('❌ Erreur création conversation:', error);
+      throw error;
+    }
+  }
 
   // Handler mise à jour conversation
   const handleChatUpdate = (messages: ChatMessage[]) => {
@@ -101,8 +168,7 @@ export default function EntreprisePage() {
 
   // Handler sauvegarde manuelle
   const handleSauvegarder = async () => {
-    // Auto-save déjà géré par InteractiveBlock
-    console.log('💾 Sauvegarde manuelle');
+    console.log('💾 Sauvegarde manuelle (déjà gérée par auto-save)');
   };
 
   // Handler abandon
@@ -112,8 +178,8 @@ export default function EntreprisePage() {
     }
   };
 
-  // Loading states
-  if (kbLoading) {
+  // Loading KB
+  if (kbLoading || isLoading) {
     return (
       <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
@@ -124,6 +190,7 @@ export default function EntreprisePage() {
     );
   }
 
+  // Erreur KB
   if (kbError || !kb) {
     return (
       <div className="w-full min-h-screen bg-gray-50 flex items-center justify-center">
@@ -141,7 +208,7 @@ export default function EntreprisePage() {
     context_type: 'workflow',
     title: '📋 Présentez votre entreprise',
     subtitle: 'Conversation avec votre guide interactif (~10 minutes)',
-    knowledge_id: kb.heygen_kb_id, // ← Depuis BDD
+    knowledge_id: kb.heygen_kb_id,
     avatar_name: 'Anastasia_Chair_Sitting_public',
     avatar_preview_image: '/avatars/anastasia_16_9_preview.webp',
     voice_rate: 1.2,
@@ -151,10 +218,11 @@ export default function EntreprisePage() {
     is_active: true,
   };
 
-  console.log('🔧 Passage à InteractiveBlock:', {   // ← AJOUTER ICI (ligne 153)
+  console.log('🔧 Passage à InteractiveBlock:', {
     entrepriseId,
-    conversationId
-  })
+    conversationId,
+    chatHistoryLength: chatHistory.length
+  });
   
   return (
     <div className="w-full min-h-screen bg-gray-50 p-6">
@@ -162,11 +230,13 @@ export default function EntreprisePage() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-4xl font-bold text-blue-900 mb-2">
-            📋 Créer votre entreprise
+            📋 {chatHistory.length > 0 ? 'Reprendre votre entreprise' : 'Créer votre entreprise'}
           </h1>
           <p className="text-gray-600">
-            Votre guide interactif va vous poser des questions pour comprendre votre entreprise.
-            La conversation dure environ 10 minutes.
+            {chatHistory.length > 0 
+              ? `Vous pouvez reprendre là où vous vous êtes arrêté (${chatHistory.length} messages sauvegardés).`
+              : 'Votre guide interactif va vous poser des questions pour comprendre votre entreprise. La conversation dure environ 10 minutes.'
+            }
           </p>
         </div>
 
