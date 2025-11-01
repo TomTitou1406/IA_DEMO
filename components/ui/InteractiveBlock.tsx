@@ -1,9 +1,10 @@
 /**
  * @file InteractiveBlock.tsx
- * @version v0.05
- * @date 30 octobre 2025
+ * @version v0.06
+ * @date 01 novembre 2025
  * @description Composant principal pour l'interaction avec l'avatar HeyGen
  * @changelog 
+ *   v0.06 - Ajout analyse progression temps réel + barre de progression
  *   v0.05 - Réactivation message initial avec startInitialSpeak (caché du chat)
  *   v0.04 - Suppression du passage d'initialMessage (erreur : avatar passif)
  *   v0.03 - Désactivation startInitialSpeak
@@ -20,13 +21,9 @@ import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 
 // ============================================
-// 🆕 TYPES DÉFINIS LOCALEMENT
+// TYPES DÉFINIS LOCALEMENT
 // ============================================
 
-/**
- * Contexte de conversation chargé depuis la BDD
- * Correspond à la structure de conversation_contexts
- */
 export interface ConversationContext {
   id?: string;
   context_key: string;
@@ -42,10 +39,6 @@ export interface ConversationContext {
   initial_message_resume?: string | null;
   is_active?: boolean;
 }
-
-// ============================================
-// PROPS DU COMPOSANT
-// ============================================
 
 type Props = {
   conversationId: string | null;
@@ -73,23 +66,18 @@ export default function InteractiveBlock({
   onAbandonner,
 }: Props) {
 
-  // ============================================
-  // 🆕 v0.05 : Message initial pour forcer l'avatar à parler
-  // Note: Ce message sert à déclencher l'avatar (TaskType.TALK)
-  // Il ne sera PAS ajouté au chatHistory (géré par le hook)
-  // ============================================
   console.log('🎬 InteractiveBlock reçoit:', {
     entrepriseId,
     conversationId,
     conversationType
   });
+  
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
     : context.initial_message_new;
 
   // ============================================
   // HOOK AVATAR
-  // ✅ v0.05 : initialMessage réactivé pour forcer l'avatar à parler
   // ============================================
   const {
     sessionState,
@@ -107,7 +95,7 @@ export default function InteractiveBlock({
     avatarName: context.avatar_name || undefined,
     voiceRate: context.voice_rate || 1.0,
     language: context.language || 'fr',
-    initialMessage: initialMessage, // ✅ v0.05 : Réactivé
+    initialMessage: initialMessage,
     initialChatHistory: chatHistory,
   });
     
@@ -118,13 +106,28 @@ export default function InteractiveBlock({
   const [timerSec, setTimerSec] = useState(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [progression, setProgression] = useState({
+    completed: 0,
+    percentage: 0,
+    themes: {
+      histoire: false,
+      mission: false,
+      produits: false,
+      marche: false,
+      culture: false,
+      equipe: false,
+      avantages: false,
+      localisation: false,
+      perspectives: false,
+      complementaire: false,
+    }
+  });
   
   // ============================================
   // REFS
   // ============================================
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const chatEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -189,7 +192,6 @@ export default function InteractiveBlock({
   // EFFET : Auto-scroll chat
   // ============================================
   useEffect(() => {
-    // Scroller directement le conteneur de chat, pas la page
     if (chatContainerRef.current) {
       chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
     }
@@ -201,6 +203,17 @@ export default function InteractiveBlock({
   useEffect(() => {
     liveChatHistoryRef.current = liveChatHistory;
   }, [liveChatHistory]);
+
+  // ============================================
+  // EFFET : Analyser progression au chargement
+  // ============================================
+  useEffect(() => {
+    if (liveChatHistory.length > 0) {
+      const initialProgression = analyzeProgression(liveChatHistory);
+      setProgression(initialProgression);
+      console.log('📊 Progression initiale:', initialProgression);
+    }
+  }, []); // Se déclenche une fois au mount
 
   // ============================================
   // EFFET : Workflow state
@@ -283,6 +296,11 @@ export default function InteractiveBlock({
         }
   
         if (saveSuccess) {
+          // Analyser et mettre à jour la progression
+          const newProgression = analyzeProgression(currentHistory);
+          setProgression(newProgression);
+          console.log('📊 Progression mise à jour:', newProgression);
+          
           setTimeout(() => setIsSaving(false), 2000);
         } else {
           setIsSaving(false);
@@ -336,11 +354,69 @@ export default function InteractiveBlock({
   };
 
   // ============================================
+  // ANALYSE PROGRESSION
+  // ============================================
+  function analyzeProgression(messages: ChatMessage[]) {
+    const themes = {
+      histoire: false,
+      mission: false,
+      produits: false,
+      marche: false,
+      culture: false,
+      equipe: false,
+      avantages: false,
+      localisation: false,
+      perspectives: false,
+      complementaire: false,
+    };
+
+    const fullText = messages
+      .map(m => m.content.toLowerCase())
+      .join(' ');
+
+    // Détection par mots-clés (regex pour plus de précision)
+    if (fullText.match(/fondée?|création|créer|histoire|début|commenc|origin/)) {
+      themes.histoire = true;
+    }
+    if (fullText.match(/mission|vision|objectif|but|raison d'être/)) {
+      themes.mission = true;
+    }
+    if (fullText.match(/produit|service|offre|vend|propose|commercialis/)) {
+      themes.produits = true;
+    }
+    if (fullText.match(/marché|client|cible|segment|secteur|industrie/)) {
+      themes.marche = true;
+    }
+    if (fullText.match(/culture|valeur|principe|éthique|atmosphère/)) {
+      themes.culture = true;
+    }
+    if (fullText.match(/équipe|collaborateur|salarié|effectif|employé|recru/)) {
+      themes.equipe = true;
+    }
+    if (fullText.match(/avantage|bénéfice|perk|télétravail|congé|flex/)) {
+      themes.avantages = true;
+    }
+    if (fullText.match(/localisation|adresse|bureau|siège|ville|situé|implanté/)) {
+      themes.localisation = true;
+    }
+    if (fullText.match(/perspective|futur|croissance|développement|ambition|projet/)) {
+      themes.perspectives = true;
+    }
+    if (fullText.match(/complément|précis|ajout|autre|supplément/)) {
+      themes.complementaire = true;
+    }
+
+    const completed = Object.values(themes).filter(Boolean).length;
+    const percentage = Math.round((completed / 10) * 100);
+
+    return { themes, completed, percentage };
+  }
+
+  // ============================================
   // SAUVEGARDE CONVERSATION
   // ============================================
   async function saveConversation() {
     if (conversationId && conversationId !== "new") {
-      // Update de la conversation existante
       const { error } = await supabase
         .from("conversations")
         .update({
@@ -361,7 +437,6 @@ export default function InteractiveBlock({
         return;
       }
     } else {
-      // Insertion d'une nouvelle conversation
       const { error } = await supabase.from("conversations").insert([
         {
           user_id: DEFAULT_USER_ID,
@@ -391,15 +466,6 @@ export default function InteractiveBlock({
     }, 2000);
   }
 
-  function extractDataFromChat(messages: ChatMessage[]) {
-    // TODO: Parser les messages pour extraire les données structurées
-    // Pour l'instant, retourner les messages bruts
-    return {
-      raw_conversation: messages,
-      // Les champs seront peuplés par traitement IA ultérieur
-    };
-  }
-
   // ============================================
   // HELPERS
   // ============================================
@@ -412,20 +478,18 @@ export default function InteractiveBlock({
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
       {/* Zone avatar principale */}
-      <div className="w-full max-w-2xl relative"> {/* max-w-3xl → max-w-2xl */}
+      <div className="w-full max-w-2xl relative">
         <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
 
           {/* Preview + overlay inactif ou terminé */}
           {(workflowState === "inactive" || workflowState === "terminated") && !isLoading && (
             <div className="absolute inset-0 z-10">
-              {/* Layer d'image en background */}
               <img
                 src={avatarPreviewImage}
                 alt="Avatar preview"
                 className="absolute w-full h-full object-cover inset-0 z-0"
                 style={{ pointerEvents: "none" }}
               />
-              {/* Layer texte & boutons par dessus */}
               <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-10">
                 <div className="text-center text-white px-4 mt-20 z-10">
                   {workflowState === "inactive" && (
@@ -441,7 +505,6 @@ export default function InteractiveBlock({
                     </>
                   )}
                 </div>
-                {/* Boutons inactif au-dessus (toujours cliquables) */}
                 {workflowState === "inactive" && (
                   <div className="flex gap-3 justify-center mt-4 z-10">
                     <button
@@ -462,7 +525,7 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Timer en overlay coin haut droit */}
+          {/* Timer + Sauvegarde */}
           {(workflowState === "active" || workflowState === "terminated") && (
             <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
               <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow">
@@ -476,7 +539,7 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Indicateur dynamique haut gauche */}
+          {/* Indicateur dynamique */}
           {workflowState === "active" && (
             <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
               {isTalking ? (
@@ -521,7 +584,7 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Boutons overlay pour état ACTIVE */}
+          {/* Boutons ACTIVE */}
           {workflowState === "active" && (
             <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center z-20">
               <div className="text-xs text-gray-700 mb-1 text-center">
@@ -548,7 +611,7 @@ export default function InteractiveBlock({
             </div>
           )}
 
-          {/* Boutons overlay pour état TERMINÉ */}
+          {/* Boutons TERMINÉ */}
           {workflowState === "terminated" && !isLoading && (
             <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 backdrop-blur-sm z-20">
               <div className="flex gap-2 justify-center flex-wrap">
