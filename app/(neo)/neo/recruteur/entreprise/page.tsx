@@ -27,6 +27,7 @@ export default function EntreprisePage() {
   const [isLoading, setIsLoading] = useState(true);
   const [entrepriseName, setEntrepriseName] = useState('Entreprise sans nom');
   const [isSavingName, setIsSavingName] = useState(false);
+  const [isEditingName, setIsEditingName] = useState(false);
   
   // Charger la KB statique depuis BDD
   const { kb, loading: kbLoading, error: kbError } = useStaticKnowledgeBase('acquisition_entreprise');
@@ -161,7 +162,7 @@ export default function EntreprisePage() {
     }
   }
 
-  // Sauvegarder le nom de l'entreprise
+// Sauvegarder le nom de l'entreprise
   const handleSaveEntrepriseName = async () => {
     if (!entrepriseId || !entrepriseName.trim()) return;
     
@@ -175,17 +176,34 @@ export default function EntreprisePage() {
           updated_at: new Date().toISOString()
         })
         .eq('id', entrepriseId);
-
+  
       if (error) {
         console.error('❌ Erreur sauvegarde nom:', error);
       } else {
         console.log('✅ Nom entreprise sauvegardé:', entrepriseName);
+        setIsEditingName(false); // Sortir du mode édition
       }
     } catch (error) {
       console.error('❌ Erreur:', error);
     } finally {
       setTimeout(() => setIsSavingName(false), 1000);
     }
+  };
+
+  // Annuler l'édition du nom
+  const handleCancelEditName = () => {
+    // Recharger le nom depuis la BDD
+    if (entrepriseId) {
+      supabase
+        .from('entreprises')
+        .select('nom')
+        .eq('id', entrepriseId)
+        .single()
+        .then(({ data }) => {
+          if (data) setEntrepriseName(data.nom);
+        });
+    }
+    setIsEditingName(false);
   };
 
   // Handler mise à jour conversation
@@ -261,40 +279,57 @@ export default function EntreprisePage() {
       <div className="max-w-6xl mx-auto">
         
         {/* Champ nom entreprise */}
-        <div className="mb-4 bg-white rounded-lg p-4 shadow-sm border border-gray-200">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">🏢</span>
-            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
-              Nom de l'entreprise :
-            </label>
-            <input
-              type="text"
-              value={entrepriseName}
-              onChange={(e) => setEntrepriseName(e.target.value)}
-              onBlur={handleSaveEntrepriseName}
-              onKeyDown={(e) => e.key === 'Enter' && handleSaveEntrepriseName()}
-              placeholder="Ex: TechCorp, Ma Startup..."
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-              disabled={!entrepriseId}
-            />
-            <button
-              onClick={() => {
-                const input = document.querySelector('input[type="text"]') as HTMLInputElement;
-                input?.focus();
-                input?.select();
-              }}
-              className="text-gray-400 hover:text-blue-600 transition"
-              title="Modifier le nom"
-            >
-              <span className="text-xl">✏️</span>
-            </button>
-            {isSavingName && (
-              <span className="text-xs text-green-600 whitespace-nowrap flex items-center gap-1">
-                <span className="animate-pulse">💾</span>
-                Sauvegarde...
-              </span>
-            )}
-          </div>
+        <div className="mb-6">
+          {!isEditingName ? (
+            // MODE AFFICHAGE
+            <div className="flex items-center justify-center gap-3">
+              <span className="text-3xl">🏢</span>
+              <h1 className="text-3xl font-bold text-blue-900">
+                {entrepriseName}
+              </h1>
+              <button
+                onClick={() => setIsEditingName(true)}
+                className="text-gray-400 hover:text-blue-600 transition ml-2"
+                title="Modifier le nom"
+              >
+                <span className="text-2xl">✏️</span>
+              </button>
+            </div>
+          ) : (
+            // MODE ÉDITION
+            <div className="bg-white rounded-lg p-4 shadow-sm border-2 border-blue-500">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">🏢</span>
+                <input
+                  type="text"
+                  value={entrepriseName}
+                  onChange={(e) => setEntrepriseName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveEntrepriseName();
+                    if (e.key === 'Escape') handleCancelEditName();
+                  }}
+                  placeholder="Nom de l'entreprise"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveEntrepriseName}
+                  disabled={isSavingName}
+                  className="text-green-600 hover:text-green-700 transition disabled:opacity-50"
+                  title="Sauvegarder"
+                >
+                  <span className="text-2xl">{isSavingName ? '⏳' : '💾'}</span>
+                </button>
+                <button
+                  onClick={handleCancelEditName}
+                  className="text-red-600 hover:text-red-700 transition"
+                  title="Annuler"
+                >
+                  <span className="text-2xl">❌</span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Description */}
