@@ -2,11 +2,12 @@
 
 /**
  * Page Entreprise - Conversation acquisition
- * @version 1.1
+ * @version 1.2
  * @date 2025-10-31
  * 
  * Conversation continue avec l'avatar pour collecter les infos entreprise
  * Logique: 1 user = 1 entreprise (reprise si existe)
+ * Ajout: Champ nom entreprise éditable
  */
 
 import { useState, useEffect } from 'react';
@@ -24,6 +25,8 @@ export default function EntreprisePage() {
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [entrepriseName, setEntrepriseName] = useState('Entreprise sans nom');
+  const [isSavingName, setIsSavingName] = useState(false);
   
   // Charger la KB statique depuis BDD
   const { kb, loading: kbLoading, error: kbError } = useStaticKnowledgeBase('acquisition_entreprise');
@@ -39,7 +42,7 @@ export default function EntreprisePage() {
           .from('entreprises')
           .select('id, nom, status')
           .eq('recruiter_id', DEFAULT_USER_ID)
-          .maybeSingle(); // ← maybeSingle au lieu de single (pas d'erreur si vide)
+          .maybeSingle();
 
         if (entreprise) {
           // Entreprise existe
@@ -50,6 +53,7 @@ export default function EntreprisePage() {
           });
           
           setEntrepriseId(entreprise.id);
+          setEntrepriseName(entreprise.nom || 'Entreprise sans nom');
 
           // Charger la conversation si status = in_progress
           if (entreprise.status === 'in_progress' || entreprise.status === 'draft') {
@@ -115,6 +119,7 @@ export default function EntreprisePage() {
       console.log('✅ Entreprise créée:', newEntrepriseId);
   
       setEntrepriseId(newEntrepriseId);
+      setEntrepriseName('Entreprise sans nom');
 
       // 2. Créer conversation
       await createConversation(newEntrepriseId);
@@ -155,6 +160,33 @@ export default function EntreprisePage() {
       throw error;
     }
   }
+
+  // Sauvegarder le nom de l'entreprise
+  const handleSaveEntrepriseName = async () => {
+    if (!entrepriseId || !entrepriseName.trim()) return;
+    
+    setIsSavingName(true);
+    
+    try {
+      const { error } = await supabase
+        .from('entreprises')
+        .update({ 
+          nom: entrepriseName.trim(),
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', entrepriseId);
+
+      if (error) {
+        console.error('❌ Erreur sauvegarde nom:', error);
+      } else {
+        console.log('✅ Nom entreprise sauvegardé:', entrepriseName);
+      }
+    } catch (error) {
+      console.error('❌ Erreur:', error);
+    } finally {
+      setTimeout(() => setIsSavingName(false), 1000);
+    }
+  };
 
   // Handler mise à jour conversation
   const handleChatUpdate = (messages: ChatMessage[]) => {
@@ -227,15 +259,50 @@ export default function EntreprisePage() {
   return (
     <div className="w-full min-h-screen bg-gray-50 p-6">
       <div className="max-w-6xl mx-auto">
-        {/* Header */}
+        
+        {/* Champ nom entreprise */}
+        <div className="mb-4 bg-white rounded-lg p-4 shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🏢</span>
+            <label className="text-sm font-medium text-gray-700 whitespace-nowrap">
+              Nom de l'entreprise :
+            </label>
+            <input
+              type="text"
+              value={entrepriseName}
+              onChange={(e) => setEntrepriseName(e.target.value)}
+              onBlur={handleSaveEntrepriseName}
+              onKeyDown={(e) => e.key === 'Enter' && handleSaveEntrepriseName()}
+              placeholder="Ex: TechCorp, Ma Startup..."
+              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
+              disabled={!entrepriseId}
+            />
+            <button
+              onClick={() => {
+                const input = document.querySelector('input[type="text"]') as HTMLInputElement;
+                input?.focus();
+                input?.select();
+              }}
+              className="text-gray-400 hover:text-blue-600 transition"
+              title="Modifier le nom"
+            >
+              <span className="text-xl">✏️</span>
+            </button>
+            {isSavingName && (
+              <span className="text-xs text-green-600 whitespace-nowrap flex items-center gap-1">
+                <span className="animate-pulse">💾</span>
+                Sauvegarde...
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Description */}
         <div className="mb-6">
-          <h1 className="text-4xl font-bold text-blue-900 mb-2">
-            📋 {chatHistory.length > 0 ? 'Reprendre votre entreprise' : 'Créer votre entreprise'}
-          </h1>
-          <p className="text-gray-600">
+          <p className="text-gray-600 text-center">
             {chatHistory.length > 0 
-              ? `Vous pouvez reprendre là où vous vous êtes arrêté (${chatHistory.length} messages sauvegardés).`
-              : 'Votre guide interactif va vous poser des questions pour comprendre votre entreprise. La conversation dure environ 10 minutes.'
+              ? `Reprenez là où vous vous êtes arrêté (${chatHistory.length} messages sauvegardés).`
+              : 'Votre guide interactif va vous poser des questions pour comprendre votre entreprise (~10 minutes).'
             }
           </p>
         </div>
