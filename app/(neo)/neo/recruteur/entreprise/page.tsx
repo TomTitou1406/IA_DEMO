@@ -340,17 +340,19 @@ export default function EntreprisePage() {
         </div>
 
         {/* Composant InteractiveBlock */}
-        <InteractiveBlock
-          conversationId={conversationId}
-          conversationType="acquisition_entreprise"
-          context={contextConfig}
-          chatHistory={chatHistory}
-          entrepriseId={entrepriseId}
-          onConversationUpdate={handleChatUpdate}
-          onFinaliser={handleFinaliser}
-          onSauvegarder={handleSauvegarder}
-          onAbandonner={handleAbandonner}
-        />
+        <div className="flex-1 overflow-y-auto">
+          <InteractiveBlock
+            conversationId={conversationId}
+            conversationType="acquisition_entreprise"
+            context={contextConfig}
+            chatHistory={chatHistory}
+            entrepriseId={entrepriseId}
+            onConversationUpdate={handleChatUpdate}
+            onFinaliser={handleFinaliser}
+            onSauvegarder={handleSauvegarder}
+            onAbandonner={handleAbandonner}
+          />
+        </div>
       </div>
     </div>
   );
