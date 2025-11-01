@@ -369,49 +369,68 @@ export default function InteractiveBlock({
       perspectives: false,
       complementaire: false,
     };
-
-      // Analyser uniquement les messages de l'AVATAR
-      const avatarMessages = messages
-        .filter(m => m.role === 'assistant')
-        .map(m => m.content.toLowerCase());
-    
-      const fullText = avatarMessages.join(' ');
-
-    // Détecter les validations explicites de l'avatar
-    if (fullText.match(/tout ce qu'il me faut sur (votre |l')?histoire|fondation validée|histoire.*complet/)) {
-      themes.histoire = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (votre |la )?mission|vision.*validée|mission.*complet/)) {
-      themes.mission = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (vos |les )?produits?|services?|offre.*validée/)) {
-      themes.produits = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (votre )?marché|clients?.*validé|cible.*complet/)) {
-      themes.marche = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (votre )?culture|valeurs?.*validée/)) {
-      themes.culture = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (votre )?équipe|collaborateurs?.*validé|effectif.*complet/)) {
-      themes.equipe = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (vos )?avantages?|bénéfices?.*validé/)) {
-      themes.avantages = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (votre )?localisation|bureaux?.*validé|adresse.*complet/)) {
-      themes.localisation = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut sur (vos )?perspectives?|futur.*validé|ambitions?.*complet/)) {
-      themes.perspectives = true;
-    }
-    if (fullText.match(/tout ce qu'il me faut|informations? complémentaires?.*validé|synthèse/)) {
-      themes.complementaire = true;
-    }
-
+  
+    // Analyser uniquement les messages de l'AVATAR (Clara)
+    const avatarMessages = messages
+      .filter(m => m.role === 'assistant')
+      .map(m => m.content.toLowerCase());
+  
+    // Détecter la phrase exacte : "Parfait, j'ai tout ce qu'il me faut sur X"
+    themes.histoire = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("histoire") || m.includes("historique"))
+    );
+  
+    themes.mission = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("mission") || m.includes("vision"))
+    );
+  
+    themes.produits = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("produit") || m.includes("service"))
+    );
+  
+    themes.marche = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("marché") || m.includes("client"))
+    );
+  
+    themes.culture = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("culture") || m.includes("valeur"))
+    );
+  
+    themes.equipe = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("équipe") || m.includes("organisation"))
+    );
+  
+    themes.avantages = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("avantage") || m.includes("condition"))
+    );
+  
+    themes.localisation = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("localisation") || m.includes("bureau"))
+    );
+  
+    themes.perspectives = avatarMessages.some(m => 
+      m.includes("tout ce qu'il me faut sur") && 
+      (m.includes("perspective") || m.includes("ambition") || m.includes("projet"))
+    );
+  
+    // Le 10ème thème = validation finale (synthèse)
+    themes.complementaire = avatarMessages.some(m => 
+      m.includes("récapitulatif") || 
+      m.includes("résumé représente") ||
+      m.includes("voici le récapitulatif")
+    );
+  
     const completed = Object.values(themes).filter(Boolean).length;
     const percentage = Math.round((completed / 10) * 100);
-
+  
     return { themes, completed, percentage };
   }
 
