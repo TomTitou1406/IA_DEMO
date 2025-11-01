@@ -584,13 +584,33 @@ export default function InteractiveBlock({
 
       {/* Fil de discussion */}
       <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
+        {/* Header avec barre de progression */}
         <div className="px-4 py-2 border-b border-gray-200 flex-shrink-0">
-          <h3 className="text-sm font-semibold text-gray-800 flex items-center gap-2">
-            <span>💬</span>
-            <span>Discussion</span>
-          </h3>
+          <div className="flex items-center gap-3">
+            {/* Icône + Titre */}
+            <div className="flex items-center gap-1 text-sm font-semibold text-gray-800">
+              <span>💬</span>
+              <span className="hidden sm:inline">Discussion</span>
+            </div>
+            
+            {/* Barre de progression inline */}
+            <div className="flex-1 flex items-center gap-2">
+              <div className="flex-1 bg-gray-200 rounded-full h-1.5 overflow-hidden">
+                <div 
+                  className="bg-gradient-to-r from-blue-500 to-green-500 h-full transition-all duration-500"
+                  style={{ width: `${progression.percentage}%` }}
+                />
+              </div>
+              
+              {/* Pourcentage + Compte */}
+              <span className="text-xs font-medium text-gray-600 whitespace-nowrap">
+                {progression.percentage}% <span className="text-gray-400">({progression.completed}/10)</span>
+              </span>
+            </div>
+          </div>
         </div>
-
+      
+        {/* Conteneur messages */}
         <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
           {liveChatHistory.length === 0 ? (
             <p className="text-gray-400 text-center py-6 text-xs">
