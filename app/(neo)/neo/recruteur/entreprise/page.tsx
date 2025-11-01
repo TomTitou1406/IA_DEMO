@@ -275,11 +275,11 @@ export default function EntreprisePage() {
   });
   
   return (
-    <div className="w-full min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
+    <div className="w-full h-screen bg-gray-50 p-6 overflow-hidden">
+      <div className="max-w-6xl mx-auto h-full flex flex-col">
         
         {/* Header compact - 2 lignes */}
-        <div className="mb-4 text-center">
+        <div className="mb-2 text-center">
           {/* Ligne 1 : Titre + Nom entreprise + Crayon */}
           <div className="flex items-center justify-center gap-3 mb-2">
             {!isEditingName ? (
