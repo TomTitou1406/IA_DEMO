@@ -408,8 +408,8 @@ export default function InteractiveBlock({
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
       {/* Zone avatar principale */}
-      <div className="w-full max-w-3xl relative">
-        <div className="relative w-full aspect-[21/9] bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
+      div className="w-full max-w-2xl relative"> {/* max-w-3xl → max-w-2xl */}
+        <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
 
           {/* Preview + overlay inactif ou terminé */}
           {(workflowState === "inactive" || workflowState === "terminated") && !isLoading && (
