@@ -154,8 +154,7 @@ export default function InteractiveBlock({
     if (
       sessionState === "active" && 
       !initialMessageSentRef.current && 
-      initialMessage &&
-      stream
+      initialMessage 
     ) {
       const timeout = setTimeout(() => {
         if (sessionState === "active" && !initialMessageSentRef.current) {
@@ -171,7 +170,7 @@ export default function InteractiveBlock({
     if (sessionState === "inactive") {
       initialMessageSentRef.current = false;
     }
-  }, [sessionState, stream]);
+  }, [sessionState, initialMessage, startInitialSpeak]);
 
   // ============================================
   // EFFET : Stream vidéo
