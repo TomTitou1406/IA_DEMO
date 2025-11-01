@@ -1,9 +1,11 @@
 /**
  * @file useNeoAvatar.ts
- * @version v0.03
- * @date 30 octobre 2025
+ * @version v0.04
+ * @date 01 novembre 2025
  * @description Hook pour gérer l'avatar HeyGen avec Knowledge Base
  * @changelog 
+ *   v0.04 - Fix doublon message initial avec vérification
+ *   v0.03 - Amélioration gestion chat history
  *   v0.02 - Message initial caché du chat + utilisation TaskType.TALK
  */
 
@@ -60,7 +62,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   const sessionIdRef = useRef<string | null>(null);
   const currentSenderRef = useRef<"user" | "assistant" | null>(null);
   
-  // 🆕 v0.02 : Flag pour ignorer le premier message (message initial)
+  // Flag pour ignorer le premier message (message initial)
   const isInitialMessageRef = useRef<boolean>(false);
 
   const isLoading = sessionState === "loading";
@@ -98,7 +100,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
     const word = event.detail.message;
-  
+
     if (currentSenderRef.current === "assistant") {
       // Ajoute mot par mot au dernier message
       setChatHistory((prev) => [
@@ -121,16 +123,44 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         }
         
         // Sinon, créer nouveau message
+        const timestamp = new Date();
         currentSenderRef.current = "assistant";
         return [
           ...prev,
           {
             role: "assistant",
             content: word,
-            timestamp: new Date(),
+            timestamp: timestamp,
           },
         ];
       });
+    }
+  }, []);
+
+  const handleEndMessage = useCallback(() => {
+    // Réactiver l'écoute après le message initial
+    if (isInitialMessageRef.current) {
+      isInitialMessageRef.current = false;
+      console.log('✅ Message initial terminé, écoute réactivée');
+    }
+    currentSenderRef.current = null;
+  }, []);
+
+  const fetchAccessToken = useCallback(async (): Promise<string> => {
+    try {
+      const response = await fetch("/api/get-access-token", {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        throw new Error("Impossible de récupérer le token HeyGen");
+      }
+
+      const token = await response.text();
+      return token;
+    } catch (err) {
+      console.error("❌ Erreur token:", err);
+      throw new Error("Échec de connexion au serveur HeyGen");
     }
   }, []);
 
@@ -173,7 +203,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
-  // 🆕 v0.02 : Méthode modifiée pour utiliser TaskType.TALK
+  // Méthode pour envoyer le message initial
   const startInitialSpeak = useCallback(async (text: string) => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -233,9 +263,9 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
       await avatar.startVoiceChat();
       if (config?.initialMessage) {
-      await startInitialSpeak(config.initialMessage);
+        await startInitialSpeak(config.initialMessage);
       }
-      } catch (err) {
+    } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
       setSessionState("error");
     }
