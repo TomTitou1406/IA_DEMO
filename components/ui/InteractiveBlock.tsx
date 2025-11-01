@@ -456,6 +456,7 @@ export default function InteractiveBlock({
                 )}
               </div>
             </div>
+          </div>
           )}
 
           {/* Timer en overlay coin haut droit */}
