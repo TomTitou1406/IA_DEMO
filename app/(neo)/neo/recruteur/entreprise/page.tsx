@@ -2,12 +2,12 @@
 
 /**
  * Page Entreprise - Conversation acquisition
- * @version 1.2
- * @date 2025-10-31
+ * @version 1.3
+ * @date 2025-11-01
  * 
  * Conversation continue avec l'avatar pour collecter les infos entreprise
  * Logique: 1 user = 1 entreprise (reprise si existe)
- * Ajout: Champ nom entreprise éditable
+ * Layout compact optimisé
  */
 
 import { useState, useEffect } from 'react';
@@ -162,7 +162,7 @@ export default function EntreprisePage() {
     }
   }
 
-// Sauvegarder le nom de l'entreprise
+  // Sauvegarder le nom de l'entreprise
   const handleSaveEntrepriseName = async () => {
     if (!entrepriseId || !entrepriseName.trim()) return;
     
@@ -275,71 +275,66 @@ export default function EntreprisePage() {
   });
   
   return (
-    <div className="mb-4 text-center">
-      <div className="flex items-center justify-center gap-3 mb-2">
-        {!isEditingName ? (
-          <>
-            <h1 className="text-2xl font-bold text-blue-900">
-              📋 Présentez votre entreprise - {entrepriseName}
-            </h1>
-            <button
-              onClick={() => setIsEditingName(true)}
-              className="text-gray-400 hover:text-blue-600 transition"
-              title="Modifier le nom"
-            >
-              <span className="text-xl">✏️</span>
-            </button>
-          </>
-        ) : (
-          // Mode édition
-          <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm border-2 border-blue-500">
-            <span className="text-xl">🏢</span>
-            <input
-              type="text"
-              value={entrepriseName}
-              onChange={(e) => setEntrepriseName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') handleSaveEntrepriseName();
-                if (e.key === 'Escape') handleCancelEditName();
-              }}
-              placeholder="Nom de l'entreprise"
-              className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500"
-              autoFocus
-            />
-            <button
-              onClick={handleSaveEntrepriseName}
-              disabled={isSavingName}
-              className="text-green-600 hover:text-green-700 disabled:opacity-50"
-              title="Sauvegarder"
-            >
-              <span className="text-xl">{isSavingName ? '⏳' : '💾'}</span>
-            </button>
-            <button
-              onClick={handleCancelEditName}
-              className="text-red-600 hover:text-red-700"
-              title="Annuler"
-            >
-              <span className="text-xl">❌</span>
-            </button>
+    <div className="w-full min-h-screen bg-gray-50 p-6">
+      <div className="max-w-6xl mx-auto">
+        
+        {/* Header compact - 2 lignes */}
+        <div className="mb-4 text-center">
+          {/* Ligne 1 : Titre + Nom entreprise + Crayon */}
+          <div className="flex items-center justify-center gap-3 mb-2">
+            {!isEditingName ? (
+              <>
+                <h1 className="text-2xl font-bold text-blue-900">
+                  📋 Présentez votre entreprise - {entrepriseName}
+                </h1>
+                <button
+                  onClick={() => setIsEditingName(true)}
+                  className="text-gray-400 hover:text-blue-600 transition"
+                  title="Modifier le nom"
+                >
+                  <span className="text-xl">✏️</span>
+                </button>
+              </>
+            ) : (
+              // Mode édition
+              <div className="flex items-center gap-3 bg-white rounded-lg p-3 shadow-sm border-2 border-blue-500">
+                <span className="text-xl">🏢</span>
+                <input
+                  type="text"
+                  value={entrepriseName}
+                  onChange={(e) => setEntrepriseName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') handleSaveEntrepriseName();
+                    if (e.key === 'Escape') handleCancelEditName();
+                  }}
+                  placeholder="Nom de l'entreprise"
+                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-500"
+                  autoFocus
+                />
+                <button
+                  onClick={handleSaveEntrepriseName}
+                  disabled={isSavingName}
+                  className="text-green-600 hover:text-green-700 disabled:opacity-50"
+                  title="Sauvegarder"
+                >
+                  <span className="text-xl">{isSavingName ? '⏳' : '💾'}</span>
+                </button>
+                <button
+                  onClick={handleCancelEditName}
+                  className="text-red-600 hover:text-red-700"
+                  title="Annuler"
+                >
+                  <span className="text-xl">❌</span>
+                </button>
+              </div>
+            )}
           </div>
-        )}
-      </div>
-    
-      {/* Ligne 2 : Info contexte */}
-      <p className="text-gray-600 text-sm">
-        {chatHistory.length > 0 
-          ? `Reprenez là où vous vous êtes arrêté (${chatHistory.length} messages sauvegardés).`
-          : 'Votre guide interactif va vous poser des questions (~10 minutes).'
-        }
-      </p>
-    </div>
-
-        {/* Description */}
-        <div className="mb-6">
-          <p className="text-gray-600 text-center">
+        
+          {/* Ligne 2 : Info contexte */}
+          <p className="text-gray-600 text-sm">
             {chatHistory.length > 0 
               ? `Reprenez là où vous vous êtes arrêté (${chatHistory.length} messages sauvegardés).`
-              : 'Votre guide interactif va vous poser des questions pour comprendre votre entreprise (~10 minutes).'
+              : 'Votre guide interactif va vous poser des questions (~10 minutes).'
             }
           </p>
         </div>
