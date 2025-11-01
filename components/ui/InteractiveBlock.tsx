@@ -454,7 +454,6 @@ export default function InteractiveBlock({
                     </button>
                   </div>
                 )}
-                </div>
               </div>
             </div>
           )}
