@@ -97,9 +97,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   }, []);
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
-  const word = event.detail.message;
-
+    const word = event.detail.message;
+  
     if (currentSenderRef.current === "assistant") {
+      // Ajoute mot par mot au dernier message
       setChatHistory((prev) => [
         ...prev.slice(0, -1),
         {
@@ -108,42 +109,28 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         },
       ]);
     } else {
-      currentSenderRef.current = "assistant";
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          content: word,
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  }, []);
-
-  const handleEndMessage = useCallback(() => {
-    // 🆕 v0.02 : Réactiver l'écoute après le message initial
-    if (isInitialMessageRef.current) {
-      isInitialMessageRef.current = false;
-      console.log('✅ Message initial terminé, écoute réactivée');
-    }
-    currentSenderRef.current = null;
-  }, []);
-
-  const fetchAccessToken = useCallback(async (): Promise<string> => {
-    try {
-      const response = await fetch("/api/get-access-token", {
-        method: "POST",
+      // Vérifier si le dernier message est déjà un assistant avec le même début
+      setChatHistory((prev) => {
+        const lastMsg = prev[prev.length - 1];
+        
+        // Si dernier message = assistant et commence par le nouveau mot → doublon
+        if (lastMsg?.role === "assistant" && lastMsg.content.startsWith(word.trim())) {
+          console.log('⏭️ Doublon assistant ignoré');
+          currentSenderRef.current = "assistant"; // Activer le mode ajout
+          return prev; // Ne rien ajouter
+        }
+        
+        // Sinon, créer nouveau message
+        currentSenderRef.current = "assistant";
+        return [
+          ...prev,
+          {
+            role: "assistant",
+            content: word,
+            timestamp: new Date(),
+          },
+        ];
       });
-
-      if (!response.ok) {
-        throw new Error("Impossible de récupérer le token HeyGen");
-      }
-
-      const token = await response.text();
-      return token;
-    } catch (err) {
-      console.error("❌ Erreur token:", err);
-      throw new Error("Échec de connexion au serveur HeyGen");
     }
   }, []);
 
