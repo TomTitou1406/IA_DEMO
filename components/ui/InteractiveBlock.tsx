@@ -125,6 +125,7 @@ export default function InteractiveBlock({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const chatContainerRef = useRef<HTMLDivElement>(null);
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
@@ -188,7 +189,10 @@ export default function InteractiveBlock({
   // EFFET : Auto-scroll chat
   // ============================================
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    // Scroller directement le conteneur de chat, pas la page
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
   }, [liveChatHistory]);
 
   // ============================================
@@ -587,7 +591,7 @@ export default function InteractiveBlock({
           </h3>
         </div>
 
-        <div className="flex-1 overflow-y-auto p-4">
+        <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
           {liveChatHistory.length === 0 ? (
             <p className="text-gray-400 text-center py-6 text-xs">
               {workflowState === "inactive"
@@ -616,7 +620,6 @@ export default function InteractiveBlock({
                   </div>
                 </div>
               ))}
-              <div ref={chatEndRef} />
             </div>
           )}
         </div>
