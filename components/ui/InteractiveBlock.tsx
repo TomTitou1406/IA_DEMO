@@ -370,39 +370,42 @@ export default function InteractiveBlock({
       complementaire: false,
     };
 
-    const fullText = messages
-      .map(m => m.content.toLowerCase())
-      .join(' ');
+      // Analyser uniquement les messages de l'AVATAR
+      const avatarMessages = messages
+        .filter(m => m.role === 'assistant')
+        .map(m => m.content.toLowerCase());
+    
+      const fullText = avatarMessages.join(' ');
 
-    // Détection par mots-clés (regex pour plus de précision)
-    if (fullText.match(/fondée?|création|créer|histoire|début|commenc|origin/)) {
+    // Détecter les validations explicites de l'avatar
+    if (fullText.match(/tout ce qu'il me faut sur (votre |l')?histoire|fondation validée|histoire.*complet/)) {
       themes.histoire = true;
     }
-    if (fullText.match(/mission|vision|objectif|but|raison d'être/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (votre |la )?mission|vision.*validée|mission.*complet/)) {
       themes.mission = true;
     }
-    if (fullText.match(/produit|service|offre|vend|propose|commercialis/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (vos |les )?produits?|services?|offre.*validée/)) {
       themes.produits = true;
     }
-    if (fullText.match(/marché|client|cible|segment|secteur|industrie/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (votre )?marché|clients?.*validé|cible.*complet/)) {
       themes.marche = true;
     }
-    if (fullText.match(/culture|valeur|principe|éthique|atmosphère/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (votre )?culture|valeurs?.*validée/)) {
       themes.culture = true;
     }
-    if (fullText.match(/équipe|collaborateur|salarié|effectif|employé|recru/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (votre )?équipe|collaborateurs?.*validé|effectif.*complet/)) {
       themes.equipe = true;
     }
-    if (fullText.match(/avantage|bénéfice|perk|télétravail|congé|flex/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (vos )?avantages?|bénéfices?.*validé/)) {
       themes.avantages = true;
     }
-    if (fullText.match(/localisation|adresse|bureau|siège|ville|situé|implanté/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (votre )?localisation|bureaux?.*validé|adresse.*complet/)) {
       themes.localisation = true;
     }
-    if (fullText.match(/perspective|futur|croissance|développement|ambition|projet/)) {
+    if (fullText.match(/tout ce qu'il me faut sur (vos )?perspectives?|futur.*validé|ambitions?.*complet/)) {
       themes.perspectives = true;
     }
-    if (fullText.match(/complément|précis|ajout|autre|supplément/)) {
+    if (fullText.match(/tout ce qu'il me faut|informations? complémentaires?.*validé|synthèse/)) {
       themes.complementaire = true;
     }
 
