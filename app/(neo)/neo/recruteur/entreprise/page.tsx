@@ -275,9 +275,7 @@ export default function EntreprisePage() {
   });
   
   return (
-    {/* Header compact - 2 lignes */}
     <div className="mb-4 text-center">
-      {/* Ligne 1 : Titre + Nom entreprise + Crayon */}
       <div className="flex items-center justify-center gap-3 mb-2">
         {!isEditingName ? (
           <>
