@@ -343,10 +343,12 @@ export default function EntreprisePage() {
 
         {/* Composant InteractiveBlock avec Checklist et fil de discussion en dessous */}
         <div className="flex-1 flex flex-col gap-6 overflow-y-auto px-4">
-          {/* LIGNE 1 : Avatar (75%) + Checklist (25%) */}
-          <div className="flex gap-4 items-start">
-            {/* Zone Avatar : 75% */}
-            <div className="flex-[3]">
+          
+          {/* LIGNE 1 : Avatar (2/3) + Checklist (1/3) - MÊME HAUTEUR */}
+          <div className="flex gap-4 items-stretch">
+          
+            {/* Zone Avatar : 2/3 */}
+            <div className="w-2/3">
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -361,9 +363,9 @@ export default function EntreprisePage() {
               />
             </div>
             
-            {/* Checklist : 25% */}
+            {/* Checklist : 1/3 - MÊME HAUTEUR que l'avatar */}
             {entrepriseId && (
-              <div className="flex-[1]">
+              <div className="w-1/3">
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -373,12 +375,20 @@ export default function EntreprisePage() {
             )}
           </div>
           
-          {/* LIGNE 2 : Discussion (centré) */}
-          <div className="w-full max-w-4xl mx-auto">
-            {/* Le fil de discussion sera extrait ici */}
-            <div className="text-center text-gray-400 text-sm">
-              Le fil de discussion apparaîtra ici
-            </div>
+          {/* LIGNE 2 : Discussion (centré, largeur max) */}
+          <div className="w-full max-w-5xl mx-auto">
+            <InteractiveBlock
+              conversationId={conversationId}
+              conversationType="acquisition_entreprise"
+              context={contextConfig}
+              chatHistory={chatHistory}
+              entrepriseId={entrepriseId}
+              onConversationUpdate={handleChatUpdate}
+              onFinaliser={handleFinaliser}
+              onSauvegarder={handleSauvegarder}
+              onAbandonner={handleAbandonner}
+              showOnlyDiscussion={true}
+            />
           </div>
         </div>
       </div>
