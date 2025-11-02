@@ -95,7 +95,7 @@ export default function ProgressionChecklist({
   if (loading) {
     return (
       <div 
-        className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
+        className="bg-white rounded-lg shadow-md pt-3 pb-3 flex flex-col" 
         style={{ 
           height: '335px',
           minHeight: '335px',
@@ -117,7 +117,7 @@ export default function ProgressionChecklist({
 
   return (
     <div 
-      className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
+      className="bg-white rounded-lg shadow-md pt-3 pb-3 flex flex-col" 
       style={{ 
         height: '335px',
         minHeight: '335px',
