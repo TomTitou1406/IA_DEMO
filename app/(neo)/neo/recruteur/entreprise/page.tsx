@@ -341,31 +341,45 @@ export default function EntreprisePage() {
           </p>
         </div>
 
-        {/* Composant InteractiveBlock avec Checklist */}
-        <div className="flex gap-6 flex-1 overflow-y-auto">
-          {/* Zone principale */}
-          <div className="flex-1">
-            <InteractiveBlock
-              conversationId={conversationId}
-              conversationType="acquisition_entreprise"
-              context={contextConfig}
-              chatHistory={chatHistory}
-              entrepriseId={entrepriseId}
-              onConversationUpdate={handleChatUpdate}
-              onFinaliser={handleFinaliser}
-              onSauvegarder={handleSauvegarder}
-              onAbandonner={handleAbandonner}
-            />
+        {/* Composant InteractiveBlock avec Checklist et fil de discussion en dessous */}
+        <div className="flex-1 flex flex-col gap-6 overflow-y-auto px-4">
+          {/* LIGNE 1 : Avatar (75%) + Checklist (25%) */}
+          <div className="flex gap-4 items-start">
+            {/* Zone Avatar : 75% */}
+            <div className="flex-[3]">
+              <InteractiveBlock
+                conversationId={conversationId}
+                conversationType="acquisition_entreprise"
+                context={contextConfig}
+                chatHistory={chatHistory}
+                entrepriseId={entrepriseId}
+                onConversationUpdate={handleChatUpdate}
+                onFinaliser={handleFinaliser}
+                onSauvegarder={handleSauvegarder}
+                onAbandonner={handleAbandonner}
+                showDiscussionThread={false}
+              />
+            </div>
+            
+            {/* Checklist : 25% */}
+            {entrepriseId && (
+              <div className="flex-[1]">
+                <ProgressionChecklist
+                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
+                  entityId={entrepriseId}
+                  targetTable="entreprises"
+                />
+              </div>
+            )}
           </div>
           
-          {/* Checklist sidebar */}
-          {entrepriseId && (
-            <ProgressionChecklist
-              contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
-              entityId={entrepriseId}
-              targetTable="entreprises"
-            />
-          )}
+          {/* LIGNE 2 : Discussion (centré) */}
+          <div className="w-full max-w-4xl mx-auto">
+            {/* Le fil de discussion sera extrait ici */}
+            <div className="text-center text-gray-400 text-sm">
+              Le fil de discussion apparaîtra ici
+            </div>
+          </div>
         </div>
       </div>
     </div>
