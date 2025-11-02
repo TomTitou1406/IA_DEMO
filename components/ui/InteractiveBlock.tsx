@@ -213,7 +213,7 @@ export default function InteractiveBlock({
       setProgression(initialProgression);
       console.log('📊 Progression initiale:', initialProgression);
     }
-  }, []); // Se déclenche une fois au mount
+  }, [liveChatHistory.length]); // Se déclenche quand le chat charge
 
   // ============================================
   // EFFET : Workflow state
@@ -305,6 +305,28 @@ export default function InteractiveBlock({
         } else {
           setIsSaving(false);
         }
+        
+        if (saveSuccess) {
+        // Analyser et mettre à jour la progression
+        const newProgression = analyzeProgression(currentHistory);
+        setProgression(newProgression);
+        console.log('📊 Progression mise à jour:', newProgression);
+        
+        // 🆕 Sauvegarder completion_percentage dans entreprise
+        if (currentEntrepriseId && newProgression.percentage !== progression.percentage) {
+          await supabase
+            .from('entreprises')
+            .update({ 
+              completion_percentage: newProgression.percentage,
+              updated_at: new Date().toISOString()
+            })
+            .eq('id', currentEntrepriseId);
+          
+          console.log('📊 Completion % sauvegardé:', newProgression.percentage);
+        }
+        
+        setTimeout(() => setIsSaving(false), 2000);
+      }
         
       } catch (error) {
         console.error('❌ Exception auto-save:', error);
