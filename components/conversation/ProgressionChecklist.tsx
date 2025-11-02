@@ -94,7 +94,14 @@ export default function ProgressionChecklist({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-3 flex flex-col" style={{ height: '500px' }}>
+      <div 
+        className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
+        style={{ 
+          height: '500px',
+          minHeight: '500px',
+          maxHeight: '500px'
+        }}
+      >
         <div className="animate-pulse space-y-2">
           <div className="h-3 bg-gray-200 rounded"></div>
           <div className="h-2 bg-gray-200 rounded"></div>
@@ -109,13 +116,14 @@ export default function ProgressionChecklist({
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 flex flex-col" style={{ height: '500px' }}>
-      
-      {/* Header compact */}
-      
-
-      {/* Séparateur */}
-      <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
+    <div 
+      className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
+      style={{ 
+        height: '500px',
+        minHeight: '500px',
+        maxHeight: '500px'
+      }}
+    >
       {/* Header compact sur une ligne */}
       <div className="mb-3 flex-shrink-0">
         <div className="flex items-center justify-between gap-2 mb-2">
@@ -135,8 +143,11 @@ export default function ProgressionChecklist({
         </div>
       </div>
 
-      {/* Liste scrollable */}
-      <ul className="space-y-1.5 flex-1 overflow-y-auto">
+      {/* Séparateur */}
+      <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
+
+      {/* Liste scrollable avec minHeight */}
+      <ul className="space-y-1.5 flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
         {steps.map(step => (
           <li 
             key={step.step_key}
