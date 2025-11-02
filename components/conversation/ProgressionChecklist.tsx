@@ -97,9 +97,9 @@ export default function ProgressionChecklist({
       <div 
         className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
         style={{ 
-          height: '500px',
-          minHeight: '500px',
-          maxHeight: '500px'
+          height: '3400px',
+          minHeight: '340px',
+          maxHeight: '340px'
         }}
       >
         <div className="animate-pulse space-y-2">
