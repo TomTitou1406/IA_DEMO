@@ -344,11 +344,11 @@ export default function EntreprisePage() {
         {/* Composant InteractiveBlock avec Checklist et fil de discussion en dessous */}
         <div className="flex-1 flex flex-col gap-6 overflow-y-auto px-4">
           
-          {/* LIGNE 1 : Avatar (2/3) + Checklist (1/3) - MÊME HAUTEUR */}
-          <div className="flex gap-4 items-stretch">
+        {/* LIGNE 1 : Avatar (50%) + Espace (5%) + Checklist (20%) = 75% utilisé */}
+        <div className="flex gap-6 items-stretch" style={{ height: '500px' }}>
           
-            {/* Zone Avatar : 2/3 */}
-            <div className="w-2/3">
+            {/* Zone Avatar : 50% de la largeur */}
+            <div className="flex-[4]">
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -363,9 +363,9 @@ export default function EntreprisePage() {
               />
             </div>
             
-            {/* Checklist : 1/3 - MÊME HAUTEUR que l'avatar */}
+            {/* Checklist : 20% de la largeur, MÊME HAUTEUR */}
             {entrepriseId && (
-              <div className="w-1/3">
+              <div className="flex-[1.6]">
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -373,10 +373,12 @@ export default function EntreprisePage() {
                 />
               </div>
             )}
+            {/* Espace droite (12.5%) */}
+            <div className="flex-[1]"></div>
           </div>
           
-          {/* LIGNE 2 : Discussion (centré, largeur max) */}
-          <div className="w-full max-w-5xl mx-auto">
+          {/* LIGNE 2 : Discussion (75% de largeur, centré) */}
+          <div className="mx-auto" style={{ width: '75%' }}>
             <InteractiveBlock
               conversationId={conversationId}
               conversationType="acquisition_entreprise"
