@@ -300,14 +300,27 @@ export default function InteractiveBlock({
         // 🆕 DÉTECTER VALIDATION ET SAUVEGARDER CHAMP
         if (currentHistory.length > 0) {
           const lastMessage = currentHistory[currentHistory.length - 1];
-            if (lastMessage.role === 'assistant' && currentEntrepriseId && context?.id) {
-              const saveResult = await detectAndSaveValidation(
-              lastMessage,
-              currentHistory,
+          if (lastMessage.role === 'assistant' && currentEntrepriseId && context?.id) {
+            // Convertir les messages au bon format
+            const convertedHistory = currentHistory.map(msg => ({
+              role: msg.role,
+              content: msg.content,
+              timestamp: msg.timestamp instanceof Date ? msg.timestamp.toISOString() : msg.timestamp
+            }));
+            
+            const convertedLastMessage = {
+              role: lastMessage.role,
+              content: lastMessage.content,
+              timestamp: lastMessage.timestamp instanceof Date ? lastMessage.timestamp.toISOString() : lastMessage.timestamp
+            };
+            
+            const saveResult = await detectAndSaveValidation(
+              convertedLastMessage,
+              convertedHistory,
               context.id,
               currentEntrepriseId,
               'entreprises'
-            );  
+            ); 
             
             if (saveResult.success) {
               console.log(`✅ Champ ${saveResult.field} sauvegardé automatiquement`);
