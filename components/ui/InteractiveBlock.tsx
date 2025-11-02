@@ -300,14 +300,14 @@ export default function InteractiveBlock({
         // 🆕 DÉTECTER VALIDATION ET SAUVEGARDER CHAMP
         if (currentHistory.length > 0) {
           const lastMessage = currentHistory[currentHistory.length - 1];
-          if (lastMessage.role === 'assistant' && currentEntrepriseId && kb?.id) {
-            const saveResult = await detectAndSaveValidation(
+            if (lastMessage.role === 'assistant' && currentEntrepriseId && context?.id) {
+              const saveResult = await detectAndSaveValidation(
               lastMessage,
               currentHistory,
-              kb.id, // context_id
+              context.id,
               currentEntrepriseId,
               'entreprises'
-            );
+            );  
             
             if (saveResult.success) {
               console.log(`✅ Champ ${saveResult.field} sauvegardé automatiquement`);
