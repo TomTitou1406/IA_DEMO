@@ -359,9 +359,9 @@ export default function EntreprisePage() {
           </div>
           
           {/* Checklist sidebar */}
-          {entrepriseId && contextConfig?.id && (
+          {entrepriseId && (
             <ProgressionChecklist
-              contextId={contextConfig.id}
+              contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
               entityId={entrepriseId}
               targetTable="entreprises"
             />
