@@ -221,7 +221,18 @@ export default function InteractiveBlock({
         setProgression({
           percentage: dbProgression.percentage,
           completed: dbProgression.completed,
-          themes: dbProgression.fields
+          themes: {
+            histoire: dbProgression.fields['histoire'] || false,
+            mission: dbProgression.fields['mission'] || false,
+            produits: dbProgression.fields['produits'] || false,
+            marche: dbProgression.fields['marche'] || false,
+            culture: dbProgression.fields['culture'] || false,
+            equipe: dbProgression.fields['equipe'] || false,
+            avantages: dbProgression.fields['avantages'] || false,
+            localisation: dbProgression.fields['localisation'] || false,
+            perspectives: dbProgression.fields['perspectives'] || false,
+            complementaire: false // Pas dans nos steps
+          }
         });
         
         console.log('📊 Progression depuis BDD:', dbProgression);
