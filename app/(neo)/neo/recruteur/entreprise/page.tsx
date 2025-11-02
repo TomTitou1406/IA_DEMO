@@ -18,6 +18,7 @@ import type { ConversationContext } from '@/components/ui/InteractiveBlock';
 import type { ChatMessage } from '@/app/(neo)/neo/hooks/useNeoAvatar';
 import { supabase } from '@/app/lib/supabaseClient';
 import { DEFAULT_USER_ID } from '@/app/lib/constants';
+import ProgressionChecklist from '@/components/conversation/ProgressionChecklist';
 
 export default function EntreprisePage() {
   const router = useRouter();
@@ -340,19 +341,31 @@ export default function EntreprisePage() {
           </p>
         </div>
 
-        {/* Composant InteractiveBlock */}
-        <div className="flex-1 overflow-y-auto">
-          <InteractiveBlock
-            conversationId={conversationId}
-            conversationType="acquisition_entreprise"
-            context={contextConfig}
-            chatHistory={chatHistory}
-            entrepriseId={entrepriseId}
-            onConversationUpdate={handleChatUpdate}
-            onFinaliser={handleFinaliser}
-            onSauvegarder={handleSauvegarder}
-            onAbandonner={handleAbandonner}
-          />
+        {/* Composant InteractiveBlock avec Checklist */}
+        <div className="flex gap-6 flex-1 overflow-y-auto">
+          {/* Zone principale */}
+          <div className="flex-1">
+            <InteractiveBlock
+              conversationId={conversationId}
+              conversationType="acquisition_entreprise"
+              context={contextConfig}
+              chatHistory={chatHistory}
+              entrepriseId={entrepriseId}
+              onConversationUpdate={handleChatUpdate}
+              onFinaliser={handleFinaliser}
+              onSauvegarder={handleSauvegarder}
+              onAbandonner={handleAbandonner}
+            />
+          </div>
+          
+          {/* Checklist sidebar */}
+          {entrepriseId && contextConfig?.id && (
+            <ProgressionChecklist
+              contextId={contextConfig.id}
+              entityId={entrepriseId}
+              targetTable="entreprises"
+            />
+          )}
         </div>
       </div>
     </div>
