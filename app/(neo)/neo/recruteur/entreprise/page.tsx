@@ -342,13 +342,15 @@ export default function EntreprisePage() {
         </div>
 
         {/* Composant InteractiveBlock avec Checklist et fil de discussion en dessous */}
-        <div className="flex-1 flex flex-col gap-6 overflow-y-auto px-4">
+        <div className="flex-1 flex flex-col gap-6 overflow-hidden px-0">
           
-        {/* LIGNE 1 : Avatar (50%) + Espace (5%) + Checklist (20%) = 75% utilisé */}
-        <div className="flex gap-6 items-stretch" style={{ height: '500px' }}>
-          
-            {/* Zone Avatar : 50% de la largeur */}
-            <div className="flex-[4]">
+          {/* LIGNE 1 : Marge 10% + Avatar 55% + Marge 5% + Checklist 20% + Marge 10% = 100% */}
+          <div className="flex items-stretch" style={{ height: '500px', width: '100%' }}>
+            {/* Marge gauche : 10% */}
+            <div style={{ width: '10%' }}></div>       
+            
+            {/* Zone Avatar : 55% de la largeur */}
+            <div style={{ width: '55%' }}>
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -362,38 +364,52 @@ export default function EntreprisePage() {
                 showDiscussionThread={false}
               />
             </div>
+
+            {/* Marge centrale : 5% */}
+            <div style={{ width: '5%' }}></div>
             
-            {/* Checklist : 20% de la largeur, MÊME HAUTEUR */}
+            {/* Checklist : 20%, MÊME HAUTEUR */}
             {entrepriseId && (
-              <div className="flex-[1.6]">
+              <div style={{ width: '20%', height: '100%' }}>
                 <ProgressionChecklist
-                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
+                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59" {/* en dur pour l'instant */}
                   entityId={entrepriseId}
                   targetTable="entreprises"
                 />
               </div>
             )}
-            {/* Espace droite (12.5%) */}
-            <div className="flex-[1]"></div>
-          </div>
+           
+            {/* Marge droite : 10% */}
+            <div style={{ width: '10%' }}></div> 
+          </div> {/* de la Lligne 1 */}
           
-          {/* LIGNE 2 : Discussion (75% de largeur, centré) */}
-          <div className="mx-auto" style={{ width: '75%' }}>
-            <InteractiveBlock
-              conversationId={conversationId}
-              conversationType="acquisition_entreprise"
-              context={contextConfig}
-              chatHistory={chatHistory}
-              entrepriseId={entrepriseId}
-              onConversationUpdate={handleChatUpdate}
-              onFinaliser={handleFinaliser}
-              onSauvegarder={handleSauvegarder}
-              onAbandonner={handleAbandonner}
-              showOnlyDiscussion={true}
-            />
-          </div>
-        </div>
-      </div>
-    </div>
+          {/* LIGNE 2 : Marge 10% + Discussion 80% + Marge 10% = 100% */}
+          <div className="flex" style={{ width: '100%' }}>
+            {/* Marge gauche : 10% */}
+            <div style={{ width: '10%' }}></div>
+            
+            {/* Discussion : 80% */}
+            <div style={{ width: '80%' }}>
+              <InteractiveBlock
+                conversationId={conversationId}
+                conversationType="acquisition_entreprise"
+                context={contextConfig}
+                chatHistory={chatHistory}
+                entrepriseId={entrepriseId}
+                onConversationUpdate={handleChatUpdate}
+                onFinaliser={handleFinaliser}
+                onSauvegarder={handleSauvegarder}
+                onAbandonner={handleAbandonner}
+                showOnlyDiscussion={true}
+              />
+            </div>
+            {/* Marge droite : 10% */}
+            <div style={{ width: '10%' }}></div>
+            
+          </div> {/* de la Lligne 2 */}
+          
+      </div> {/* du composant InteractiveBlock */}
+        
+    </div> {/* de la grande fenêtre après return */}
   );
 }
