@@ -110,33 +110,30 @@ export default function ProgressionChecklist({
 
   return (
     <div className="bg-white rounded-lg shadow-md p-3 h-full flex flex-col">
+      
       {/* Header compact */}
+      
+
+      {/* Séparateur */}
+      <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
+      {/* Header compact sur une ligne */}
       <div className="mb-3 flex-shrink-0">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="font-bold text-sm text-gray-800">📋 Progression</h3>
-          <span className="text-xs font-semibold text-green-600">
-            {completed}/{total}
-          </span>
+        <div className="flex items-center justify-between gap-2 mb-2">
+          <h3 className="font-bold text-sm text-gray-800 whitespace-nowrap">📋 Progression :</h3>
+          <div className="flex items-center gap-2">
+            <span className="text-lg font-bold text-green-600">{percentage}%</span>
+            <span className="text-xs font-semibold text-gray-500">({completed}/{total})</span>
+          </div>
         </div>
         
         {/* Barre de progression */}
-        <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+        <div className="w-full bg-gray-200 rounded-full h-2">
           <div 
             className="bg-green-500 h-2 rounded-full transition-all duration-500"
             style={{ width: `${percentage}%` }}
           />
         </div>
-        
-        {/* Pourcentage centré */}
-        <div className="text-center">
-          <span className="text-lg font-bold text-green-600">
-            {percentage}%
-          </span>
-        </div>
       </div>
-
-      {/* Séparateur */}
-      <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
 
       {/* Liste scrollable */}
       <ul className="space-y-1.5 flex-1 overflow-y-auto">
