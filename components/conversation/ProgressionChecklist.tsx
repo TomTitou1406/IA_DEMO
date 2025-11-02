@@ -97,9 +97,9 @@ export default function ProgressionChecklist({
       <div 
         className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
         style={{ 
-          height: '340px',
-          minHeight: '340px',
-          maxHeight: '340px'
+          height: '335px',
+          minHeight: '335px',
+          maxHeight: '335px'
         }}
       >
         <div className="animate-pulse space-y-2">
@@ -119,9 +119,9 @@ export default function ProgressionChecklist({
     <div 
       className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
       style={{ 
-        height: '340px',
-        minHeight: '340px',
-        maxHeight: '340px'
+        height: '335px',
+        minHeight: '335px',
+        maxHeight: '335px'
       }}
     >
       {/* Header compact sur une ligne */}
@@ -147,8 +147,7 @@ export default function ProgressionChecklist({
       <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
 
       {/* Liste scrollable avec minHeight */}
-      {/* Liste scrollable avec minHeight */}
-      <ul className="space-y-0.5 flex-1 overflow-y-auto pl-1" style={{ minHeight: 0 }}>
+      <ul className="space-y-0.5 flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
         {steps.map(step => (
           <li 
             key={step.step_key}
