@@ -19,7 +19,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
-import { detectAndSaveValidation } from '@/lib/conversation-utils';
+import { detectAndSaveValidation } from '@/app/lib/conversation-utils';
 
 // ============================================
 // TYPES DÉFINIS LOCALEMENT
