@@ -100,7 +100,7 @@ export default function ProgressionChecklist({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4">
+      <div className="bg-white rounded-lg shadow-md p-4 h-full flex flex-col">
         <div className="animate-pulse space-y-3">
           <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           <div className="h-2 bg-gray-200 rounded"></div>
@@ -144,8 +144,8 @@ export default function ProgressionChecklist({
       {/* Séparateur */}
       <div className="border-t border-gray-200 my-3"></div>
 
-      {/* Liste des étapes */}
-      <ul className="space-y-2">
+      {/* Liste des étapes - scrollable */}
+      <ul className="space-y-2 flex-1 overflow-y-auto">
         {steps.map(step => (
           <li 
             key={step.step_key}
