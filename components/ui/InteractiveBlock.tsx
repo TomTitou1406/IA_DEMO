@@ -53,6 +53,7 @@ type Props = {
   onSauvegarder?: () => void;
   onAbandonner?: () => void;
   showDiscussionThread?: boolean;
+  showOnlyDiscussion?: boolean;
 };
 
 export default function InteractiveBlock({
@@ -66,7 +67,8 @@ export default function InteractiveBlock({
   onFinaliser,
   onSauvegarder,
   onAbandonner,
-  showDiscussionThread = true
+  showDiscussionThread = true,
+  showOnlyDiscussion = false
 }: Props) {
 
   console.log('🎬 InteractiveBlock reçoit:', {
@@ -357,25 +359,6 @@ export default function InteractiveBlock({
             }
           }
         }
-        
-        // Analyser et mettre à jour la progression
-        const newProgression = analyzeProgression(currentHistory);
-        setProgression(newProgression);
-        console.log('📊 Progression mise à jour:', newProgression);
-        
-        // Sauvegarder completion_percentage
-        if (currentEntrepriseId && newProgression.percentage !== progression.percentage) {
-          await supabase
-            .from('entreprises')
-            .update({ 
-              completion_percentage: newProgression.percentage,
-              updated_at: new Date().toISOString()
-            })
-            .eq('id', currentEntrepriseId);
-          
-          console.log('📊 Completion % sauvegardé:', newProgression.percentage);
-        }
-        
         setTimeout(() => setIsSaving(false), 2000);
       }
           
@@ -425,87 +408,6 @@ export default function InteractiveBlock({
   const handleAbandonner = () => { 
     if (onAbandonner) onAbandonner(); 
   };
-
-  // ============================================
-  // ANALYSE PROGRESSION
-  // ============================================
-  function analyzeProgression(messages: ChatMessage[]) {
-    const themes = {
-      histoire: false,
-      mission: false,
-      produits: false,
-      marche: false,
-      culture: false,
-      equipe: false,
-      avantages: false,
-      localisation: false,
-      perspectives: false,
-      complementaire: false,
-    };
-  
-    // Analyser uniquement les messages de l'AVATAR (Clara)
-    const avatarMessages = messages
-      .filter(m => m.role === 'assistant')
-      .map(m => m.content.toLowerCase());
-  
-    // Détecter la phrase exacte : "Parfait, j'ai tout ce qu'il me faut sur X"
-    themes.histoire = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("histoire") || m.includes("historique"))
-    );
-  
-    themes.mission = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("mission") || m.includes("vision"))
-    );
-  
-    themes.produits = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("produit") || m.includes("service"))
-    );
-  
-    themes.marche = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("marché") || m.includes("client"))
-    );
-  
-    themes.culture = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("culture") || m.includes("valeur"))
-    );
-  
-    themes.equipe = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("équipe") || m.includes("organisation"))
-    );
-  
-    themes.avantages = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("avantage") || m.includes("condition"))
-    );
-  
-    themes.localisation = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("localisation") || m.includes("bureau"))
-    );
-  
-    themes.perspectives = avatarMessages.some(m => 
-      m.includes("tout ce qu'il me faut sur") && 
-      (m.includes("perspective") || m.includes("ambition") || m.includes("projet"))
-    );
-  
-    // Le 10ème thème = validation finale (synthèse)
-    themes.complementaire = avatarMessages.some(m => 
-      m.includes("récapitulatif") || 
-      m.includes("résumé représente") ||
-      m.includes("voici le récapitulatif")
-    );
-  
-    const completed = Object.values(themes).filter(Boolean).length;
-    const percentage = Math.round((completed / 10) * 100);
-  
-    return { themes, completed, percentage };
-  }
 
   // ============================================
   // SAUVEGARDE CONVERSATION
@@ -573,175 +475,177 @@ export default function InteractiveBlock({
   return (
     <div className="flex flex-col items-center gap-3 w-full max-w-5xl mx-auto px-4 mt-2 relative">
       {/* Zone avatar principale */}
-      <div className="w-full max-w-2xl relative">
-        <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
-
-          {/* Preview + overlay inactif ou terminé */}
-          {(workflowState === "inactive" || workflowState === "terminated") && !isLoading && (
-            <div className="absolute inset-0 z-10">
-              <img
-                src={avatarPreviewImage}
-                alt="Avatar preview"
-                className="absolute w-full h-full object-cover inset-0 z-0"
-                style={{ pointerEvents: "none" }}
-              />
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-10">
-                <div className="text-center text-white px-4 mt-20 z-10">
+      {!showOnlyDiscussion && (
+        <div className="w-full max-w-2xl relative">
+          <div className="relative w-full aspect-video bg-gray-900 rounded-xl overflow-hidden border-2 border-[var(--nc-blue)] shadow-lg">
+  
+            {/* Preview + overlay inactif ou terminé */}
+            {(workflowState === "inactive" || workflowState === "terminated") && !isLoading && (
+              <div className="absolute inset-0 z-10">
+                <img
+                  src={avatarPreviewImage}
+                  alt="Avatar preview"
+                  className="absolute w-full h-full object-cover inset-0 z-0"
+                  style={{ pointerEvents: "none" }}
+                />
+                <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center z-10">
+                  <div className="text-center text-white px-4 mt-20 z-10">
+                    {workflowState === "inactive" && (
+                      <>
+                        <p className="text-xl font-medium mb-2">Cliquez sur &quot;Discuter&quot; pour démarrer</p>
+                        <p className="text-sm text-gray-300">L'avatar sera prêt à vous écouter</p>
+                      </>
+                    )}
+                    {workflowState === "terminated" && (
+                      <>
+                        <p className="text-xl font-medium mb-2">✅ Discussion terminée</p>
+                        <p className="text-sm text-gray-300">Session fermée normalement</p>
+                      </>
+                    )}
+                  </div>
                   {workflowState === "inactive" && (
-                    <>
-                      <p className="text-xl font-medium mb-2">Cliquez sur &quot;Discuter&quot; pour démarrer</p>
-                      <p className="text-sm text-gray-300">L'avatar sera prêt à vous écouter</p>
-                    </>
-                  )}
-                  {workflowState === "terminated" && (
-                    <>
-                      <p className="text-xl font-medium mb-2">✅ Discussion terminée</p>
-                      <p className="text-sm text-gray-300">Session fermée normalement</p>
-                    </>
+                    <div className="flex gap-3 justify-center mt-4 z-10">
+                      <button
+                        onClick={handleDiscuter}
+                        className="bg-[var(--nc-blue)] text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-[var(--nc-cyan)] transition shadow-lg"
+                      >
+                        Discuter
+                      </button>
+                      <button
+                        onClick={() => window.history.back()}
+                        className="bg-gray-700/80 text-white px-6 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition shadow-lg backdrop-blur-sm"
+                      >
+                        Quitter
+                      </button>
+                    </div>
                   )}
                 </div>
-                {workflowState === "inactive" && (
-                  <div className="flex gap-3 justify-center mt-4 z-10">
-                    <button
-                      onClick={handleDiscuter}
-                      className="bg-[var(--nc-blue)] text-white px-8 py-2 rounded-lg text-sm font-medium hover:bg-[var(--nc-cyan)] transition shadow-lg"
-                    >
-                      Discuter
-                    </button>
-                    <button
-                      onClick={() => window.history.back()}
-                      className="bg-gray-700/80 text-white px-6 py-2 rounded-lg text-xs font-medium hover:bg-gray-600 transition shadow-lg backdrop-blur-sm"
-                    >
-                      Quitter
-                    </button>
-                  </div>
+              </div>
+            )}
+  
+            {/* Timer + Sauvegarde */}
+            {(workflowState === "active" || workflowState === "terminated") && (
+              <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
+                <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow">
+                  {timerStr}
+                </span>
+                {isSaving && (
+                  <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow animate-pulse">
+                    💾 Sauvegarde...
+                  </span>
                 )}
               </div>
-            </div>
-          )}
-
-          {/* Timer + Sauvegarde */}
-          {(workflowState === "active" || workflowState === "terminated") && (
-            <div className="absolute top-4 right-4 z-20 flex items-center gap-2">
-              <span className="bg-green-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow">
-                {timerStr}
-              </span>
-              {isSaving && (
-                <span className="bg-blue-600 text-white px-3 py-1 rounded-full text-xs font-medium border shadow animate-pulse">
-                  💾 Sauvegarde...
-                </span>
-              )}
-            </div>
-          )}
-
-          {/* Indicateur dynamique */}
-          {workflowState === "active" && (
-            <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
-              {isTalking ? (
-                <span className="bg-gray-500/90 text-white px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                  🎧 L'avatar parle...
-                </span>
-              ) : (
-                <span className="bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
-                  🎤 En écoute (parlez pour répondre)
-                </span>
-              )}
-            </div>
-          )}
-
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            className={`w-full h-full object-cover transition-opacity duration-500 ${
-              workflowState === "active" ? "opacity-100" : "opacity-0"
-            }`}
-          />
-
-          {/* Loading */}
-          {isLoading && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-20">
-              <div className="text-center text-white">
-                <div className="animate-spin text-5xl mb-4">⏳</div>
-                <p className="text-lg">Connexion en cours...</p>
+            )}
+  
+            {/* Indicateur dynamique */}
+            {workflowState === "active" && (
+              <div className="absolute top-4 left-4 z-20 flex flex-col gap-2">
+                {isTalking ? (
+                  <span className="bg-gray-500/90 text-white px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
+                    🎧 L'avatar parle...
+                  </span>
+                ) : (
+                  <span className="bg-blue-500/90 text-white px-3 py-1 rounded-full text-xs font-medium inline-flex items-center">
+                    🎤 En écoute (parlez pour répondre)
+                  </span>
+                )}
               </div>
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <div className="absolute inset-0 flex items-center justify-center bg-red-900/20 z-20">
-              <div className="text-center text-white px-4">
-                <div className="text-5xl mb-4">❌</div>
-                <p className="text-lg font-medium">Erreur</p>
-                <p className="text-sm text-red-300 mt-2">{error}</p>
+            )}
+  
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className={`w-full h-full object-cover transition-opacity duration-500 ${
+                workflowState === "active" ? "opacity-100" : "opacity-0"
+              }`}
+            />
+  
+            {/* Loading */}
+            {isLoading && (
+              <div className="absolute inset-0 flex items-center justify-center bg-gray-900 z-20">
+                <div className="text-center text-white">
+                  <div className="animate-spin text-5xl mb-4">⏳</div>
+                  <p className="text-lg">Connexion en cours...</p>
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Boutons ACTIVE */}
-          {workflowState === "active" && (
-            <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center z-20">
-              <div className="text-xs text-gray-700 mb-1 text-center">
-                - Pour interrompre l'avatar, parlez simplement ou cliquez :
+            )}
+  
+            {/* Error */}
+            {error && (
+              <div className="absolute inset-0 flex items-center justify-center bg-red-900/20 z-20">
+                <div className="text-center text-white px-4">
+                  <div className="text-5xl mb-4">❌</div>
+                  <p className="text-lg font-medium">Erreur</p>
+                  <p className="text-sm text-red-300 mt-2">{error}</p>
+                </div>
               </div>
-              <div className="flex flex-row gap-2 w-full justify-center">
-                <button
-                  onClick={handleTerminer}
-                  className="w-40 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-lg"
-                >
-                  Terminer
-                </button>
-                <button
-                  onClick={handleInterrompre}
-                  disabled={!isTalking}
-                  className={`w-40 bg-yellow-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
-                    !isTalking ? "opacity-50 cursor-not-allowed" : ""
-                  }`}
-                  title="Interrompre la parole"
-                >
-                  Interrompre l'avatar
-                </button>
+            )}
+  
+            {/* Boutons ACTIVE */}
+            {workflowState === "active" && (
+              <div className="absolute bottom-4 left-0 right-0 flex flex-col items-center z-20">
+                <div className="text-xs text-gray-700 mb-1 text-center">
+                  - Pour interrompre l'avatar, parlez simplement ou cliquez :
+                </div>
+                <div className="flex flex-row gap-2 w-full justify-center">
+                  <button
+                    onClick={handleTerminer}
+                    className="w-40 bg-red-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-red-700 transition shadow-lg"
+                  >
+                    Terminer
+                  </button>
+                  <button
+                    onClick={handleInterrompre}
+                    disabled={!isTalking}
+                    className={`w-40 bg-yellow-600 text-white py-2 rounded-lg text-sm font-medium hover:bg-yellow-700 transition shadow-lg ${
+                      !isTalking ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                    title="Interrompre la parole"
+                  >
+                    Interrompre l'avatar
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
-
-          {/* Boutons TERMINÉ */}
-          {workflowState === "terminated" && !isLoading && (
-            <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 backdrop-blur-sm z-20">
-              <div className="flex gap-2 justify-center flex-wrap">
-                <button
-                  onClick={handleAjouterPDF}
-                  className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-700 transition shadow-lg"
-                >
-                  Ajouter PDF
-                </button>
-                <button
-                  onClick={handleFinaliser}
-                  className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition shadow-lg"
-                >
-                  Finaliser
-                </button>
-                <button
-                  onClick={handleAbandonner}
-                  className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition shadow-lg"
-                >
-                  Abandonner
-                </button>
-                <button
-                  onClick={saveConversation}
-                  className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition shadow-lg"
-                >
-                  Sauvegarder
-                </button>
+            )}
+  
+            {/* Boutons TERMINÉ */}
+            {workflowState === "terminated" && !isLoading && (
+              <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-3 backdrop-blur-sm z-20">
+                <div className="flex gap-2 justify-center flex-wrap">
+                  <button
+                    onClick={handleAjouterPDF}
+                    className="bg-purple-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-purple-700 transition shadow-lg"
+                  >
+                    Ajouter PDF
+                  </button>
+                  <button
+                    onClick={handleFinaliser}
+                    className="bg-blue-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-700 transition shadow-lg"
+                  >
+                    Finaliser
+                  </button>
+                  <button
+                    onClick={handleAbandonner}
+                    className="bg-gray-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-gray-700 transition shadow-lg"
+                  >
+                    Abandonner
+                  </button>
+                  <button
+                    onClick={saveConversation}
+                    className="bg-green-600 text-white px-4 py-1.5 rounded-lg text-xs font-medium hover:bg-green-700 transition shadow-lg"
+                  >
+                    Sauvegarder
+                  </button>
+                </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Fil de discussion */}
-      {showDiscussionThread && (
+      {(showDiscussionThread || showOnlyDiscussion) && (
         <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
           {/* Header simplifié */}
           <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0">
