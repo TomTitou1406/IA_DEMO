@@ -370,12 +370,12 @@ export default function EntreprisePage() {
               />
             </div>
           
-            {/* Marge centrale : 5% (flexible) */}
-            <div style={{ width: '5%' }}></div>
+            {/* Marge centrale fixe minimale : 15 pix */}
+            <div style={{ width: '15 pix' }}></div>
             
-            {/* Checklist : 15%, MÊME HAUTEUR que l'avatar */}
+            {/* Checklist : 20%, MÊME HAUTEUR que l'avatar */}
             {entrepriseId && (
-              <div style={{ width: '15%' }} className="flex items-start">
+              <div style={{ width: '20%' }} className="flex items-start">
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -384,8 +384,8 @@ export default function EntreprisePage() {
               </div>
             )}
            
-            {/* Marge droite : 15% */}
-            <div style={{ width: '15%' }}></div> 
+            {/* Marge droite : 10% */}
+            <div style={{ width: '10%' }}></div> 
           </div>
           
           {/* LIGNE 2 : Marge 10% + Discussion 80% + Marge 10% = 100% */}
