@@ -275,9 +275,9 @@ export default function EntreprisePage() {
     conversationId,
     chatHistoryLength: chatHistory.length
   });
-  
+
+  {/* Container principal de la page qui donne le fond gris plein écran */}
   return (
-    {/* Container principal de la page qui donne le fond gris plein écran */}
     <div className="w-full h-screen bg-gray-50 p-6 overflow-hidden">
       
       {/* Container du contenu centré de la page max 1152 pix */}
