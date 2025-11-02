@@ -348,8 +348,8 @@ export default function EntreprisePage() {
         {/* Composant InteractiveBlock avec Checklist et fil de discussion en dessous */}
         <div className="flex-1 flex flex-col gap-6 overflow-hidden px-0">
           
-          {/* LIGNE 1 : Avatar (55%, min 600px) + Gap 30px + Checklist (20%) - CENTRÉ */}
-          <div className="flex items-start justify-center gap-8 flex-shrink-0" style={{ height: '340px', width: '100%' }}>
+          {/* LIGNE 1 : Avatar (55%, min 600px) + Gap 20px + Checklist (20%) - CENTRÉ */}
+          <div className="flex items-start justify-center gap-5 flex-shrink-0" style={{ height: '340px', width: '100%' }}>
             
             {/* Zone Avatar : 55% avec minimum 600px */}
             <div style={{ width: '55%', minWidth: '600px', height: '340px' }} className="flex items-start">
@@ -369,7 +369,7 @@ export default function EntreprisePage() {
             
             {/* Checklist : 20% */}
             {entrepriseId && (
-              <div style={{ width: '20%', minWidth: '250px' }} className="flex items-start">
+              <div style={{ width: '20%', minWidth: '250px', paddingTop: '10px' }} className="flex items-start">
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -381,7 +381,7 @@ export default function EntreprisePage() {
           
           {/* LIGNE 2 : Discussion (même largeur que ligne 1) - CENTRÉ */}
           <div className="flex justify-center flex-shrink-0" style={{ width: '100%' }}>
-            <div style={{ width: '75%', minWidth: '850px' }}>
+            <div style={{ width: '80%', minWidth: '850px' }}>
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
