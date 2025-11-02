@@ -28,7 +28,6 @@ export default function ProgressionChecklist({
   const [loading, setLoading] = useState(true);
 
   const loadProgression = async () => {
-    // 1. Charger les steps
     const { data: stepsData } = await supabase
       .from('conversation_steps')
       .select('step_key, step_title, target_field')
@@ -42,7 +41,6 @@ export default function ProgressionChecklist({
       return;
     }
 
-    // 2. Charger l'entité
     const { data: entity } = await supabase
       .from(targetTable)
       .select('*')
@@ -54,7 +52,6 @@ export default function ProgressionChecklist({
       return;
     }
 
-    // 3. Vérifier quels champs sont remplis
     const stepsWithStatus: Step[] = stepsData.map(step => {
       const value = entity[step.target_field];
       const isCompleted = value && (
@@ -63,7 +60,6 @@ export default function ProgressionChecklist({
         value !== null
       );
 
-      // Nettoyer le titre (enlever ce qui est après & ou :)
       const cleanTitle = step.step_title
         .replace(/^(.*?) (&|&amp;|:|,).*$/, '$1')
         .trim();
@@ -91,8 +87,6 @@ export default function ProgressionChecklist({
   useEffect(() => {
     if (contextId && entityId) {
       loadProgression();
-
-      // Recharger toutes les 5 secondes
       const interval = setInterval(loadProgression, 5000);
       return () => clearInterval(interval);
     }
@@ -100,12 +94,12 @@ export default function ProgressionChecklist({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 h-full flex flex-col">
-        <div className="animate-pulse space-y-3">
-          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+      <div className="bg-white rounded-lg shadow-md p-3 h-full flex flex-col">
+        <div className="animate-pulse space-y-2">
+          <div className="h-3 bg-gray-200 rounded"></div>
           <div className="h-2 bg-gray-200 rounded"></div>
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
-            <div key={i} className="h-3 bg-gray-200 rounded"></div>
+            <div key={i} className="h-2 bg-gray-200 rounded"></div>
           ))}
         </div>
       </div>
@@ -115,47 +109,47 @@ export default function ProgressionChecklist({
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4">
-      {/* En-tête avec titre */}
-      <div className="mb-4">
-        <h3 className="font-bold text-base mb-3 text-gray-800">📋 Progression</h3>
-        
-        {/* Barre de progression principale */}
-        <div className="mb-2">
-          <div className="w-full bg-gray-200 rounded-full h-2.5">
-            <div 
-              className="bg-green-500 h-2.5 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${percentage}%` }}
-            />
-          </div>
+    <div className="bg-white rounded-lg shadow-md p-3 h-full flex flex-col">
+      {/* Header compact */}
+      <div className="mb-3 flex-shrink-0">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-bold text-sm text-gray-800">📋 Progression</h3>
+          <span className="text-xs font-semibold text-green-600">
+            {completed}/{total}
+          </span>
         </div>
         
-        {/* Pourcentage */}
+        {/* Barre de progression */}
+        <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
+          <div 
+            className="bg-green-500 h-2 rounded-full transition-all duration-500"
+            style={{ width: `${percentage}%` }}
+          />
+        </div>
+        
+        {/* Pourcentage centré */}
         <div className="text-center">
-          <span className="text-sm font-semibold text-gray-700">
-            {completed}/{total} complétés
-          </span>
-          <span className="text-lg font-bold text-green-600 ml-2">
-            ({percentage}%)
+          <span className="text-lg font-bold text-green-600">
+            {percentage}%
           </span>
         </div>
       </div>
 
       {/* Séparateur */}
-      <div className="border-t border-gray-200 my-3"></div>
+      <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
 
-      {/* Liste des étapes - scrollable */}
-      <ul className="space-y-2 flex-1 overflow-y-auto">
+      {/* Liste scrollable */}
+      <ul className="space-y-1.5 flex-1 overflow-y-auto">
         {steps.map(step => (
           <li 
             key={step.step_key}
-            className={`flex items-center gap-2 text-sm transition-all duration-300 ${
+            className={`flex items-center gap-1.5 text-xs transition-all ${
               step.completed 
                 ? 'text-green-600 font-medium' 
                 : 'text-gray-400'
             }`}
           >
-            <span className="text-base flex-shrink-0">
+            <span className="text-sm flex-shrink-0">
               {step.completed ? '✅' : '⏳'}
             </span>
             <span className="leading-tight">
