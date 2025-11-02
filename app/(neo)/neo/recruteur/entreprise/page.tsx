@@ -371,8 +371,9 @@ export default function EntreprisePage() {
             {/* Checklist : 20%, MÊME HAUTEUR */}
             {entrepriseId && (
               <div style={{ width: '20%', height: '100%' }}>
+                {/* Contexten dur pour l'instant */}
                 <ProgressionChecklist
-                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59" {/* en dur pour l'instant */}
+                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
                   targetTable="entreprises"
                 />
@@ -381,7 +382,7 @@ export default function EntreprisePage() {
            
             {/* Marge droite : 10% */}
             <div style={{ width: '10%' }}></div> 
-          </div> {/* de la Lligne 1 */}
+          </div> 
           
           {/* LIGNE 2 : Marge 10% + Discussion 80% + Marge 10% = 100% */}
           <div className="flex" style={{ width: '100%' }}>
@@ -406,10 +407,10 @@ export default function EntreprisePage() {
             {/* Marge droite : 10% */}
             <div style={{ width: '10%' }}></div>
             
-          </div> {/* de la Lligne 2 */}
+          </div>
           
-      </div> {/* du composant InteractiveBlock */}
+      </div> 
         
-    </div> {/* de la grande fenêtre après return */}
+    </div> 
   );
 }
