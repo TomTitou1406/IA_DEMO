@@ -349,13 +349,13 @@ export default function EntreprisePage() {
         <div className="flex-1 flex flex-col gap-6 overflow-hidden px-0">
           
           {/* LIGNE 1 : Marge 10% + Avatar 55% + Marge 5% + Checklist 20% + Marge 10% = 100% */}
-          <div className="flex items-start" style={{ height: '500px', width: '100%' }}>
+          <div className="flex items-start" style={{ height: '340px', width: '100%' }}>
             
             {/* Marge gauche : 10% */}
             <div style={{ width: '10%' }}></div>       
             
             {/* Zone Avatar : 55% de la largeur */}
-            <div style={{ width: '55%', height: '500px' }}>
+            <div style={{ width: '55%' }}>
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -373,7 +373,6 @@ export default function EntreprisePage() {
             {/* Marge centrale : 5% (flexible) */}
             <div style={{ width: '5%' }}></div>
             
-            {/* Checklist : 20%, MÊME HAUTEUR, justifiée à droite */}
             {/* Checklist : 20%, MÊME HAUTEUR que l'avatar */}
             {entrepriseId && (
               <div style={{ width: '20%' }}>
