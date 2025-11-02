@@ -348,14 +348,11 @@ export default function EntreprisePage() {
         {/* Composant InteractiveBlock avec Checklist et fil de discussion en dessous */}
         <div className="flex-1 flex flex-col gap-6 overflow-hidden px-0">
           
-          {/* LIGNE 1 : Marge 10% + Avatar 55% + Marge 5% + Checklist 20% + Marge 10% = 100% */}
-          <div className="flex items-start flex-shrink-0" style={{ height: '340px', width: '100%' }}>
+          {/* LIGNE 1 : Avatar (55%, min 600px) + Gap 30px + Checklist (20%) - CENTRÉ */}
+          <div className="flex items-start justify-center gap-8 flex-shrink-0" style={{ height: '340px', width: '100%' }}>
             
-            {/* Marge gauche : 10% */}
-            <div style={{ width: '10%' }}></div>       
-            
-            {/* Zone Avatar : 55% de la largeur */}
-            <div style={{ width: '55%', height: '340px' }} className="flex items-start">
+            {/* Zone Avatar : 55% avec minimum 600px */}
+            <div style={{ width: '55%', minWidth: '600px', height: '340px' }} className="flex items-start">
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -369,13 +366,10 @@ export default function EntreprisePage() {
                 showDiscussionThread={false}
               />
             </div>
-          
-            {/* Marge centrale fixe minimale : 15 pix */}
-            <div style={{ width: '15px' }}></div>
             
-            {/* Checklist : 20%, MÊME HAUTEUR que l'avatar */}
+            {/* Checklist : 20% */}
             {entrepriseId && (
-              <div style={{ width: '20%' }} className="flex items-start">
+              <div style={{ width: '20%', minWidth: '250px' }} className="flex items-start">
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -383,17 +377,11 @@ export default function EntreprisePage() {
                 />
               </div>
             )}
-           
-            {/* Marge droite : 10% */}
-            <div style={{ width: '10%' }}></div> 
           </div>
           
-          {/* LIGNE 2 : Marge 10% + Discussion 80% + Marge 10% = 100% */}
-          <div className="flex flex-shrink-0" style={{ width: '100%' }}>
-            {/* Marge gauche : 10% */}
-            <div style={{ width: '10%' }}></div>
-            {/* Discussion : 80% */}
-            <div style={{ width: '80%' }}>
+          {/* LIGNE 2 : Discussion (même largeur que ligne 1) - CENTRÉ */}
+          <div className="flex justify-center flex-shrink-0" style={{ width: '100%' }}>
+            <div style={{ width: '75%', minWidth: '850px' }}>
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -407,9 +395,7 @@ export default function EntreprisePage() {
                 showOnlyDiscussion={true}
               />
             </div>
-            {/* Marge droite : 10% */}
-            <div style={{ width: '10%' }}></div>          
-          </div> {/* de la Ligne 2 */}
+          </div>
           
         </div> {/* du composant InteractiveBlock avec Checklist */}
   
