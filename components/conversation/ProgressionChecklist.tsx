@@ -151,7 +151,7 @@ export default function ProgressionChecklist({
         {steps.map(step => (
           <li 
             key={step.step_key}
-            className={`flex items-center gap-2 text-xs transition-all ${
+            className={`flex items-center gap-1.5 text-xs transition-all ${
               step.completed 
                 ? 'text-green-600 font-semibold' 
                 : 'text-gray-800'
