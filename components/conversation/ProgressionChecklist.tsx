@@ -147,11 +147,11 @@ export default function ProgressionChecklist({
       <div className="border-t border-gray-200 mb-2 flex-shrink-0"></div>
 
       {/* Liste scrollable avec minHeight */}
-      <ul className="space-y-0.5 flex-1 overflow-y-auto" style={{ minHeight: 0 }}>
+      <ul className="space-y-0.5 flex-1 overflow-y-auto px-0" style={{ minHeight: 0 }}>
         {steps.map(step => (
           <li 
             key={step.step_key}
-            className={`flex items-center gap-1.5 text-xs transition-all ${
+            className={`flex items-start gap-1.5 text-xs transition-all ${
               step.completed 
                 ? 'text-green-600 font-semibold' 
                 : 'text-gray-800'
