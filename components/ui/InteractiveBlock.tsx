@@ -19,6 +19,7 @@ import { supabase } from "@/app/lib/supabaseClient";
 import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
+import { detectAndSaveValidation } from '@/lib/conversation-utils';
 
 // ============================================
 // TYPES DÉFINIS LOCALEMENT
@@ -294,25 +295,32 @@ export default function InteractiveBlock({
             saveSuccess = true;
           }
         }
-  
+
         if (saveSuccess) {
-          // Analyser et mettre à jour la progression
-          const newProgression = analyzeProgression(currentHistory);
-          setProgression(newProgression);
-          console.log('📊 Progression mise à jour:', newProgression);
-          
-          setTimeout(() => setIsSaving(false), 2000);
-        } else {
-          setIsSaving(false);
+        // 🆕 DÉTECTER VALIDATION ET SAUVEGARDER CHAMP
+        if (currentHistory.length > 0) {
+          const lastMessage = currentHistory[currentHistory.length - 1];
+          if (lastMessage.role === 'assistant' && currentEntrepriseId && kb?.id) {
+            const saveResult = await detectAndSaveValidation(
+              lastMessage,
+              currentHistory,
+              kb.id, // context_id
+              currentEntrepriseId,
+              'entreprises'
+            );
+            
+            if (saveResult.success) {
+              console.log(`✅ Champ ${saveResult.field} sauvegardé automatiquement`);
+            }
+          }
         }
         
-        if (saveSuccess) {
         // Analyser et mettre à jour la progression
         const newProgression = analyzeProgression(currentHistory);
         setProgression(newProgression);
         console.log('📊 Progression mise à jour:', newProgression);
         
-        // 🆕 Sauvegarder completion_percentage dans entreprise
+        // Sauvegarder completion_percentage
         if (currentEntrepriseId && newProgression.percentage !== progression.percentage) {
           await supabase
             .from('entreprises')
@@ -327,7 +335,7 @@ export default function InteractiveBlock({
         
         setTimeout(() => setIsSaving(false), 2000);
       }
-        
+          
       } catch (error) {
         console.error('❌ Exception auto-save:', error);
         setIsSaving(false);
