@@ -63,9 +63,14 @@ export default function ProgressionChecklist({
         value !== null
       );
 
+      // Nettoyer le titre (enlever ce qui est après & ou :)
+      const cleanTitle = step.step_title
+        .replace(/^(.*?) (&|&amp;|:|,).*$/, '$1')
+        .trim();
+
       return {
         step_key: step.step_key,
-        step_title: step.step_title.replace(/^(.*?) (&|&amp;|,|:).*$/, '$1').replace(/^(.*?) \(.*\)$/, '$1'),
+        step_title: cleanTitle,
         completed: isCompleted
       };
     });
@@ -95,12 +100,12 @@ export default function ProgressionChecklist({
 
   if (loading) {
     return (
-      <div className="w-48 bg-white rounded-lg shadow p-3">
-        <div className="animate-pulse space-y-2">
-          <div className="h-3 bg-gray-200 rounded"></div>
+      <div className="bg-white rounded-lg shadow-md p-4">
+        <div className="animate-pulse space-y-3">
+          <div className="h-4 bg-gray-200 rounded w-3/4"></div>
           <div className="h-2 bg-gray-200 rounded"></div>
-          {[1, 2, 3, 4, 5].map(i => (
-            <div key={i} className="h-2 bg-gray-200 rounded"></div>
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(i => (
+            <div key={i} className="h-3 bg-gray-200 rounded"></div>
           ))}
         </div>
       </div>
@@ -110,36 +115,50 @@ export default function ProgressionChecklist({
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="w-48 bg-white rounded-lg shadow p-3">
-      {/* Header compact */}
-      <div className="mb-3">
-        <h3 className="font-semibold text-sm mb-2">📋 Progression</h3>
-        <div className="w-full bg-gray-200 rounded-full h-1.5">
-          <div 
-            className="bg-green-500 h-1.5 rounded-full transition-all duration-500"
-            style={{ width: `${percentage}%` }}
-          />
+    <div className="bg-white rounded-lg shadow-md p-4">
+      {/* En-tête avec titre */}
+      <div className="mb-4">
+        <h3 className="font-bold text-base mb-3 text-gray-800">📋 Progression</h3>
+        
+        {/* Barre de progression principale */}
+        <div className="mb-2">
+          <div className="w-full bg-gray-200 rounded-full h-2.5">
+            <div 
+              className="bg-green-500 h-2.5 rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${percentage}%` }}
+            />
+          </div>
         </div>
-        <div className="text-center text-xs font-medium text-gray-600 mt-1">
-          {completed}/{total} ({percentage}%)
+        
+        {/* Pourcentage */}
+        <div className="text-center">
+          <span className="text-sm font-semibold text-gray-700">
+            {completed}/{total} complétés
+          </span>
+          <span className="text-lg font-bold text-green-600 ml-2">
+            ({percentage}%)
+          </span>
         </div>
       </div>
 
-      {/* Liste compacte */}
-      <ul className="space-y-1">
+      {/* Séparateur */}
+      <div className="border-t border-gray-200 my-3"></div>
+
+      {/* Liste des étapes */}
+      <ul className="space-y-2">
         {steps.map(step => (
           <li 
             key={step.step_key}
-            className={`flex items-center gap-1.5 text-xs transition-colors ${
+            className={`flex items-center gap-2 text-sm transition-all duration-300 ${
               step.completed 
                 ? 'text-green-600 font-medium' 
                 : 'text-gray-400'
             }`}
           >
-            <span className="text-sm flex-shrink-0">
+            <span className="text-base flex-shrink-0">
               {step.completed ? '✅' : '⏳'}
             </span>
-            <span className="truncate">
+            <span className="leading-tight">
               {step.step_title}
             </span>
           </li>
