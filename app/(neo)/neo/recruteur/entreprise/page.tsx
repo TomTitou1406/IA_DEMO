@@ -277,11 +277,15 @@ export default function EntreprisePage() {
   });
   
   return (
+    {/* Container principal de la page qui donne le fond gris plein écran */}
     <div className="w-full h-screen bg-gray-50 p-6 overflow-hidden">
+      
+      {/* Container du contenu centré de la page max 1152 pix */}
       <div className="max-w-6xl mx-auto h-full flex flex-col">
         
         {/* Header compact - 2 lignes */}
         <div className="mb-2 text-center">
+          
           {/* Ligne 1 : Titre + Nom entreprise + Crayon */}
           <div className="flex items-center justify-center gap-3 mb-2">
             {!isEditingName ? (
@@ -371,7 +375,7 @@ export default function EntreprisePage() {
             {/* Checklist : 20%, MÊME HAUTEUR */}
             {entrepriseId && (
               <div style={{ width: '20%', height: '100%' }}>
-                {/* Contexten dur pour l'instant */}
+                {/* ContextId en dur pour l'instant */}
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -388,7 +392,6 @@ export default function EntreprisePage() {
           <div className="flex" style={{ width: '100%' }}>
             {/* Marge gauche : 10% */}
             <div style={{ width: '10%' }}></div>
-            
             {/* Discussion : 80% */}
             <div style={{ width: '80%' }}>
               <InteractiveBlock
@@ -405,12 +408,13 @@ export default function EntreprisePage() {
               />
             </div>
             {/* Marge droite : 10% */}
-            <div style={{ width: '10%' }}></div>
-            
-          </div>
+            <div style={{ width: '10%' }}></div>          
+          </div> {/* de la Ligne 2 */}
           
-      </div> 
+        </div> {/* du composant InteractiveBlock avec Checklist */}
+  
+      </div> {/* du contenu centré max 1152 pix */}
         
-    </div> 
+    </div> {/* du container principal de la page */}
   );
-}
+}      
