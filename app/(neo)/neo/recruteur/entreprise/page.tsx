@@ -374,15 +374,14 @@ export default function EntreprisePage() {
             <div style={{ width: '5%' }}></div>
             
             {/* Checklist : 20%, MÊME HAUTEUR, justifiée à droite */}
+            {/* Checklist : 20%, MÊME HAUTEUR que l'avatar */}
             {entrepriseId && (
-              <div style={{ width: '20%', height: '500px' }} className="flex justify-end">
-                <div style={{ width: '100%' }}>
-                  <ProgressionChecklist
-                    contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
-                    entityId={entrepriseId}
-                    targetTable="entreprises"
-                  />
-                </div>
+              <div style={{ width: '20%' }}>
+                <ProgressionChecklist
+                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
+                  entityId={entrepriseId}
+                  targetTable="entreprises"
+                />
               </div>
             )}
            
