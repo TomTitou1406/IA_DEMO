@@ -1,4 +1,4 @@
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabaseClient';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
