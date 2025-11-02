@@ -1,4 +1,4 @@
-import { createClient } from '@/app/lib/supabaseClient';
+import { supabase } from '@/app/lib/supabaseClient';
 
 interface ChatMessage {
   role: 'user' | 'assistant' | 'system';
@@ -52,7 +52,6 @@ export async function detectAndSaveValidation(
   targetTable: 'entreprises' | 'postes'
 ): Promise<{ success: boolean; field?: string; error?: string }> {
   
-  const supabase = createClient();
   const content = lastMessage.content.toLowerCase();
 
   // 1. Vérifier que c'est une validation
@@ -133,8 +132,6 @@ export async function calculateProgressionFromDB(
   fields: Record<string, boolean>;
 }> {
   
-  const supabase = createClient();
-
   // 1. Charger les steps requis
   const { data: steps } = await supabase
     .from('conversation_steps')
