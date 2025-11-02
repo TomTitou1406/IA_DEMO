@@ -355,7 +355,7 @@ export default function EntreprisePage() {
             <div style={{ width: '10%' }}></div>       
             
             {/* Zone Avatar : 55% de la largeur */}
-            <div style={{ width: '55%' }}>
+            <div style={{ width: '55%', height: '340px' }} className="flex items-start">
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -373,9 +373,9 @@ export default function EntreprisePage() {
             {/* Marge centrale : 5% (flexible) */}
             <div style={{ width: '5%' }}></div>
             
-            {/* Checklist : 20%, MÊME HAUTEUR que l'avatar */}
+            {/* Checklist : 15%, MÊME HAUTEUR que l'avatar */}
             {entrepriseId && (
-              <div style={{ width: '20%' }}>
+              <div style={{ width: '15%' }} className="flex items-start">
                 <ProgressionChecklist
                   contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
                   entityId={entrepriseId}
@@ -384,8 +384,8 @@ export default function EntreprisePage() {
               </div>
             )}
            
-            {/* Marge droite : 10% */}
-            <div style={{ width: '10%' }}></div> 
+            {/* Marge droite : 15% */}
+            <div style={{ width: '15%' }}></div> 
           </div>
           
           {/* LIGNE 2 : Marge 10% + Discussion 80% + Marge 10% = 100% */}
