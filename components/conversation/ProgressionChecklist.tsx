@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { createClient } from '@/app/lib/supabaseClient';
+import { supabase } from '@/app/lib/supabaseClient';
 
 interface Step {
   step_key: string;
@@ -28,8 +28,7 @@ export default function ProgressionChecklist({
   const [loading, setLoading] = useState(true);
 
   const loadProgression = async () => {
-    const supabase = createClient();
-
+    
     // 1. Charger les steps
     const { data: stepsData } = await supabase
       .from('conversation_steps')
