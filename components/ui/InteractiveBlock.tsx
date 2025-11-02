@@ -209,12 +209,29 @@ export default function InteractiveBlock({
   // EFFET : Analyser progression au chargement
   // ============================================
   useEffect(() => {
-    if (liveChatHistory.length > 0) {
-      const initialProgression = analyzeProgression(liveChatHistory);
-      setProgression(initialProgression);
-      console.log('📊 Progression initiale:', initialProgression);
+    async function loadProgressionFromDB() {
+      if (entrepriseId && context?.id) {
+        const { calculateProgressionFromDB } = await import('@/app/lib/conversation-utils');
+        const dbProgression = await calculateProgressionFromDB(
+          context.id,
+          entrepriseId,
+          'entreprises'
+        );
+        
+        setProgression({
+          percentage: dbProgression.percentage,
+          completed: dbProgression.completed,
+          themes: dbProgression.fields
+        });
+        
+        console.log('📊 Progression depuis BDD:', dbProgression);
+      }
     }
-  }, [liveChatHistory.length]); // Se déclenche quand le chat charge
+    
+    if (liveChatHistory.length > 0) {
+      loadProgressionFromDB();
+    }
+  }, [liveChatHistory.length, entrepriseId, context?.id]);
 
   // ============================================
   // EFFET : Workflow state
