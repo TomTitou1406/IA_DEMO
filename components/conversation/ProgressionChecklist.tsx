@@ -94,7 +94,7 @@ export default function ProgressionChecklist({
 
   if (loading) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-3 h-full flex flex-col">
+      <div className="bg-white rounded-lg shadow-md p-3 flex flex-col" style={{ height: '500px' }}>
         <div className="animate-pulse space-y-2">
           <div className="h-3 bg-gray-200 rounded"></div>
           <div className="h-2 bg-gray-200 rounded"></div>
@@ -109,7 +109,7 @@ export default function ProgressionChecklist({
   const percentage = total > 0 ? Math.round((completed / total) * 100) : 0;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-3 h-full flex flex-col">
+    <div className="bg-white rounded-lg shadow-md p-3 flex flex-col" style={{ height: '500px' }}>
       
       {/* Header compact */}
       
