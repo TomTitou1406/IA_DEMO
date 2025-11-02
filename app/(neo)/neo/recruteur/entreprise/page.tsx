@@ -371,7 +371,7 @@ export default function EntreprisePage() {
             </div>
           
             {/* Marge centrale fixe minimale : 15 pix */}
-            <div style={{ width: '15 pix' }}></div>
+            <div style={{ width: '15px' }}></div>
             
             {/* Checklist : 20%, MÊME HAUTEUR que l'avatar */}
             {entrepriseId && (
