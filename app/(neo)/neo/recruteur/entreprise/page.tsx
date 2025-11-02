@@ -349,12 +349,13 @@ export default function EntreprisePage() {
         <div className="flex-1 flex flex-col gap-6 overflow-hidden px-0">
           
           {/* LIGNE 1 : Marge 10% + Avatar 55% + Marge 5% + Checklist 20% + Marge 10% = 100% */}
-          <div className="flex items-stretch" style={{ height: '500px', width: '100%' }}>
+          <div className="flex items-start" style={{ height: '500px', width: '100%' }}>
+            
             {/* Marge gauche : 10% */}
             <div style={{ width: '10%' }}></div>       
             
             {/* Zone Avatar : 55% de la largeur */}
-            <div style={{ width: '55%' }}>
+            <div style={{ width: '55%', height: '500px' }}>
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
@@ -368,25 +369,26 @@ export default function EntreprisePage() {
                 showDiscussionThread={false}
               />
             </div>
-
-            {/* Marge centrale : 5% */}
+          
+            {/* Marge centrale : 5% (flexible) */}
             <div style={{ width: '5%' }}></div>
             
-            {/* Checklist : 20%, MÊME HAUTEUR */}
+            {/* Checklist : 20%, MÊME HAUTEUR, justifiée à droite */}
             {entrepriseId && (
-              <div style={{ width: '20%', height: '100%' }}>
-                {/* ContextId en dur pour l'instant */}
-                <ProgressionChecklist
-                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
-                  entityId={entrepriseId}
-                  targetTable="entreprises"
-                />
+              <div style={{ width: '20%', height: '500px' }} className="flex justify-end">
+                <div style={{ width: '100%' }}>
+                  <ProgressionChecklist
+                    contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
+                    entityId={entrepriseId}
+                    targetTable="entreprises"
+                  />
+                </div>
               </div>
             )}
            
             {/* Marge droite : 10% */}
             <div style={{ width: '10%' }}></div> 
-          </div> 
+          </div>
           
           {/* LIGNE 2 : Marge 10% + Discussion 80% + Marge 10% = 100% */}
           <div className="flex" style={{ width: '100%' }}>
