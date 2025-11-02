@@ -646,7 +646,7 @@ export default function InteractiveBlock({
 
       {/* Fil de discussion */}
       {(showDiscussionThread || showOnlyDiscussion) && (
-        <div className="w-full max-w-3xl bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
+        <div className="w-full bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
           {/* Header simplifié */}
           <div className="px-4 py-3 border-b border-gray-200 flex-shrink-0">
             <div className="flex items-center gap-2 text-sm font-semibold text-gray-800">
