@@ -97,7 +97,7 @@ export default function ProgressionChecklist({
       <div 
         className="bg-white rounded-lg shadow-md p-3 flex flex-col" 
         style={{ 
-          height: '3400px',
+          height: '340px',
           minHeight: '340px',
           maxHeight: '340px'
         }}
