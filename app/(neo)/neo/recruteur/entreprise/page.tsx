@@ -415,6 +415,7 @@ export default function EntreprisePage() {
   
       </div> {/* du contenu centré max 1152 pix */}
         
-    </div> {/* du container principal de la page */}
+    {/* du container principal de la page */}
+    </div>
   );
 }      
