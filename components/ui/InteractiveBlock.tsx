@@ -130,8 +130,7 @@ export default function InteractiveBlock({
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
-  const [polledMessages, setPolledMessages] = useState<ChatMessage[]>([]);
-    
+      
   // ============================================
   // EFFET : Timer
   // ============================================
@@ -188,6 +187,15 @@ export default function InteractiveBlock({
   }, [stream]);
 
   // ============================================
+  // EFFET : Envoyer vers parent (LIGNE 1 seulement)
+  // ============================================
+  useEffect(() => {
+    if (!showOnlyDiscussion && onConversationUpdate && liveChatHistory.length > 0) {
+      onConversationUpdate(liveChatHistory);
+    }
+  }, [liveChatHistory.length, showOnlyDiscussion]); // ← Seulement quand LENGTH change
+
+  // ============================================
   // EFFET : Scroll en bas au chargement initial
   // ============================================
   useEffect(() => {
@@ -220,7 +228,7 @@ export default function InteractiveBlock({
         container.scrollTop = container.scrollHeight;
       }
     }
-  }, [liveChatHistory, polledMessages]);
+  }, [liveChatHistory, chatHistory]);
 
   // ============================================
   // EFFET : Synchroniser chat history avec ref
@@ -229,34 +237,6 @@ export default function InteractiveBlock({
     liveChatHistoryRef.current = liveChatHistory;
   }, [liveChatHistory]);
 
-  // ============================================
-  // EFFET : Polling BDD pour LIGNE 2 (discussion seule)
-  // ============================================
-  useEffect(() => {
-    if (!showOnlyDiscussion || !conversationId) {
-      return;
-    }
-    console.log('🔄 Polling activé pour discussion');
-      const loadMessages = async () => {
-        const { data } = await supabase
-          .from('conversations')
-          .select('messages')
-          .eq('id', conversationId)
-          .single();
-        
-        console.log('📥 Messages BDD:', data?.messages?.length);
-        
-        if (data?.messages && data.messages.length !== polledMessages.length) {
-          console.log('🆕 CHANGEMENT détecté:', polledMessages.length, '→', data.messages.length);
-          setPolledMessages([...data.messages]);
-        }
-      };
-  
-    loadMessages();
-    const interval = setInterval(loadMessages, 2000);
-  
-    return () => clearInterval(interval);
-  }, [showOnlyDiscussion, conversationId]);
 
   // ============================================
   // EFFET : Analyser progression au chargement
@@ -726,15 +706,7 @@ export default function InteractiveBlock({
           {/* Conteneur messages */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
             {(() => {
-              const displayHistory = showOnlyDiscussion 
-                ? (polledMessages.length > 0 ? polledMessages : chatHistory)
-                : liveChatHistory;
-                console.log('📺 FIL affiche:', {
-                    showOnlyDiscussion,
-                    polledMessagesLength: polledMessages.length,
-                    chatHistoryLength: chatHistory.length,
-                    displayHistoryLength: displayHistory.length
-                  });
+              const displayHistory = showOnlyDiscussion ? chatHistory : liveChatHistory; 
               return displayHistory.length === 0 ? (
                 <p className="text-gray-400 text-center py-6 text-xs">
                   {workflowState === "inactive"
