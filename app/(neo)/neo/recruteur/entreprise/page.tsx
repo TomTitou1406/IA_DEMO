@@ -208,8 +208,22 @@ export default function EntreprisePage() {
   };
 
   // Handler mise à jour conversation
-  const handleChatUpdate = (messages: ChatMessage[]) => {
+  const handleChatUpdate = async (messages: ChatMessage[]) => {
+    console.log('📝 Chat update:', messages.length);
     setChatHistory(messages);
+    
+    // Recharger depuis BDD pour sync
+    if (conversationId) {
+      const { data } = await supabase
+        .from('conversations')
+        .select('messages')
+        .eq('id', conversationId)
+        .single();
+      
+      if (data) {
+        setChatHistory(data.messages);
+      }
+    }
   };
 
   const handleFinaliser = () => {
