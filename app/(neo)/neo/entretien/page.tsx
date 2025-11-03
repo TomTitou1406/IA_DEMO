@@ -12,7 +12,7 @@ export default function Page() {
       href: string;
     }[] = [ 
     {
-      title: "Informations et critères de présélection",
+      title: "Informations et critères pour ce poste",
       desc: "Tous les détails sur l'entreprise et le poste à pourvoir. Validez l'étape de présélection.",
       color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
       image: "/cards/info_preselection_card.png",
