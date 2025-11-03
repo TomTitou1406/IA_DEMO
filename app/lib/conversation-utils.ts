@@ -73,23 +73,48 @@ export async function detectAndSaveValidation(
   }
 
   // 3. Trouver le step validé en cherchant les mots-clés
-  const validatedStep = steps.find(step =>
-    step.validation_keywords?.some((keyword: string) => {
-      const normalized = content
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, ''); // Retire accents
+  const normalizeText = (text: string): string => {
+    return text
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '') // Retire accents
+      .replace(/['']/g, "'"); // Normalise apostrophes
+  };
+  
+  const contentNormalized = normalizeText(content);
+  
+  const validatedStep = steps.find(step => {
+    if (!step.validation_keywords || step.validation_keywords.length === 0) {
+      return false;
+    }
+    
+    return step.validation_keywords.some((keyword: string) => {
+      const keywordNormalized = normalizeText(keyword);
       
-      const keywordNormalized = keyword
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '');
+      // Match exact
+      if (contentNormalized.includes(keywordNormalized)) {
+        return true;
+      }
       
-      // Match exact OU pluriel (ajoute 's')
-      return normalized.includes(keywordNormalized) || 
-             normalized.includes(keywordNormalized + 's');
-    })
-  );
+      // Match pluriel (ajoute 's' ou 'x')
+      if (contentNormalized.includes(keywordNormalized + 's') || 
+          contentNormalized.includes(keywordNormalized + 'x')) {
+        return true;
+      }
+      
+      // Match sans pluriel (enlève 's' ou 'x')
+      if (keywordNormalized.endsWith('s') && 
+          contentNormalized.includes(keywordNormalized.slice(0, -1))) {
+        return true;
+      }
+      if (keywordNormalized.endsWith('x') && 
+          contentNormalized.includes(keywordNormalized.slice(0, -1))) {
+        return true;
+      }
+      
+      return false;
+    });
+  });
 
   if (!validatedStep) {
     console.log('⚠️ Aucun step détecté pour:', content.substring(0, 100));
