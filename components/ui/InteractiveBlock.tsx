@@ -131,6 +131,7 @@ export default function InteractiveBlock({
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
+  const lastSentLength = useRef(0);
       
   // ============================================
   // EFFET : Timer
@@ -188,14 +189,21 @@ export default function InteractiveBlock({
   }, [stream]);
 
   // ============================================
-  // EFFET : Envoyer vers parent (LIGNE 1 seulement)
+  // EFFET : Envoyer vers parent (LIGNE 1 seulement) - SANS BOUCLE
   // ============================================
+  const lastSentLength = useRef(0);
+  
   useEffect(() => {
-    if (!showOnlyDiscussion && onConversationUpdate && liveChatHistory.length > 0) {
-      console.log('📤 ENVOI parent:', liveChatHistory.length, 'messages');
+    if (!showOnlyDiscussion && 
+        onConversationUpdate && 
+        liveChatHistory.length > 0 &&
+        liveChatHistory.length > lastSentLength.current) {
+      
+      console.log('📤 ENVOI parent:', liveChatHistory.length, 'messages (était:', lastSentLength.current, ')');
+      lastSentLength.current = liveChatHistory.length;
       onConversationUpdate(liveChatHistory);
     }
-  }, [liveChatHistory, showOnlyDiscussion]); // ← Pas .length, tout le tableau !
+  }, [liveChatHistory, showOnlyDiscussion]);
 
   // ============================================
   // EFFET : Scroll en bas au chargement initial
