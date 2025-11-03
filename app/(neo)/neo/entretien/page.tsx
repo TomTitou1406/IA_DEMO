@@ -1,4 +1,4 @@
-import React from "react";
+etieimport React from "react";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 
@@ -19,7 +19,7 @@ export default function Page() {
       href: "/neo/entretien/", 
     },
     {
-      title: "Validation de vos compétences",
+      title: "Entretien de mise en avant de vos compétences",
       desc: "Passez un entretien interactif où l’IA évalue vos compétences et recevez un feedback précis et immédiat sur votre candidature.",
       color: "var(--nc-cyan)",           // ou "#1D5DFF", etc.
       image: "/cards/validation_competences_card.png",
