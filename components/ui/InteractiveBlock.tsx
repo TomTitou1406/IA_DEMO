@@ -722,6 +722,12 @@ export default function InteractiveBlock({
               const displayHistory = showOnlyDiscussion 
                 ? (polledMessages.length > 0 ? polledMessages : chatHistory)
                 : liveChatHistory;
+                console.log('📺 FIL affiche:', {
+                    showOnlyDiscussion,
+                    polledMessagesLength: polledMessages.length,
+                    chatHistoryLength: chatHistory.length,
+                    displayHistoryLength: displayHistory.length
+                  });
               return displayHistory.length === 0 ? (
                 <p className="text-gray-400 text-center py-6 text-xs">
                   {workflowState === "inactive"
