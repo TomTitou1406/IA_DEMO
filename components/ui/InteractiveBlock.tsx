@@ -239,7 +239,7 @@ export default function InteractiveBlock({
       
       console.log('📥 Messages BDD:', data?.messages?.length);
       if (data?.messages) {
-        sesetPolledMessages([...data.messages]);
+         setPolledMessages([...data.messages]);
       }
     };
   
