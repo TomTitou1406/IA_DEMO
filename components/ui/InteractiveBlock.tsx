@@ -132,6 +132,7 @@ export default function InteractiveBlock({
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
   const lastSentLength = useRef(0);
+  const wasTalkingRef = useRef(false);
       
   // ============================================
   // EFFET : Timer
@@ -189,20 +190,25 @@ export default function InteractiveBlock({
   }, [stream]);
 
   // ============================================
-  // EFFET : Envoyer vers parent (LIGNE 1 seulement) - SANS BOUCLE
+  // EFFET : Envoyer vers parent SEULEMENT quand message complet
   // ============================================
+  const wasTalkingRef = useRef(false);
+  
   useEffect(() => {
+    // Détecter la transition talking → not talking
     if (!showOnlyDiscussion && 
         onConversationUpdate && 
-        liveChatHistory.length > 0 &&
-        liveChatHistory.length > lastSentLength.current &&
-        !isTalking) { // ← AJOUTE : seulement quand avatar a FINI de parler
+        wasTalkingRef.current && 
+        !isTalking && 
+        liveChatHistory.length > lastSentLength.current) {
       
-      console.log('📤 ENVOI parent:', liveChatHistory.length, 'messages');
+      console.log('✅ Message complet, envoi parent:', liveChatHistory.length);
       lastSentLength.current = liveChatHistory.length;
       onConversationUpdate(liveChatHistory);
     }
-  }, [liveChatHistory, showOnlyDiscussion, isTalking]); // ← AJOUTE isTalking
+    
+    wasTalkingRef.current = isTalking;
+  }, [isTalking, liveChatHistory, showOnlyDiscussion]);
 
   // ============================================
   // EFFET : Scroll en bas au chargement initial
