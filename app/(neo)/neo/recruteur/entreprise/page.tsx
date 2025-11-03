@@ -278,7 +278,7 @@ export default function EntreprisePage() {
     knowledge_id: kb.heygen_kb_id,
     avatar_name: 'Anastasia_Chair_Sitting_public',
     avatar_preview_image: '/avatars/anastasia_16_9_preview.webp',
-    voice_rate: 1.2,
+    voice_rate: 1.0,
     language: 'fr',
     initial_message_new: 'Bonjour ! Je suis là pour vous aider à créer le profil complet de votre entreprise. Je vais vous poser des questions sur 10 aspects clés de votre organisation. Prêt à commencer par l\'histoire de votre entreprise ?',
     initial_message_resume: 'Bienvenue ! Je vois que nous avions commencé à parler de votre entreprise. Voulez-vous que nous reprenions là où nous nous sommes arrêtés ?',
