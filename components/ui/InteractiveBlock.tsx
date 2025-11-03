@@ -213,7 +213,7 @@ export default function InteractiveBlock({
         container.scrollTop = container.scrollHeight;
       }
     }
-  }, [liveChatHistory]);
+  }, [liveChatHistory, polledMessages]);
 
   // ============================================
   // EFFET : Synchroniser chat history avec ref
@@ -239,7 +239,7 @@ export default function InteractiveBlock({
       
       console.log('📥 Messages BDD:', data?.messages?.length);
       if (data?.messages) {
-        setPolledMessages(data.messages);
+        sesetPolledMessages([...data.messages]);
       }
     };
   
