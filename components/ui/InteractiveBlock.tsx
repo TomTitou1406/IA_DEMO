@@ -688,25 +688,27 @@ export default function InteractiveBlock({
             </div>
           </div>
         
-          {/* Conteneur messages */}
+         {/* Conteneur messages */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
-            {liveChatHistory.length === 0 ? (
-              <p className="text-gray-400 text-center py-6 text-xs">
-                {workflowState === "inactive"
-                  ? "La conversation apparaîtra ici en temps réel."
-                  : workflowState === "terminated"
-                  ? "Discussion terminée. Historique préservé."
-                  : "La conversation apparaîtra ici en temps réel."}
-              </p>
-            ) : (
-              <div className="space-y-2">
-                {liveChatHistory.map((msg, idx) => (
-                  <div
-                    key={idx}
-                    className={`flex ${
-                      msg.role === "user" ? "justify-end" : "justify-start"
-                    }`}
-                  >
+            {(() => {
+              const displayHistory = showOnlyDiscussion ? chatHistory : liveChatHistory;
+              return displayHistory.length === 0 ? (
+                <p className="text-gray-400 text-center py-6 text-xs">
+                  {workflowState === "inactive"
+                    ? "La conversation apparaîtra ici en temps réel."
+                    : workflowState === "terminated"
+                    ? "Discussion terminée. Historique préservé."
+                    : "La conversation apparaîtra ici en temps réel."}
+                </p>
+              ) : (
+                <div className="space-y-2">
+                  {displayHistory.map((msg, idx) => (
+                    <div
+                      key={idx}
+                      className={`flex ${
+                        msg.role === "user" ? "justify-end" : "justify-start"
+                      }`}
+                    >
                     <div
                       className={`max-w-[85%] px-3 py-2 rounded-lg shadow-sm ${
                         msg.role === "user"
