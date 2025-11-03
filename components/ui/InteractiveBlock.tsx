@@ -137,6 +137,7 @@ export default function InteractiveBlock({
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
+  const [polledMessages, setPolledMessages] = useState<ChatMessage[]>([]);
     
   // ============================================
   // EFFET : Timer
@@ -242,6 +243,32 @@ export default function InteractiveBlock({
       onConversationUpdate(liveChatHistory);
     }
   }, [liveChatHistory, sessionState]); // ← PAS onConversationUpdate dans deps !
+
+  // ============================================
+  // EFFET : Polling BDD pour LIGNE 2 (discussion seule)
+  // ============================================
+  useEffect(() => {
+    if (!showOnlyDiscussion || !conversationId) {
+      return;
+    }
+  
+    const loadMessages = async () => {
+      const { data } = await supabase
+        .from('conversations')
+        .select('messages')
+        .eq('id', conversationId)
+        .single();
+      
+      if (data?.messages) {
+        setPolledMessages(data.messages);
+      }
+    };
+  
+    loadMessages();
+    const interval = setInterval(loadMessages, 2000);
+  
+    return () => clearInterval(interval);
+  }, [showOnlyDiscussion, conversationId]);
 
   // ============================================
   // EFFET : Analyser progression au chargement
@@ -706,7 +733,9 @@ export default function InteractiveBlock({
           {/* Conteneur messages */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
             {(() => {
-              const displayHistory = showOnlyDiscussion ? chatHistory : liveChatHistory;
+              const displayHistory = showOnlyDiscussion 
+                ? (polledMessages.length > 0 ? polledMessages : chatHistory)
+                : liveChatHistory;
               return displayHistory.length === 0 ? (
                 <p className="text-gray-400 text-center py-6 text-xs">
                   {workflowState === "inactive"
