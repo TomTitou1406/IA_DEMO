@@ -86,7 +86,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           ...prev.slice(0, -1),
           {
             ...lastMsg,
-            content: lastMsg.content + " " + message,
+            content: lastMsg.content + message,  // ✅ PAS d'espace
           },
         ];
       }
@@ -115,7 +115,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           ...prev.slice(0, -1),
           {
             ...lastMsg,
-            content: lastMsg.content + " " + message,
+            content: lastMsg.content + message,  // ✅ PAS d'espace
           },
         ];
       }
