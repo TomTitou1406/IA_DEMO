@@ -291,7 +291,8 @@ export default function InteractiveBlock({
       setIsSaving(true);
       
       try {
-        let saveSuccess = false;
+        let conversationSaved = false;
+        let entrepriseSaved = false;
   
         if (currentConversationId) {
           const { error } = await supabase
@@ -307,7 +308,7 @@ export default function InteractiveBlock({
             console.error('❌ Auto-save conversations:', error);
           } else {
             console.log('✅ Auto-save conversations OK:', currentHistory.length, 'messages');
-            saveSuccess = true;
+            conversationSaved = true;
           }
         }
   
@@ -324,13 +325,14 @@ export default function InteractiveBlock({
             console.error('❌ Auto-save entreprises:', error);
           } else {
             console.log('✅ Auto-save entreprises OK');
-            saveSuccess = true;
+            entrepriseSaved = true;
           }
         }
 
-        if (saveSuccess) {
-        // 🆕 DÉTECTER VALIDATION ET SAUVEGARDER CHAMP
-        console.log('🔍 Vérification détection...', {
+        if (conversationSaved || entrepriseSaved) {
+          console.log('✅ Sauvegarde réussie, vérification détection...');
+          // 🆕 DÉTECTER VALIDATION ET SAUVEGARDER CHAMP
+          console.log('🔍 Vérification détection...', {
           historyLength: currentHistory.length,
           entrepriseId: currentEntrepriseId,
           contextId: context?.id
