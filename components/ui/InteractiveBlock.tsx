@@ -191,8 +191,6 @@ export default function InteractiveBlock({
   // ============================================
   // EFFET : Envoyer vers parent (LIGNE 1 seulement) - SANS BOUCLE
   // ============================================
-  const lastSentLength = useRef(0);
-  
   useEffect(() => {
     if (!showOnlyDiscussion && 
         onConversationUpdate && 
