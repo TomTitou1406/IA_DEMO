@@ -74,9 +74,21 @@ export async function detectAndSaveValidation(
 
   // 3. Trouver le step validé en cherchant les mots-clés
   const validatedStep = steps.find(step =>
-    step.validation_keywords?.some((keyword: string) => 
-      content.includes(keyword.toLowerCase())
-    )
+    step.validation_keywords?.some((keyword: string) => {
+      const normalized = content
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, ''); // Retire accents
+      
+      const keywordNormalized = keyword
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '');
+      
+      // Match exact OU pluriel (ajoute 's')
+      return normalized.includes(keywordNormalized) || 
+             normalized.includes(keywordNormalized + 's');
+    })
   );
 
   if (!validatedStep) {
