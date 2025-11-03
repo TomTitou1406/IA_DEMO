@@ -191,14 +191,21 @@ export default function InteractiveBlock({
   // EFFET : Scroll en bas au chargement initial
   // ============================================
   useEffect(() => {
-    if (chatContainerRef.current && liveChatHistory.length > 0) {
+    if (chatContainerRef.current) {
       const container = chatContainerRef.current;
-      // Force scroll en bas au premier chargement
-      setTimeout(() => {
-        container.scrollTop = container.scrollHeight;
-      }, 100);
+      // Scroll en bas quand les messages sont chargés
+      if (showOnlyDiscussion && chatHistory.length > 0) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+          console.log('⬇️ Scroll initial forcé, hauteur:', container.scrollHeight);
+        }, 300);
+      } else if (!showOnlyDiscussion && liveChatHistory.length > 0) {
+        setTimeout(() => {
+          container.scrollTop = container.scrollHeight;
+        }, 300);
+      }
     }
-  }, []); // ← Dépendances vides = exécuté UNE SEULE FOIS au mount
+  }, [chatHistory.length, liveChatHistory.length, showOnlyDiscussion]);
   
   // ============================================
   // EFFET : Auto-scroll chat (pendant conversation)
