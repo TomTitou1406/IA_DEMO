@@ -256,6 +256,7 @@ export default function EntreprisePage() {
 
   // Configuration du contexte
   const contextConfig: ConversationContext = {
+    id: '0447e09c-a2bb-4090-b279-01aaf8de1a59',
     context_key: 'acquisition_entreprise',
     context_type: 'workflow',
     title: '📋 Présentez votre entreprise',
