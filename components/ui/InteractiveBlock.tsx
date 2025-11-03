@@ -330,9 +330,21 @@ export default function InteractiveBlock({
 
         if (saveSuccess) {
         // 🆕 DÉTECTER VALIDATION ET SAUVEGARDER CHAMP
-        if (currentHistory.length > 0) {
+        console.log('🔍 Vérification détection...', {
+          historyLength: currentHistory.length,
+          entrepriseId: currentEntrepriseId,
+          contextId: context?.id
+        });
+
+        if (currentHistory.length > 0 && currentEntrepriseId && context?.id) {
           const lastMessage = currentHistory[currentHistory.length - 1];
-          if (lastMessage.role === 'assistant' && currentEntrepriseId && context?.id) {
+          
+          console.log('🔍 Dernier message:', {
+            role: lastMessage.role,
+            content: lastMessage.content.substring(0, 100) + '...'
+          });
+          
+          if (lastMessage.role === 'assistant') {
             // Convertir les messages au bon format
             const convertedHistory = currentHistory.map(msg => ({
               role: msg.role,
