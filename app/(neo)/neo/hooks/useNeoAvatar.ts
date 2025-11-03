@@ -237,10 +237,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       setChatHistory(config?.initialChatHistory ?? []);
       currentSenderRef.current = null;
       isInitialMessageRef.current = false; // Reset du flag
-
+  
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
-
+  
       const avatarConfig: StartAvatarRequest = {
         quality: AvatarQuality.High,
         avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
@@ -252,7 +252,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         },
         knowledgeId: config?.knowledgeId || undefined,
       };
-
+  
       const sessionData = await avatar.createStartAvatar(avatarConfig);
       sessionIdRef.current = sessionData.session_id;
       setSessionState("active");
@@ -260,17 +260,19 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       await avatar.startVoiceChat();
       
       if (config?.initialMessage) {
+        const initialMsg = config.initialMessage; // ← Copie pour TypeScript
+        
         // Ajouter le message initial au chat history MANUELLEMENT
         setChatHistory(prev => [
           ...prev,
           {
-            role: "assistant",
-            content: config.initialMessage,
+            role: "assistant" as const,
+            content: initialMsg,
             timestamp: new Date(),
           }
         ]);
         
-        await startInitialSpeak(config.initialMessage);
+        await startInitialSpeak(initialMsg);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
