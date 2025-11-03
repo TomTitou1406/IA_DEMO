@@ -1,15 +1,15 @@
 /**
  * @file useNeoAvatar.ts
- * @version v0.04
- * @date 01 novembre 2025
- * @description Hook pour gérer l'avatar HeyGen avec Knowledge Base
+ * @version v0.05
+ * @date 04 novembre 2025
+ * @description Hook pour gérer l'avatar HeyGen - Version simplifiée basée sur code officiel HeyGen
  * @changelog 
+ *   v0.05 - Réécriture complète basée sur InteractiveAvatar.tsx officiel HeyGen
  *   v0.04 - Fix doublon message initial avec vérification
  *   v0.03 - Amélioration gestion chat history
  *   v0.02 - Message initial caché du chat + utilisation TaskType.TALK
  */
 
-// /app/(neo)/neo/hooks/useNeoAvatar.ts
 "use client";
 
 import { useState, useRef, useCallback, useEffect } from "react";
@@ -60,10 +60,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const avatarRef = useRef<StreamingAvatar | null>(null);
   const sessionIdRef = useRef<string | null>(null);
-  const currentSenderRef = useRef<"user" | "assistant" | null>(null);
-  
-  // Flag pour ignorer le premier message (message initial)
-  const isInitialMessageRef = useRef<boolean>(false);
 
   const isLoading = sessionState === "loading";
 
@@ -74,72 +70,75 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, [config?.initialChatHistory]);
 
+  // ============================================
+  // HANDLERS - Version simplifiée façon HeyGen
+  // ============================================
+
   const handleUserTalkingMessage = useCallback((event: any) => {
-    const word = event.detail.message;
+    const message = event.detail.message;
 
-    if (currentSenderRef.current === "user") {
-      setChatHistory((prev) => [
-        ...prev.slice(0, -1),
-        {
-          ...prev[prev.length - 1],
-          content: prev[prev.length - 1].content + word,
-        },
-      ]);
-    } else {
-      currentSenderRef.current = "user";
-      setChatHistory((prev) => [
-        ...prev,
-        {
-          role: "user",
-          content: word,
-          timestamp: new Date(),
-        },
-      ]);
-    }
-  }, []);
-
-  const handleAvatarTalkingMessage = useCallback((event: any) => {
-    const word = event.detail.message;
-  
     setChatHistory((prev) => {
       const lastMsg = prev[prev.length - 1];
       
-      // Si on est en train de construire un message assistant
-      if (currentSenderRef.current === "assistant" && lastMsg?.role === "assistant") {
-        // Ajouter espace AVANT le mot (sauf si commence par ponctuation)
-        const needsSpace = !/^[.,!?;:]/.test(word);
-        const separator = needsSpace ? " " : "";
-        
+      // Si dernier message = user, concat avec espace
+      if (lastMsg && lastMsg.role === "user") {
         return [
           ...prev.slice(0, -1),
           {
             ...lastMsg,
-            content: lastMsg.content + separator + word,
+            content: lastMsg.content + " " + message,
           },
         ];
       }
       
-      // Nouveau message assistant
-      currentSenderRef.current = "assistant";
+      // Sinon, nouveau message user
       return [
         ...prev,
         {
-          role: "assistant",
-          content: word,
+          role: "user",
+          content: message,
           timestamp: new Date(),
         },
       ];
     });
   }, []);
 
- const handleEndMessage = useCallback(() => {
-    // Réactiver l'écoute après le message initial
-    if (isInitialMessageRef.current) {
-      isInitialMessageRef.current = false;
-      console.log('✅ Message initial terminé, écoute réactivée');
-    }
-    currentSenderRef.current = null;
+  const handleAvatarTalkingMessage = useCallback((event: any) => {
+    const message = event.detail.message;
+
+    setChatHistory((prev) => {
+      const lastMsg = prev[prev.length - 1];
+      
+      // Si dernier message = assistant, concat avec espace
+      if (lastMsg && lastMsg.role === "assistant") {
+        return [
+          ...prev.slice(0, -1),
+          {
+            ...lastMsg,
+            content: lastMsg.content + " " + message,
+          },
+        ];
+      }
+      
+      // Sinon, nouveau message assistant
+      return [
+        ...prev,
+        {
+          role: "assistant",
+          content: message,
+          timestamp: new Date(),
+        },
+      ];
+    });
   }, []);
+
+  const handleEndMessage = useCallback(() => {
+    // Rien à faire - l'API HeyGen gère tout
+  }, []);
+
+  // ============================================
+  // AVATAR INITIALIZATION
+  // ============================================
 
   const fetchAccessToken = useCallback(async (): Promise<string> => {
     try {
@@ -198,7 +197,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
   );
 
-  // Méthode pour envoyer le message initial
+  // ============================================
+  // PUBLIC METHODS
+  // ============================================
+
   const startInitialSpeak = useCallback(async (text: string) => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -214,7 +216,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     }
   }, []);
 
-  // Méthode pour interrompre la parole de l'avatar
   const interrupt = useCallback(async () => {
     if (!avatarRef.current) {
       console.warn("Avatar pas initialisé");
@@ -235,12 +236,10 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       setSessionState("loading");
       setError(null);
       setChatHistory(config?.initialChatHistory ?? []);
-      currentSenderRef.current = null;
-      isInitialMessageRef.current = false; // Reset du flag
-  
+
       const token = await fetchAccessToken();
       const avatar = await initializeAvatar(token);
-  
+
       const avatarConfig: StartAvatarRequest = {
         quality: AvatarQuality.High,
         avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
@@ -252,7 +251,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         },
         knowledgeId: config?.knowledgeId || undefined,
       };
-  
+
       const sessionData = await avatar.createStartAvatar(avatarConfig);
       sessionIdRef.current = sessionData.session_id;
       setSessionState("active");
@@ -260,7 +259,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       await avatar.startVoiceChat();
       
       if (config?.initialMessage) {
-        const initialMsg = config.initialMessage; // ← Copie pour TypeScript
+        const initialMsg = config.initialMessage;
         
         // Ajouter le message initial au chat history MANUELLEMENT
         setChatHistory(prev => [
@@ -289,8 +288,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
       avatarRef.current = null;
       sessionIdRef.current = null;
-      currentSenderRef.current = null;
-      isInitialMessageRef.current = false; // Reset du flag
       setStream(null);
       setSessionState("inactive");
       setIsTalking(false);
