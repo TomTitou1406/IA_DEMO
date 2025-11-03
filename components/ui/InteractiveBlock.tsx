@@ -237,18 +237,20 @@ export default function InteractiveBlock({
       return;
     }
     console.log('🔄 Polling activé pour discussion');
-    const loadMessages = async () => {
-      const { data } = await supabase
-        .from('conversations')
-        .select('messages')
-        .eq('id', conversationId)
-        .single();
-      
-      console.log('📥 Messages BDD:', data?.messages?.length);
-      if (data?.messages) {
-         setPolledMessages([...data.messages]);
-      }
-    };
+      const loadMessages = async () => {
+        const { data } = await supabase
+          .from('conversations')
+          .select('messages')
+          .eq('id', conversationId)
+          .single();
+        
+        console.log('📥 Messages BDD:', data?.messages?.length);
+        
+        if (data?.messages && data.messages.length !== polledMessages.length) {
+          console.log('🆕 CHANGEMENT détecté:', polledMessages.length, '→', data.messages.length);
+          setPolledMessages([...data.messages]);
+        }
+      };
   
     loadMessages();
     const interval = setInterval(loadMessages, 2000);
