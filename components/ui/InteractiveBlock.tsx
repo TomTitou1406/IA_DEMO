@@ -195,13 +195,14 @@ export default function InteractiveBlock({
     if (!showOnlyDiscussion && 
         onConversationUpdate && 
         liveChatHistory.length > 0 &&
-        liveChatHistory.length > lastSentLength.current) {
+        liveChatHistory.length > lastSentLength.current &&
+        !isTalking) { // ← AJOUTE : seulement quand avatar a FINI de parler
       
-      console.log('📤 ENVOI parent:', liveChatHistory.length, 'messages (était:', lastSentLength.current, ')');
+      console.log('📤 ENVOI parent:', liveChatHistory.length, 'messages');
       lastSentLength.current = liveChatHistory.length;
       onConversationUpdate(liveChatHistory);
     }
-  }, [liveChatHistory, showOnlyDiscussion]);
+  }, [liveChatHistory, showOnlyDiscussion, isTalking]); // ← AJOUTE isTalking
 
   // ============================================
   // EFFET : Scroll en bas au chargement initial
