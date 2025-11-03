@@ -229,6 +229,16 @@ export default function InteractiveBlock({
   }, [liveChatHistory]);
 
   // ============================================
+  // EFFET : Synchroniser avec parent
+  // ============================================
+  useEffect(() => {
+    if (onConversationUpdate && liveChatHistory.length > 0) {
+      console.log('📤 ENVOI vers parent:', liveChatHistory.length, 'messages');
+      onConversationUpdate(liveChatHistory);
+    }
+  }, [liveChatHistory, onConversationUpdate]);
+
+  // ============================================
   // EFFET : Analyser progression au chargement
   // ============================================
   useEffect(() => {
