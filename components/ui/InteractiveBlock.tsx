@@ -192,8 +192,6 @@ export default function InteractiveBlock({
   // ============================================
   // EFFET : Envoyer vers parent SEULEMENT quand message complet
   // ============================================
-  const wasTalkingRef = useRef(false);
-  
   useEffect(() => {
     // Détecter la transition talking → not talking
     if (!showOnlyDiscussion && 
