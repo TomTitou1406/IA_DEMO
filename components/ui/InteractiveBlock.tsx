@@ -194,7 +194,20 @@ export default function InteractiveBlock({
   }, [stream]);
 
   // ============================================
-  // EFFET : Auto-scroll chat
+  // EFFET : Scroll en bas au chargement initial
+  // ============================================
+  useEffect(() => {
+    if (chatContainerRef.current && liveChatHistory.length > 0) {
+      const container = chatContainerRef.current;
+      // Force scroll en bas au premier chargement
+      setTimeout(() => {
+        container.scrollTop = container.scrollHeight;
+      }, 100);
+    }
+  }, []); // ← Dépendances vides = exécuté UNE SEULE FOIS au mount
+  
+  // ============================================
+  // EFFET : Auto-scroll chat (pendant conversation)
   // ============================================
   useEffect(() => {
     if (chatContainerRef.current) {
