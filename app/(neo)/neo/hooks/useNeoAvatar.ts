@@ -104,6 +104,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     setChatHistory((prev) => {
       const lastMsg = prev[prev.length - 1];
       
+      // Si on est en train de construire un message assistant
       if (currentSenderRef.current === "assistant" && lastMsg?.role === "assistant") {
         // Ajouter espace AVANT le mot (sauf si commence par ponctuation)
         const needsSpace = !/^[.,!?;:]/.test(word);
@@ -118,18 +119,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         ];
       }
       
-      currentSenderRef.current = "assistant";
-      return [
-        ...prev,
-        {
-          role: "assistant",
-          content: word,
-          timestamp: new Date(),
-        },
-      ];
-    });
-  }, []);
-      
       // Nouveau message assistant
       currentSenderRef.current = "assistant";
       return [
@@ -142,7 +131,8 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       ];
     });
   }, []);
-  const handleEndMessage = useCallback(() => {
+
+ const handleEndMessage = useCallback(() => {
     // Réactiver l'écoute après le message initial
     if (isInitialMessageRef.current) {
       isInitialMessageRef.current = false;
