@@ -523,6 +523,11 @@ export default function InteractiveBlock({
   const timerStr = `Durée : ${String(Math.floor(timerSec / 60)).padStart(2, "0")}:${String(timerSec % 60).padStart(2, "0")}`;
   const avatarPreviewImage = context.avatar_preview_image || "/avatars/anastasia_16_9_preview.webp";
 
+  console.log('🔍 CHECK:', { 
+    showDiscussionThread, 
+    showOnlyDiscussion 
+  });
+
   // ============================================
   // RENDER
   // ============================================
@@ -699,11 +704,6 @@ export default function InteractiveBlock({
       )}
 
       {/* Fil de discussion */}
-      console.log('🔍 CHECK:', { 
-        showDiscussionThread, 
-        showOnlyDiscussion,
-        willRender: showDiscussionThread || showOnlyDiscussion 
-      });
       {(showDiscussionThread || showOnlyDiscussion) && (
         <div className="w-full bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
           {/* Header simplifié */}
