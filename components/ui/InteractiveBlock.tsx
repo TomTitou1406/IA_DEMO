@@ -198,7 +198,13 @@ export default function InteractiveBlock({
   // ============================================
   useEffect(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      const container = chatContainerRef.current;
+      const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
+      
+      // Scroll auto SEULEMENT si l'utilisateur était déjà en bas
+      if (isNearBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [liveChatHistory]);
 
