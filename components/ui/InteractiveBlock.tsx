@@ -70,13 +70,6 @@ export default function InteractiveBlock({
   showDiscussionThread = true,
   showOnlyDiscussion = false
 }: Props) {
-
-  console.log('🎬 InteractiveBlock reçoit:', {
-    entrepriseId,
-    conversationId,
-    conversationType
-  });
-  
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
     : context.initial_message_new;
@@ -706,6 +699,11 @@ export default function InteractiveBlock({
       )}
 
       {/* Fil de discussion */}
+      console.log('🔍 CHECK:', { 
+        showDiscussionThread, 
+        showOnlyDiscussion,
+        willRender: showDiscussionThread || showOnlyDiscussion 
+      });
       {(showDiscussionThread || showOnlyDiscussion) && (
         <div className="w-full bg-white border border-gray-300 rounded-xl shadow-lg flex flex-col max-h-[35vh]">
           {/* Header simplifié */}
