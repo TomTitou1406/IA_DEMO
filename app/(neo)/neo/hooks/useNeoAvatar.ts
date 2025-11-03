@@ -99,43 +99,37 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   }, []);
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
-    const word = event.detail.message;
+  const word = event.detail.message;
 
+  setChatHistory((prev) => {
+    // Si on est déjà en train de construire un message assistant
     if (currentSenderRef.current === "assistant") {
-      // Ajoute mot par mot au dernier message
-      setChatHistory((prev) => [
-        ...prev.slice(0, -1),
-        {
-          ...prev[prev.length - 1],
-          content: prev[prev.length - 1].content + word,
-        },
-      ]);
-    } else {
-      // Vérifier si le dernier message est déjà un assistant avec le même début
-      setChatHistory((prev) => {
-        const lastMsg = prev[prev.length - 1];
-        
-        // Si dernier message = assistant et commence par le nouveau mot → doublon
-        if (lastMsg?.role === "assistant" && lastMsg.content.startsWith(word.trim())) {
-          console.log('⏭️ Doublon assistant ignoré');
-          currentSenderRef.current = "assistant"; // Activer le mode ajout
-          return prev; // Ne rien ajouter
-        }
-        
-        // Sinon, créer nouveau message
-        const timestamp = new Date();
-        currentSenderRef.current = "assistant";
+      const lastMsg = prev[prev.length - 1];
+      
+      // Sécurité : vérifier que le dernier est bien assistant
+      if (lastMsg?.role === "assistant") {
         return [
-          ...prev,
+          ...prev.slice(0, -1),
           {
-            role: "assistant",
-            content: word,
-            timestamp: timestamp,
+            ...lastMsg,
+            content: lastMsg.content + word,
           },
         ];
-      });
+      }
     }
-  }, []);
+    
+    // Nouveau message assistant
+    currentSenderRef.current = "assistant";
+    return [
+      ...prev,
+      {
+        role: "assistant",
+        content: word,
+        timestamp: new Date(),
+      },
+    ];
+  });
+}, []);
 
   const handleEndMessage = useCallback(() => {
     // Réactiver l'écoute après le message initial
