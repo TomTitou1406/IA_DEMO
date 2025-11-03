@@ -230,28 +230,13 @@ export default function InteractiveBlock({
   }, [liveChatHistory]);
 
   // ============================================
-  // EFFET : Synchroniser avec parent (SANS boucle)
-  // ============================================
-  useEffect(() => {
-    // Envoyer SEULEMENT si mode avatar (pas mode discussion seule)
-    // ET seulement si session active (évite envoi au mount)
-    if (!showOnlyDiscussion && 
-        onConversationUpdate && 
-        liveChatHistory.length > 0 && 
-        sessionState === 'active') {
-      console.log('📤 ENVOI vers parent:', liveChatHistory.length, 'messages');
-      onConversationUpdate(liveChatHistory);
-    }
-  }, [liveChatHistory, sessionState]); // ← PAS onConversationUpdate dans deps !
-
-  // ============================================
   // EFFET : Polling BDD pour LIGNE 2 (discussion seule)
   // ============================================
   useEffect(() => {
     if (!showOnlyDiscussion || !conversationId) {
       return;
     }
-  
+    console.log('🔄 Polling activé pour discussion');
     const loadMessages = async () => {
       const { data } = await supabase
         .from('conversations')
@@ -259,6 +244,7 @@ export default function InteractiveBlock({
         .eq('id', conversationId)
         .single();
       
+      console.log('📥 Messages BDD:', data?.messages?.length);
       if (data?.messages) {
         setPolledMessages(data.messages);
       }
