@@ -99,15 +99,15 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   }, []);
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
-  const word = event.detail.message;
-
-  setChatHistory((prev) => {
-    // Si on est déjà en train de construire un message assistant
-    if (currentSenderRef.current === "assistant") {
+    const word = event.detail.message;
+  
+    setChatHistory((prev) => {
       const lastMsg = prev[prev.length - 1];
       
-      // Sécurité : vérifier que le dernier est bien assistant
-      if (lastMsg?.role === "assistant") {
+      // Si on est en train de construire un message assistant
+      if (currentSenderRef.current === "assistant" && 
+          lastMsg?.role === "assistant") {
+        // Concat au dernier message
         return [
           ...prev.slice(0, -1),
           {
@@ -116,21 +116,19 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
           },
         ];
       }
-    }
-    
-    // Nouveau message assistant
-    currentSenderRef.current = "assistant";
-    return [
-      ...prev,
-      {
-        role: "assistant",
-        content: word,
-        timestamp: new Date(),
-      },
-    ];
-  });
-}, []);
-
+      
+      // Nouveau message assistant
+      currentSenderRef.current = "assistant";
+      return [
+        ...prev,
+        {
+          role: "assistant",
+          content: word,
+          timestamp: new Date(),
+        },
+      ];
+    });
+  }, []);
   const handleEndMessage = useCallback(() => {
     // Réactiver l'écoute après le message initial
     if (isInitialMessageRef.current) {
