@@ -251,6 +251,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         avatarName: config?.avatarName || "Anastasia_Chair_Sitting_public",
         language: config?.language || "fr",
         voice: {
+          voiceId: "fb9f9dc7e44847eabba57860c277af42",
           rate: config?.voiceRate || 1.2,
           emotion: VoiceEmotion.FRIENDLY,
         },
