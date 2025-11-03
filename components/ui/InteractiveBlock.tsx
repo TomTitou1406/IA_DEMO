@@ -104,6 +104,7 @@ export default function InteractiveBlock({
   const [timerSec, setTimerSec] = useState(0);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
+  const [messageVersion, setMessageVersion] = useState(0);
   const [progression, setProgression] = useState({
     completed: 0,
     percentage: 0,
@@ -191,9 +192,10 @@ export default function InteractiveBlock({
   // ============================================
   useEffect(() => {
     if (!showOnlyDiscussion && onConversationUpdate && liveChatHistory.length > 0) {
+      console.log('📤 ENVOI parent:', liveChatHistory.length, 'messages');
       onConversationUpdate(liveChatHistory);
     }
-  }, [liveChatHistory.length, showOnlyDiscussion]); // ← Seulement quand LENGTH change
+  }, [liveChatHistory, showOnlyDiscussion]); // ← Pas .length, tout le tableau !
 
   // ============================================
   // EFFET : Scroll en bas au chargement initial
