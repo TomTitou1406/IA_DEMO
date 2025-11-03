@@ -104,18 +104,31 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
     setChatHistory((prev) => {
       const lastMsg = prev[prev.length - 1];
       
-      // Si on est en train de construire un message assistant
-      if (currentSenderRef.current === "assistant" && 
-          lastMsg?.role === "assistant") {
-        // Concat au dernier message
+      if (currentSenderRef.current === "assistant" && lastMsg?.role === "assistant") {
+        // Ajouter espace AVANT le mot (sauf si commence par ponctuation)
+        const needsSpace = !/^[.,!?;:]/.test(word);
+        const separator = needsSpace ? " " : "";
+        
         return [
           ...prev.slice(0, -1),
           {
             ...lastMsg,
-            content: lastMsg.content + word,
+            content: lastMsg.content + separator + word,
           },
         ];
       }
+      
+      currentSenderRef.current = "assistant";
+      return [
+        ...prev,
+        {
+          role: "assistant",
+          content: word,
+          timestamp: new Date(),
+        },
+      ];
+    });
+  }, []);
       
       // Nouveau message assistant
       currentSenderRef.current = "assistant";
@@ -253,9 +266,20 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       const sessionData = await avatar.createStartAvatar(avatarConfig);
       sessionIdRef.current = sessionData.session_id;
       setSessionState("active");
-
+      
       await avatar.startVoiceChat();
+      
       if (config?.initialMessage) {
+        // Ajouter le message initial au chat history MANUELLEMENT
+        setChatHistory(prev => [
+          ...prev,
+          {
+            role: "assistant",
+            content: config.initialMessage,
+            timestamp: new Date(),
+          }
+        ]);
+        
         await startInitialSpeak(config.initialMessage);
       }
     } catch (err) {
