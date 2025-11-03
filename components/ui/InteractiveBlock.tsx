@@ -229,14 +229,19 @@ export default function InteractiveBlock({
   }, [liveChatHistory]);
 
   // ============================================
-  // EFFET : Synchroniser avec parent
+  // EFFET : Synchroniser avec parent (SANS boucle)
   // ============================================
   useEffect(() => {
-    if (onConversationUpdate && liveChatHistory.length > 0) {
+    // Envoyer SEULEMENT si mode avatar (pas mode discussion seule)
+    // ET seulement si session active (évite envoi au mount)
+    if (!showOnlyDiscussion && 
+        onConversationUpdate && 
+        liveChatHistory.length > 0 && 
+        sessionState === 'active') {
       console.log('📤 ENVOI vers parent:', liveChatHistory.length, 'messages');
       onConversationUpdate(liveChatHistory);
     }
-  }, [liveChatHistory, onConversationUpdate]);
+  }, [liveChatHistory, sessionState]); // ← PAS onConversationUpdate dans deps !
 
   // ============================================
   // EFFET : Analyser progression au chargement
