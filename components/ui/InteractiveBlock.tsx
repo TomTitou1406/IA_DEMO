@@ -137,13 +137,13 @@ export default function InteractiveBlock({
   const initialMessageSentRef = useRef(false);
   const autoSaveIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const liveChatHistoryRef = useRef<ChatMessage[]>([]);
-    
-  // Synchroniser chat history avec parent
+
+  // Synchroniser chat history avec parent (SEULEMENT si pas en mode discussion seule)
   useEffect(() => {
-    if (onConversationUpdate && liveChatHistory.length > 0) {
+    if (!showOnlyDiscussion && onConversationUpdate && liveChatHistory.length > 0) {
       onConversationUpdate(liveChatHistory);
     }
-  }, [liveChatHistory, onConversationUpdate]);
+  }, [liveChatHistory, onConversationUpdate, showOnlyDiscussion]);
   
   // ============================================
   // EFFET : Timer
