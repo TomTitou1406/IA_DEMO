@@ -230,6 +230,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
                 const rate = parseFloat(value) || DEFAULT_VOICE_RATE;
                 onChange("voice", { ...config.voice, rate });
               }}
+              className="w-full px-3 py-2 border border-zinc-700 bg-zinc-900 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-zinc-500 mt-1">
               Valeur actuelle : {config.voice?.rate || DEFAULT_VOICE_RATE} 
@@ -301,6 +302,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
                   confidence,
                 });
               }}
+              className="w-full px-3 py-2 border border-zinc-700 bg-zinc-900 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-zinc-500 mt-1">
               Valeur actuelle : {config.sttSettings?.confidence || DEFAULT_STT_CONFIDENCE}
@@ -330,6 +332,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
                 const timeout = parseInt(value) || DEFAULT_IDLE_TIMEOUT;
                 onChange("activityIdleTimeout", timeout);
               }}
+              className="w-full px-3 py-2 border border-zinc-700 bg-zinc-900 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500"
             />
             <p className="text-xs text-zinc-500 mt-1">
               Valeur actuelle : {config.activityIdleTimeout || DEFAULT_IDLE_TIMEOUT}s 
