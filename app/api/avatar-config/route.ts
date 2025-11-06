@@ -41,7 +41,7 @@ interface AvatarConfigParameter {
   requires_restart: boolean;
 }
 
-// ============================================================================
+/// ============================================================================
 // GET - Récupérer les paramètres
 // ============================================================================
 export async function GET(request: NextRequest) {
@@ -49,18 +49,31 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const key = searchParams.get("key");
 
-    let query = supabase
+    // Si une clé spécifique est demandée
+    if (key) {
+      const { data, error } = await supabase
+        .from("avatar_configuration")
+        .select("*")
+        .eq("parameter_key", key)
+        .single();
+
+      if (error) {
+        console.error("❌ Erreur récupération paramètre:", error);
+        return NextResponse.json(
+          { error: "Paramètre non trouvé" },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json(data);
+    }
+
+    // Sinon, récupérer tous les paramètres
+    const { data, error } = await supabase
       .from("avatar_configuration")
       .select("*")
       .order("category", { ascending: true })
       .order("parameter_name", { ascending: true });
-
-    // Si une clé spécifique est demandée
-    if (key) {
-      query = query.eq("parameter_key", key).single();
-    }
-
-    const { data, error } = await query;
 
     if (error) {
       console.error("❌ Erreur récupération config:", error);
