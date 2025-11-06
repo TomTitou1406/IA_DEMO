@@ -452,6 +452,7 @@ export default function EntreprisePage() {
                 onSauvegarder={handleSauvegarder}
                 onAbandonner={handleAbandonner}
                 showDiscussionThread={false}
+                avatarConfig={avatarConfig}
               />
             </div>
             
