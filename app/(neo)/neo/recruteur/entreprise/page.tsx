@@ -19,6 +19,7 @@ import type { ChatMessage } from '@/app/(neo)/neo/hooks/useNeoAvatar';
 import { supabase } from '@/app/lib/supabaseClient';
 import { DEFAULT_USER_ID } from '@/app/lib/constants';
 import ProgressionChecklist from '@/components/conversation/ProgressionChecklist';
+import { useAvatarConfigFromDB } from "@/app/(neo)/neo/hooks/useAvatarConfigFromDB";
 
 export default function EntreprisePage() {
   const router = useRouter();
@@ -95,6 +96,24 @@ export default function EntreprisePage() {
 
     loadOrCreateEntreprise();
   }, []);
+
+  // ============================================
+  // Configuration avatar depuis BDD
+  // ============================================
+  const { 
+    config: avatarConfig, 
+    loading: configLoading,
+    error: configError 
+  } = useAvatarConfigFromDB({
+    autoSave: true,
+    autoSaveDelay: 2000,
+    onConfigLoaded: (config) => {
+      console.log('✅ Configuration avatar chargée depuis BDD');
+    },
+    onError: (error) => {
+      console.error('❌ Erreur configuration avatar:', error);
+    },
+  });
 
   // Fonction: Créer entreprise + conversation
   async function createEntrepriseAndConversation() {
@@ -291,6 +310,60 @@ export default function EntreprisePage() {
     chatHistoryLength: chatHistory.length
   });
 
+  // ============================================
+  // Debug: Config avatar active
+  // ============================================
+  useEffect(() => {
+    if (avatarConfig) {
+      console.log('🔧 Configuration avatar active:', {
+        quality: avatarConfig.quality,
+        language: avatarConfig.language,
+        voiceRate: avatarConfig.voice?.rate,
+        sttConfidence: avatarConfig.sttSettings?.confidence,
+        idleTimeout: avatarConfig.activityIdleTimeout,
+      });
+    }
+  }, [avatarConfig]);
+
+ // ============================================
+  // Gestion du loading config
+  // ============================================
+  if (configLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement de la configuration avatar...</p>
+        </div>
+      </div>
+    );
+  }
+  
+ // ============================================
+  // Gestion erreur config
+  // ============================================
+  if (configError) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="text-red-600 mb-4">
+            <svg className="w-16 h-16 mx-auto mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+          </div>
+          <p className="text-xl font-semibold text-gray-800 mb-2">Erreur de configuration</p>
+          <p className="text-sm text-gray-600 mb-4">{configError.message}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Recharger la page
+          </button>
+        </div>
+      </div>
+    );
+  }
+    
   {/* Container principal de la page qui donne le fond gris plein écran */}
   return (
     <div className="w-full h-screen bg-gray-50 p-6 overflow-hidden">
