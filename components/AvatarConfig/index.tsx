@@ -1,12 +1,17 @@
 // ============================================================================
-// index.tsx – Version v0.1
+// index.tsx – Version v0.2
 // Refonte de la page de configuration de l'avatar interactif HeyGen
+// AMÉLIORATIONS v0.2 :
+//   - Ajout voice.rate (vitesse parole)
+//   - Ajout sttSettings.confidence (seuil confiance)
+//   - Ajout activityIdleTimeout (timeout session)
+//   - Section Session Settings
 // Objectif : une expérience claire en 3 étapes, responsive desktop/mobile
 // Étapes :
-//   1. Sélection d’un avatar (grille dynamique)
+//   1. Sélection d'un avatar (grille dynamique)
 //   2. Sélection de la langue de travail
 //   3. Accès aux paramètres avancés (ShowMore)
-// Auteur : Christophe Fischer / Op’Team-IA
+// Auteur : Christophe Fischer / Op'Team-IA
 // ============================================================================
 
 "use client";
@@ -31,6 +36,9 @@ import { AVATARS, STT_LANGUAGE_LIST } from "@/app/lib/constants";
 // ============================================================================
 const DEFAULT_KB_ID = "262a94b9bd4a45ad94ea3f7fd4264300";
 const DEFAULT_LANGUAGE = "fr";
+const DEFAULT_VOICE_RATE = 1.0;
+const DEFAULT_STT_CONFIDENCE = 0.70;
+const DEFAULT_IDLE_TIMEOUT = 300;
 
 // ============================================================================
 // 🧩 Composant principal
@@ -85,7 +93,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
   useEffect(() => {
     if (didInitDefaults.current) return;
     didInitDefaults.current = true;
-    const firstOption = STT_LANGUAGE_LIST?.[0]?.value; // souvent "en"
+    const firstOption = STT_LANGUAGE_LIST?.[0]?.value;
     if (!config.language || config.language === firstOption) {
       onChange("language", DEFAULT_LANGUAGE);
     }
@@ -138,6 +146,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
           Avatar ID : {config.avatarName}
         </p>
       )}
+
       {/* =========================================================================
          🧩 Étape 2 — Sélection de la langue
          ========================================================================= */}
@@ -189,19 +198,13 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
             />
           </Field>
 
-          <Field label="Méthode de transport de la voix">
-            <Select
-              isSelected={(option) => option === config.voiceChatTransport}
-              options={Object.values(VoiceChatTransport)}
-              renderOption={(option) => option}
-              value={config.voiceChatTransport}
-              onSelect={(option) => onChange("voiceChatTransport", option)}
-            />
-          </Field>
-
-          <h1 className="text-zinc-100 w-full text-center mt-5">
+          {/* ================================================================
+              🆕 VOICE SETTINGS (ENRICHI)
+              ================================================================ */}
+          <h1 className="text-zinc-100 w-full text-center mt-5 mb-2 font-semibold">
             Voice Settings
           </h1>
+
           <Field label="Identifiant de la voix personnalisée">
             <Input
               placeholder="Saisir l'identifiant de la voix personnalisée"
@@ -211,6 +214,29 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               }
             />
           </Field>
+
+          <Field 
+            label="Vitesse de la parole" 
+            tooltip="Contrôle la vitesse de parole de l'avatar (0.5 = lent, 1.5 = rapide)"
+          >
+            <Input
+              type="number"
+              min="0.5"
+              max="1.5"
+              step="0.1"
+              placeholder="1.0 (naturel)"
+              value={config.voice?.rate?.toString() || DEFAULT_VOICE_RATE.toString()}
+              onChange={(value) => {
+                const rate = parseFloat(value) || DEFAULT_VOICE_RATE;
+                onChange("voice", { ...config.voice, rate });
+              }}
+            />
+            <p className="text-xs text-zinc-500 mt-1">
+              Valeur actuelle : {config.voice?.rate || DEFAULT_VOICE_RATE} 
+              {(config.voice?.rate || DEFAULT_VOICE_RATE) === 1.0 && " (naturel)"}
+            </p>
+          </Field>
+
           <Field label="Émotion">
             <Select
               isSelected={(option) => option === config.voice?.emotion}
@@ -222,6 +248,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               }
             />
           </Field>
+
           <Field label="Modèle ElevenLabs">
             <Select
               isSelected={(option) => option === config.voice?.model}
@@ -234,9 +261,13 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
             />
           </Field>
 
-          <h1 className="text-zinc-100 w-full text-center mt-5">
-            STT Settings
+          {/* ================================================================
+              🆕 STT SETTINGS (ENRICHI)
+              ================================================================ */}
+          <h1 className="text-zinc-100 w-full text-center mt-5 mb-2 font-semibold">
+            STT Settings (Speech-to-Text)
           </h1>
+
           <Field label="Provider">
             <Select
               isSelected={(option) => option === config.sttSettings?.provider}
@@ -251,17 +282,81 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               }
             />
           </Field>
+
+          <Field 
+            label="Seuil de confiance" 
+            tooltip="Précision requise pour accepter la transcription (0.5 = permissif, 0.9 = strict)"
+          >
+            <Input
+              type="number"
+              min="0"
+              max="1"
+              step="0.05"
+              placeholder="0.70 (recommandé FR)"
+              value={config.sttSettings?.confidence?.toString() || DEFAULT_STT_CONFIDENCE.toString()}
+              onChange={(value) => {
+                const confidence = parseFloat(value) || DEFAULT_STT_CONFIDENCE;
+                onChange("sttSettings", {
+                  ...config.sttSettings,
+                  confidence,
+                });
+              }}
+            />
+            <p className="text-xs text-zinc-500 mt-1">
+              Valeur actuelle : {config.sttSettings?.confidence || DEFAULT_STT_CONFIDENCE}
+              {(config.sttSettings?.confidence || DEFAULT_STT_CONFIDENCE) === 0.70 && " (recommandé FR)"}
+            </p>
+          </Field>
+
+          {/* ================================================================
+              🆕 SESSION SETTINGS (NOUVEAU)
+              ================================================================ */}
+          <h1 className="text-zinc-100 w-full text-center mt-5 mb-2 font-semibold">
+            Session Settings
+          </h1>
+
+          <Field 
+            label="Timeout d'inactivité (secondes)" 
+            tooltip="Délai avant fermeture automatique de la session (30-3600s)"
+          >
+            <Input
+              type="number"
+              min="30"
+              max="3600"
+              step="30"
+              placeholder="300 (5 minutes)"
+              value={config.activityIdleTimeout?.toString() || DEFAULT_IDLE_TIMEOUT.toString()}
+              onChange={(value) => {
+                const timeout = parseInt(value) || DEFAULT_IDLE_TIMEOUT;
+                onChange("activityIdleTimeout", timeout);
+              }}
+            />
+            <p className="text-xs text-zinc-500 mt-1">
+              Valeur actuelle : {config.activityIdleTimeout || DEFAULT_IDLE_TIMEOUT}s 
+              ({Math.floor((config.activityIdleTimeout || DEFAULT_IDLE_TIMEOUT) / 60)} minutes)
+            </p>
+          </Field>
+
+          <Field label="Méthode de transport de la voix">
+            <Select
+              isSelected={(option) => option === config.voiceChatTransport}
+              options={Object.values(VoiceChatTransport)}
+              renderOption={(option) => option}
+              value={config.voiceChatTransport}
+              onSelect={(option) => onChange("voiceChatTransport", option)}
+            />
+          </Field>
         </>
       )}
 
       {/* Bouton de bascule pour afficher/masquer les paramètres */}
       <button
-        className="text-zinc-400 text-sm cursor-pointer w-full text-center bg-transparent mt-2"
+        className="text-zinc-400 text-sm cursor-pointer w-full text-center bg-transparent mt-2 hover:text-blue-400 transition"
         onClick={() => setShowMore(!showMore)}
       >
         {showMore
-          ? "Masquer les paramètres avancés"
-          : "Afficher les paramètres avancés"}
+          ? "▲ Masquer les paramètres avancés"
+          : "▼ Afficher les paramètres avancés"}
       </button>
     </div>
   );
