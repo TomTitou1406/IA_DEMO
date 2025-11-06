@@ -227,7 +227,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               placeholder="1.0 (naturel)"
               value={config.voice?.rate?.toString() || DEFAULT_VOICE_RATE.toString()}
               onChange={(e) => {
-                const rate = parseFloat(value) || DEFAULT_VOICE_RATE;
+                const rate = parseFloat(e.target.value) || DEFAULT_VOICE_RATE;
                 onChange("voice", { ...config.voice, rate });
               }}
               className="w-full px-3 py-2 border border-zinc-700 bg-zinc-900 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500"
@@ -296,7 +296,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               placeholder="0.70 (recommandé FR)"
               value={config.sttSettings?.confidence?.toString() || DEFAULT_STT_CONFIDENCE.toString()}
               onChange={(e) => {
-                const confidence = parseFloat(value) || DEFAULT_STT_CONFIDENCE;
+                const confidence = parseFloat(e.target.value) || DEFAULT_STT_CONFIDENCE;
                 onChange("sttSettings", {
                   ...config.sttSettings,
                   confidence,
@@ -329,7 +329,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               placeholder="300 (5 minutes)"
               value={config.activityIdleTimeout?.toString() || DEFAULT_IDLE_TIMEOUT.toString()}
               onChange={(e) => {
-                const timeout = parseInt(value) || DEFAULT_IDLE_TIMEOUT;
+                const timeout = parseInt(e.target.value) || DEFAULT_IDLE_TIMEOUT;
                 onChange("activityIdleTimeout", timeout);
               }}
               className="w-full px-3 py-2 border border-zinc-700 bg-zinc-900 text-zinc-100 rounded-lg focus:ring-2 focus:ring-blue-500"
