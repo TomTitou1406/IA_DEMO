@@ -76,17 +76,20 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleUserTalkingMessage = useCallback((event: any) => {
     const message = event.detail.message;
-
+    
+    // 🔍 LOG TEMPORAIRE POUR DEBUG
+    console.log('🎙️ USER CHUNK:', JSON.stringify(message), 'Length:', message.length);
+  
     setChatHistory((prev) => {
       const lastMsg = prev[prev.length - 1];
       
-      // Si dernier message = user, concat avec espace
+      // Si dernier message = user, concat sans espace
       if (lastMsg && lastMsg.role === "user") {
         return [
           ...prev.slice(0, -1),
           {
             ...lastMsg,
-            content: lastMsg.content + message,  // ✅ PAS d'espace
+            content: lastMsg.content + message,
           },
         ];
       }
@@ -105,17 +108,20 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
   const handleAvatarTalkingMessage = useCallback((event: any) => {
     const message = event.detail.message;
-
+    
+    // 🔍 LOG TEMPORAIRE POUR DEBUG
+    console.log('🎤 AVATAR CHUNK:', JSON.stringify(message), 'Length:', message.length);
+  
     setChatHistory((prev) => {
       const lastMsg = prev[prev.length - 1];
       
-      // Si dernier message = assistant, concat avec espace
+      // Si dernier message = assistant, concat sans espace
       if (lastMsg && lastMsg.role === "assistant") {
         return [
           ...prev.slice(0, -1),
           {
             ...lastMsg,
-            content: lastMsg.content + message,  // ✅ PAS d'espace
+            content: lastMsg.content + message,
           },
         ];
       }
