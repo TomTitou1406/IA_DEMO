@@ -226,7 +226,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               step="0.1"
               placeholder="1.0 (naturel)"
               value={config.voice?.rate?.toString() || DEFAULT_VOICE_RATE.toString()}
-              onChange={(value) => {
+              onChange={(e) => {
                 const rate = parseFloat(value) || DEFAULT_VOICE_RATE;
                 onChange("voice", { ...config.voice, rate });
               }}
@@ -295,7 +295,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               step="0.05"
               placeholder="0.70 (recommandé FR)"
               value={config.sttSettings?.confidence?.toString() || DEFAULT_STT_CONFIDENCE.toString()}
-              onChange={(value) => {
+              onChange={(e) => {
                 const confidence = parseFloat(value) || DEFAULT_STT_CONFIDENCE;
                 onChange("sttSettings", {
                   ...config.sttSettings,
@@ -328,7 +328,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
               step="30"
               placeholder="300 (5 minutes)"
               value={config.activityIdleTimeout?.toString() || DEFAULT_IDLE_TIMEOUT.toString()}
-              onChange={(value) => {
+              onChange={(e) => {
                 const timeout = parseInt(value) || DEFAULT_IDLE_TIMEOUT;
                 onChange("activityIdleTimeout", timeout);
               }}
