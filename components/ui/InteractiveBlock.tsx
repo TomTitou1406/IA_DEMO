@@ -20,6 +20,7 @@ import Toast from '@/components/ui/Toast';
 import { DEFAULT_USER_ID } from "@/app/lib/constants";
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 import { detectAndSaveValidation } from '@/app/lib/conversation-utils';
+import { StartAvatarRequest } from "@heygen/streaming-avatar";
 
 // ============================================
 // TYPES DÉFINIS LOCALEMENT
@@ -54,6 +55,7 @@ type Props = {
   onAbandonner?: () => void;
   showDiscussionThread?: boolean;
   showOnlyDiscussion?: boolean;
+  avatarConfig?: StartAvatarRequest | null;
 };
 
 export default function InteractiveBlock({
@@ -68,7 +70,8 @@ export default function InteractiveBlock({
   onSauvegarder,
   onAbandonner,
   showDiscussionThread = true,
-  showOnlyDiscussion = false
+  showOnlyDiscussion = false,
+  avatarConfig,
 }: Props) {
   const initialMessage = chatHistory.length > 0 
     ? (context.initial_message_resume || context.initial_message_new)
@@ -89,11 +92,17 @@ export default function InteractiveBlock({
     interrupt,
     startInitialSpeak,
   } = useNeoAvatar({
-    knowledgeId: knowledgeBaseId || context.knowledge_id,
-    avatarName: context.avatar_name || undefined,
-    voiceRate: context.voice_rate || 1.0,
-    language: context.language || 'fr',
+    // ✅ Config depuis BDD (si fournie)
+    ...(avatarConfig || {}),
+    
+    // ✅ Override avec valeurs du contexte (prioritaires)
+    knowledgeId: knowledgeBaseId || context.knowledge_id || avatarConfig?.knowledgeId,
+    avatarName: context.avatar_name || avatarConfig?.avatarName,
+    voiceRate: context.voice_rate || avatarConfig?.voice?.rate || 1.0,
+    language: context.language || avatarConfig?.language || 'fr',
     initialMessage: initialMessage,
+    
+    // ✅ Chat history depuis conversation
     initialChatHistory: chatHistory,
   });
     
