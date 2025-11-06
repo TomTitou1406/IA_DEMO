@@ -219,7 +219,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
             label="Vitesse de la parole" 
             tooltip="Contrôle la vitesse de parole de l'avatar (0.5 = lent, 1.5 = rapide)"
           >
-            <Input
+            <input
               type="number"
               min="0.5"
               max="1.5"
@@ -288,7 +288,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
             label="Seuil de confiance" 
             tooltip="Précision requise pour accepter la transcription (0.5 = permissif, 0.9 = strict)"
           >
-            <Input
+            <input
               type="number"
               min="0"
               max="1"
@@ -321,7 +321,7 @@ export const AvatarConfig: React.FC<AvatarConfigProps> = ({
             label="Timeout d'inactivité (secondes)" 
             tooltip="Délai avant fermeture automatique de la session (30-3600s)"
           >
-            <Input
+            <input
               type="number"
               min="30"
               max="3600"
