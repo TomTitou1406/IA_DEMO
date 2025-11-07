@@ -415,6 +415,12 @@ export default function InteractiveBlock({
   const handleTerminer = async () => { 
     await stopSession(); 
     setWorkflowState("terminated");
+    
+    // 🆕 Envoyer les messages au parent avant de terminer
+    if (onConversationUpdate && liveChatHistory.length > 0) {
+      console.log('📤 Envoi des messages au parent avant terminer:', liveChatHistory.length);
+      onConversationUpdate(liveChatHistory);
+    }
   };
   
   const handleInterrompre = async () => { 
@@ -691,8 +697,8 @@ export default function InteractiveBlock({
           {/* Conteneur messages */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
             {(() => {
-             // ✅ TOUJOURS afficher liveChatHistory pendant la session
-              const displayHistory = sessionState === "active" ? liveChatHistory : chatHistory;
+             // ✅ Priorité à liveChatHistory si non vide, sinon chatHistory
+              const displayHistory = liveChatHistory.length > 0 ? liveChatHistory : chatHistory;
              // 🔍 LOGS DE DEBUG
               console.log('🎬 RENDER FIL:', {
                 sessionState,
