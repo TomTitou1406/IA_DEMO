@@ -447,7 +447,7 @@ export default function EntreprisePage() {
                 onFinaliser={handleFinaliser}
                 onSauvegarder={handleSauvegarder}
                 onAbandonner={handleAbandonner}
-                showDiscussionThread={false}
+                showDiscussionThread={true}
                 avatarConfig={avatarConfig}
               />
             </div>
@@ -463,26 +463,7 @@ export default function EntreprisePage() {
               </div>
             )}
           </div>
-          
-          {/* LIGNE 2 : Discussion (même largeur que ligne 1) - CENTRÉ */}
-          <div className="flex justify-center flex-shrink-0" style={{ width: '100%' }}>
-            <div style={{ width: '80%', minWidth: '850px' }}>
-              <InteractiveBlock
-                conversationId={conversationId}
-                conversationType="acquisition_entreprise"
-                context={contextConfig}
-                chatHistory={chatHistory}
-                entrepriseId={entrepriseId}
-                onConversationUpdate={handleChatUpdate}
-                onFinaliser={handleFinaliser}
-                onSauvegarder={handleSauvegarder}
-                onAbandonner={handleAbandonner}
-                showOnlyDiscussion={true}
-                avatarConfig={avatarConfig}
-              />
-            </div>
-          </div>
-          
+                  
         </div>
   
       </div>
