@@ -1,9 +1,10 @@
 /**
  * @file useNeoAvatar.ts
- * @version v0.05
- * @date 04 novembre 2025
+ * @version v0.06
+ * @date 07 novembre 2025
  * @description Hook pour gérer l'avatar HeyGen - Version simplifiée basée sur code officiel HeyGen
  * @changelog 
+ *   v0.06 - Ajout nettoyage automatique transcription (mots collés)
  *   v0.05 - Réécriture complète basée sur InteractiveAvatar.tsx officiel HeyGen
  *   v0.04 - Fix doublon message initial avec vérification
  *   v0.03 - Amélioration gestion chat history
@@ -20,6 +21,27 @@ import StreamingAvatar, {
   StartAvatarRequest,
   TaskType,
 } from "@heygen/streaming-avatar";
+
+// ============================================
+// FONCTION NETTOYAGE TRANSCRIPTION
+// ============================================
+function cleanTranscription(text: string): string {
+  if (!text) return text;
+  
+  // Pattern 1: minuscule + Majuscule = mot collé
+  text = text.replace(/([a-zàâäéèêëïîôùûüÿç])([A-ZÀÂÄÉÈÊËÏÎÔÙÛÜŸ])/g, '$1 $2');
+  
+  // Pattern 2: virgule sans espace
+  text = text.replace(/,([a-zA-ZÀ-ÿ])/g, ', $1');
+  
+  // Pattern 3: point sans espace
+  text = text.replace(/\.([a-zA-ZÀ-ÿ])/g, '. $1');
+  
+  // Pattern 4: ponctuation collée
+  text = text.replace(/([a-zàâäéèêëïîôùûüÿç])([;:!?])/g, '$1 $2');
+  
+  return text.trim();
+}
 
 type SessionState = "inactive" | "loading" | "active" | "error";
 
@@ -143,6 +165,37 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   }, []);
 
   // ============================================
+  // 🆕 HANDLER : Nettoyage message user complet
+  // ============================================
+  const handleUserStopMessage = useCallback(() => {
+    setChatHistory((prev) => {
+      if (prev.length === 0) return prev;
+      
+      const lastMsg = prev[prev.length - 1];
+      
+      // Si le dernier message est user, le nettoyer
+      if (lastMsg.role === "user") {
+        const cleaned = cleanTranscription(lastMsg.content);
+        
+        console.log('✨ USER NETTOYÉ:', {
+          avant: lastMsg.content.substring(0, 100),
+          après: cleaned.substring(0, 100)
+        });
+        
+        return [
+          ...prev.slice(0, -1),
+          {
+            ...lastMsg,
+            content: cleaned,
+          },
+        ];
+      }
+      
+      return prev;
+    });
+  }, []);
+
+  // ============================================
   // AVATAR INITIALIZATION
   // ============================================
 
@@ -192,6 +245,9 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleAvatarTalkingMessage);
         avatar.on(StreamingEvents.USER_END_MESSAGE, handleEndMessage);
         avatar.on(StreamingEvents.AVATAR_END_MESSAGE, handleEndMessage);
+        
+        // 🆕 AJOUTER LE HANDLER DE NETTOYAGE
+        avatar.on(StreamingEvents.USER_STOP_TALKING, handleUserStopMessage);
 
         avatarRef.current = avatar;
         return avatar;
@@ -200,7 +256,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
         throw new Error("Impossible d'initialiser l'avatar");
       }
     },
-    [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage]
+    [handleUserTalkingMessage, handleAvatarTalkingMessage, handleEndMessage, handleUserStopMessage]
   );
 
   // ============================================
