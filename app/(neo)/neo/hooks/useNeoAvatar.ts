@@ -28,19 +28,30 @@ import StreamingAvatar, {
 function cleanTranscription(text: string): string {
   if (!text) return text;
   
-  // Pattern 1: minuscule + Majuscule = mot collé
-  text = text.replace(/([a-zàâäéèêëïîôùûüÿç])([A-ZÀÂÄÉÈÊËÏÎÔÙÛÜŸ])/g, '$1 $2');
+  console.log('🧹 AVANT nettoyage:', text);
   
-  // Pattern 2: virgule sans espace
+  // Pattern 1: minuscule + Majuscule = mot collé (PLUS AGRESSIF)
+  text = text.replace(/([a-zàâäéèêëïîôùûüÿç]{2,})([A-ZÀÂÄÉÈÊËÏÎÔÙÛÜŸ])/g, '$1 $2');
+  
+  // Pattern 2: Majuscule répétée (ElleElle → Elle Elle)
+  text = text.replace(/([A-ZÀÂÄÉÈÊËÏÎÔÙÛÜŸ][a-zàâäéèêëïîôùûüÿç]+)([A-ZÀÂÄÉÈÊËÏÎÔÙÛÜŸ][a-zàâäéèêëïîôùûüÿç]+)/g, '$1 $2');
+  
+  // Pattern 3: mot + "de" collé (membredede → membre de de)
+  text = text.replace(/([a-zàâäéèêëïîôùûüÿç]{3,})(de)/g, '$1 $2');
+  
+  // Pattern 4: virgule sans espace
   text = text.replace(/,([a-zA-ZÀ-ÿ])/g, ', $1');
   
-  // Pattern 3: point sans espace
+  // Pattern 5: point sans espace
   text = text.replace(/\.([a-zA-ZÀ-ÿ])/g, '. $1');
   
-  // Pattern 4: ponctuation collée
+  // Pattern 6: ponctuation collée
   text = text.replace(/([a-zàâäéèêëïîôùûüÿç])([;:!?])/g, '$1 $2');
   
-  return text.trim();
+  const result = text.trim();
+  console.log('✨ APRÈS nettoyage:', result);
+  
+  return result;
 }
 
 type SessionState = "inactive" | "loading" | "active" | "error";
