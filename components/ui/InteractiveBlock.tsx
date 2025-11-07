@@ -162,31 +162,6 @@ export default function InteractiveBlock({
   }, [sessionState]);
 
   // ============================================
-  // EFFET : Message initial (UNIQUE)
-  // ============================================
-  useEffect(() => {
-    if (
-      sessionState === "active" && 
-      !initialMessageSentRef.current && 
-      initialMessage 
-    ) {
-      const timeout = setTimeout(() => {
-        if (sessionState === "active" && !initialMessageSentRef.current) {
-          console.log('🎤 Envoi message initial (UNIQUE):', initialMessage);
-          startInitialSpeak(initialMessage);
-          initialMessageSentRef.current = true;
-        }
-      }, 1000);
-      
-      return () => clearTimeout(timeout);
-    }
-    
-    if (sessionState === "inactive") {
-      initialMessageSentRef.current = false;
-    }
-  }, [sessionState, initialMessage, startInitialSpeak]);
-
-  // ============================================
   // EFFET : Stream vidéo
   // ============================================
   useEffect(() => {
