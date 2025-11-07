@@ -728,7 +728,8 @@ export default function InteractiveBlock({
           {/* Conteneur messages */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
             {(() => {
-              const displayHistory = showOnlyDiscussion ? chatHistory : liveChatHistory; 
+              // ✅ TOUJOURS afficher liveChatHistory en temps réel
+              const displayHistory = liveChatHistory.length > 0 ? liveChatHistory : chatHistory;
               return displayHistory.length === 0 ? (
                 <p className="text-gray-400 text-center py-6 text-xs">
                   {workflowState === "inactive"
