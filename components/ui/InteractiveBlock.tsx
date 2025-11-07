@@ -199,25 +199,6 @@ export default function InteractiveBlock({
   }, [stream]);
 
   // ============================================
-  // EFFET : Envoyer vers parent SEULEMENT quand message complet
-  // ============================================
-  useEffect(() => {
-    // Détecter la transition talking → not talking
-    if (!showOnlyDiscussion && 
-        onConversationUpdate && 
-        wasTalkingRef.current && 
-        !isTalking && 
-        liveChatHistory.length > lastSentLength.current) {
-      
-      console.log('✅ Message complet, envoi parent:', liveChatHistory.length);
-      lastSentLength.current = liveChatHistory.length;
-      onConversationUpdate(liveChatHistory);
-    }
-    
-    wasTalkingRef.current = isTalking;
-  }, [isTalking, liveChatHistory, showOnlyDiscussion]);
-
-  // ============================================
   // EFFET : Scroll en bas au chargement initial
   // ============================================
   useEffect(() => {
@@ -728,8 +709,8 @@ export default function InteractiveBlock({
           {/* Conteneur messages */}
           <div ref={chatContainerRef} className="flex-1 overflow-y-auto p-4">
             {(() => {
-              // ✅ TOUJOURS afficher liveChatHistory en temps réel
-              const displayHistory = liveChatHistory.length > 0 ? liveChatHistory : chatHistory;
+             // ✅ TOUJOURS afficher liveChatHistory pendant la session
+              const displayHistory = sessionState === "active" ? liveChatHistory : chatHistory;
               return displayHistory.length === 0 ? (
                 <p className="text-gray-400 text-center py-6 text-xs">
                   {workflowState === "inactive"
