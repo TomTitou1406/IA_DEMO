@@ -168,6 +168,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
   // 🆕 HANDLER : Nettoyage message user complet
   // ============================================
   const handleUserStopMessage = useCallback(() => {
+    console.log('🔔 USER_END_MESSAGE DÉCLENCHÉ !'); // ← AJOUTE CETTE LIGNE
     setChatHistory((prev) => {
       if (prev.length === 0) return prev;
       
