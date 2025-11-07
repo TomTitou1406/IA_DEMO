@@ -330,18 +330,6 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       await avatar.startVoiceChat();
       
       if (config?.initialMessage) {
-        const initialMsg = config.initialMessage;
-        
-        // Ajouter le message initial au chat history MANUELLEMENT
-        setChatHistory(prev => [
-          ...prev,
-          {
-            role: "assistant" as const,
-            content: initialMsg,
-            timestamp: new Date(),
-          }
-        ]);
-        
         await startInitialSpeak(initialMsg);
       }
     } catch (err) {
