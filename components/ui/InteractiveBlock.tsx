@@ -693,6 +693,23 @@ export default function InteractiveBlock({
             {(() => {
              // ✅ TOUJOURS afficher liveChatHistory pendant la session
               const displayHistory = sessionState === "active" ? liveChatHistory : chatHistory;
+             // 🔍 LOGS DE DEBUG
+              console.log('🎬 RENDER FIL:', {
+                sessionState,
+                workflowState,
+                liveChatLength: liveChatHistory.length,
+                chatHistoryLength: chatHistory.length,
+                displayLength: displayHistory.length,
+                showOnlyDiscussion,
+                showDiscussionThread
+              });
+              
+              // 🔍 LOG DES 2 PREMIERS MESSAGES
+              if (displayHistory.length > 0) {
+                console.log('📝 Premier message:', displayHistory[0].content.substring(0, 50));
+                console.log('📝 Dernier message:', displayHistory[displayHistory.length - 1].content.substring(0, 50));
+              }
+          
               return displayHistory.length === 0 ? (
                 <p className="text-gray-400 text-center py-6 text-xs">
                   {workflowState === "inactive"
