@@ -243,11 +243,8 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
 
         avatar.on(StreamingEvents.USER_TALKING_MESSAGE, handleUserTalkingMessage);
         avatar.on(StreamingEvents.AVATAR_TALKING_MESSAGE, handleAvatarTalkingMessage);
-        avatar.on(StreamingEvents.USER_END_MESSAGE, handleEndMessage);
+        avatar.on(StreamingEvents.USER_END_MESSAGE, handleUserStopMessage);  // 🆕 NETTOYAGE ICI
         avatar.on(StreamingEvents.AVATAR_END_MESSAGE, handleEndMessage);
-        
-        // 🆕 AJOUTER LE HANDLER DE NETTOYAGE
-        avatar.on(StreamingEvents.USER_STOP_TALKING, handleUserStopMessage);
 
         avatarRef.current = avatar;
         return avatar;
