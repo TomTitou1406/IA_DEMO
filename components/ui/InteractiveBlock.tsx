@@ -215,6 +215,14 @@ export default function InteractiveBlock({
     liveChatHistoryRef.current = liveChatHistory;
   }, [liveChatHistory]);
 
+  // ============================================
+  // EFFET : Forcer re-render quand liveChatHistory change
+  // ============================================
+  useEffect(() => {
+    // Force un re-render en mettant à jour un state local
+    setMessageVersion(prev => prev + 1);
+  }, [liveChatHistory]);
+
 
   // ============================================
   // EFFET : Analyser progression au chargement
