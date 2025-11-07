@@ -330,7 +330,7 @@ export function useNeoAvatar(config?: UseNeoAvatarConfig): UseNeoAvatarReturn {
       await avatar.startVoiceChat();
       
       if (config?.initialMessage) {
-        await startInitialSpeak(initialMsg);
+        await startInitialSpeak(config.initialMessage);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Erreur inconnue");
