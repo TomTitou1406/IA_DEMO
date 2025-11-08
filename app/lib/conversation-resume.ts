@@ -30,23 +30,23 @@ export async function getResumeContext(
       fields: [
         'histoire',
         'mission',
-        'produits',
-        'marche',
+        'produits_services',
+        'marche_cible',
         'culture',
-        'equipe',
+        'equipe_structure',
         'avantages',
-        'localisation',
+        'localisation_details',
         'perspectives'
       ],
       labels: {
         histoire: "Histoire de l'entreprise",
         mission: "Mission et vision",
-        produits: "Produits et services",
-        marche: "Marché cible",
+        produits_services: "Produits et services",
+        marche_cible: "Marché cible",
         culture: "Culture d'entreprise",
-        equipe: "Équipe et organisation",
+        equipe_structure: "Équipe et organisation",
         avantages: "Avantages employés",
-        localisation: "Localisation",
+        localisation_details: "Localisation",
         perspectives: "Perspectives d'avenir"
       }
     }
@@ -126,11 +126,12 @@ export function generateResumeMessage(
         perspectives: "vos perspectives d'avenir"
       },
       questions: {
-        marche: "Commençons par votre marché cible. Qui sont vos clients principaux et quelle est votre proposition de valeur ?",
+        produits_services: "Parlons de vos produits et services. Que proposez-vous à vos clients ?",
+        marche_cible: "Commençons par votre marché cible. Qui sont vos clients principaux et quelle est votre proposition de valeur ?",
         culture: "Parlons maintenant de votre culture d'entreprise. Quelles sont vos valeurs fondamentales ?",
-        equipe: "Décrivez-moi votre équipe. Combien êtes-vous et quelle est votre organisation ?",
+        equipe_structure: "Décrivez-moi votre équipe. Combien êtes-vous et quelle est votre organisation ?",
         avantages: "Quels avantages offrez-vous à vos employés ?",
-        localisation: "Où êtes-vous situé ? Travaillez-vous en remote, hybride ou en présentiel ?",
+        localisation_details: "Où êtes-vous situé ? Travaillez-vous en remote, hybride ou en présentiel ?",
         perspectives: "Enfin, quelles sont vos perspectives d'avenir et vos objectifs de croissance ?"
       }
     }
