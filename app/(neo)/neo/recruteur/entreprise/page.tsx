@@ -20,6 +20,7 @@ import { supabase } from '@/app/lib/supabaseClient';
 import { DEFAULT_USER_ID } from '@/app/lib/constants';
 import ProgressionChecklist from '@/components/conversation/ProgressionChecklist';
 import { useAvatarConfigFromDB } from "@/app/(neo)/neo/hooks/useAvatarConfigFromDB";
+import { useConversationContext } from '@/app/(neo)/neo/hooks/useConversationContext';
 
 export default function EntreprisePage() {
   const router = useRouter();
@@ -54,6 +55,12 @@ export default function EntreprisePage() {
       console.error('❌ Erreur configuration avatar:', error);
     },
   });
+
+  const { 
+  context: dbContext, 
+  loading: contextLoading, 
+  error: contextError 
+} = useConversationContext('acquisition_entreprise');
 
   // ============================================
   // EFFECTS (TOUS ICI, AVANT LES RETURN)
@@ -274,6 +281,37 @@ export default function EntreprisePage() {
   // ============================================
   // RETURNS CONDITIONNELS
   // ============================================
+
+  // Loading context
+  if (contextLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Chargement du contexte...</p>
+        </div>
+      </div>
+    );
+  }
+  
+  // Erreur context
+  if (contextError || !dbContext) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gray-100">
+        <div className="text-center text-red-600">
+          <div className="text-5xl mb-4">❌</div>
+          <p className="text-lg font-semibold mb-2">Erreur de chargement</p>
+          <p className="text-sm mb-4">{contextError?.message || 'Contexte non trouvé'}</p>
+          <button 
+            onClick={() => window.location.reload()}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Recharger
+          </button>
+        </div>
+      </div>
+    );
+  }
   
   // Loading config
   if (configLoading) {
@@ -337,31 +375,25 @@ export default function EntreprisePage() {
   // ============================================
   // CONFIGURATION CONTEXTE
   // ============================================
-  const contextConfig: ConversationContext = {
-    id: '0447e09c-a2bb-4090-b279-01aaf8de1a59',
-    context_key: 'acquisition_entreprise',
-    context_type: 'workflow',
-    title: '📋 Présentez votre entreprise',
-    subtitle: 'Conversation avec votre guide interactif (~10 minutes)',
-    knowledge_id: kb.heygen_kb_id,
-    avatar_name: 'Anastasia_Chair_Sitting_public',
-    avatar_preview_image: '/avatars/anastasia_16_9_preview.webp',
-    voice_rate: 1.0,
-    language: 'fr',
-    initial_message_new: 'Bonjour ! Je suis là pour vous aider à créer le profil complet de votre entreprise. Je vais vous poser des questions sur 10 aspects clés de votre organisation. Prêt à commencer par l\'histoire de votre entreprise ?',
-    initial_message_resume: 'Bienvenue ! Je vois que nous avions commencé à parler de votre entreprise. Voulez-vous que nous reprenions là où nous nous sommes arrêtés ?',
-    is_active: true,
-  };
 
   console.log('🔧 Passage à InteractiveBlock:', {
     entrepriseId,
     conversationId,
-    chatHistoryLength: chatHistory.length
+    chatHistoryLength: chatHistory.length,
+    contextId: dbContext.id,  // ← AJOUTE CETTE LIGNE
+    contextKey: dbContext.context_key  // ← ET CELLE-CI
   });
-
+  
   // ============================================
   // RETURN PRINCIPAL
   // ============================================
+  // Debug context chargé
+    console.log('✅ Context depuis BDD:', {
+      id: dbContext.id,
+      key: dbContext.context_key,
+      title: dbContext.title,
+      knowledgeId: dbContext.knowledge_id
+    });
   return (
     <div className="w-full h-screen bg-gray-50 p-6 overflow-hidden">
       
@@ -375,8 +407,8 @@ export default function EntreprisePage() {
           <div className="flex items-center justify-center gap-3 mb-2">
             {!isEditingName ? (
               <>
-                <h1 className="text-2xl font-bold text-blue-900">
-                  📋 Présentez votre entreprise - {entrepriseName}
+               <h1 className="text-2xl font-bold text-blue-900">
+                  {dbContext.title} - {entrepriseName}
                 </h1>
                 <button
                   onClick={() => setIsEditingName(true)}
@@ -424,7 +456,7 @@ export default function EntreprisePage() {
           <p className="text-gray-600 text-sm">
             {chatHistory.length > 0 
               ? `Reprenez là où vous vous êtes arrêté (${chatHistory.length} messages sauvegardés).`
-              : 'Votre guide interactif va vous poser des questions (~10 minutes).'
+              : dbContext.subtitle || 'Votre guide interactif va vous poser des questions (~10 minutes).'
             }
           </p>
         </div>
@@ -440,7 +472,7 @@ export default function EntreprisePage() {
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
-                context={contextConfig}
+                context={dbContext}
                 chatHistory={chatHistory}
                 entrepriseId={entrepriseId}
                 onConversationUpdate={handleChatUpdate}
@@ -456,7 +488,7 @@ export default function EntreprisePage() {
             {entrepriseId && (
               <div style={{ width: '20%', minWidth: '250px', paddingTop: '10px' }} className="flex items-start">
                 <ProgressionChecklist
-                  contextId="0447e09c-a2bb-4090-b279-01aaf8de1a59"
+                  contextId={dbContext.id}
                   entityId={entrepriseId}
                   targetTable="entreprises"
                 />
