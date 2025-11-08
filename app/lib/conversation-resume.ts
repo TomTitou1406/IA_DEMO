@@ -79,9 +79,15 @@ export async function getResumeContext(
   const completedFields: string[] = [];
   let nextField = config.fields[0];
   
-  for (const field of config.fields) {
-    const value = typedData[field];
-    const isCompleted = value && value.trim().length > 0;
+for (const field of config.fields) {
+  const value = typedData[field];
+  
+  // Vérifier que c'est bien une string et qu'elle n'est pas vide
+  const isCompleted = 
+    value !== null && 
+    value !== undefined && 
+    typeof value === 'string' && 
+    value.trim().length > 0;
     
     if (isCompleted) {
       completedFields.push(field);
