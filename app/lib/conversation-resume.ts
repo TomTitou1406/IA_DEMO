@@ -63,18 +63,22 @@ export async function getResumeContext(
     .select(config.fields.join(','))
     .eq('id', entityId)
     .single();
-
-  if (error || !data) {
+  
+  if (error) {
+    throw new Error(`Erreur BDD: ${error.message}`);
+  }
+  
+  if (!data) {
     throw new Error('Entité non trouvée');
   }
-
+  
   // 🆕 Typer data pour éviter l'erreur TypeScript
-  const typedData = data as Record<string, string | null>;
-
+  const typedData = data as unknown as Record<string, string | null>;
+  
   // Analyser les champs complétés
   const completedFields: string[] = [];
   let nextField = config.fields[0];
-
+  
   for (const field of config.fields) {
     const value = typedData[field];
     const isCompleted = value && value.trim().length > 0;
