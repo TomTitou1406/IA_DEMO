@@ -485,7 +485,7 @@ export default function EntreprisePage() {
             </div>
             
             {/* Checklist : 20% */}
-            {entrepriseId && (
+            {entrepriseId && dbContext.id && (
               <div style={{ width: '20%', minWidth: '250px', paddingTop: '10px' }} className="flex items-start">
                 <ProgressionChecklist
                   contextId={dbContext.id}
@@ -494,6 +494,7 @@ export default function EntreprisePage() {
                 />
               </div>
             )}
+            
           </div>
                   
         </div>
