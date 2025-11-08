@@ -104,37 +104,7 @@ export default function EntreprisePage() {
               console.log('✅ Conversation chargée:', conv.messages?.length || 0, 'messages');
               setConversationId(conv.id);
               setChatHistory(conv.messages || []);
-
-              // 🆕 GÉNÉRER MESSAGE DE REPRISE CONTEXTUALISÉ
-              if (dbContext?.id) {
-                try {
-                  const resumeContext = await getResumeContext(
-                    dbContext.id,
-                    entreprise.id,
-                    'entreprises'
-                  );
-                  
-                  const resumeMsg = generateResumeMessage(
-                    resumeContext,
-                    dbContext.id
-                  );
-                  
-                  console.log('📝 Message de reprise généré:', resumeMsg.substring(0, 100) + '...');
-                  console.log('📊 Progression:', {
-                    completed: resumeContext.completedCount,
-                    total: resumeContext.totalFields,
-                    percentage: resumeContext.percentage,
-                    nextField: resumeContext.nextField
-                  });
-                  
-                  setCustomResumeMessage(resumeMsg);
-                  
-                } catch (error) {
-                  console.error('❌ Erreur génération message reprise:', error);
-                  // Fallback sur message par défaut
-                  setCustomResumeMessage(null);
-                }
-              }
+              
             } else {
               console.log('ℹ️ Pas de conversation, création...');
               await createConversation(entreprise.id);
@@ -170,6 +140,48 @@ export default function EntreprisePage() {
       });
     }
   }, [avatarConfig]);
+
+  // Effect 3: Générer message de reprise contextualisé
+  useEffect(() => {
+    async function generateResumeMsg() {
+      // Attendre que tout soit chargé
+      if (!dbContext?.id || !entrepriseId || chatHistory.length === 0) {
+        console.log('⏳ Attente chargement complet pour message reprise');
+        return;
+      }
+      
+      try {
+        console.log('🔄 Génération message de reprise...');
+        
+        const resumeContext = await getResumeContext(
+          dbContext.id,
+          entrepriseId,
+          'entreprises'
+        );
+        
+        const resumeMsg = generateResumeMessage(
+          resumeContext,
+          dbContext.id
+        );
+        
+        console.log('📝 Message de reprise généré:', resumeMsg.substring(0, 100) + '...');
+        console.log('📊 Progression:', {
+          completed: resumeContext.completedCount,
+          total: resumeContext.totalFields,
+          percentage: resumeContext.percentage,
+          nextField: resumeContext.nextField
+        });
+        
+        setCustomResumeMessage(resumeMsg);
+        
+      } catch (error) {
+        console.error('❌ Erreur génération message reprise:', error);
+        setCustomResumeMessage(null);
+      }
+    }
+    
+    generateResumeMsg();
+  }, [dbContext?.id, entrepriseId, chatHistory.length]);
 
   // ============================================
   // FONCTIONS HELPER
