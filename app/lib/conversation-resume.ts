@@ -68,12 +68,15 @@ export async function getResumeContext(
     throw new Error('Entité non trouvée');
   }
 
+  // 🆕 Typer data pour éviter l'erreur TypeScript
+  const typedData = data as Record<string, string | null>;
+
   // Analyser les champs complétés
   const completedFields: string[] = [];
   let nextField = config.fields[0];
 
   for (const field of config.fields) {
-    const value = data[field];
+    const value = typedData[field];
     const isCompleted = value && value.trim().length > 0;
     
     if (isCompleted) {
