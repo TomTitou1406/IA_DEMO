@@ -134,7 +134,7 @@ export default function EntreprisePage() {
                   // Fallback sur message par défaut
                   setCustomResumeMessage(null);
                 }
-              }
+            
             } else {
               console.log('ℹ️ Pas de conversation, création...');
               await createConversation(entreprise.id);
