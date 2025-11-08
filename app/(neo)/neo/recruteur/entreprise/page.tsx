@@ -21,6 +21,7 @@ import { DEFAULT_USER_ID } from '@/app/lib/constants';
 import ProgressionChecklist from '@/components/conversation/ProgressionChecklist';
 import { useAvatarConfigFromDB } from "@/app/(neo)/neo/hooks/useAvatarConfigFromDB";
 import { useConversationContext } from '@/app/(neo)/neo/hooks/useConversationContext';
+import { getResumeContext, generateResumeMessage } from '@/app/lib/conversation-resume';
 
 export default function EntreprisePage() {
   const router = useRouter();
@@ -35,6 +36,7 @@ export default function EntreprisePage() {
   const [entrepriseName, setEntrepriseName] = useState('Entreprise sans nom');
   const [isSavingName, setIsSavingName] = useState(false);
   const [isEditingName, setIsEditingName] = useState(false);
+  const [customResumeMessage, setCustomResumeMessage] = useState<string | null>(null);
   
   // ============================================
   // HOOKS PERSONNALISÉS
@@ -102,6 +104,37 @@ export default function EntreprisePage() {
               console.log('✅ Conversation chargée:', conv.messages?.length || 0, 'messages');
               setConversationId(conv.id);
               setChatHistory(conv.messages || []);
+
+              / 🆕 GÉNÉRER MESSAGE DE REPRISE CONTEXTUALISÉ
+              if (dbContext?.id) {
+                try {
+                  const resumeContext = await getResumeContext(
+                    dbContext.id,
+                    entreprise.id,
+                    'entreprises'
+                  );
+                  
+                  const resumeMsg = generateResumeMessage(
+                    resumeContext,
+                    dbContext.id
+                  );
+                  
+                  console.log('📝 Message de reprise généré:', resumeMsg.substring(0, 100) + '...');
+                  console.log('📊 Progression:', {
+                    completed: resumeContext.completedCount,
+                    total: resumeContext.totalFields,
+                    percentage: resumeContext.percentage,
+                    nextField: resumeContext.nextField
+                  });
+                  
+                  setCustomResumeMessage(resumeMsg);
+                  
+                } catch (error) {
+                  console.error('❌ Erreur génération message reprise:', error);
+                  // Fallback sur message par défaut
+                  setCustomResumeMessage(null);
+                }
+              }
             } else {
               console.log('ℹ️ Pas de conversation, création...');
               await createConversation(entreprise.id);
