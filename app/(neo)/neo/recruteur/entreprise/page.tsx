@@ -416,6 +416,20 @@ export default function EntreprisePage() {
     contextId: dbContext.id,  // ← AJOUTE CETTE LIGNE
     contextKey: dbContext.context_key  // ← ET CELLE-CI
   });
+
+  // ============================================
+  // CRÉER CONTEXTE AVEC MESSAGE DYNAMIQUE
+  // ============================================
+  const contextWithDynamicMessage = {
+    ...dbContext,
+    initial_message_resume: customResumeMessage || dbContext.initial_message_resume,
+  };
+  
+  console.log('📨 Message initial utilisé:', 
+    chatHistory.length > 0 
+      ? (customResumeMessage ? 'CONTEXTUALISÉ' : 'PAR DÉFAUT')
+      : 'NOUVEAU'
+  );
   
   // ============================================
   // RETURN PRINCIPAL
@@ -505,7 +519,7 @@ export default function EntreprisePage() {
               <InteractiveBlock
                 conversationId={conversationId}
                 conversationType="acquisition_entreprise"
-                context={dbContext}
+                context={contextWithDynamicMessage}
                 chatHistory={chatHistory}
                 entrepriseId={entrepriseId}
                 onConversationUpdate={handleChatUpdate}
