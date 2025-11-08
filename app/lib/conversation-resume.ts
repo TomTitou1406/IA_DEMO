@@ -21,9 +21,12 @@ export async function getResumeContext(
   targetTable: 'entreprises' | 'postes'
 ): Promise<ResumeContext> {
   
-  // Mapping des champs selon le contexte
-  const fieldMapping = {
-    '0447e09c-a2bb-4090-b279-01aaf8de1a59': { // acquisition_entreprise
+      // Mapping des champs selon le contexte
+      const fieldMapping: Record<string, {
+      fields: string[];
+      labels: Record<string, string>;
+    }> = {
+      '0447e09c-a2bb-4090-b279-01aaf8de1a59': { // acquisition_entreprise
       fields: [
         'histoire',
         'mission',
@@ -98,9 +101,12 @@ export function generateResumeMessage(
   context: ResumeContext,
   contextId: string
 ): string {
-  
-  const fieldMapping = {
-    '0447e09c-a2bb-4090-b279-01aaf8de1a59': {
+      
+      const fieldMapping: Record<string, {
+      labels: Record<string, string>;
+      questions: Record<string, string>;
+    }> = {
+      '0447e09c-a2bb-4090-b279-01aaf8de1a59': {
       labels: {
         histoire: "l'histoire de votre entreprise",
         mission: "votre mission et vision",
