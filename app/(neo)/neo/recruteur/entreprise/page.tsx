@@ -105,7 +105,7 @@ export default function EntreprisePage() {
               setConversationId(conv.id);
               setChatHistory(conv.messages || []);
 
-              / 🆕 GÉNÉRER MESSAGE DE REPRISE CONTEXTUALISÉ
+              // 🆕 GÉNÉRER MESSAGE DE REPRISE CONTEXTUALISÉ
               if (dbContext?.id) {
                 try {
                   const resumeContext = await getResumeContext(
@@ -134,7 +134,7 @@ export default function EntreprisePage() {
                   // Fallback sur message par défaut
                   setCustomResumeMessage(null);
                 }
-            
+              }
             } else {
               console.log('ℹ️ Pas de conversation, création...');
               await createConversation(entreprise.id);
