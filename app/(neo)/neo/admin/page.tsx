@@ -12,14 +12,14 @@ export default function Page() {
       href: string;
     }[] = [ 
     {
-      title: "Gestion des utilisateurs et profils - Logs",
+      title: "Test extract data et mise en forme",
       desc: "Gestion des utilisateurs identifiés et droits d'accès - Suivi des logs et traçabilité.",
       color: "var(--nc-green)",           // ou "#1D5DFF", etc.
       image: "/cards/user_logs_card.png",
-      href: "/neo/admin/", 
+      href: "/test-extract/", 
     },
     {
-      title: "Gestion des prompts systems et avatars",
+      title: "Test chat OpoenAI",
       desc: "Gestion des prompts de tous les scénarios IA et comportements des avatars + paramètres.",
       color: "var(--nc-green)",           // ou "#1D5DFF", etc.
       image: "/cards/admin_prompt_card.png",
