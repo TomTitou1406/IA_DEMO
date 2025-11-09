@@ -1,98 +1,230 @@
-"use client";
+/**
+ * @file /app/api/openai/extract/route.ts
+ * @version 1.0
+ * @description API pour extraire et structurer les données depuis raw_conversation
+ * 
+ * Usage:
+ * POST /api/openai/extract
+ * Body: {
+ *   entreprise_id: string,
+ *   target_table: 'entreprises' | 'postes'
+ * }
+ */
 
-import { useState } from 'react';
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/app/lib/supabaseClient';
+import { callOpenAI } from '@/app/lib/services/openai';
 
-export default function TestExtractPage() {
-  const [loading, setLoading] = useState(false);
-  const [result, setResult] = useState<any>(null);
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+export const maxDuration = 60; // 60 secondes max (extraction peut être longue)
 
-  const testExtraction = async () => {
-    setLoading(true);
-    setResult(null);
+interface RequestBody {
+  entreprise_id: string;
+  target_table: 'entreprises' | 'postes';
+  fields?: string[]; // Optionnel : extraire seulement certains champs
+}
 
-    try {
-      const response = await fetch('/api/openai/extract', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          entreprise_id: '39861555-8d18-4022-8829-d65ffedd6178',
-          target_table: 'entreprises',
-        }),
-      });
+interface ExtractionResult {
+  field: string;
+  content: string;
+  tokens: number;
+  cost: number;
+  success: boolean;
+  error?: string;
+}
 
-      const data = await response.json();
-      setResult(data);
-      
-      console.log('📊 Résultat:', data);
-    } catch (error) {
-      console.error('❌ Erreur:', error);
-      setResult({ success: false, error: 'Erreur réseau' });
-    } finally {
-      setLoading(false);
+export async function POST(request: NextRequest) {
+  try {
+    console.log('🔄 API /openai/extract - Début');
+    
+    // 1. Parser le body
+    const body: RequestBody = await request.json();
+    const { entreprise_id, target_table, fields } = body;
+    
+    // 2. Validation
+    if (!entreprise_id) {
+      return NextResponse.json(
+        { success: false, error: 'entreprise_id requis' },
+        { status: 400 }
+      );
     }
-  };
-
-  return (
-    <div className="max-w-4xl mx-auto p-8">
-      <h1 className="text-2xl font-bold mb-4">🧪 Test Extraction OpenAI</h1>
+    
+    if (!target_table || !['entreprises', 'postes'].includes(target_table)) {
+      return NextResponse.json(
+        { success: false, error: 'target_table doit être "entreprises" ou "postes"' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('📋 Extraction pour:', { entreprise_id, target_table });
+    
+    // 3. Récupérer raw_conversation depuis la BDD
+    const { data: entity, error: fetchError } = await supabase
+      .from(target_table)
+      .select('raw_conversation')
+      .eq('id', entreprise_id)
+      .single();
+    
+    if (fetchError || !entity) {
+      console.error('❌ Erreur récupération entité:', fetchError);
+      return NextResponse.json(
+        { success: false, error: 'Entité non trouvée' },
+        { status: 404 }
+      );
+    }
+    
+    const rawConversation = entity.raw_conversation;
+    
+    if (!rawConversation || rawConversation.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Aucune conversation à extraire' },
+        { status: 400 }
+      );
+    }
+    
+    console.log('📥 Conversation chargée:', rawConversation.length, 'messages');
+    
+    // 4. Formater la conversation pour extraction
+    const conversationText = rawConversation
+      .map((msg: any) => `${msg.role === 'user' ? 'Utilisateur' : 'Assistant'}: ${msg.content}`)
+      .join('\n\n');
+    
+    // 5. Définir les champs à extraire
+    const fieldsToExtract = fields || [
+      'histoire',
+      'mission',
+      'produits_services',
+      'marche_cible',
+      'culture',
+      'equipe_structure',
+      'avantages',
+      'localisation_details',
+      'perspectives'
+    ];
+    
+    console.log('🎯 Extraction de', fieldsToExtract.length, 'champs');
+    
+    // 6. Extraire chaque champ via OpenAI
+    const results: ExtractionResult[] = [];
+    const extractedData: Record<string, string> = {};
+    let totalCost = 0;
+    let totalTokens = 0;
+    
+    for (const field of fieldsToExtract) {
+      try {
+        console.log(`🔄 Extraction: ${field}...`);
+        
+        const response = await callOpenAI({
+          promptKey: `extract_${field}`,
+          variables: {
+            raw_conversation: conversationText,
+          },
+          metadata: {
+            entreprise_id,
+            target_table,
+            field,
+          },
+        });
+        
+        if (response.success && response.content.trim().length > 0) {
+          extractedData[field] = response.content.trim();
+          totalCost += response.cost;
+          totalTokens += response.usage.totalTokens;
+          
+          results.push({
+            field,
+            content: response.content.trim(),
+            tokens: response.usage.totalTokens,
+            cost: response.cost,
+            success: true,
+          });
+          
+          console.log(`✅ ${field}: ${response.content.substring(0, 50)}... (${response.usage.totalTokens} tokens)`);
+        } else {
+          console.log(`⚠️ ${field}: Aucun contenu extrait`);
+          
+          results.push({
+            field,
+            content: '',
+            tokens: 0,
+            cost: 0,
+            success: false,
+            error: response.error || 'Aucun contenu extrait',
+          });
+        }
+        
+      } catch (error) {
+        console.error(`❌ Erreur extraction ${field}:`, error);
+        
+        results.push({
+          field,
+          content: '',
+          tokens: 0,
+          cost: 0,
+          success: false,
+          error: error instanceof Error ? error.message : 'Erreur inconnue',
+        });
+      }
+    }
+    
+    console.log('📊 Extraction terminée:', {
+      fieldsExtracted: Object.keys(extractedData).length,
+      totalCost: `$${totalCost.toFixed(6)}`,
+      totalTokens,
+    });
+    
+    // 7. Sauvegarder dans la BDD
+    if (Object.keys(extractedData).length > 0) {
+      const { error: updateError } = await supabase
+        .from(target_table)
+        .update({
+          ...extractedData,
+          extraction_metadata: {
+            extraction_date: new Date().toISOString(),
+            total_cost: totalCost,
+            total_tokens: totalTokens,
+            fields_extracted: Object.keys(extractedData),
+            extraction_results: results,
+          },
+          updated_at: new Date().toISOString(),
+        })
+        .eq('id', entreprise_id);
       
-      <button
-        onClick={testExtraction}
-        disabled={loading}
-        className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
-      >
-        {loading ? '⏳ Extraction en cours...' : '🚀 Lancer l\'extraction'}
-      </button>
-
-      {result && (
-        <div className="mt-6 p-4 bg-white border rounded-lg">
-          <h2 className="text-lg font-semibold mb-3">
-            {result.success ? '✅ Succès' : '❌ Erreur'}
-          </h2>
-          
-          {result.success && (
-            <>
-              <div className="mb-4 text-sm text-gray-600">
-                <p>Champs extraits: {result.extractedFields?.length || 0}</p>
-                <p>Coût total: ${result.totalCost?.toFixed(6)}</p>
-                <p>Tokens: {result.totalTokens}</p>
-              </div>
-              
-              <div className="space-y-3">
-                {result.results?.map((r: any, idx: number) => (
-                  <div 
-                    key={idx}
-                    className={`p-3 border rounded ${
-                      r.success ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'
-                    }`}
-                  >
-                    <div className="font-semibold mb-1">
-                      {r.success ? '✅' : '❌'} {r.field}
-                    </div>
-                    {r.content && (
-                      <div className="text-sm text-gray-700 mt-2">
-                        {r.content.substring(0, 200)}...
-                      </div>
-                    )}
-                    {r.error && (
-                      <div className="text-sm text-red-600 mt-1">
-                        Erreur: {r.error}
-                      </div>
-                    )}
-                    <div className="text-xs text-gray-500 mt-2">
-                      {r.tokens} tokens · ${r.cost?.toFixed(6)}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </>
-          )}
-          
-          {result.error && (
-            <p className="text-red-600">{result.error}</p>
-          )}
-        </div>
-      )}
-    </div>
-  );
+      if (updateError) {
+        console.error('❌ Erreur sauvegarde:', updateError);
+        return NextResponse.json(
+          { 
+            success: false, 
+            error: 'Erreur lors de la sauvegarde',
+            results // On retourne quand même les résultats
+          },
+          { status: 500 }
+        );
+      }
+      
+      console.log('✅ Données sauvegardées en BDD');
+    }
+    
+    // 8. Retourner les résultats
+    return NextResponse.json({
+      success: true,
+      extractedFields: Object.keys(extractedData),
+      totalCost,
+      totalTokens,
+      results,
+      message: `${Object.keys(extractedData).length} champs extraits avec succès`,
+    });
+    
+  } catch (error) {
+    console.error('❌ Erreur API /openai/extract:', error);
+    
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: error instanceof Error ? error.message : 'Erreur interne' 
+      },
+      { status: 500 }
+    );
+  }
 }
