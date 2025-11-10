@@ -1,6 +1,6 @@
 "use client";
 
-import InteractiveAvatar from "@/components/InteractiveAvatar";
+import { InteractiveAvatar } from "@neorecrut/shared-avatar";
 export default function App() {
   return (
     <div className="w-screen h-screen flex flex-col">
