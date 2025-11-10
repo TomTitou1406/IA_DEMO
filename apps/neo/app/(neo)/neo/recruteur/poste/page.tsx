@@ -1,8 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import InteractiveBlock from "@/components/ui/InteractiveBlock";
-import InteractiveChatBlock from "@/components/ui/InteractiveChatBlock";
+import { InteractiveBlock, InteractiveChatBlock } from "@neorecrut/shared-avatar";
 import Link from "next/link";
 import { Card, CardHeader, CardContent } from "@/components/ui/Card";
 
