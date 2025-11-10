@@ -1,0 +1,25 @@
+npm warn config ignoring workspace config at C:\Users\fisch\IA_DEMO\apps\neo/.npmrc
+
+> neo@1.0.0 dev
+> next dev --port 3000
+
+   ▲ Next.js 15.5.6
+   - Local:        http://localhost:3000
+   - Network:      http://192.168.1.60:3000
+   - Environments: .env.local, .env
+
+ ✓ Starting...
+ ✓ Ready in 1807ms
+ ○ Compiling / ...
+ ✓ Compiled / in 3.7s (555 modules)
+ GET / 307 in 4232ms
+ ○ Compiling /neo ...
+ ✓ Compiled /neo in 2.2s (619 modules)
+ GET /neo 200 in 2701ms
+ ✓ Compiled /neo/recruteur in 274ms (608 modules)
+ GET /neo/recruteur 200 in 430ms
+ ○ Compiling /neo/recruteur/entreprise ...
+ ✓ Compiled /neo/recruteur/entreprise in 1530ms (861 modules)
+ GET /neo/recruteur/entreprise 200 in 1648ms
+ GET /neo 200 in 63ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EBUSY: resource busy or locked, rename 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\server-development\0.pack.gz_' -> 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\server-development\0.pack.gz'

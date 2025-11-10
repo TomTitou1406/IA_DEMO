@@ -1,0 +1,6 @@
+{
+  "/page": "app/page.js",
+  "/(neo)/neo/page": "app/(neo)/neo/page.js",
+  "/(neo)/neo/recruteur/page": "app/(neo)/neo/recruteur/page.js",
+  "/(neo)/neo/recruteur/entreprise/page": "app/(neo)/neo/recruteur/entreprise/page.js"
+}
