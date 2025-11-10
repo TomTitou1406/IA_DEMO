@@ -1,0 +1,21 @@
+{
+  "name": "@neorecrut/shared-avatar",
+  "version": "1.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./components": "./src/components/index.ts",
+    "./hooks": "./src/hooks/index.ts"
+  },
+  "dependencies": {
+    "@heygen/streaming-avatar": "^2.0.13",
+    "@neorecrut/shared-ui": "*",
+    "ahooks": "^3.8.4"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "openai": "^4.52.1"
+  }
+}

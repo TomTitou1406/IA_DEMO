@@ -1,6 +1,7 @@
 {
-  "/page": "app/page.js",
   "/(neo)/neo/page": "app/(neo)/neo/page.js",
+  "/page": "app/page.js",
   "/(neo)/neo/recruteur/page": "app/(neo)/neo/recruteur/page.js",
-  "/(neo)/neo/recruteur/entreprise/page": "app/(neo)/neo/recruteur/entreprise/page.js"
+  "/(neo)/neo/recruteur/entreprise/page": "app/(neo)/neo/recruteur/entreprise/page.js",
+  "/(neo)/neo/recruteur/poste/page": "app/(neo)/neo/recruteur/poste/page.js"
 }

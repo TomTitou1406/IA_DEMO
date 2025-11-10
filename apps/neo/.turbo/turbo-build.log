@@ -7,7 +7,8 @@ npm warn config ignoring workspace config at C:\Users\fisch\IA_DEMO\apps\neo/.np
    - Environments: .env.local, .env
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 3.9s
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\server-production\0.pack_' -> 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\server-production\0.pack'
+ ✓ Compiled successfully in 3.7s
    Linting and checking validity of types ...
 
  ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
@@ -650,219 +651,215 @@ npm warn config ignoring workspace config at C:\Users\fisch\IA_DEMO\apps\neo/.np
 ./app/(neo)/neo/recruteur/entreprise/page.tsx
 1:14  Warning: Delete `␍`  prettier/prettier
 2:1  Warning: Delete `␍`  prettier/prettier
-3:1  Warning: There should be at least one empty line between import groups  import/order
 3:41  Warning: Delete `␍`  prettier/prettier
-4:65  Warning: Delete `␍`  prettier/prettier
+4:9  Warning: Replace `·InteractiveBlock,·InteractiveChatBlock·}·from·"@neorecrut/shared-avatar";␍` with `⏎··InteractiveBlock,⏎··InteractiveChatBlock,⏎}·from·"@neorecrut/shared-avatar";`  prettier/prettier
 5:1  Warning: There should be at least one empty line between import groups  import/order
-5:73  Warning: Delete `␍`  prettier/prettier
-6:1  Warning: There should be at least one empty line between import groups  import/order
-6:1  Warning: `next/link` import should occur before import of `@/components/ui/InteractiveBlock`  import/order
-6:30  Warning: Delete `␍`  prettier/prettier
-7:70  Warning: Delete `␍`  prettier/prettier
-8:1  Warning: Delete `␍`  prettier/prettier
-9:48  Warning: Delete `␍`  prettier/prettier
-10:80  Warning: Delete `␍`  prettier/prettier
-11:1  Warning: Delete `␍`  prettier/prettier
-12:73  Warning: Delete `␍`  prettier/prettier
-13:68  Warning: Delete `␍`  prettier/prettier
-14:73  Warning: Delete `␍`  prettier/prettier
-15:34  Warning: Delete `␍`  prettier/prettier
-16:43  Warning: Delete `␍`  prettier/prettier
-17:55  Warning: Delete `␍`  prettier/prettier
-18:5  Warning: Delete `␍`  prettier/prettier
-19:1  Warning: Delete `␍`  prettier/prettier
-20:36  Warning: Delete `␍`  prettier/prettier
-21:46  Warning: Delete `␍`  prettier/prettier
-22:29  Warning: Delete `␍`  prettier/prettier
-23:5  Warning: Delete `␍`  prettier/prettier
-24:1  Warning: Delete `␍`  prettier/prettier
-25:35  Warning: Delete `␍`  prettier/prettier
-26:44  Warning: Delete `␍`  prettier/prettier
-27:27  Warning: Delete `␍`  prettier/prettier
-28:5  Warning: Delete `␍`  prettier/prettier
-29:1  Warning: Delete `␍`  prettier/prettier
-30:73  Warning: Delete `␍`  prettier/prettier
-31:65  Warning: Delete `␍`  prettier/prettier
-32:73  Warning: Delete `␍`  prettier/prettier
-33:56  Warning: Delete `␍`  prettier/prettier
-34:54  Warning: Delete `␍`  prettier/prettier
-35:9  Warning: Delete `␍`  prettier/prettier
-36:64  Warning: Delete `␍`  prettier/prettier
-37:58  Warning: Delete `␍`  prettier/prettier
-38:13  Warning: Delete `␍`  prettier/prettier
+5:30  Warning: Delete `␍`  prettier/prettier
+6:70  Warning: Delete `␍`  prettier/prettier
+7:1  Warning: Delete `␍`  prettier/prettier
+8:48  Warning: Delete `␍`  prettier/prettier
+9:80  Warning: Delete `␍`  prettier/prettier
+10:1  Warning: Delete `␍`  prettier/prettier
+11:73  Warning: Delete `␍`  prettier/prettier
+12:68  Warning: Delete `␍`  prettier/prettier
+13:73  Warning: Delete `␍`  prettier/prettier
+14:34  Warning: Delete `␍`  prettier/prettier
+15:43  Warning: Delete `␍`  prettier/prettier
+16:55  Warning: Delete `␍`  prettier/prettier
+17:5  Warning: Delete `␍`  prettier/prettier
+18:1  Warning: Delete `␍`  prettier/prettier
+19:36  Warning: Delete `␍`  prettier/prettier
+20:46  Warning: Delete `␍`  prettier/prettier
+21:29  Warning: Delete `␍`  prettier/prettier
+22:5  Warning: Delete `␍`  prettier/prettier
+23:1  Warning: Delete `␍`  prettier/prettier
+24:35  Warning: Delete `␍`  prettier/prettier
+25:44  Warning: Delete `␍`  prettier/prettier
+26:27  Warning: Delete `␍`  prettier/prettier
+27:5  Warning: Delete `␍`  prettier/prettier
+28:1  Warning: Delete `␍`  prettier/prettier
+29:73  Warning: Delete `␍`  prettier/prettier
+30:65  Warning: Delete `␍`  prettier/prettier
+31:73  Warning: Delete `␍`  prettier/prettier
+32:56  Warning: Delete `␍`  prettier/prettier
+33:54  Warning: Delete `␍`  prettier/prettier
+34:9  Warning: Delete `␍`  prettier/prettier
+35:64  Warning: Delete `␍`  prettier/prettier
+36:58  Warning: Delete `␍`  prettier/prettier
+37:13  Warning: Delete `␍`  prettier/prettier
+38:75  Warning: Delete `␍`  prettier/prettier
 39:75  Warning: Delete `␍`  prettier/prettier
-40:75  Warning: Delete `␍`  prettier/prettier
-41:1  Warning: Delete `␍`  prettier/prettier
-42:47  Warning: Delete `␍`  prettier/prettier
-43:31  Warning: Delete `␍`  prettier/prettier
-44:12  Warning: Delete `␍`  prettier/prettier
-45:38  Warning: Delete `␍`  prettier/prettier
-46:63  Warning: Delete `␍`  prettier/prettier
-47:8  Warning: Delete `␍`  prettier/prettier
-48:5  Warning: Delete `␍`  prettier/prettier
-49:1  Warning: Delete `␍`  prettier/prettier
-50:64  Warning: Delete `␍`  prettier/prettier
-51:1  Warning: Delete `␍`  prettier/prettier
-52:59  Warning: Delete `␍`  prettier/prettier
-53:36  Warning: Delete `␍`  prettier/prettier
-54:42  Warning: Delete `␍`  prettier/prettier
-55:5  Warning: Delete `␍`  prettier/prettier
-56:1  Warning: Delete `␍`  prettier/prettier
-57:34  Warning: Delete `␍`  prettier/prettier
-58:44  Warning: Delete `␍`  prettier/prettier
-59:36  Warning: Delete `␍`  prettier/prettier
-60:17  Warning: Delete `␍`  prettier/prettier
-61:67  Warning: Delete `␍`  prettier/prettier
-62:10  Warning: Delete `␍`  prettier/prettier
-63:42  Warning: Delete `␍`  prettier/prettier
-64:6  Warning: Delete `␍`  prettier/prettier
-65:5  Warning: Delete `␍`  prettier/prettier
-66:1  Warning: Delete `␍`  prettier/prettier
-67:36  Warning: Delete `␍`  prettier/prettier
-68:35  Warning: Delete `␍`  prettier/prettier
-69:23  Warning: Delete `␍`  prettier/prettier
-70:38  Warning: Delete `␍`  prettier/prettier
-71:29  Warning: Delete `␍`  prettier/prettier
-72:14  Warning: Delete `␍`  prettier/prettier
-73:5  Warning: Delete `␍`  prettier/prettier
-74:1  Warning: Delete `␍`  prettier/prettier
-75:73  Warning: Delete `␍`  prettier/prettier
-76:34  Warning: Delete `␍`  prettier/prettier
-77:73  Warning: Delete `␍`  prettier/prettier
-78:21  Warning: Delete `␍`  prettier/prettier
-79:19  Warning: Delete `␍`  prettier/prettier
-80:30  Warning: Delete `␍`  prettier/prettier
-81:21  Warning: Delete `␍`  prettier/prettier
-82:20  Warning: Delete `␍`  prettier/prettier
-83:21  Warning: Delete `␍`  prettier/prettier
-84:22  Warning: Delete `␍`  prettier/prettier
-85:30  Warning: Delete `␍`  prettier/prettier
-86:12  Warning: Delete `␍`  prettier/prettier
-87:8  Warning: Delete `␍`  prettier/prettier
-88:22  Warning: Delete `␍`  prettier/prettier
-89:44  Warning: Delete `␍`  prettier/prettier
-90:142  Warning: Delete `␍`  prettier/prettier
-91:33  Warning: Delete `␍`  prettier/prettier
-92:46  Warning: Delete `␍`  prettier/prettier
-93:9  Warning: Delete `␍`  prettier/prettier
-94:8  Warning: Delete `␍`  prettier/prettier
-95:22  Warning: Delete `␍`  prettier/prettier
-96:45  Warning: Delete `␍`  prettier/prettier
-97:142  Warning: Delete `␍`  prettier/prettier
-98:33  Warning: Delete `␍`  prettier/prettier
-99:44  Warning: Delete `␍`  prettier/prettier
-100:9  Warning: Delete `␍`  prettier/prettier
-101:7  Warning: Delete `␍`  prettier/prettier
-102:1  Warning: Delete `␍`  prettier/prettier
-103:13  Warning: Delete `␍`  prettier/prettier
-104:85  Warning: Delete `␍`  prettier/prettier
-105:88  Warning: Delete `␍`  prettier/prettier
-106:53  Warning: Delete `␍`  prettier/prettier
-107:14  Warning: Delete `␍`  prettier/prettier
-108:28  Warning: Delete `␍`  prettier/prettier
-109:43  Warning: Delete `␍`  prettier/prettier
-110:16  Warning: Delete `␍`  prettier/prettier
-111:25  Warning: Delete `␍`  prettier/prettier
-112:13  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-112:138  Warning: Delete `␍`  prettier/prettier
-113:12  Warning: Delete `␍`  prettier/prettier
-114:21  Warning: Delete `␍`  prettier/prettier
-115:18  Warning: Delete `␍`  prettier/prettier
-116:15  Warning: Delete `␍`  prettier/prettier
-117:74  Warning: Delete `␍`  prettier/prettier
-118:79  Warning: Delete `␍`  prettier/prettier
-119:19  Warning: Delete `␍`  prettier/prettier
-120:13  Warning: Delete `␍`  prettier/prettier
-121:62  Warning: Delete `␍`  prettier/prettier
-122:30  Warning: Delete `␍`  prettier/prettier
-123:17  Warning: Delete `␍`  prettier/prettier
-124:26  Warning: Delete `␍`  prettier/prettier
-125:15  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
-125:51  Warning: Delete `␍`  prettier/prettier
-126:41  Warning: Delete `␍`  prettier/prettier
-127:14  Warning: Delete `␍`  prettier/prettier
-128:20  Warning: Delete `␍`  prettier/prettier
+40:1  Warning: Delete `␍`  prettier/prettier
+41:47  Warning: Delete `␍`  prettier/prettier
+42:31  Warning: Delete `␍`  prettier/prettier
+43:12  Warning: Delete `␍`  prettier/prettier
+44:38  Warning: Delete `␍`  prettier/prettier
+45:63  Warning: Delete `␍`  prettier/prettier
+46:8  Warning: Delete `␍`  prettier/prettier
+47:5  Warning: Delete `␍`  prettier/prettier
+48:1  Warning: Delete `␍`  prettier/prettier
+49:64  Warning: Delete `␍`  prettier/prettier
+50:1  Warning: Delete `␍`  prettier/prettier
+51:59  Warning: Delete `␍`  prettier/prettier
+52:36  Warning: Delete `␍`  prettier/prettier
+53:42  Warning: Delete `␍`  prettier/prettier
+54:5  Warning: Delete `␍`  prettier/prettier
+55:1  Warning: Delete `␍`  prettier/prettier
+56:34  Warning: Delete `␍`  prettier/prettier
+57:44  Warning: Delete `␍`  prettier/prettier
+58:36  Warning: Delete `␍`  prettier/prettier
+59:17  Warning: Delete `␍`  prettier/prettier
+60:67  Warning: Delete `␍`  prettier/prettier
+61:10  Warning: Delete `␍`  prettier/prettier
+62:42  Warning: Delete `␍`  prettier/prettier
+63:6  Warning: Delete `␍`  prettier/prettier
+64:5  Warning: Delete `␍`  prettier/prettier
+65:1  Warning: Delete `␍`  prettier/prettier
+66:36  Warning: Delete `␍`  prettier/prettier
+67:35  Warning: Delete `␍`  prettier/prettier
+68:23  Warning: Delete `␍`  prettier/prettier
+69:38  Warning: Delete `␍`  prettier/prettier
+70:29  Warning: Delete `␍`  prettier/prettier
+71:14  Warning: Delete `␍`  prettier/prettier
+72:5  Warning: Delete `␍`  prettier/prettier
+73:1  Warning: Delete `␍`  prettier/prettier
+74:73  Warning: Delete `␍`  prettier/prettier
+75:34  Warning: Delete `␍`  prettier/prettier
+76:73  Warning: Delete `␍`  prettier/prettier
+77:21  Warning: Delete `␍`  prettier/prettier
+78:19  Warning: Delete `␍`  prettier/prettier
+79:30  Warning: Delete `␍`  prettier/prettier
+80:21  Warning: Delete `␍`  prettier/prettier
+81:20  Warning: Delete `␍`  prettier/prettier
+82:21  Warning: Delete `␍`  prettier/prettier
+83:22  Warning: Delete `␍`  prettier/prettier
+84:30  Warning: Delete `␍`  prettier/prettier
+85:12  Warning: Delete `␍`  prettier/prettier
+86:8  Warning: Delete `␍`  prettier/prettier
+87:22  Warning: Delete `␍`  prettier/prettier
+88:44  Warning: Delete `␍`  prettier/prettier
+89:142  Warning: Delete `␍`  prettier/prettier
+90:33  Warning: Delete `␍`  prettier/prettier
+91:46  Warning: Delete `␍`  prettier/prettier
+92:9  Warning: Delete `␍`  prettier/prettier
+93:8  Warning: Delete `␍`  prettier/prettier
+94:22  Warning: Delete `␍`  prettier/prettier
+95:45  Warning: Delete `␍`  prettier/prettier
+96:142  Warning: Delete `␍`  prettier/prettier
+97:33  Warning: Delete `␍`  prettier/prettier
+98:44  Warning: Delete `␍`  prettier/prettier
+99:9  Warning: Delete `␍`  prettier/prettier
+100:7  Warning: Delete `␍`  prettier/prettier
+101:1  Warning: Delete `␍`  prettier/prettier
+102:13  Warning: Delete `␍`  prettier/prettier
+103:85  Warning: Delete `␍`  prettier/prettier
+104:88  Warning: Delete `␍`  prettier/prettier
+105:53  Warning: Delete `␍`  prettier/prettier
+106:14  Warning: Delete `␍`  prettier/prettier
+107:28  Warning: Delete `␍`  prettier/prettier
+108:43  Warning: Delete `␍`  prettier/prettier
+109:16  Warning: Delete `␍`  prettier/prettier
+110:25  Warning: Delete `␍`  prettier/prettier
+111:13  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+111:138  Warning: Delete `␍`  prettier/prettier
+112:12  Warning: Delete `␍`  prettier/prettier
+113:21  Warning: Delete `␍`  prettier/prettier
+114:18  Warning: Delete `␍`  prettier/prettier
+115:15  Warning: Delete `␍`  prettier/prettier
+116:74  Warning: Delete `␍`  prettier/prettier
+117:79  Warning: Delete `␍`  prettier/prettier
+118:19  Warning: Delete `␍`  prettier/prettier
+119:13  Warning: Delete `␍`  prettier/prettier
+120:62  Warning: Delete `␍`  prettier/prettier
+121:30  Warning: Delete `␍`  prettier/prettier
+122:17  Warning: Delete `␍`  prettier/prettier
+123:26  Warning: Delete `␍`  prettier/prettier
+124:15  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
+124:51  Warning: Delete `␍`  prettier/prettier
+125:41  Warning: Delete `␍`  prettier/prettier
+126:14  Warning: Delete `␍`  prettier/prettier
+127:20  Warning: Delete `␍`  prettier/prettier
+128:32  Warning: Delete `␍`  prettier/prettier
+129:17  Warning: Props should be sorted alphabetically  react/jsx-sort-props
 129:32  Warning: Delete `␍`  prettier/prettier
 130:17  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-130:32  Warning: Delete `␍`  prettier/prettier
-131:17  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-131:124  Warning: Delete `␍`  prettier/prettier
-132:16  Warning: Delete `␍`  prettier/prettier
-133:41  Warning: Delete `␍`  prettier/prettier
-134:61  Warning: Delete `␍`  prettier/prettier
-135:132  Warning: Delete `␍`  prettier/prettier
-136:31  Warning: Delete `␍`  prettier/prettier
-137:27  Warning: Delete `␍`  prettier/prettier
-138:25  Warning: Delete `␍`  prettier/prettier
-139:19  Warning: Delete `␍`  prettier/prettier
-140:29  Warning: Delete `␍`  prettier/prettier
-141:81  Warning: Delete `␍`  prettier/prettier
+130:124  Warning: Delete `␍`  prettier/prettier
+131:16  Warning: Delete `␍`  prettier/prettier
+132:41  Warning: Delete `␍`  prettier/prettier
+133:61  Warning: Delete `␍`  prettier/prettier
+134:132  Warning: Delete `␍`  prettier/prettier
+135:31  Warning: Delete `␍`  prettier/prettier
+136:27  Warning: Delete `␍`  prettier/prettier
+137:25  Warning: Delete `␍`  prettier/prettier
+138:19  Warning: Delete `␍`  prettier/prettier
+139:29  Warning: Delete `␍`  prettier/prettier
+140:81  Warning: Delete `␍`  prettier/prettier
+141:30  Warning: Delete `␍`  prettier/prettier
 142:30  Warning: Delete `␍`  prettier/prettier
-143:30  Warning: Delete `␍`  prettier/prettier
-144:60  Warning: Delete `␍`  prettier/prettier
-145:31  Warning: Delete `␍`  prettier/prettier
-146:22  Warning: Delete `␍`  prettier/prettier
-147:19  Warning: Delete `␍`  prettier/prettier
-148:14  Warning: Delete `␍`  prettier/prettier
-149:15  Warning: Delete `␍`  prettier/prettier
-150:13  Warning: Delete `␍`  prettier/prettier
-151:7  Warning: Delete `␍`  prettier/prettier
-152:4  Warning: Delete `␍`  prettier/prettier
-153:1  Warning: Delete `␍`  prettier/prettier
-154:73  Warning: Delete `␍`  prettier/prettier
-155:28  Warning: Delete `␍`  prettier/prettier
-156:73  Warning: Delete `␍`  prettier/prettier
-157:36  Warning: Delete `␍`  prettier/prettier
-158:72  Warning: Delete `␍`  prettier/prettier
-159:50  Warning: Delete `␍`  prettier/prettier
-160:72  Warning: Delete `␍`  prettier/prettier
-161:22  Warning: Delete `␍`  prettier/prettier
-162:54  Warning: Delete `␍`  prettier/prettier
-163:1  Warning: Replace `········subtitle="L'IA·vous·assiste·vocalement·avec·un·avatar·interactif."␍` with `······subtitle="L'IA·vous·assiste·vocalement·avec·un·avatar·interactif."`  prettier/prettier
+143:60  Warning: Delete `␍`  prettier/prettier
+144:31  Warning: Delete `␍`  prettier/prettier
+145:22  Warning: Delete `␍`  prettier/prettier
+146:19  Warning: Delete `␍`  prettier/prettier
+147:14  Warning: Delete `␍`  prettier/prettier
+148:15  Warning: Delete `␍`  prettier/prettier
+149:13  Warning: Delete `␍`  prettier/prettier
+150:7  Warning: Delete `␍`  prettier/prettier
+151:4  Warning: Delete `␍`  prettier/prettier
+152:1  Warning: Delete `␍`  prettier/prettier
+153:73  Warning: Delete `␍`  prettier/prettier
+154:28  Warning: Delete `␍`  prettier/prettier
+155:73  Warning: Delete `␍`  prettier/prettier
+156:36  Warning: Delete `␍`  prettier/prettier
+157:72  Warning: Delete `␍`  prettier/prettier
+158:50  Warning: Delete `␍`  prettier/prettier
+159:72  Warning: Delete `␍`  prettier/prettier
+160:22  Warning: Delete `␍`  prettier/prettier
+161:54  Warning: Delete `␍`  prettier/prettier
+162:7  Warning: Replace `··subtitle="L'IA·vous·assiste·vocalement·avec·un·avatar·interactif."␍` with `subtitle="L'IA·vous·assiste·vocalement·avec·un·avatar·interactif."`  prettier/prettier
+162:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+163:1  Warning: Replace `········avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"␍` with `······avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"`  prettier/prettier
 163:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-164:1  Warning: Replace `········avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"␍` with `······avatarPreviewImage="/avatars/anastasia_16_9_preview.webp"`  prettier/prettier
+164:1  Warning: Replace `········knowledgeId="19df36d7a9354a1aa664c34686256df1"·//·ID·de·ta·base·de·connaissance␍` with `······knowledgeId="19df36d7a9354a1aa664c34686256df1"·//·ID·de·ta·base·de·connaissance`  prettier/prettier
 164:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-165:1  Warning: Replace `········knowledgeId="19df36d7a9354a1aa664c34686256df1"·//·ID·de·ta·base·de·connaissance␍` with `······knowledgeId="19df36d7a9354a1aa664c34686256df1"·//·ID·de·ta·base·de·connaissance`  prettier/prettier
+165:1  Warning: Replace `········avatarName="Anastasia_Chair_Sitting_public"·//·nom·de·l'avatar·(sert·d'ID)␍` with `······avatarName="Anastasia_Chair_Sitting_public"·//·nom·de·l'avatar·(sert·d'ID)`  prettier/prettier
 165:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-166:1  Warning: Replace `········avatarName="Anastasia_Chair_Sitting_public"·//·nom·de·l'avatar·(sert·d'ID)␍` with `······avatarName="Anastasia_Chair_Sitting_public"·//·nom·de·l'avatar·(sert·d'ID)`  prettier/prettier
-166:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-167:1  Warning: Replace `········voiceRate={1.2}·//·vitesse·de·la·voix␍` with `······voiceRate={1.2}·//·vitesse·de·la·voix`  prettier/prettier
-168:1  Warning: Replace `········onFinaliser={handleFinaliser}␍` with `······onFinaliser={handleFinaliser}`  prettier/prettier
-169:1  Warning: Replace `········onSauvegarder={handleSauvegarder}␍` with `······onSauvegarder={handleSauvegarder}`  prettier/prettier
-170:1  Warning: Replace `········onAbandonner={handleAbandonner}␍` with `······onAbandonner={handleAbandonner}`  prettier/prettier
-170:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-171:7  Warning: Delete `␍`  prettier/prettier
-172:8  Warning: Delete `␍`  prettier/prettier
-173:72  Warning: Delete `␍`  prettier/prettier
-174:62  Warning: Delete `␍`  prettier/prettier
-175:72  Warning: Delete `␍`  prettier/prettier
-176:26  Warning: Delete `␍`  prettier/prettier
-177:54  Warning: Delete `␍`  prettier/prettier
+166:1  Warning: Replace `········voiceRate={1.2}·//·vitesse·de·la·voix␍` with `······voiceRate={1.2}·//·vitesse·de·la·voix`  prettier/prettier
+167:1  Warning: Replace `········onFinaliser={handleFinaliser}␍` with `······onFinaliser={handleFinaliser}`  prettier/prettier
+168:1  Warning: Replace `········onSauvegarder={handleSauvegarder}␍` with `······onSauvegarder={handleSauvegarder}`  prettier/prettier
+169:1  Warning: Replace `········onAbandonner={handleAbandonner}␍` with `······onAbandonner={handleAbandonner}`  prettier/prettier
+169:9  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+170:7  Warning: Delete `␍`  prettier/prettier
+171:8  Warning: Delete `␍`  prettier/prettier
+172:72  Warning: Delete `␍`  prettier/prettier
+173:62  Warning: Delete `␍`  prettier/prettier
+174:72  Warning: Delete `␍`  prettier/prettier
+175:26  Warning: Delete `␍`  prettier/prettier
+176:54  Warning: Delete `␍`  prettier/prettier
+177:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+177:57  Warning: Delete `␍`  prettier/prettier
 178:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-178:57  Warning: Delete `␍`  prettier/prettier
+178:34  Warning: Delete `␍`  prettier/prettier
 179:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-179:34  Warning: Delete `␍`  prettier/prettier
+179:42  Warning: Delete `␍`  prettier/prettier
 180:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-180:42  Warning: Delete `␍`  prettier/prettier
+180:48  Warning: Delete `␍`  prettier/prettier
 181:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-181:48  Warning: Delete `␍`  prettier/prettier
-182:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+181:40  Warning: Delete `␍`  prettier/prettier
+182:7  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
 182:40  Warning: Delete `␍`  prettier/prettier
-183:7  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
-183:40  Warning: Delete `␍`  prettier/prettier
+183:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+183:38  Warning: Delete `␍`  prettier/prettier
 184:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-184:38  Warning: Delete `␍`  prettier/prettier
-185:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-185:50  Warning: Delete `␍`  prettier/prettier
-186:46  Warning: Delete `␍`  prettier/prettier
+184:50  Warning: Delete `␍`  prettier/prettier
+185:46  Warning: Delete `␍`  prettier/prettier
+186:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+186:36  Warning: Delete `␍`  prettier/prettier
 187:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-187:36  Warning: Delete `␍`  prettier/prettier
-188:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-188:40  Warning: Delete `␍`  prettier/prettier
-189:46  Warning: Delete `␍`  prettier/prettier
-190:7  Warning: Delete `␍`  prettier/prettier
-191:5  Warning: Delete `␍`  prettier/prettier
-192:2  Warning: Delete `␍`  prettier/prettier
+187:40  Warning: Delete `␍`  prettier/prettier
+188:46  Warning: Delete `␍`  prettier/prettier
+189:7  Warning: Delete `␍`  prettier/prettier
+190:5  Warning: Delete `␍`  prettier/prettier
+191:2  Warning: Delete `␍`  prettier/prettier
 
 ./app/(neo)/neo/recruteur/layout.tsx
 1:39  Warning: Delete `␍`  prettier/prettier
@@ -976,219 +973,215 @@ npm warn config ignoring workspace config at C:\Users\fisch\IA_DEMO\apps\neo/.np
 ./app/(neo)/neo/recruteur/poste/page.tsx
 1:14  Warning: Delete `␍`  prettier/prettier
 2:1  Warning: Delete `␍`  prettier/prettier
-3:1  Warning: There should be at least one empty line between import groups  import/order
 3:41  Warning: Delete `␍`  prettier/prettier
-4:65  Warning: Delete `␍`  prettier/prettier
+4:9  Warning: Replace `·InteractiveBlock,·InteractiveChatBlock·}·from·"@neorecrut/shared-avatar";␍` with `⏎··InteractiveBlock,⏎··InteractiveChatBlock,⏎}·from·"@neorecrut/shared-avatar";`  prettier/prettier
 5:1  Warning: There should be at least one empty line between import groups  import/order
-5:73  Warning: Delete `␍`  prettier/prettier
-6:1  Warning: There should be at least one empty line between import groups  import/order
-6:1  Warning: `next/link` import should occur before import of `@/components/ui/InteractiveBlock`  import/order
-6:30  Warning: Delete `␍`  prettier/prettier
-7:70  Warning: Delete `␍`  prettier/prettier
-8:1  Warning: Delete `␍`  prettier/prettier
-9:48  Warning: Delete `␍`  prettier/prettier
-10:80  Warning: Delete `␍`  prettier/prettier
-11:1  Warning: Delete `␍`  prettier/prettier
-12:73  Warning: Delete `␍`  prettier/prettier
-13:68  Warning: Delete `␍`  prettier/prettier
-14:73  Warning: Delete `␍`  prettier/prettier
-15:34  Warning: Delete `␍`  prettier/prettier
-16:43  Warning: Delete `␍`  prettier/prettier
-17:55  Warning: Delete `␍`  prettier/prettier
-18:5  Warning: Delete `␍`  prettier/prettier
-19:1  Warning: Delete `␍`  prettier/prettier
-20:36  Warning: Delete `␍`  prettier/prettier
-21:46  Warning: Delete `␍`  prettier/prettier
-22:29  Warning: Delete `␍`  prettier/prettier
-23:5  Warning: Delete `␍`  prettier/prettier
-24:1  Warning: Delete `␍`  prettier/prettier
-25:35  Warning: Delete `␍`  prettier/prettier
-26:44  Warning: Delete `␍`  prettier/prettier
-27:27  Warning: Delete `␍`  prettier/prettier
-28:5  Warning: Delete `␍`  prettier/prettier
-29:1  Warning: Delete `␍`  prettier/prettier
-30:73  Warning: Delete `␍`  prettier/prettier
-31:65  Warning: Delete `␍`  prettier/prettier
-32:73  Warning: Delete `␍`  prettier/prettier
-33:56  Warning: Delete `␍`  prettier/prettier
-34:54  Warning: Delete `␍`  prettier/prettier
-35:9  Warning: Delete `␍`  prettier/prettier
-36:64  Warning: Delete `␍`  prettier/prettier
-37:58  Warning: Delete `␍`  prettier/prettier
-38:13  Warning: Delete `␍`  prettier/prettier
+5:30  Warning: Delete `␍`  prettier/prettier
+6:70  Warning: Delete `␍`  prettier/prettier
+7:1  Warning: Delete `␍`  prettier/prettier
+8:48  Warning: Delete `␍`  prettier/prettier
+9:80  Warning: Delete `␍`  prettier/prettier
+10:1  Warning: Delete `␍`  prettier/prettier
+11:73  Warning: Delete `␍`  prettier/prettier
+12:68  Warning: Delete `␍`  prettier/prettier
+13:73  Warning: Delete `␍`  prettier/prettier
+14:34  Warning: Delete `␍`  prettier/prettier
+15:43  Warning: Delete `␍`  prettier/prettier
+16:55  Warning: Delete `␍`  prettier/prettier
+17:5  Warning: Delete `␍`  prettier/prettier
+18:1  Warning: Delete `␍`  prettier/prettier
+19:36  Warning: Delete `␍`  prettier/prettier
+20:46  Warning: Delete `␍`  prettier/prettier
+21:29  Warning: Delete `␍`  prettier/prettier
+22:5  Warning: Delete `␍`  prettier/prettier
+23:1  Warning: Delete `␍`  prettier/prettier
+24:35  Warning: Delete `␍`  prettier/prettier
+25:44  Warning: Delete `␍`  prettier/prettier
+26:27  Warning: Delete `␍`  prettier/prettier
+27:5  Warning: Delete `␍`  prettier/prettier
+28:1  Warning: Delete `␍`  prettier/prettier
+29:73  Warning: Delete `␍`  prettier/prettier
+30:65  Warning: Delete `␍`  prettier/prettier
+31:73  Warning: Delete `␍`  prettier/prettier
+32:56  Warning: Delete `␍`  prettier/prettier
+33:54  Warning: Delete `␍`  prettier/prettier
+34:9  Warning: Delete `␍`  prettier/prettier
+35:64  Warning: Delete `␍`  prettier/prettier
+36:58  Warning: Delete `␍`  prettier/prettier
+37:13  Warning: Delete `␍`  prettier/prettier
+38:75  Warning: Delete `␍`  prettier/prettier
 39:75  Warning: Delete `␍`  prettier/prettier
-40:75  Warning: Delete `␍`  prettier/prettier
-41:1  Warning: Delete `␍`  prettier/prettier
-42:47  Warning: Delete `␍`  prettier/prettier
-43:31  Warning: Delete `␍`  prettier/prettier
-44:12  Warning: Delete `␍`  prettier/prettier
-45:38  Warning: Delete `␍`  prettier/prettier
-46:63  Warning: Delete `␍`  prettier/prettier
-47:8  Warning: Delete `␍`  prettier/prettier
-48:5  Warning: Delete `␍`  prettier/prettier
-49:1  Warning: Delete `␍`  prettier/prettier
-50:64  Warning: Delete `␍`  prettier/prettier
-51:1  Warning: Delete `␍`  prettier/prettier
-52:59  Warning: Delete `␍`  prettier/prettier
-53:36  Warning: Delete `␍`  prettier/prettier
-54:42  Warning: Delete `␍`  prettier/prettier
-55:5  Warning: Delete `␍`  prettier/prettier
-56:1  Warning: Delete `␍`  prettier/prettier
-57:34  Warning: Delete `␍`  prettier/prettier
-58:44  Warning: Delete `␍`  prettier/prettier
-59:36  Warning: Delete `␍`  prettier/prettier
-60:17  Warning: Delete `␍`  prettier/prettier
-61:67  Warning: Delete `␍`  prettier/prettier
-62:10  Warning: Delete `␍`  prettier/prettier
-63:42  Warning: Delete `␍`  prettier/prettier
-64:6  Warning: Delete `␍`  prettier/prettier
-65:5  Warning: Delete `␍`  prettier/prettier
-66:1  Warning: Delete `␍`  prettier/prettier
-67:36  Warning: Delete `␍`  prettier/prettier
-68:35  Warning: Delete `␍`  prettier/prettier
-69:23  Warning: Delete `␍`  prettier/prettier
-70:38  Warning: Delete `␍`  prettier/prettier
-71:29  Warning: Delete `␍`  prettier/prettier
-72:14  Warning: Delete `␍`  prettier/prettier
-73:5  Warning: Delete `␍`  prettier/prettier
-74:1  Warning: Delete `␍`  prettier/prettier
-75:73  Warning: Delete `␍`  prettier/prettier
-76:34  Warning: Delete `␍`  prettier/prettier
-77:73  Warning: Delete `␍`  prettier/prettier
-78:21  Warning: Delete `␍`  prettier/prettier
-79:19  Warning: Delete `␍`  prettier/prettier
-80:30  Warning: Delete `␍`  prettier/prettier
-81:21  Warning: Delete `␍`  prettier/prettier
-82:20  Warning: Delete `␍`  prettier/prettier
-83:21  Warning: Delete `␍`  prettier/prettier
-84:22  Warning: Delete `␍`  prettier/prettier
-85:30  Warning: Delete `␍`  prettier/prettier
-86:12  Warning: Delete `␍`  prettier/prettier
-87:8  Warning: Delete `␍`  prettier/prettier
-88:22  Warning: Delete `␍`  prettier/prettier
-89:44  Warning: Delete `␍`  prettier/prettier
-90:142  Warning: Delete `␍`  prettier/prettier
-91:33  Warning: Delete `␍`  prettier/prettier
-92:46  Warning: Delete `␍`  prettier/prettier
-93:9  Warning: Delete `␍`  prettier/prettier
-94:8  Warning: Delete `␍`  prettier/prettier
-95:22  Warning: Delete `␍`  prettier/prettier
-96:45  Warning: Delete `␍`  prettier/prettier
-97:142  Warning: Delete `␍`  prettier/prettier
-98:33  Warning: Delete `␍`  prettier/prettier
-99:44  Warning: Delete `␍`  prettier/prettier
-100:9  Warning: Delete `␍`  prettier/prettier
-101:7  Warning: Delete `␍`  prettier/prettier
-102:1  Warning: Delete `␍`  prettier/prettier
-103:13  Warning: Delete `␍`  prettier/prettier
-104:85  Warning: Delete `␍`  prettier/prettier
-105:88  Warning: Delete `␍`  prettier/prettier
-106:53  Warning: Delete `␍`  prettier/prettier
-107:14  Warning: Delete `␍`  prettier/prettier
-108:28  Warning: Delete `␍`  prettier/prettier
-109:43  Warning: Delete `␍`  prettier/prettier
-110:16  Warning: Delete `␍`  prettier/prettier
-111:25  Warning: Delete `␍`  prettier/prettier
-112:13  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-112:138  Warning: Delete `␍`  prettier/prettier
-113:12  Warning: Delete `␍`  prettier/prettier
-114:21  Warning: Delete `␍`  prettier/prettier
-115:18  Warning: Delete `␍`  prettier/prettier
-116:15  Warning: Delete `␍`  prettier/prettier
-117:74  Warning: Delete `␍`  prettier/prettier
-118:79  Warning: Delete `␍`  prettier/prettier
-119:19  Warning: Delete `␍`  prettier/prettier
-120:13  Warning: Delete `␍`  prettier/prettier
-121:62  Warning: Delete `␍`  prettier/prettier
-122:30  Warning: Delete `␍`  prettier/prettier
-123:17  Warning: Delete `␍`  prettier/prettier
-124:26  Warning: Delete `␍`  prettier/prettier
-125:15  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
-125:51  Warning: Delete `␍`  prettier/prettier
-126:41  Warning: Delete `␍`  prettier/prettier
-127:14  Warning: Delete `␍`  prettier/prettier
-128:20  Warning: Delete `␍`  prettier/prettier
+40:1  Warning: Delete `␍`  prettier/prettier
+41:47  Warning: Delete `␍`  prettier/prettier
+42:31  Warning: Delete `␍`  prettier/prettier
+43:12  Warning: Delete `␍`  prettier/prettier
+44:38  Warning: Delete `␍`  prettier/prettier
+45:63  Warning: Delete `␍`  prettier/prettier
+46:8  Warning: Delete `␍`  prettier/prettier
+47:5  Warning: Delete `␍`  prettier/prettier
+48:1  Warning: Delete `␍`  prettier/prettier
+49:64  Warning: Delete `␍`  prettier/prettier
+50:1  Warning: Delete `␍`  prettier/prettier
+51:59  Warning: Delete `␍`  prettier/prettier
+52:36  Warning: Delete `␍`  prettier/prettier
+53:42  Warning: Delete `␍`  prettier/prettier
+54:5  Warning: Delete `␍`  prettier/prettier
+55:1  Warning: Delete `␍`  prettier/prettier
+56:34  Warning: Delete `␍`  prettier/prettier
+57:44  Warning: Delete `␍`  prettier/prettier
+58:36  Warning: Delete `␍`  prettier/prettier
+59:17  Warning: Delete `␍`  prettier/prettier
+60:67  Warning: Delete `␍`  prettier/prettier
+61:10  Warning: Delete `␍`  prettier/prettier
+62:42  Warning: Delete `␍`  prettier/prettier
+63:6  Warning: Delete `␍`  prettier/prettier
+64:5  Warning: Delete `␍`  prettier/prettier
+65:1  Warning: Delete `␍`  prettier/prettier
+66:36  Warning: Delete `␍`  prettier/prettier
+67:35  Warning: Delete `␍`  prettier/prettier
+68:23  Warning: Delete `␍`  prettier/prettier
+69:38  Warning: Delete `␍`  prettier/prettier
+70:29  Warning: Delete `␍`  prettier/prettier
+71:14  Warning: Delete `␍`  prettier/prettier
+72:5  Warning: Delete `␍`  prettier/prettier
+73:1  Warning: Delete `␍`  prettier/prettier
+74:73  Warning: Delete `␍`  prettier/prettier
+75:34  Warning: Delete `␍`  prettier/prettier
+76:73  Warning: Delete `␍`  prettier/prettier
+77:21  Warning: Delete `␍`  prettier/prettier
+78:19  Warning: Delete `␍`  prettier/prettier
+79:30  Warning: Delete `␍`  prettier/prettier
+80:21  Warning: Delete `␍`  prettier/prettier
+81:20  Warning: Delete `␍`  prettier/prettier
+82:21  Warning: Delete `␍`  prettier/prettier
+83:22  Warning: Delete `␍`  prettier/prettier
+84:30  Warning: Delete `␍`  prettier/prettier
+85:12  Warning: Delete `␍`  prettier/prettier
+86:8  Warning: Delete `␍`  prettier/prettier
+87:22  Warning: Delete `␍`  prettier/prettier
+88:44  Warning: Delete `␍`  prettier/prettier
+89:142  Warning: Delete `␍`  prettier/prettier
+90:33  Warning: Delete `␍`  prettier/prettier
+91:46  Warning: Delete `␍`  prettier/prettier
+92:9  Warning: Delete `␍`  prettier/prettier
+93:8  Warning: Delete `␍`  prettier/prettier
+94:22  Warning: Delete `␍`  prettier/prettier
+95:45  Warning: Delete `␍`  prettier/prettier
+96:142  Warning: Delete `␍`  prettier/prettier
+97:33  Warning: Delete `␍`  prettier/prettier
+98:44  Warning: Delete `␍`  prettier/prettier
+99:9  Warning: Delete `␍`  prettier/prettier
+100:7  Warning: Delete `␍`  prettier/prettier
+101:1  Warning: Delete `␍`  prettier/prettier
+102:13  Warning: Delete `␍`  prettier/prettier
+103:85  Warning: Delete `␍`  prettier/prettier
+104:88  Warning: Delete `␍`  prettier/prettier
+105:53  Warning: Delete `␍`  prettier/prettier
+106:14  Warning: Delete `␍`  prettier/prettier
+107:28  Warning: Delete `␍`  prettier/prettier
+108:43  Warning: Delete `␍`  prettier/prettier
+109:16  Warning: Delete `␍`  prettier/prettier
+110:25  Warning: Delete `␍`  prettier/prettier
+111:13  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+111:138  Warning: Delete `␍`  prettier/prettier
+112:12  Warning: Delete `␍`  prettier/prettier
+113:21  Warning: Delete `␍`  prettier/prettier
+114:18  Warning: Delete `␍`  prettier/prettier
+115:15  Warning: Delete `␍`  prettier/prettier
+116:74  Warning: Delete `␍`  prettier/prettier
+117:79  Warning: Delete `␍`  prettier/prettier
+118:19  Warning: Delete `␍`  prettier/prettier
+119:13  Warning: Delete `␍`  prettier/prettier
+120:62  Warning: Delete `␍`  prettier/prettier
+121:30  Warning: Delete `␍`  prettier/prettier
+122:17  Warning: Delete `␍`  prettier/prettier
+123:26  Warning: Delete `␍`  prettier/prettier
+124:15  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
+124:51  Warning: Delete `␍`  prettier/prettier
+125:41  Warning: Delete `␍`  prettier/prettier
+126:14  Warning: Delete `␍`  prettier/prettier
+127:20  Warning: Delete `␍`  prettier/prettier
+128:32  Warning: Delete `␍`  prettier/prettier
+129:17  Warning: Props should be sorted alphabetically  react/jsx-sort-props
 129:32  Warning: Delete `␍`  prettier/prettier
 130:17  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-130:32  Warning: Delete `␍`  prettier/prettier
-131:17  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-131:124  Warning: Delete `␍`  prettier/prettier
-132:16  Warning: Delete `␍`  prettier/prettier
-133:41  Warning: Delete `␍`  prettier/prettier
-134:61  Warning: Delete `␍`  prettier/prettier
-135:132  Warning: Delete `␍`  prettier/prettier
-136:31  Warning: Delete `␍`  prettier/prettier
-137:27  Warning: Delete `␍`  prettier/prettier
-138:25  Warning: Delete `␍`  prettier/prettier
-139:19  Warning: Delete `␍`  prettier/prettier
-140:29  Warning: Delete `␍`  prettier/prettier
-141:81  Warning: Delete `␍`  prettier/prettier
+130:124  Warning: Delete `␍`  prettier/prettier
+131:16  Warning: Delete `␍`  prettier/prettier
+132:41  Warning: Delete `␍`  prettier/prettier
+133:61  Warning: Delete `␍`  prettier/prettier
+134:132  Warning: Delete `␍`  prettier/prettier
+135:31  Warning: Delete `␍`  prettier/prettier
+136:27  Warning: Delete `␍`  prettier/prettier
+137:25  Warning: Delete `␍`  prettier/prettier
+138:19  Warning: Delete `␍`  prettier/prettier
+139:29  Warning: Delete `␍`  prettier/prettier
+140:81  Warning: Delete `␍`  prettier/prettier
+141:30  Warning: Delete `␍`  prettier/prettier
 142:30  Warning: Delete `␍`  prettier/prettier
-143:30  Warning: Delete `␍`  prettier/prettier
-144:60  Warning: Delete `␍`  prettier/prettier
-145:31  Warning: Delete `␍`  prettier/prettier
-146:22  Warning: Delete `␍`  prettier/prettier
-147:19  Warning: Delete `␍`  prettier/prettier
-148:14  Warning: Delete `␍`  prettier/prettier
-149:15  Warning: Delete `␍`  prettier/prettier
-150:13  Warning: Delete `␍`  prettier/prettier
-151:7  Warning: Delete `␍`  prettier/prettier
-152:4  Warning: Delete `␍`  prettier/prettier
-153:1  Warning: Delete `␍`  prettier/prettier
-154:73  Warning: Delete `␍`  prettier/prettier
-155:28  Warning: Delete `␍`  prettier/prettier
-156:73  Warning: Delete `␍`  prettier/prettier
-157:36  Warning: Delete `␍`  prettier/prettier
-158:72  Warning: Delete `␍`  prettier/prettier
-159:50  Warning: Delete `␍`  prettier/prettier
-160:72  Warning: Delete `␍`  prettier/prettier
-161:22  Warning: Delete `␍`  prettier/prettier
-162:55  Warning: Delete `␍`  prettier/prettier
+143:60  Warning: Delete `␍`  prettier/prettier
+144:31  Warning: Delete `␍`  prettier/prettier
+145:22  Warning: Delete `␍`  prettier/prettier
+146:19  Warning: Delete `␍`  prettier/prettier
+147:14  Warning: Delete `␍`  prettier/prettier
+148:15  Warning: Delete `␍`  prettier/prettier
+149:13  Warning: Delete `␍`  prettier/prettier
+150:7  Warning: Delete `␍`  prettier/prettier
+151:4  Warning: Delete `␍`  prettier/prettier
+152:1  Warning: Delete `␍`  prettier/prettier
+153:73  Warning: Delete `␍`  prettier/prettier
+154:28  Warning: Delete `␍`  prettier/prettier
+155:73  Warning: Delete `␍`  prettier/prettier
+156:36  Warning: Delete `␍`  prettier/prettier
+157:72  Warning: Delete `␍`  prettier/prettier
+158:50  Warning: Delete `␍`  prettier/prettier
+159:72  Warning: Delete `␍`  prettier/prettier
+160:22  Warning: Delete `␍`  prettier/prettier
+161:55  Warning: Delete `␍`  prettier/prettier
+162:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+162:73  Warning: Delete `␍`  prettier/prettier
 163:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-163:73  Warning: Delete `␍`  prettier/prettier
+163:60  Warning: Delete `␍`  prettier/prettier
 164:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-164:60  Warning: Delete `␍`  prettier/prettier
+164:86  Warning: Delete `␍`  prettier/prettier
 165:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-165:86  Warning: Delete `␍`  prettier/prettier
-166:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-166:65  Warning: Delete `␍`  prettier/prettier
-167:44  Warning: Delete `␍`  prettier/prettier
-168:36  Warning: Delete `␍`  prettier/prettier
-169:40  Warning: Delete `␍`  prettier/prettier
-170:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-170:38  Warning: Delete `␍`  prettier/prettier
-171:7  Warning: Delete `␍`  prettier/prettier
-172:8  Warning: Delete `␍`  prettier/prettier
-173:72  Warning: Delete `␍`  prettier/prettier
-174:62  Warning: Delete `␍`  prettier/prettier
-175:72  Warning: Delete `␍`  prettier/prettier
-176:26  Warning: Delete `␍`  prettier/prettier
-177:55  Warning: Delete `␍`  prettier/prettier
+165:65  Warning: Delete `␍`  prettier/prettier
+166:44  Warning: Delete `␍`  prettier/prettier
+167:36  Warning: Delete `␍`  prettier/prettier
+168:40  Warning: Delete `␍`  prettier/prettier
+169:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+169:38  Warning: Delete `␍`  prettier/prettier
+170:7  Warning: Delete `␍`  prettier/prettier
+171:8  Warning: Delete `␍`  prettier/prettier
+172:72  Warning: Delete `␍`  prettier/prettier
+173:62  Warning: Delete `␍`  prettier/prettier
+174:72  Warning: Delete `␍`  prettier/prettier
+175:26  Warning: Delete `␍`  prettier/prettier
+176:55  Warning: Delete `␍`  prettier/prettier
+177:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+177:57  Warning: Delete `␍`  prettier/prettier
 178:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-178:57  Warning: Delete `␍`  prettier/prettier
+178:34  Warning: Delete `␍`  prettier/prettier
 179:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-179:34  Warning: Delete `␍`  prettier/prettier
+179:42  Warning: Delete `␍`  prettier/prettier
 180:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-180:42  Warning: Delete `␍`  prettier/prettier
+180:48  Warning: Delete `␍`  prettier/prettier
 181:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-181:48  Warning: Delete `␍`  prettier/prettier
-182:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+181:40  Warning: Delete `␍`  prettier/prettier
+182:7  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
 182:40  Warning: Delete `␍`  prettier/prettier
-183:7  Warning: Callbacks must be listed after all other props  react/jsx-sort-props
-183:40  Warning: Delete `␍`  prettier/prettier
+183:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+183:38  Warning: Delete `␍`  prettier/prettier
 184:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-184:38  Warning: Delete `␍`  prettier/prettier
-185:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-185:50  Warning: Delete `␍`  prettier/prettier
-186:46  Warning: Delete `␍`  prettier/prettier
+184:50  Warning: Delete `␍`  prettier/prettier
+185:46  Warning: Delete `␍`  prettier/prettier
+186:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
+186:36  Warning: Delete `␍`  prettier/prettier
 187:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-187:36  Warning: Delete `␍`  prettier/prettier
-188:7  Warning: Props should be sorted alphabetically  react/jsx-sort-props
-188:40  Warning: Delete `␍`  prettier/prettier
-189:46  Warning: Delete `␍`  prettier/prettier
-190:7  Warning: Delete `␍`  prettier/prettier
-191:5  Warning: Delete `␍`  prettier/prettier
-192:2  Warning: Delete `␍`  prettier/prettier
+187:40  Warning: Delete `␍`  prettier/prettier
+188:46  Warning: Delete `␍`  prettier/prettier
+189:7  Warning: Delete `␍`  prettier/prettier
+190:5  Warning: Delete `␍`  prettier/prettier
+191:2  Warning: Delete `␍`  prettier/prettier
 
 ./app/ancien_layout.tsx
 1:32  Warning: Delete `␍`  prettier/prettier
@@ -1232,7 +1225,7 @@ npm warn config ignoring workspace config at C:\Users\fisch\IA_DEMO\apps\neo/.np
 ./app/ancien_page.tsx
 1:14  Warning: Delete `␍`  prettier/prettier
 2:1  Warning: Delete `␍`  prettier/prettier
-3:64  Warning: Delete `␍`  prettier/prettier
+3:62  Warning: Delete `␍`  prettier/prettier
 4:32  Warning: Delete `␍`  prettier/prettier
 5:11  Warning: Delete `␍`  prettier/prettier
 6:54  Warning: Delete `␍`  prettier/prettier
@@ -4222,8 +4215,8 @@ Route (app)                                 Size  First Load JS
 ├ ○ /neo/admin                             170 B         106 kB
 ├ ○ /neo/entretien                         170 B         106 kB
 ├ ○ /neo/recruteur                         170 B         106 kB
-├ ○ /neo/recruteur/entreprise            1.61 kB         295 kB
-└ ○ /neo/recruteur/poste                 1.61 kB         295 kB
+├ ○ /neo/recruteur/entreprise            1.61 kB         297 kB
+└ ○ /neo/recruteur/poste                 1.61 kB         297 kB
 + First Load JS shared by all             102 kB
   ├ chunks/18-af39a5ba0949faa0.js        45.9 kB
   ├ chunks/87c73c54-24122e7b92478d00.js  54.2 kB

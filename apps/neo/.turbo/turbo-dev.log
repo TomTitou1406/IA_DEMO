@@ -9,17 +9,27 @@ npm warn config ignoring workspace config at C:\Users\fisch\IA_DEMO\apps\neo/.np
    - Environments: .env.local, .env
 
  ✓ Starting...
- ✓ Ready in 1807ms
- ○ Compiling / ...
- ✓ Compiled / in 3.7s (555 modules)
- GET / 307 in 4232ms
- ○ Compiling /neo ...
- ✓ Compiled /neo in 2.2s (619 modules)
- GET /neo 200 in 2701ms
- ✓ Compiled /neo/recruteur in 274ms (608 modules)
- GET /neo/recruteur 200 in 430ms
+ ✓ Ready in 1605ms
+ ○ Compiling /neo/recruteur ...
+ ✓ Compiled /neo/recruteur in 4.1s (610 modules)
+ GET /neo/recruteur 200 in 4698ms
+<w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EPERM: operation not permitted, rename 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\client-development\1.pack.gz_' -> 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\client-development\1.pack.gz'
  ○ Compiling /neo/recruteur/entreprise ...
- ✓ Compiled /neo/recruteur/entreprise in 1530ms (861 modules)
- GET /neo/recruteur/entreprise 200 in 1648ms
- GET /neo 200 in 63ms
+ ✓ Compiled /neo/recruteur/entreprise in 3.1s (1078 modules)
+ GET /neo/recruteur/entreprise 200 in 3284ms
+ GET /neo/recruteur/entreprise 200 in 124ms
+ ○ Compiling /neo/recruteur/poste ...
+ ✓ Compiled /neo/recruteur/poste in 584ms (1072 modules)
+ GET /neo/recruteur/poste 200 in 770ms
+ GET /neo/recruteur 200 in 190ms
+ GET /neo/recruteur/poste 200 in 42ms
+ ✓ Compiled /neo in 356ms (1074 modules)
+ GET /neo 200 in 677ms
+ GET /neo/recruteur 200 in 60ms
+ GET /neo/recruteur/entreprise 200 in 68ms
+ ✓ Compiled / in 483ms (1084 modules)
+ GET / 307 in 818ms
+ GET /neo 200 in 144ms
+ GET /neo/recruteur 200 in 69ms
+ GET /neo/recruteur/entreprise 200 in 48ms
 <w> [webpack.cache.PackFileCacheStrategy] Caching failed for pack: Error: EBUSY: resource busy or locked, rename 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\server-development\0.pack.gz_' -> 'C:\Users\fisch\IA_DEMO\apps\neo\.next\cache\webpack\server-development\0.pack.gz'
