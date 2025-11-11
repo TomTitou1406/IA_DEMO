@@ -37,7 +37,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
                 href="/"
                 className="text-[var(--nc-blue)] text-sm font-semibold hover:underline"
               >
-                ← Accueil
+                Accueil
               </a>
             </nav>
           </div>
