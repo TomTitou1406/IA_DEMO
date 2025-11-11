@@ -13,7 +13,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useStaticKnowledgeBase } from '@/app/(neo)/neo/hooks/useStaticKnowledgeBase';
-import { InteractiveBlock } from '@neorecrut/shared-avatar';
+import InteractiveBlock from '@/components/ui/InteractiveBlock';
 import type { ConversationContext } from '@/components/ui/InteractiveBlock';
 import type { ChatMessage } from '@/app/(neo)/neo/hooks/useNeoAvatar';
 import { supabase } from '@/app/lib/supabaseClient';
