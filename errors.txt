@@ -1,0 +1,5 @@
+[2mturbo 2.6.1[0m
+
+[36mneo:build: [0mERROR: command finished with error: command (C:\Users\fisch\IA_DEMO\apps\neo) C:\Users\fisch\AppData\Roaming\npm\pnpm.cmd run build exited (1)
+neo#build: command (C:\Users\fisch\IA_DEMO\apps\neo) C:\Users\fisch\AppData\Roaming\npm\pnpm.cmd run build exited (1)
+[31;40m ERROR [0m [31;49mrun failed: command  exited (1)[0m

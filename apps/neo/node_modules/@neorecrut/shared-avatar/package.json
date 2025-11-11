@@ -1,0 +1,15 @@
+{
+  "name": "@neorecrut/shared-avatar",
+  "version": "1.0.0",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "dependencies": {
+    "@heygen/streaming-avatar": "^2.0.13",
+    "@neorecrut/shared-ui": "workspace:*",
+    "ahooks": "^3.8.4",
+    "react": "^19.1.0"
+  },
+  "peerDependencies": {
+    "react": "^19.1.0"
+  }
+}

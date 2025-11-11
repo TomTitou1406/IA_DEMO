@@ -1,0 +1,95 @@
+{
+  "pages": {
+    "/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/css/app/layout.css",
+      "static/chunks/app/layout.js"
+    ],
+    "/error": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/error.js"
+    ],
+    "/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/page.js"
+    ],
+    "/(neo)/neo/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/page.js"
+    ],
+    "/(neo)/neo/recruteur/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/recruteur/layout.js"
+    ],
+    "/(neo)/neo/recruteur/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/recruteur/page.js"
+    ],
+    "/(neo)/neo/recruteur/entreprise/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/recruteur/entreprise/layout.js"
+    ],
+    "/(neo)/neo/recruteur/entreprise/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/recruteur/entreprise/page.js"
+    ],
+    "/api/knowledge-base/get-static/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/knowledge-base/get-static/route.js"
+    ],
+    "/api/avatar-config/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/avatar-config/route.js"
+    ],
+    "/(neo)/neo/recruteur/poste/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/recruteur/poste/layout.js"
+    ],
+    "/(neo)/neo/recruteur/poste/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/recruteur/poste/page.js"
+    ],
+    "/(neo)/neo/admin/layout": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/admin/layout.js"
+    ],
+    "/(neo)/neo/admin/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/(neo)/neo/admin/page.js"
+    ],
+    "/test-chat/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/test-chat/page.js"
+    ],
+    "/api/openai/chat/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/openai/chat/route.js"
+    ],
+    "/api/get-access-token/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/get-access-token/route.js"
+    ],
+    "/_not-found/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/_not-found/page.js"
+    ]
+  }
+}
