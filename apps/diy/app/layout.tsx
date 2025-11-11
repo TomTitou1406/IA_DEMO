@@ -24,19 +24,15 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           }}
         />
         
-        {/* Header */}
         <header className="fixed top-0 left-0 w-full bg-white/50 backdrop-blur-md border-b z-50 shadow-sm">
           <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
             <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-[var(--nc-blue)] tracking-wide">
+              <span className="text-2xl font-extrabold text-blue-600 tracking-wide">
                 NeoRecrut DIY
               </span>
             </div>
             <nav className="flex items-center gap-6">
-              
-                href="/"
-                className="text-[var(--nc-blue)] text-sm font-semibold hover:underline"
-              >
+              <a href="/" className="text-blue-600 text-sm font-semibold hover:underline">
                 Accueil
               </a>
             </nav>
