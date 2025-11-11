@@ -10,8 +10,10 @@
   "scripts": {
     "dev": "turbo run dev",
     "dev:neo": "turbo run dev --filter=neo",
+    "dev:diy": "turbo run dev --filter=diy",
     "build": "turbo run build",
     "build:neo": "turbo run build --filter=neo",
+    "build:diy": "turbo run build --filter=diy",
     "lint": "turbo run lint",
     "clean": "turbo run clean && rm -rf node_modules"
   },
