@@ -9,5 +9,8 @@ export * from './components/AvatarSession/MessageHistory';
 export * from './components/AvatarSession/TextInput';
 export * from './components/AvatarConfig';
 
+// Export constants
+export * from './constants';
+
 // Export tous les hooks
 export * from './hooks';
