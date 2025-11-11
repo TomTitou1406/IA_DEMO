@@ -1,13 +1,4 @@
 {
-  "/api/knowledge-base/get-static/route": "app/api/knowledge-base/get-static/route.js",
-  "/api/avatar-config/route": "app/api/avatar-config/route.js",
-  "/_not-found/page": "app/_not-found/page.js",
-  "/api/openai/chat/route": "app/api/openai/chat/route.js",
-  "/api/get-access-token/route": "app/api/get-access-token/route.js",
-  "/(neo)/neo/page": "app/(neo)/neo/page.js",
-  "/test-chat/page": "app/test-chat/page.js",
-  "/(neo)/neo/recruteur/page": "app/(neo)/neo/recruteur/page.js",
-  "/(neo)/neo/admin/page": "app/(neo)/neo/admin/page.js",
-  "/(neo)/neo/recruteur/poste/page": "app/(neo)/neo/recruteur/poste/page.js",
-  "/(neo)/neo/recruteur/entreprise/page": "app/(neo)/neo/recruteur/entreprise/page.js"
+  "/page": "app/page.js",
+  "/(neo)/neo/page": "app/(neo)/neo/page.js"
 }
