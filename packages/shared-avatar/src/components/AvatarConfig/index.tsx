@@ -28,7 +28,7 @@ import {
 
 import { Input, Select } from '@neorecrut/shared-ui';
 import { Field } from "./Field";
-import { AVATARS, STT_LANGUAGE_LIST } from "@/app/lib/constants";
+import { AVATARS, STT_LANGUAGE_LIST } from "../../constants";
 
 // ============================================================================
 // ⚙️ Valeurs par défaut (modifiables)
