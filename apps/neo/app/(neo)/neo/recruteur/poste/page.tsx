@@ -12,8 +12,8 @@
 
 import { Suspense, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import InteractiveBlock, { ConversationContext } from "@/components/ui/InteractiveBlock";
-import { getConversationContext } from "@/app/lib/services/conversationContextService";
+import InteractiveBlock from '@/components/ui/InteractiveBlock';
+import type { ConversationContext } from '@/components/ui/InteractiveBlock';
 import KBPoolDebug from "@/components/debug/KBPoolDebug"; // 🧪 v0.03
 import type { ChatMessage } from "@/app/(neo)/neo/hooks/useNeoAvatar";
 import KBCompilerDebug from "@/components/debug/KBCompilerDebug";
