@@ -2,86 +2,28 @@
 > diy@1.0.0 build C:\Users\fisch\IA_DEMO\apps\diy
 > next build
 
-   ▲ Next.js 15.5.6
+  ▲ Next.js 14.2.18
 
    Creating an optimized production build ...
- ✓ Compiled successfully in 6.4s
+ ✓ Compiled successfully
    Linting and checking validity of types ...
-
- ⚠ The Next.js plugin was not detected in your ESLint configuration. See https://nextjs.org/docs/app/api-reference/config/eslint#migrating-existing-config
-
-./app/layout.tsx
-1:8  Warning: Replace `'../styles/globals.css';␍` with `"../styles/globals.css";`  prettier/prettier
-2:31  Warning: Replace `'next';␍` with `"next";`  prettier/prettier
-3:1  Warning: Delete `␍`  prettier/prettier
-4:36  Warning: Delete `␍`  prettier/prettier
-5:10  Warning: Replace `'NeoRecrut·DIY',␍` with `"NeoRecrut·DIY",`  prettier/prettier
-6:16  Warning: Replace `'Interface·DIY·pour·NeoRecrut',␍` with `"Interface·DIY·pour·NeoRecrut",`  prettier/prettier
-7:3  Warning: Delete `␍`  prettier/prettier
-8:1  Warning: Delete `␍`  prettier/prettier
-9:37  Warning: Delete `␍`  prettier/prettier
-10:12  Warning: Delete `␍`  prettier/prettier
-11:5  Warning: Delete `␍`  prettier/prettier
-12:29  Warning: Delete `␍`  prettier/prettier
-13:5  Warning: Delete `␍`  prettier/prettier
-14:11  Warning: Delete `␍`  prettier/prettier
-15:21  Warning: Delete `␍`  prettier/prettier
-16:30  Warning: Delete `␍`  prettier/prettier
-17:12  Warning: Delete `␍`  prettier/prettier
-18:5  Warning: Delete `␍`  prettier/prettier
-19:2  Warning: Insert `⏎`  prettier/prettier
-
-./app/page.tsx
-1:1  Warning: Replace `'use·client';␍` with `"use·client";`  prettier/prettier
-2:1  Warning: Delete `␍`  prettier/prettier
-3:24  Warning: Replace `'@neorecrut/shared-ui';␍` with `"@neorecrut/shared-ui";`  prettier/prettier
-4:1  Warning: Delete `␍`  prettier/prettier
-5:37  Warning: Delete `␍`  prettier/prettier
-6:11  Warning: Delete `␍`  prettier/prettier
-7:124  Warning: Delete `␍`  prettier/prettier
-8:63  Warning: Delete `␍`  prettier/prettier
-9:60  Warning: Replace `␍⏎··········🎉·NeoRecrut·DIY␍⏎········</h1>␍` with `🎉·NeoRecrut·DIY</h1>`  prettier/prettier
-12:1  Warning: Delete `········␍`  prettier/prettier
-13:51  Warning: Delete `␍`  prettier/prettier
-14:72  Warning: Delete `␍`  prettier/prettier
-15:13  Warning: Delete `␍`  prettier/prettier
-16:1  Warning: Delete `␍`  prettier/prettier
-17:52  Warning: Delete `␍`  prettier/prettier
-18:40  Warning: Replace `'Button·depuis·@neorecrut/shared-ui·!')}>␍` with `"Button·depuis·@neorecrut/shared-ui·!")}>`  prettier/prettier
-19:37  Warning: Delete `␍`  prettier/prettier
-20:20  Warning: Delete `␍`  prettier/prettier
-21:15  Warning: Delete `␍`  prettier/prettier
-22:1  Warning: Delete `␍`  prettier/prettier
-23:59  Warning: Delete `␍`  prettier/prettier
-24:70  Warning: Delete `␍`  prettier/prettier
-25:55  Warning: Delete `␍`  prettier/prettier
-26:16  Warning: Delete `␍`  prettier/prettier
-27:40  Warning: Delete `␍`  prettier/prettier
-28:74  Warning: Delete `␍`  prettier/prettier
-29:15  Warning: Delete `␍`  prettier/prettier
-30:15  Warning: Delete `␍`  prettier/prettier
-31:13  Warning: Delete `␍`  prettier/prettier
-32:11  Warning: Delete `␍`  prettier/prettier
-33:5  Warning: Delete `␍`  prettier/prettier
-34:2  Warning: Insert `⏎`  prettier/prettier
-
-info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
    Collecting page data ...
-   Generating static pages (0/4) ...
-   Generating static pages (1/4) 
-   Generating static pages (2/4) 
-   Generating static pages (3/4) 
- ✓ Generating static pages (4/4)
+   Generating static pages (0/5) ...
+   Generating static pages (1/5) 
+   Generating static pages (2/5) 
+   Generating static pages (3/5) 
+ ✓ Generating static pages (5/5)
    Finalizing page optimization ...
    Collecting build traces ...
 
-Route (app)                                 Size  First Load JS
-┌ ○ /                                      766 B         102 kB
-└ ○ /_not-found                            991 B         103 kB
-+ First Load JS shared by all             102 kB
-  ├ chunks/540-736a68c46984c5d9.js       45.5 kB
-  ├ chunks/bc7edd46-a5d8190def40b60b.js  54.2 kB
-  └ other shared chunks (total)          1.97 kB
+Route (app)                              Size     First Load JS
+┌ ○ /                                    796 B          87.9 kB
+├ ○ /_not-found                          138 B          87.2 kB
+└ ○ /test-avatar                         655 B          87.7 kB
++ First Load JS shared by all            87.1 kB
+  ├ chunks/120-4f8a3e3825290569.js       31.6 kB
+  ├ chunks/16b899b3-4019a42299565745.js  53.6 kB
+  └ other shared chunks (total)          1.86 kB
 
 
 ○  (Static)  prerendered as static content

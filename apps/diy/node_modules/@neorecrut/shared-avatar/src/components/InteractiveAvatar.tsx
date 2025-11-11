@@ -18,7 +18,7 @@ import { AvatarControls } from "./AvatarSession/AvatarControls";
 import { useVoiceChat } from "../hooks/useVoiceChat";
 import { StreamingAvatarProvider, StreamingAvatarSessionState } from "../hooks";
 import { MessageHistory } from "./AvatarSession/MessageHistory";
-import { AVATARS } from "@/app/lib/constants";
+import { AVATARS } from "../constants";
 
 const DEFAULT_CONFIG: StartAvatarRequest = {
   quality: AvatarQuality.High,
