@@ -2,85 +2,377 @@
 @tailwind components;
 @tailwind utilities;
 
-/* --------------------------------------------------
-   🎨 Palette NeoRecrut - Variables globales
--------------------------------------------------- */
 :root {
-  --nc-blue: #1e40af;      /* Bleu profond - principal */
-  --nc-cyan: #06b6d4;      /* Turquoise - accent / liens */
-  --nc-green: #10b981;     /* Succès / validation */
-  --nc-white: #ffffff;     /* Fond clair cartes */
-  --nc-gray: #f3f4f6;      /* Fond dashboard / séparateurs */
-  --nc-orange: #fdba74;    /* Alerte douce */
-  --nc-red: #ef4444;       /* Erreur / suppression */
-  --nc-radius: 12px;       /* Cards / boutons arrondis */
+  --orange: #FF6B35;
+  --orange-light: #FDD8A8;
+  --blue: #2563EB;
+  --blue-light: #EFF6FF;
+  --green: #10B981;
+  --green-light: #ECFDF5;
+  --gray: #6B7280;
+  --gray-dark: #111827;
+  --gray-light: #F9FAFB;
+  --yellow: #F59E0B;
+  --white: #FFF;
+  --black: #000;
+  --card-radius: 20px;
+  --spacing: 1rem;
+  --touch-size: 48px;
+  --font-main: 'Inter', Arial, Helvetica, sans-serif;
 }
 
-/* --------------------------------------------------
-   🌙 Mode sombre (préparation)
--------------------------------------------------- */
-@media (prefers-color-scheme: dark) {
-  :root {
-    /* --nc-gray: #1f2937;     Gris foncé */
-    /* --nc-white: #111827;    Fond cartes sombre */
-    /* --nc-blue: #3b82f6;     Bleu plus lumineux */
-    /* --nc-cyan: #22d3ee;     Cyan plus vif */
-    /* --nc-green: #34d399; */
-    /* --nc-orange: #fbbf24; */
-    /* --nc-red: #f87171; */
-    --nc-gray: #f3f4f6;     /* Garde fond clair */
-    --nc-white: #ffffff;    /* Garde blanc pur */
-    --nc-blue: #1e40af;     /* Garde bleu original */
-    --nc-cyan: #06b6d4;     /* Garde cyan original */
-    --nc-green: #10b981;    /* Garde vert original */
-    --nc-orange: #fdba74;   /* Garde orange original */
-    --nc-red: #ef4444;      /* Garde rouge original */
-    --nc-charcoal: #1f2937; /* Garde texte foncé */
+/* ----- BASE ----- */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-main);
+  background: var(--gray-light);
+  color: var(--gray-dark);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  letter-spacing: 0.01em;
+}
+
+a {
+  color: var(--blue);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--orange);
+}
+
+h1, h2, h3 {
+  font-weight: 700;
+  margin-bottom: 0.5em;
+}
+
+h1 {
+  font-size: 1.75rem;
+  margin-top: 0.25em;
+  line-height: 1.2;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.1rem;
+}
+
+@media (min-width: 640px) {
+  h1 {
+    font-size: 2.2rem;
   }
-
-  html, body { color: #f3f4f6; }
 }
 
-/* --------------------------------------------------
-   🧱 Styles de base globaux
--------------------------------------------------- */
-html, body {
-  background: var(--nc-gray);
-  color: #111827;
-  font-family: var(--font-sans, Inter), system-ui, sans-serif;
-  min-height: 100%;
-  scroll-behavior: smooth;
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-/* --------------------------------------------------
-   📋 Listes et éléments par défaut
--------------------------------------------------- */
-li {
-  list-style-type: square;
-  margin-left: 30px;
-  padding: 2px;
+.color-orange {
+  color: var(--orange);
 }
 
-/* --------------------------------------------------
-   🧩 Helpers
--------------------------------------------------- */
+/* ----- HEADER ----- */
+.header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--gray-light);
+  position: sticky;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.04);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+.logo {
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+}
+
+.logo-icon {
+  background: var(--orange);
+  color: #fff;
+  width: 2.2rem;
+  height: 2.2rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  margin-right: 0.6rem;
+}
+
+.logo-title {
+  letter-spacing: 0.04em;
+}
+
+/* ----- HERO ----- */
+.hero-section {
+  text-align: center;
+  margin: 1.5rem auto;
+  max-width: 750px;
+  padding: 1rem;
+}
+
+.hero-section h1 {
+  display: inline-block;
+  padding: 0.2em 0.5em;
+}
+
+.hero-section h2 {
+  font-weight: 500;
+  color: var(--gray);
+  margin-bottom: 1.2em;
+  font-size: 1.1rem;
+}
+
+@media (min-width: 640px) {
+  .hero-section h2 {
+    font-size: 1.25rem;
+  }
+}
+
+/* ----- GRID ----- */
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  max-width: 1120px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+@media (min-width: 640px) {
+  .hub-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .hub-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* ----- CARDS ----- */
+.main-card {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(5px);
+  border-radius: var(--card-radius);
+  box-shadow: 0 4px 14px 1px rgba(0, 0, 0, 0.1);
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  position: relative;
+  border: 2px solid transparent;
+  min-height: 280px;
+  width: 100%;
+  max-width: 380px;
+  margin: 0 auto;
+  transition: transform 0.2s cubic-bezier(0.38, 0.87, 0.48, 1.2), box-shadow 0.2s;
+}
+
+.main-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.15);
+}
+
+.main-card.card-orange:hover {
+  border-color: var(--orange);
+}
+
+.main-card.card-blue:hover {
+  border-color: var(--blue);
+}
+
+.main-card.card-green:hover {
+  border-color: var(--green);
+}
+
+.main-card.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.card-illu {
+  width: 100%;
+  margin-bottom: 1.5rem;
+}
+
+.card-illu img {
+  width: 100%;
+  max-width: 200px;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+  border-radius: 16px;
+  box-shadow: 0 8px 24px -4px rgba(44, 38, 15, 0.2);
+}
+
+.main-card:hover .card-illu img {
+  transform: scale(1.02);
+}
+
+.main-card h3 {
+  font-size: 1.25rem;
+  margin: 0.5em 0 0.5em 0;
+  text-align: center;
+}
+
+.main-card p {
+  color: var(--gray);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  line-height: 1.5;
+}
+
+/* ----- BUTTONS ----- */
+.main-btn {
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  font-size: 1rem;
+  min-height: var(--touch-size);
+  width: 100%;
+  max-width: 240px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: var(--font-main);
+}
+
+.main-btn:hover {
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+  transform: translateY(-2px);
+}
+
+.main-btn:active {
+  transform: translateY(0);
+}
+
+.btn-orange {
+  background: var(--orange);
+}
+
+.btn-orange:hover {
+  background: #e54e20;
+}
+
+.btn-blue {
+  background: var(--blue);
+}
+
+.btn-blue:hover {
+  background: #1e40af;
+}
+
+.btn-green {
+  background: var(--green);
+}
+
+.btn-green:hover {
+  background: #047857;
+}
+
+.btn-disabled {
+  background: var(--gray);
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.btn-disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ----- LOCK ICON ----- */
+.lock-icon {
+  margin-left: 0.5rem;
+  font-size: 0.9em;
+}
+
+/* ----- ANIMATIONS ----- */
+.fade-in {
+  opacity: 0;
+  transform: translateY(20px);
+  animation: fadeInUp 0.6s cubic-bezier(0.28, 0.81, 0.58, 1) forwards;
+}
+
+@keyframes fadeInUp {
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* Stagger animation pour les cards */
+.main-card:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.main-card:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.main-card:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+/* ----- LOADING ----- */
+.spinner {
+  border: 3px solid var(--gray-light);
+  border-top: 3px solid var(--blue);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 0.8s linear infinite;
+  margin: 2rem auto;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* ----- CONTAINER ----- */
 .container {
-  @apply mx-auto px-6;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
 }
 
-.card {
-  @apply bg-[var(--nc-white)] rounded-xl shadow-md border border-gray-200;
-}
-
-@keyframes shimmer {
-  0% {
-    transform: translateX(-100%);
+@media (min-width: 640px) {
+  .container {
+    padding: 1.5rem;
   }
-  100% {
-    transform: translateX(100%);
-  }
-}
-
-.animate-shimmer {
-  animation: shimmer 2s infinite;
 }
