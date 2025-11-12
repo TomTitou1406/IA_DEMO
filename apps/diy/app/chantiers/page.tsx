@@ -141,9 +141,9 @@ export default function ChantiersPage() {
           borderTop: '1px solid var(--gray-light)'
         }}>
           <div style={{ color: 'var(--gray-dark)' }}>
-            <span style={{ color: 'var(--gray)' }}>Heures :</span>{' '}
+            <span style={{ color: 'var(--gray)' }}>⏱️ Heures :</span>{' '}
             <span style={{ fontWeight: '600' }}>
-              ⏱️ {stats?.heuresEffectuees || 0}h / {stats?.heuresEstimees || 0}h
+              {stats?.heuresEffectuees || 0}h / {stats?.heuresEstimees || 0}h
             </span>
             <span style={{ color: 'var(--blue)', marginLeft: '0.5rem', fontWeight: '600' }}>
               ({stats?.progressionHeures || 0}%)
@@ -151,9 +151,9 @@ export default function ChantiersPage() {
           </div>
           
           <div style={{ color: 'var(--gray-dark)' }}>
-            <span style={{ color: 'var(--gray)' }}>Budget :</span>{' '}
+            <span style={{ color: 'var(--gray)' }}>💰 Budget :</span>{' '}
             <span style={{ fontWeight: '600' }}>
-              💰 {stats?.budgetReel?.toLocaleString() || 0}€ / {stats?.budgetEstime?.toLocaleString() || 0}€
+              {stats?.budgetReel?.toLocaleString() || 0}€ / {stats?.budgetEstime?.toLocaleString() || 0}€
             </span>
             <span style={{ color: 'var(--green)', marginLeft: '0.5rem', fontWeight: '600' }}>
               ({stats?.progressionBudget || 0}%)
@@ -161,9 +161,9 @@ export default function ChantiersPage() {
           </div>
         
           <div style={{ color: 'var(--gray-dark)' }}>
-            <span style={{ color: 'var(--gray)' }}>Tâches :</span>{' '}
+            <span style={{ color: 'var(--gray)' }}>✅ Tâches :</span>{' '}
             <span style={{ fontWeight: '600' }}>
-              ✅ {stats?.termines || 0} / {stats?.total || 0}
+              {stats?.termines || 0} / {stats?.total || 0}
             </span>
             <span style={{ color: 'var(--orange)', marginLeft: '0.5rem', fontWeight: '600' }}>
               • {stats?.enCours || 0} en cours
@@ -223,6 +223,12 @@ export default function ChantiersPage() {
                   overflow: 'hidden',
                   marginBottom: '1rem'
                 }}>
+                  <div style={{
+                    width: `${travail.progression}%`,
+                    height: '100%',
+                    background: 'var(--blue)',
+                    transition: 'width 0.3s'
+                  }}></div>
                 </div>
 
                 <button className="main-btn btn-blue" style={{ 
