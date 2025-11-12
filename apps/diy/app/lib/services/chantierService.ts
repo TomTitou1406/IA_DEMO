@@ -4,6 +4,29 @@ import { supabase } from '../supabaseClient';
 const DEMO_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 /**
+ * Récupère le chantier de Christophe (user démo)
+ */
+export async function getChantierDemo() {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .select('*')
+      .eq('user_id', DEMO_USER_ID)
+      .single();
+
+    if (error) {
+      console.error('Error fetching chantier:', error);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Error in getChantierDemo:', err);
+    return null;
+  }
+}
+
+/**
  * Récupère les stats du chantier
  */
 export async function getChantierStats(chantierId: string) {
