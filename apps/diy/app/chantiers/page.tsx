@@ -130,7 +130,7 @@ export default function ChantiersPage() {
           </p>
         </div>
       
-        {/* Stats détaillées - VERSION COMPACTE */}
+        {/* Stats détaillées - VERSION COMPACTE ALIGNÉE */}
         <div style={{ 
           display: 'flex',
           flexDirection: 'column',
@@ -140,37 +140,36 @@ export default function ChantiersPage() {
           paddingTop: '1rem',
           borderTop: '1px solid var(--gray-light)'
         }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'var(--gray)' }}>Heures</span>
-            <span style={{ color: 'var(--gray-dark)', fontWeight: '600' }}>
+          <div style={{ color: 'var(--gray-dark)' }}>
+            <span style={{ color: 'var(--gray)' }}>Heures :</span>{' '}
+            <span style={{ fontWeight: '600' }}>
               ⏱️ {stats?.heuresEffectuees || 0}h / {stats?.heuresEstimees || 0}h
-              <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>
-                ({stats?.progressionHeures || 0}%)
-              </span>
+            </span>
+            <span style={{ color: 'var(--blue)', marginLeft: '0.5rem', fontWeight: '600' }}>
+              ({stats?.progressionHeures || 0}%)
             </span>
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'var(--gray)' }}>Budget</span>
-            <span style={{ color: 'var(--gray-dark)', fontWeight: '600' }}>
+          <div style={{ color: 'var(--gray-dark)' }}>
+            <span style={{ color: 'var(--gray)' }}>Budget :</span>{' '}
+            <span style={{ fontWeight: '600' }}>
               💰 {stats?.budgetReel?.toLocaleString() || 0}€ / {stats?.budgetEstime?.toLocaleString() || 0}€
-              <span style={{ color: 'var(--green)', marginLeft: '0.5rem' }}>
-                ({stats?.progressionBudget || 0}%)
-              </span>
+            </span>
+            <span style={{ color: 'var(--green)', marginLeft: '0.5rem', fontWeight: '600' }}>
+              ({stats?.progressionBudget || 0}%)
             </span>
           </div>
         
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <span style={{ color: 'var(--gray)' }}>Tâches</span>
-            <span style={{ color: 'var(--gray-dark)', fontWeight: '600' }}>
-              ✅ {stats?.termines || 0} / {stats?.total || 0} • 
-              <span style={{ color: 'var(--orange)', marginLeft: '0.5rem' }}>
-                {stats?.enCours || 0} en cours
-              </span>
+          <div style={{ color: 'var(--gray-dark)' }}>
+            <span style={{ color: 'var(--gray)' }}>Tâches :</span>{' '}
+            <span style={{ fontWeight: '600' }}>
+              ✅ {stats?.termines || 0} / {stats?.total || 0}
+            </span>
+            <span style={{ color: 'var(--orange)', marginLeft: '0.5rem', fontWeight: '600' }}>
+              • {stats?.enCours || 0} en cours
             </span>
           </div>
         </div>
-      </div>
       
       {/* Section EN COURS */}
       {travauxEnCours.length > 0 && (
@@ -198,18 +197,20 @@ export default function ChantiersPage() {
                 e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
                 e.currentTarget.style.transform = 'translateX(0)';
               }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', margin: 0 }}>⚡ {travail.titre}</h3>
-                  <span style={{
-                    background: 'var(--blue-light)',
-                    color: 'var(--blue)',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '12px',
-                    fontSize: '0.85rem',
-                    fontWeight: '600'
-                  }}>
-                    {travail.progression}%
-                  </span>
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <h3 style={{ fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span>⚡ {travail.titre}</span>
+                    <span style={{
+                      background: 'var(--blue-light)',
+                      color: 'var(--blue)',
+                      padding: '0.25rem 0.5rem',
+                      borderRadius: '8px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600'
+                    }}>
+                      {travail.progression}%
+                    </span>
+                  </h3>
                 </div>
 
                 {/* Progress bar mini */}
@@ -221,12 +222,6 @@ export default function ChantiersPage() {
                   overflow: 'hidden',
                   marginBottom: '1rem'
                 }}>
-                  <div style={{
-                    width: `${travail.progression}%`,
-                    height: '100%',
-                    background: 'var(--blue)',
-                    transition: 'width 0.3s'
-                  }}></div>
                 </div>
 
                 <button className="main-btn btn-blue" style={{ 
