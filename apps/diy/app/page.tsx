@@ -1,32 +1,94 @@
-'use client';
-
-import { Button } from '@neorecrut/shared-ui';
+import Link from "next/link";
 
 export default function HomePage() {
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-8 bg-gradient-to-b from-gray-900 to-gray-800">
-      <div className="max-w-2xl w-full text-center space-y-8">
-        <h1 className="text-5xl font-bold text-white mb-4">
-          🎉 NeoRecrut DIY
+    <div className="container">
+      {/* Hero Section */}
+      <section className="hero-section fade-in">
+        <h1>
+          Tes projets deviennent <span className="color-orange">réalité</span> !
         </h1>
-        
-        <p className="text-xl text-gray-300 mb-8">
-          Application DIY utilisant les composants partagés du monorepo
-        </p>
+        <h2>Je t'aide pas à pas et à chaque étape !</h2>
+      </section>
 
-        <div className="flex gap-4 justify-center">
-          <Button onClick={() => alert('Button depuis @neorecrut/shared-ui !')}>
-            Tester le Button partagé
-          </Button>
+      {/* Navigation Cards */}
+      <div className="hub-grid">
+        {/* Card 1 : Mes Projets - ACTIVE */}
+        <div className="main-card card-orange fade-in">
+          <div className="card-illu">
+            <div
+              style={{
+                width: "200px",
+                height: "200px",
+                margin: "0 auto",
+                background: "linear-gradient(135deg, #FDD8A8 0%, #FF6B35 100%)",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "4rem",
+              }}
+            >
+              🏗️
+            </div>
+          </div>
+          <h3>Mes projets</h3>
+          <p>Crée et pilote tous tes chantiers ici !</p>
+          <Link href="/chantiers" className="main-btn btn-orange">
+            Accéder →
+          </Link>
         </div>
 
-        <div className="mt-12 p-6 bg-gray-800 rounded-lg">
-          <h2 className="text-2xl font-semibold text-green-400 mb-4">
-            ✅ Packages partagés importés avec succès !
-          </h2>
-          <p className="text-gray-400">
-            Cette page utilise des composants depuis @neorecrut/shared-ui
-          </p>
+        {/* Card 2 : Assistance - DISABLED */}
+        <div className="main-card card-blue fade-in disabled">
+          <div className="card-illu">
+            <div
+              style={{
+                width: "200px",
+                height: "200px",
+                margin: "0 auto",
+                background: "linear-gradient(135deg, #EFF6FF 0%, #2563EB 100%)",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "4rem",
+              }}
+            >
+              💡
+            </div>
+          </div>
+          <h3>J'ai besoin d'aide</h3>
+          <p>Besoin d'un coup de main précis et ultra rapide ?</p>
+          <button className="main-btn btn-disabled" disabled>
+            Bientôt disponible 🔒
+          </button>
+        </div>
+
+        {/* Card 3 : Tutos - DISABLED */}
+        <div className="main-card card-green fade-in disabled">
+          <div className="card-illu">
+            <div
+              style={{
+                width: "200px",
+                height: "200px",
+                margin: "0 auto",
+                background: "linear-gradient(135deg, #ECFDF5 0%, #10B981 100%)",
+                borderRadius: "16px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontSize: "4rem",
+              }}
+            >
+              📚
+            </div>
+          </div>
+          <h3>Tutos & Astuces</h3>
+          <p>Tous les guides vidéos illustrés sont ici !</p>
+          <button className="main-btn btn-disabled" disabled>
+            Bientôt disponible 🔒
+          </button>
         </div>
       </div>
     </div>
