@@ -193,10 +193,10 @@ export default function TravauxPage() {
               marginBottom: '0.75rem'
             }}
           >
-            <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--green)' }}>
+            <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--green)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1rem' }}>{showTermines ? '▽' : '▶'}</span>
               ✅ Terminés ({termines.length})
             </h2>
-            <span style={{ fontSize: '1.2rem' }}>{showTermines ? '△' : '▽'}</span>
           </div>
           {showTermines && (
             <div>
@@ -240,10 +240,10 @@ export default function TravauxPage() {
               marginBottom: '0.75rem'
             }}
           >
-            <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--gray)' }}>
+            <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--gray)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1rem' }}>{showAVenir ? '▽' : '▶'}</span>
               📅 À venir ({aVenir.length})
             </h2>
-            <span style={{ fontSize: '1.2rem' }}>{showAVenir ? '△' : '▽'}</span>
           </div>
           {showAVenir && (
             <div>
