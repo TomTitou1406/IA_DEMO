@@ -130,48 +130,46 @@ export default function ChantiersPage() {
           </p>
         </div>
       
-        {/* Stats détaillées */}
+        {/* Stats détaillées - VERSION COMPACTE */}
         <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-          gap: '0.75rem', 
-          fontSize: '0.9rem', 
-          color: 'var(--gray)',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem', 
+          fontSize: '0.9rem',
           marginTop: '1rem',
           paddingTop: '1rem',
           borderTop: '1px solid var(--gray-light)'
         }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>Heures</span>
-            <span style={{ fontSize: '1rem', color: 'var(--gray-dark)', fontWeight: '600' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--gray)' }}>Heures</span>
+            <span style={{ color: 'var(--gray-dark)', fontWeight: '600' }}>
               ⏱️ {stats?.heuresEffectuees || 0}h / {stats?.heuresEstimees || 0}h
-            </span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--blue)', fontWeight: '600' }}>
-              ({stats?.progressionHeures || 0}%)
+              <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>
+                ({stats?.progressionHeures || 0}%)
+              </span>
             </span>
           </div>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>Budget</span>
-            <span style={{ fontSize: '1rem', color: 'var(--gray-dark)', fontWeight: '600' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--gray)' }}>Budget</span>
+            <span style={{ color: 'var(--gray-dark)', fontWeight: '600' }}>
               💰 {stats?.budgetReel?.toLocaleString() || 0}€ / {stats?.budgetEstime?.toLocaleString() || 0}€
-            </span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--green)', fontWeight: '600' }}>
-              ({stats?.progressionBudget || 0}%)
+              <span style={{ color: 'var(--green)', marginLeft: '0.5rem' }}>
+                ({stats?.progressionBudget || 0}%)
+              </span>
             </span>
           </div>
-      
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-            <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>Tâches</span>
-            <span style={{ fontSize: '1rem', color: 'var(--gray-dark)', fontWeight: '600' }}>
-              ✅ {stats?.termines || 0} / {stats?.total || 0} terminées
-            </span>
-            <span style={{ fontSize: '0.85rem', color: 'var(--orange)', fontWeight: '600' }}>
-              {stats?.enCours || 0} en cours
+        
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <span style={{ color: 'var(--gray)' }}>Tâches</span>
+            <span style={{ color: 'var(--gray-dark)', fontWeight: '600' }}>
+              ✅ {stats?.termines || 0} / {stats?.total || 0} • 
+              <span style={{ color: 'var(--orange)', marginLeft: '0.5rem' }}>
+                {stats?.enCours || 0} en cours
+              </span>
             </span>
           </div>
         </div>
-      </div>
 
       {/* Section EN COURS */}
       {travauxEnCours.length > 0 && (
