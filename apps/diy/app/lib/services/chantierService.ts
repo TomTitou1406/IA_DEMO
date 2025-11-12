@@ -66,5 +66,3 @@ export async function getChantierStats(chantierId: string) {
     return null;
   }
 }
-
-apps/diy/app/lib/services/travauxService.ts
