@@ -125,7 +125,7 @@ export default function TravauxPage() {
         </div>
 
         {/* Actions */}
-        {travail.statut !== 'terminé' && (
+        {travail.statut !== 'terminé' && travail.statut !== 'bloqué' && (
           <>
             {/* Progress bar - MASQUÉE en mode édition */}
             {editingTravailId !== travail.id && (
