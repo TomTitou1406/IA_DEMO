@@ -26,7 +26,7 @@ export default function HomePage() {
         </div>
 
         {/* Card 2 : Assistance - DISABLED */}
-        <div className="main-card card-blue fade-in disabled">
+        <div className="main-card card-blue fade-in">
           <div className="card-illu">
             <img src="/images/assistance.webp" alt="Besoin d'aide" />
           </div>
@@ -38,7 +38,7 @@ export default function HomePage() {
         </div>
 
         {/* Card 3 : Tutos - DISABLED */}
-        <div className="main-card card-green fade-in disabled">
+        <div className="main-card card-green fade-in">
           <div className="card-illu">
             <img src="/images/tutos.webp" alt="Tous les tutos utiles" />
           </div>
