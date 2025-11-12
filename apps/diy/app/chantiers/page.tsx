@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getChantierDemo } from '../lib/services/chantierService';
+import { getChantierDemo, getChantierStats } from '../lib/services/chantierService';
 import { getTravauxByStatut } from '../lib/services/travauxService';
 
 interface Chantier {
@@ -31,6 +31,7 @@ export default function ChantiersPage() {
   const [chantier, setChantier] = useState<Chantier | null>(null);
   const [travauxEnCours, setTravauxEnCours] = useState<Travail[]>([]);
   const [travauxBloques, setTravauxBloques] = useState<Travail[]>([]);
+  const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -41,13 +42,15 @@ export default function ChantiersPage() {
         
         if (chantierData) {
           setChantier(chantierData);
-
-          // Récupère les travaux en cours et bloqués
-          const [enCours, bloques] = await Promise.all([
+        
+          // Récupère stats ET travaux en parallèle
+          const [statsData, enCours, bloques] = await Promise.all([
+            getChantierStats(chantierData.id),  // ← AJOUTÉ
             getTravauxByStatut(chantierData.id, 'en_cours'),
             getTravauxByStatut(chantierData.id, 'bloqué')
           ]);
-
+        
+          setStats(statsData);  // ← AJOUTÉ
           setTravauxEnCours(enCours);
           setTravauxBloques(bloques);
         }
