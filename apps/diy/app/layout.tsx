@@ -1,78 +1,30 @@
-// /app/layout.tsx
-import "../styles/globals.css";
-import type { ReactNode } from "react";
+import type { Metadata } from "next";
+import "./globals.css";
 
-export const metadata = {
-  title: "DIY",
-  description: "La nouvelle ère du bricolage",
+export const metadata: Metadata = {
+  title: "NeoRecrut DIY - Ton coach IA bricolage",
+  description: "Assistant IA pour tous tes projets bricolage. Guidage pas à pas, conseils d'expert, suivi de chantier.",
 };
 
-export default function RootLayout({ children }: { children: ReactNode }) {
-  const isLoggedIn = false; // à gérer plus tard
-
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="fr">
-      <body className="min-h-screen flex flex-col relative bg-[var(--nc-gray)]">
-        {/* Image de fond subtile en pseudo-élément */}
-        <div 
-          className="fixed inset-0 z-0 pointer-events-none"
-          style={{
-            backgroundImage: 'url("/background-texture-5.webp")', // Image de fond
-            backgroundPosition: 'top center',
-            backgroundSize: 'cover',
-            backgroundRepeat: 'no-repeat',
-            backgroundAttachment: 'fixed',     // Reste fixe même au scroll
-            opacity: 0.08, // Très faible opacité (ajuste entre 0.02 et 0.08)
-            filter: 'grayscale(100%) brightness(1.5)', // Effet papier gaufré
-          }}
-        />
-        {/* Header fixe en haut avec z-index élevé */}
-        <header className="fixed top-0 left-0 w-full bg-white/50 backdrop-blur-md border-b z-50 shadow-sm">
-          <div className="max-w-[1400px] mx-auto px-4 sm:px-8 flex items-center justify-between py-4">
-            {/* Logo + baseline */}
-            <div className="flex items-baseline gap-2">
-              <span className="text-2xl font-extrabold text-[var(--nc-blue)] tracking-wide">
-                DIY
-              </span>
-              <span className="text-sm font-light text-[var(--nc-blue)] tracking-normal hidden md:inline">
-                - Le coach bricolage
+      <body>
+        <header className="header">
+          <div className="header-content">
+            <div className="logo">
+              <span className="logo-icon">🔧</span>
+              <span className="logo-title">
+                NeoRecrut <span className="color-orange">DIY</span>
               </span>
             </div>
-            <nav className="flex items-center gap-6">
-              <a
-                href="/neo"
-                className="text-[var(--nc-blue)] text-sm font-semibold hover:underline whitespace-nowrap"
-                aria-label="Retour à l'accueil NeoRecrut"
-              >
-                ← Accueil
-              </a>
-              {isLoggedIn ? (
-                <a
-                  href="/logout"
-                  className="text-gray-700 text-sm font-medium hover:underline whitespace-nowrap"
-                >
-                  Se déconnecter
-                </a>
-              ) : (
-                <a
-                  href="/login"
-                  className="text-gray-700 text-sm font-medium hover:underline whitespace-nowrap"
-                >
-                  Se connecter
-                </a>
-              )}
-            </nav>
           </div>
         </header>
-
-        {/* Contenu principal avec padding-top pour compenser le header fixe */}
-        <main className="relative z-10 flex-grow max-w-[1400px] w-full mx-auto px-4 sm:px-8 py-6 pt-20">
-          {/*                                                                             ↑ Était pt-24 */}
-          {children}
-        </main>
-        <footer className="w-full bg-[#f3f4f6] text-xs py-4 text-center text-gray-500 mt-auto">
-          © {new Date().getFullYear()} NeoRecrut - Tous droits réservés
-        </footer>
+        <main>{children}</main>
       </body>
     </html>
   );
