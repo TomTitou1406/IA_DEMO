@@ -51,7 +51,7 @@ body::before {
   inset: 0;
   z-index: 0;
   pointer-events: none;
-  background: rgba(255, 255, 255, 0.85); /* Ajuste l'opacité ici */
+  background: rgba(255, 255, 255, 0.92); /* Ajuste l'opacité ici */
   backdrop-filter: blur(2px); /* Léger flou pour adoucir */
 }
 
