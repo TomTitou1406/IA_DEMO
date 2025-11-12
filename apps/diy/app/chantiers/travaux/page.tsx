@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierDemo } from '../../lib/services/chantierService';
-import { getTravauxByChantier } from '../../lib/services/travauxService';
+import { getTravauxByChantier, updateTravailProgression } from '../../lib/services/travauxService';
 
 interface Travail {
   id: string;
@@ -22,6 +22,8 @@ export default function TravauxPage() {
   const [loading, setLoading] = useState(true);
   const [showTermines, setShowTermines] = useState(false);
   const [showAVenir, setShowAVenir] = useState(false);
+  const [editingTravailId, setEditingTravailId] = useState<string | null>(null);
+  const [tempProgression, setTempProgression] = useState<number>(0);
 
   useEffect(() => {
     async function loadData() {
@@ -143,26 +145,100 @@ export default function TravauxPage() {
 
         {/* Actions */}
         {travail.statut !== 'terminé' && (
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {travail.statut === 'en_cours' && (
-              <button className="main-btn btn-green" style={{
-                fontSize: '0.85rem',
-                padding: '0.4rem 0.8rem',
-                minHeight: 'auto',
-                maxWidth: '140px'
-              }}>
-                ✓ Terminer
-              </button>
+          <>
+            {editingTravailId === travail.id ? (
+              // MODE ÉDITION : Slider
+              <div style={{ marginBottom: '0.75rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={tempProgression}
+                    onChange={(e) => setTempProgression(parseInt(e.target.value))}
+                    style={{
+                      flex: 1,
+                      height: '8px',
+                      borderRadius: '10px',
+                      outline: 'none',
+                      background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, #DBEAFE ${tempProgression}%, #DBEAFE 100%)`,
+                      cursor: 'pointer',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                  />
+                  <span style={{ 
+                    fontWeight: '600', 
+                    color: 'var(--blue)',
+                    minWidth: '50px',
+                    textAlign: 'right'
+                  }}>
+                    {tempProgression}%
+                  </span>
+                </div>
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    className="main-btn btn-green"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '120px'
+                    }}
+                    onClick={async () => {
+                      await updateTravailProgression(travail.id, tempProgression);
+                      setEditingTravailId(null);
+                      window.location.reload();
+                    }}
+                  >
+                    ✓ Valider
+                  </button>
+                  <button 
+                    className="main-btn btn-disabled"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '120px',
+                      background: 'var(--gray)'
+                    }}
+                    onClick={() => setEditingTravailId(null)}
+                  >
+                    ✕ Annuler
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // MODE NORMAL : Boutons
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {travail.statut === 'en_cours' && (
+                  <button 
+                    className="main-btn btn-green"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px'
+                    }}
+                    onClick={() => {
+                      setTempProgression(travail.progression);
+                      setEditingTravailId(travail.id);
+                    }}
+                  >
+                    📊 Ajuster %
+                  </button>
+                )}
+                <button className="main-btn btn-blue" style={{
+                  fontSize: '0.85rem',
+                  padding: '0.4rem 0.8rem',
+                  minHeight: 'auto',
+                  maxWidth: '140px'
+                }}>
+                  💬 Discuter
+                </button>
+              </div>
             )}
-            <button className="main-btn btn-blue" style={{
-              fontSize: '0.85rem',
-              padding: '0.4rem 0.8rem',
-              minHeight: 'auto',
-              maxWidth: '140px'
-            }}>
-              💬 Discuter
-            </button>
-          </div>
+          </>
         )}
       </div>
     );
