@@ -175,9 +175,10 @@ ul {
 }
 
 /* ----- CARDS ----- */
+/* ----- CARDS ----- */
 .main-card {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(5px);
+  background: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(2.5px);
   border-radius: var(--card-radius);
   box-shadow: 0 4px 14px 1px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
@@ -191,12 +192,13 @@ ul {
   width: 100%;
   max-width: 380px;
   margin: 0 auto;
-  transition: transform 0.2s cubic-bezier(0.38, 0.87, 0.48, 1.2), box-shadow 0.2s;
+  transition: transform 0.17s cubic-bezier(0.38, 0.87, 0.48, 1.2), box-shadow 0.17s;
 }
 
 .main-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 16px 40px 0 rgba(0, 0, 0, 0.15);
+  transform: scale(1.05);
+  z-index: 2;
+  box-shadow: 0 16px 50px 0 rgba(0, 0, 0, 0.12), 0 2px 14px rgba(0, 0, 0, 0.1);
 }
 
 .main-card.card-orange:hover {
@@ -228,12 +230,15 @@ ul {
   height: auto;
   display: block;
   margin: 0 auto;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px -4px rgba(44, 38, 15, 0.2);
+  border-radius: 20px;
+  box-shadow: 0 18px 45px -12px rgba(44, 38, 15, 0.38);
+  background: #f7f5ef;
+  transition: box-shadow 0.25s, transform 0.18s;
 }
 
 .main-card:hover .card-illu img {
-  transform: scale(1.02);
+  box-shadow: 0 18px 45px -12px rgba(44, 38, 15, 0.38);
+  transform: scale(1.03) rotate(-1deg);
 }
 
 .main-card h3 {
