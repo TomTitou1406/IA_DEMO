@@ -218,7 +218,7 @@ export default function ChantiersPage() {
                 <div style={{
                   width: '100%',
                   height: '6px',
-                  background: 'var(--gray-light)',
+                  background: 'var(--blue-light)',
                   borderRadius: '10px',
                   overflow: 'hidden',
                   marginBottom: '1rem'
