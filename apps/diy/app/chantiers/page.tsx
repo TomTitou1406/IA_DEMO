@@ -170,7 +170,8 @@ export default function ChantiersPage() {
             </span>
           </div>
         </div>
-
+      </div>
+      
       {/* Section EN COURS */}
       {travauxEnCours.length > 0 && (
         <section style={{ marginBottom: '2rem' }} className="fade-in">
