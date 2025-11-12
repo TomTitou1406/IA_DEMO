@@ -124,25 +124,6 @@ export default function TravauxPage() {
           )}
         </div>
 
-        {/* Progress bar pour non-terminés */}
-        {travail.statut !== 'terminé' && (
-          <div style={{
-            width: '100%',
-            height: '4px',
-            background: 'var(--gray-light)',
-            borderRadius: '10px',
-            overflow: 'hidden',
-            marginBottom: '0.75rem'
-          }}>
-            <div style={{
-              width: `${travail.progression}%`,
-              height: '100%',
-              background: getStatusColor(travail.statut),
-              transition: 'width 0.3s'
-            }}></div>
-          </div>
-        )}
-
         {/* Actions */}
         {travail.statut !== 'terminé' && (
           <>
