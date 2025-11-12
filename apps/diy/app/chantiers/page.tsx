@@ -108,8 +108,8 @@ export default function ChantiersPage() {
         <h1 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>
           🏗️ {chantier.titre}
         </h1>
-
-        {/* Progress Bar */}
+      
+        {/* Progress Bar principale */}
         <div style={{ marginBottom: '1rem' }}>
           <div style={{
             width: '100%',
@@ -119,20 +119,57 @@ export default function ChantiersPage() {
             overflow: 'hidden'
           }}>
             <div style={{
-              width: `${chantier.progression}%`,
+              width: `${stats?.progressionMoyenne || 0}%`,
               height: '100%',
               background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
               transition: 'width 0.3s'
             }}></div>
           </div>
-          <p style={{ marginTop: '0.5rem', color: 'var(--gray)', fontSize: '0.9rem' }}>
-            {chantier.progression}% complété
+          <p style={{ marginTop: '0.5rem', color: 'var(--gray-dark)', fontSize: '1rem', fontWeight: '600' }}>
+            {stats?.progressionMoyenne || 0}% complété
           </p>
         </div>
-
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', fontSize: '0.9rem', color: 'var(--gray)' }}>
-          <span>⏱️ {chantier.duree_estimee_heures}h estimées</span>
-          <span>💰 {chantier.budget_initial.toLocaleString()}€ budget</span>
+      
+        {/* Stats détaillées */}
+        <div style={{ 
+          display: 'grid', 
+          gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
+          gap: '0.75rem', 
+          fontSize: '0.9rem', 
+          color: 'var(--gray)',
+          marginTop: '1rem',
+          paddingTop: '1rem',
+          borderTop: '1px solid var(--gray-light)'
+        }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>Heures</span>
+            <span style={{ fontSize: '1rem', color: 'var(--gray-dark)', fontWeight: '600' }}>
+              ⏱️ {stats?.heuresEffectuees || 0}h / {stats?.heuresEstimees || 0}h
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--blue)', fontWeight: '600' }}>
+              ({stats?.progressionHeures || 0}%)
+            </span>
+          </div>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>Budget</span>
+            <span style={{ fontSize: '1rem', color: 'var(--gray-dark)', fontWeight: '600' }}>
+              💰 {stats?.budgetReel?.toLocaleString() || 0}€ / {stats?.budgetEstime?.toLocaleString() || 0}€
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--green)', fontWeight: '600' }}>
+              ({stats?.progressionBudget || 0}%)
+            </span>
+          </div>
+      
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+            <span style={{ fontSize: '0.85rem', color: 'var(--gray)' }}>Tâches</span>
+            <span style={{ fontSize: '1rem', color: 'var(--gray-dark)', fontWeight: '600' }}>
+              ✅ {stats?.termines || 0} / {stats?.total || 0} terminées
+            </span>
+            <span style={{ fontSize: '0.85rem', color: 'var(--orange)', fontWeight: '600' }}>
+              {stats?.enCours || 0} en cours
+            </span>
+          </div>
         </div>
       </div>
 
