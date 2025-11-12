@@ -83,3 +83,33 @@ export async function updateTravailStatut(travailId: string, statut: string) {
     return false;
   }
 }
+
+/**
+ * Met à jour la progression d'un travail
+ */
+export async function updateTravailProgression(travailId: string, progression: number) {
+  try {
+    // Si 100%, passer en terminé
+    const statut = progression >= 100 ? 'terminé' : 'en_cours';
+    
+    const { error } = await supabase
+      .from('travaux')
+      .update({ 
+        progression,
+        statut,
+        updated_at: new Date().toISOString(),
+        ...(progression >= 100 && { completed_at: new Date().toISOString() })
+      })
+      .eq('id', travailId);
+
+    if (error) {
+      console.error('Error updating progression:', error);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Error in updateTravailProgression:', err);
+    return false;
+  }
+}
