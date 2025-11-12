@@ -17,9 +17,9 @@ export default function RootLayout({
         <header className="header">
           <div className="header-content">
             <div className="logo">
-              <span className="logo-icon">🔧</span>
+              <span className="logo-icon">PB</span>
               <span className="logo-title">
-                NeoRecrut <span className="color-orange">DIY</span>
+                Papibricole <span className="color-orange">DIY</span>
               </span>
             </div>
           </div>
