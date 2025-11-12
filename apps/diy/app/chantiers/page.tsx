@@ -216,23 +216,6 @@ export default function ChantiersPage() {
                   </h3>
                 </div>
 
-                {/* Progress bar mini */}
-                <div style={{
-                  width: '100%',
-                  height: '6px',
-                  background: 'var(--blue-light)',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  marginBottom: '1rem'
-                }}>
-                  <div style={{
-                    width: `${travail.progression}%`,
-                    height: '100%',
-                    background: 'var(--blue)',
-                    transition: 'width 0.3s'
-                  }}></div>
-                </div>
-
                 {/* Progress bar - MASQUÉE en mode édition */}
                 {editingTravailId !== travail.id && (
                   <div style={{
