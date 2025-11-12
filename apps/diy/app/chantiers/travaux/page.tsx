@@ -146,44 +146,134 @@ export default function TravauxPage() {
         {/* Actions */}
         {travail.statut !== 'terminé' && (
           <>
+            {/* Progress bar - MASQUÉE en mode édition */}
+            {editingTravailId !== travail.id && (
+              <div style={{
+                width: '100%',
+                height: '6px',
+                background: '#DBEAFE',
+                borderRadius: '10px',
+                overflow: 'hidden',
+                marginBottom: '1rem'
+              }}>
+                <div style={{
+                  width: `${travail.progression}%`,
+                  height: '100%',
+                  background: 'var(--blue)',
+                  transition: 'width 0.3s'
+                }}></div>
+              </div>
+            )}
+            
             {editingTravailId === travail.id ? (
-              // MODE ÉDITION : Slider
-              <div style={{ marginBottom: '0.75rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    value={tempProgression}
-                    onChange={(e) => setTempProgression(parseInt(e.target.value))}
+              // MODE ÉDITION : Slider amélioré
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+                  {/* Bouton 0% */}
+                  <button
+                    onClick={() => setTempProgression(0)}
                     style={{
-                      flex: 1,
-                      height: '8px',
-                      borderRadius: '10px',
-                      outline: 'none',
-                      background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, #DBEAFE ${tempProgression}%, #DBEAFE 100%)`,
+                      background: 'var(--gray-light)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.75rem',
                       cursor: 'pointer',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
+                      fontWeight: '600',
+                      color: 'var(--gray)'
                     }}
-                  />
+                  >
+                    0%
+                  </button>
+            
+                  {/* Slider */}
+                  <div style={{ flex: 1, position: 'relative' }}>
+                    <input
+                      type="range"
+                      min="0"
+                      max="100"
+                      step="5"
+                      value={tempProgression}
+                      onChange={(e) => setTempProgression(parseInt(e.target.value))}
+                      style={{
+                        width: '100%',
+                        height: '12px',
+                        borderRadius: '10px',
+                        outline: 'none',
+                        background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, #DBEAFE ${tempProgression}%, #DBEAFE 100%)`,
+                        cursor: 'pointer',
+                        WebkitAppearance: 'none',
+                        appearance: 'none'
+                      }}
+                    />
+                    <style jsx>{`
+                      input[type="range"]::-webkit-slider-thumb {
+                        -webkit-appearance: none;
+                        appearance: none;
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        background: white;
+                        cursor: pointer;
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+                        border: 3px solid var(--blue);
+                      }
+                      
+                      input[type="range"]::-moz-range-thumb {
+                        width: 24px;
+                        height: 24px;
+                        border-radius: 50%;
+                        background: white;
+                        cursor: pointer;
+                        box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
+                        border: 3px solid var(--blue);
+                      }
+            
+                      input[type="range"]::-webkit-slider-thumb:hover {
+                        box-shadow: 0 4px 12px rgba(37, 99, 235, 0.6);
+                        transform: scale(1.1);
+                      }
+                    `}</style>
+                  </div>
+            
+                  {/* Bouton 100% */}
+                  <button
+                    onClick={() => setTempProgression(100)}
+                    style={{
+                      background: 'var(--gray-light)',
+                      border: 'none',
+                      borderRadius: '8px',
+                      padding: '0.25rem 0.5rem',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      color: 'var(--gray)'
+                    }}
+                  >
+                    100%
+                  </button>
+            
+                  {/* Affichage % */}
                   <span style={{ 
-                    fontWeight: '600', 
+                    fontWeight: '700', 
                     color: 'var(--blue)',
                     minWidth: '50px',
-                    textAlign: 'right'
+                    textAlign: 'right',
+                    fontSize: '1.1rem'
                   }}>
                     {tempProgression}%
                   </span>
                 </div>
+            
+                {/* Boutons Valider / Annuler */}
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button 
                     className="main-btn btn-green"
                     style={{
                       fontSize: '0.85rem',
-                      padding: '0.4rem 0.8rem',
+                      padding: '0.5rem 1rem',
                       minHeight: 'auto',
-                      maxWidth: '120px'
+                      flex: 1
                     }}
                     onClick={async () => {
                       await updateTravailProgression(travail.id, tempProgression);
@@ -197,9 +287,9 @@ export default function TravauxPage() {
                     className="main-btn btn-disabled"
                     style={{
                       fontSize: '0.85rem',
-                      padding: '0.4rem 0.8rem',
+                      padding: '0.5rem 1rem',
                       minHeight: 'auto',
-                      maxWidth: '120px',
+                      flex: 1,
                       background: 'var(--gray)'
                     }}
                     onClick={() => setEditingTravailId(null)}
@@ -209,32 +299,30 @@ export default function TravauxPage() {
                 </div>
               </div>
             ) : (
-              // MODE NORMAL : Boutons
+              // MODE NORMAL : Boutons actions
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {travail.statut === 'en_cours' && (
-                  <button 
-                    className="main-btn btn-green"
-                    style={{
-                      fontSize: '0.85rem',
-                      padding: '0.4rem 0.8rem',
-                      minHeight: 'auto',
-                      maxWidth: '140px'
-                    }}
-                    onClick={() => {
-                      setTempProgression(travail.progression);
-                      setEditingTravailId(travail.id);
-                    }}
-                  >
-                    📊 Ajuster %
-                  </button>
-                )}
+                <button 
+                  className="main-btn btn-green"
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    minHeight: 'auto',
+                    maxWidth: '140px'
+                  }}
+                  onClick={() => {
+                    setTempProgression(travail.progression);
+                    setEditingTravailId(travail.id);
+                  }}
+                >
+                  📊 Ajuster %
+                </button>
                 <button className="main-btn btn-blue" style={{
                   fontSize: '0.85rem',
                   padding: '0.4rem 0.8rem',
                   minHeight: 'auto',
                   maxWidth: '140px'
                 }}>
-                  💬 Discuter
+                  💬 {travail.statut === 'bloqué' ? 'Débloquer' : 'Discuter'}
                 </button>
               </div>
             )}
