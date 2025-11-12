@@ -282,6 +282,7 @@ export default function TravauxPage() {
             ) : (
               // MODE NORMAL : Boutons actions
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {travail.statut === 'en_cours' && (
                 <button 
                   className="main-btn btn-green"
                   style={{
@@ -297,15 +298,33 @@ export default function TravauxPage() {
                 >
                   📊 Ajuster %
                 </button>
-                <button className="main-btn btn-blue" style={{
-                  fontSize: '0.85rem',
-                  padding: '0.4rem 0.8rem',
-                  minHeight: 'auto',
-                  maxWidth: '140px'
-                }}>
-                  💬 {travail.statut === 'bloqué' ? 'Débloquer' : 'Discuter'}
+              )}
+              {travail.statut === 'bloqué' ? (
+                <button 
+                  className="main-btn btn-orange"
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    minHeight: 'auto',
+                    maxWidth: '140px'
+                  }}
+                >
+                  💬 Débloquer
                 </button>
-              </div>
+              ) : (
+                <button 
+                  className="main-btn btn-blue"
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    minHeight: 'auto',
+                    maxWidth: '140px'
+                  }}
+                >
+                  💬 Discuter
+                </button>
+              )}
+            </div>
             )}
           </>
         )}
