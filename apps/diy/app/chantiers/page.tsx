@@ -170,6 +170,7 @@ export default function ChantiersPage() {
             </span>
           </div>
         </div>
+      </div>
       
       {/* Section EN COURS */}
       {travauxEnCours.length > 0 && (
