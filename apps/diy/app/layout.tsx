@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import "../styles/globals.css";
 
 export const metadata: Metadata = {
-  title: "NeoRecrut DIY - Ton coach IA bricolage",
+  title: "Papibricole - Ton coach IA bricolage",
   description: "Assistant IA pour tous tes projets bricolage. Guidage pas à pas, conseils d'expert, suivi de chantier.",
 };
 
