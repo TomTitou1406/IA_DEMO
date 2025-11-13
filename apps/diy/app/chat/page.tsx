@@ -121,6 +121,7 @@ useEffect(() => {
       audioElementRef.current = null; // Libérer la ref
     }
     setIsPlaying(false);
+    setIsGeneratingAudio(false); // IMPORTANT : débloquer le state
   };
 
   const handleVoiceAction = async () => {
@@ -229,12 +230,12 @@ useEffect(() => {
                 .then(audioBlob => playAudio(audioBlob, audioElementRef))
                 .then(() => {
                   setIsPlaying(false);
-                })
-                .catch(err => {
-                  console.error('Audio playback error:', err);
-                  setIsPlaying(false);
-                  stopAudio(); // Cleanup en cas d'erreur
-                });
+                }).catch(err => {
+                console.error('Audio playback error:', err);
+                setIsPlaying(false);
+                setIsGeneratingAudio(false); // IMPORTANT
+                stopAudio();
+              });
             }
 
           } catch (error) {
@@ -353,7 +354,7 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* GIF centré - carré découpé en rond */}
+            {/* GIF centré avec spinner circulaire */}
             <div style={{
               position: 'fixed',
               top: '50%',
@@ -362,17 +363,46 @@ useEffect(() => {
               zIndex: 1000,
               pointerEvents: 'none'
             }}>
-              <img 
-                src="/gif/papibricole_loop_attente_1.gif" 
-                alt="Chargement"
-                style={{
-                  width: '100px',
-                  height: '100px',
+              {/* Container avec spinner */}
+              <div style={{
+                position: 'relative',
+                width: '120px',
+                height: '120px'
+              }}>
+                {/* Cercle qui tourne */}
+                <div style={{
+                  position: 'absolute',
+                  top: 0,
+                  left: 0,
+                  width: '120px',
+                  height: '120px',
+                  border: '4px solid rgba(37, 99, 235, 0.2)',
+                  borderTop: '4px solid var(--blue)',
                   borderRadius: '50%',
-                  objectFit: 'cover',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-                }}
-              />
+                  animation: 'spin 1s linear infinite'
+                }} />
+                
+                {/* GIF au centre */}
+                <div style={{
+                  position: 'absolute',
+                  top: '10px',
+                  left: '10px',
+                  width: '100px',
+                  height: '100px'
+                }}>
+                  <img 
+                    src="/gif/papibricole_loop_attente_1.gif" 
+                    alt="Chargement"
+                    style={{
+                      width: '100%',
+                      height: '100%',
+                      borderRadius: '50%',
+                      objectFit: 'cover',
+                      boxShadow: '0 4px 16px rgba(0,0,0,0.2)'
+                    }}
+                  />
+                </div>
+              </div>
             </div>
           </>
         )}
@@ -564,7 +594,7 @@ useEffect(() => {
               </button>
 
               {/* Bouton Interrompre (visible seulement si audio en cours) */}
-              {isPlaying && (
+              {isGeneratingAudio && (
                 <button
                   onClick={stopAudio}
                   className="main-btn btn-red"
@@ -625,6 +655,11 @@ useEffect(() => {
         @keyframes pulse {
           0%, 100% { opacity: 1; }
           50% { opacity: 0.5; }
+        }
+        
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
         }
       `}</style>
     </div>
