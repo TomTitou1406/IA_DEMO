@@ -146,7 +146,7 @@ export default function TravauxPage() {
               </div>
             )}
             
-            {editingTravailId === travail.id ? (
+            {travail.statut === 'en_cours' && editingTravailId === travail.id ? (
               // MODE ÉDITION : Slider amélioré
               <div style={{ marginBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
