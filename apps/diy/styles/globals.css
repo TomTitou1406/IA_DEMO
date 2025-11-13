@@ -406,3 +406,12 @@ ul {
     padding: 1.5rem;
   }
 }
+.btn-red {
+  background: var(--red);
+  color: white;
+}
+
+.btn-red:hover:not(:disabled) {
+  background: #dc2626;
+  transform: translateY(-2px);
+}
