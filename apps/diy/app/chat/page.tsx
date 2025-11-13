@@ -23,11 +23,11 @@ export default function ChatPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
-  const [transcribedText, setTranscribedText] = useState('');
   
   // Refs pour enregistrement
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordedBlobRef = useRef<Blob | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Charger contexte chantier
@@ -98,99 +98,96 @@ export default function ChatPage() {
     }
   };
 
-  // Toggle enregistrement
-  const toggleRecording = async () => {
-    if (isRecording) {
-      // ARRÊTER
-      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-        mediaRecorderRef.current.stop();
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
+  // Démarrer enregistrement
+  const startRecording = async () => {
+    if (isRecording || loading) return;
+
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+      setRecordingTime(0);
+
+      // Timer
+      timerRef.current = setInterval(() => {
+        setRecordingTime(prev => prev + 1);
+      }, 1000);
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
         }
-      }
-    } else {
-      // DÉMARRER
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const mediaRecorder = new MediaRecorder(stream);
-        
-        mediaRecorderRef.current = mediaRecorder;
-        audioChunksRef.current = [];
-        setRecordingTime(0);
-        setTranscribedText('');
+      };
 
-        // Timer
-        timerRef.current = setInterval(() => {
-          setRecordingTime(prev => prev + 1);
-        }, 1000);
+      mediaRecorder.onstop = () => {
+        stream.getTracks().forEach(track => track.stop());
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        recordedBlobRef.current = audioBlob;
+        setIsRecording(false);
+      };
 
-        mediaRecorder.ondataavailable = (event) => {
-          if (event.data.size > 0) {
-            audioChunksRef.current.push(event.data);
-          }
-        };
-
-        mediaRecorder.onstop = async () => {
-          stream.getTracks().forEach(track => track.stop());
-          
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          
-          setIsRecording(false);
-          
-          // Vérifier taille minimale
-          if (audioBlob.size < 1000) {
-            alert('Enregistrement trop court');
-            setTranscribedText('');
-            return;
-          }
-
-          // Transcrire IMMÉDIATEMENT
-          try {
-            setLoading(true);
-            const text = await transcribeAudio(audioBlob);
-            
-            if (!text.trim()) {
-              alert('Aucun texte détecté');
-              setTranscribedText('');
-            } else {
-              // AFFICHER la transcription
-              setTranscribedText(text);
-            }
-          } catch (error) {
-            console.error('Error transcribing:', error);
-            alert('Erreur lors de la transcription');
-            setTranscribedText('');
-          } finally {
-            setLoading(false);
-          }
-        };
-
-        mediaRecorder.start();
-        setIsRecording(true);
-      } catch (error) {
-        console.error('Error starting recording:', error);
-        alert('Impossible d\'accéder au microphone');
-      }
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      alert('Impossible d\'accéder au microphone');
     }
   };
 
-  // Envoyer la transcription
-  const sendTranscription = async () => {
-    if (!transcribedText.trim() || loading) return;
+  // Envoyer l'enregistrement
+  const sendRecording = async () => {
+    if (!recordedBlobRef.current || loading) return;
 
-    // Ajouter message user
-    const userMessage: Message = {
-      role: 'user',
-      content: transcribedText,
-      timestamp: new Date()
-    };
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+    }
 
-    setMessages(prev => [...prev, userMessage]);
-    setTranscribedText('');
-    setRecordingTime(0);
-    setLoading(true);
+    // Arrêter si encore en cours
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      mediaRecorderRef.current.stop();
+      // Attendre que onstop se termine
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    const audioBlob = recordedBlobRef.current;
+
+    // Vérifier taille minimale
+    if (audioBlob.size < 1000) {
+      alert('Enregistrement trop court');
+      setRecordingTime(0);
+      recordedBlobRef.current = null;
+      return;
+    }
 
     try {
+      setLoading(true);
+      
+      // Transcrire
+      const text = await transcribeAudio(audioBlob);
+      
+      if (!text.trim()) {
+        alert('Aucun texte détecté');
+        setLoading(false);
+        setRecordingTime(0);
+        recordedBlobRef.current = null;
+        return;
+      }
+
+      // Ajouter message user IMMÉDIATEMENT
+      const userMessage: Message = {
+        role: 'user',
+        content: text,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
+
+      // Reset recording
+      setRecordingTime(0);
+      recordedBlobRef.current = null;
+
+      // Envoyer à l'API
       const apiMessages = [...messages, userMessage].map(m => ({
         role: m.role,
         content: m.content
@@ -207,8 +204,8 @@ export default function ChatPage() {
         timestamp: new Date()
       };
 
-      // En mode vocal avec autoplay : Audio PUIS texte
-      if (voiceMode && autoPlayAudio) {
+      // Si autoplay : Audio PUIS texte
+      if (autoPlayAudio) {
         setIsPlaying(true);
         const audioBlob = await textToSpeech(response);
         await playAudio(audioBlob);
@@ -220,8 +217,10 @@ export default function ChatPage() {
       }
 
     } catch (error) {
-      console.error('Error processing:', error);
-      alert('Erreur lors du traitement');
+      console.error('Error processing audio:', error);
+      alert('Erreur lors du traitement audio');
+      setRecordingTime(0);
+      recordedBlobRef.current = null;
     } finally {
       setLoading(false);
     }
@@ -278,7 +277,7 @@ export default function ChatPage() {
                 gap: '0.5rem'
               }}
             >
-              {autoPlayAudio ? '🔊' : '🔇'} Lecture auto
+              {autoPlayAudio ? '🔊' : '🔇'} Audio
             </button>
           )}
         </div>
@@ -386,10 +385,7 @@ export default function ChatPage() {
             padding: '0.25rem'
           }}>
             <button
-              onClick={() => {
-                setVoiceMode(false);
-                setTranscribedText('');
-              }}
+              onClick={() => setVoiceMode(false)}
               style={{
                 padding: '0.5rem 1.5rem',
                 borderRadius: '20px',
@@ -425,43 +421,17 @@ export default function ChatPage() {
       
         {/* Input selon mode */}
         {voiceMode ? (
-          // MODE VOCAL SIMPLIFIÉ
+          // MODE VOCAL - WHATSAPP SIMPLE
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
             alignItems: 'center',
             gap: '1rem'
           }}>
-            {/* Transcription visible */}
-            {transcribedText && (
-              <div style={{
-                width: '100%',
-                padding: '1rem',
-                background: 'var(--blue-light)',
-                borderRadius: '12px',
-                marginBottom: '0.5rem'
-              }}>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: 'var(--blue)',
-                  fontWeight: '600',
-                  marginBottom: '0.5rem'
-                }}>
-                  ✓ Transcription :
-                </div>
-                <div style={{
-                  color: 'var(--text)',
-                  fontSize: '1rem'
-                }}>
-                  {transcribedText}
-                </div>
-              </div>
-            )}
-
-            {/* Indicateur état */}
+            {/* Timer */}
             {isRecording && (
               <div style={{
-                fontSize: '1.2rem',
+                fontSize: '1.5rem',
                 color: 'var(--red)',
                 fontWeight: '700',
                 animation: 'pulse 1.5s infinite'
@@ -470,71 +440,39 @@ export default function ChatPage() {
               </div>
             )}
 
-            {!isRecording && !transcribedText && (
+            {!isRecording && (
               <div style={{
                 fontSize: '0.9rem',
                 color: 'var(--gray)',
                 textAlign: 'center'
               }}>
-                Appuie pour parler
+                {recordedBlobRef.current ? 'Appuie pour envoyer' : 'Appuie pour parler'}
               </div>
             )}
             
             {/* Bouton principal */}
-            {transcribedText ? (
-              // ENVOYER
-              <button
-                onClick={sendTranscription}
-                disabled={loading}
-                className="main-btn btn-green"
-                style={{
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '50%',
-                  fontSize: '3rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 4px 16px rgba(34, 197, 94, 0.3)',
-                  cursor: loading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                📨
-              </button>
-            ) : (
-              // ENREGISTRER
-              <button
-                onClick={toggleRecording}
-                disabled={loading}
-                className="main-btn"
-                style={{
-                  width: '120px',
-                  height: '120px',
-                  borderRadius: '50%',
-                  fontSize: '3.5rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: isRecording 
-                    ? '0 8px 24px rgba(239, 68, 68, 0.4)' 
-                    : '0 4px 16px rgba(37, 99, 235, 0.3)',
-                  background: isRecording ? 'var(--red)' : 'var(--blue)',
-                  cursor: loading ? 'not-allowed' : 'pointer'
-                }}
-              >
-                {isRecording ? '⏹️' : '🎤'}
-              </button>
-            )}
-
-            {transcribedText && (
-              <div style={{
-                fontSize: '0.85rem',
-                color: 'var(--gray)',
-                textAlign: 'center'
-              }}>
-                Appuie pour envoyer
-              </div>
-            )}
+            <button
+              onClick={isRecording ? sendRecording : startRecording}
+              disabled={loading}
+              className="main-btn"
+              style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                fontSize: '3.5rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isRecording 
+                  ? '0 8px 24px rgba(34, 197, 94, 0.3)' 
+                  : '0 4px 16px rgba(37, 99, 235, 0.3)',
+                background: isRecording ? 'var(--green)' : 'var(--blue)',
+                cursor: loading ? 'not-allowed' : 'pointer',
+                transition: 'all 0.2s'
+              }}
+            >
+              {isRecording ? '📨' : '🎤'}
+            </button>
           </div>
         ) : (
           // MODE TEXTE
