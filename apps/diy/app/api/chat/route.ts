@@ -19,19 +19,21 @@ export async function POST(request: NextRequest) {
     let finalPrompt = promptConfig.systemPrompt;
     let maxTokens = 800;
 
-    // ADAPTATION MODE VOCAL
     if (isVoiceMode) {
       finalPrompt += `
 
 🎤 MODE VOCAL ACTIVÉ :
-RÈGLES STRICTES :
-- Réponds en 2-3 phrases MAXIMUM
-- Sois ultra-concis et direct
-- Va à l'essentiel, pas de détails
-- Une seule idée principale par réponse
-- Si liste nécessaire : 3 points MAX
-- Ton amical mais efficace`;
-      maxTokens = 150; // Forcer des réponses courtes
+RÈGLES CONVERSATIONNELLES :
+- Réponds de manière CONCISE mais COMPLÈTE
+- Privilégie 2-3 phrases, mais adapte selon le besoin
+- Si liste nécessaire : énumère NATURELLEMENT sans numéros
+  ❌ Mauvais : "1 : ceci, 2 : cela, 3 : autre"
+  ✅ Bon : "Tu auras besoin de ceci, de cela et d'autre chose"
+- Utilise des connecteurs naturels : "d'abord", "ensuite", "enfin", "aussi"
+- Reste conversationnel, comme si tu parlais à un ami
+- Le BON SENS prime : si 5 étapes nécessaires, cite les 5
+- Sois clair mais agréable à écouter`;
+      maxTokens = 200; // Un peu plus de marge
     }
 
     const systemMessage = {
