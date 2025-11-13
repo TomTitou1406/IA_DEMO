@@ -9,9 +9,8 @@ type AssistantState = 'idle' | 'pulse' | 'thinking' | 'speaking';
 export default function FloatingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
-  
+  const [isFullscreen, setIsFullscreen] = useState(false);
   const { pageContext, contextColor, welcomeMessage, placeholder } = useAssistantContext();
-  
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Détection inactivité pour pulse
@@ -70,7 +69,7 @@ export default function FloatingAssistant() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - Caché si ouvert */}
       {!isOpen && (
         <button
           onClick={() => {
@@ -111,21 +110,24 @@ export default function FloatingAssistant() {
         </button>
       )}
 
-      {/* Modal Chat */}
+      {/* Modal Chat - Responsive modal/fullscreen */}
       {isOpen && (
         <div style={{
           position: 'fixed',
-          bottom: '2rem',
-          right: '2rem',
-          width: 'min(420px, calc(100vw - 2rem))',
-          height: 'min(650px, calc(100vh - 4rem))',
+          top: isFullscreen ? 0 : 'auto',
+          bottom: isFullscreen ? 0 : '2rem',
+          left: isFullscreen ? 0 : 'auto',
+          right: isFullscreen ? 0 : '2rem',
+          width: isFullscreen ? '100vw' : 'min(420px, calc(100vw - 2rem))',
+          height: isFullscreen ? '100vh' : 'min(650px, calc(100vh - 4rem))',
+          borderRadius: isFullscreen ? 0 : '20px',
           background: 'white',
-          borderRadius: '20px',
           boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
-          overflow: 'hidden'
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
         }}>
           {/* Header */}
           <div style={{
@@ -168,14 +170,12 @@ export default function FloatingAssistant() {
               </div>
             </div>
 
-            {/* Actions header - NOUVEAU */}
+            {/* Actions header */}
             <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              {/* Bouton Plein écran - NOUVEAU */}
+              {/* Bouton Toggle Fullscreen */}
               <button
-                onClick={() => {
-                  window.open(`/chat?context=${pageContext}`, '_blank');
-                }}
-                title="Ouvrir en plein écran"
+                onClick={() => setIsFullscreen(!isFullscreen)}
+                title={isFullscreen ? 'Réduire' : 'Passer en plein écran'}
                 style={{
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
@@ -193,12 +193,19 @@ export default function FloatingAssistant() {
                 onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
                 onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
               >
-                ⛶
+                {isFullscreen ? '◱' : '⛶'}
               </button>
 
               {/* Bouton Fermer */}
               <button
-                onClick={() => setIsOpen(false)}
+                onClick={() => {
+                  if (isFullscreen) {
+                    setIsFullscreen(false); // Retour modal
+                  } else {
+                    setIsOpen(false); // Fermer complètement
+                  }
+                }}
+                title={isFullscreen ? 'Réduire en fenêtre' : 'Fermer'}
                 style={{
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
@@ -229,7 +236,7 @@ export default function FloatingAssistant() {
               placeholder={placeholder}
               welcomeMessage={welcomeMessage}
               onStateChange={handleStateChange}
-              compact={true}
+              compact={!isFullscreen}
             />
           </div>
         </div>
