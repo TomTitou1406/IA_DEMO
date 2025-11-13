@@ -27,7 +27,6 @@ export default function ChatPage() {
   // Refs pour enregistrement
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
-  const recordedBlobRef = useRef<Blob | null>(null);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Charger contexte chantier
@@ -98,131 +97,123 @@ export default function ChatPage() {
     }
   };
 
-  // Démarrer enregistrement
-  const startRecording = async () => {
-    if (isRecording || loading) return;
+  // Toggle enregistrement/envoi
+  const handleVoiceAction = async () => {
+    if (loading) return;
 
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-      setRecordingTime(0);
-
-      // Timer
-      timerRef.current = setInterval(() => {
-        setRecordingTime(prev => prev + 1);
-      }, 1000);
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        stream.getTracks().forEach(track => track.stop());
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        recordedBlobRef.current = audioBlob;
-        setIsRecording(false);
-      };
-
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('Impossible d\'accéder au microphone');
-    }
-  };
-
-  // Envoyer l'enregistrement
-  const sendRecording = async () => {
-    if (!recordedBlobRef.current || loading) return;
-
-    if (timerRef.current) {
-      clearInterval(timerRef.current);
-    }
-
-    // Arrêter si encore en cours
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.stop();
-      // Attendre que onstop se termine
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    const audioBlob = recordedBlobRef.current;
-
-    // Vérifier taille minimale
-    if (audioBlob.size < 1000) {
-      alert('Enregistrement trop court');
-      setRecordingTime(0);
-      recordedBlobRef.current = null;
-      return;
-    }
-
-    try {
-      setLoading(true);
-      
-      // Transcrire
-      const text = await transcribeAudio(audioBlob);
-      
-      if (!text.trim()) {
-        alert('Aucun texte détecté');
-        setLoading(false);
+    if (isRecording) {
+      // ENVOYER
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+      }
+    } else {
+      // DÉMARRER ENREGISTREMENT
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
         setRecordingTime(0);
-        recordedBlobRef.current = null;
-        return;
+
+        // Timer
+        timerRef.current = setInterval(() => {
+          setRecordingTime(prev => prev + 1);
+        }, 1000);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = async () => {
+          stream.getTracks().forEach(track => track.stop());
+          
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+          }
+
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          
+          setIsRecording(false);
+
+          // Vérifier taille minimale
+          if (audioBlob.size < 1000) {
+            alert('Enregistrement trop court');
+            setRecordingTime(0);
+            return;
+          }
+
+          // Traiter l'audio
+          try {
+            setLoading(true);
+            
+            // Transcrire
+            const text = await transcribeAudio(audioBlob);
+            
+            if (!text.trim()) {
+              alert('Aucun texte détecté');
+              setLoading(false);
+              setRecordingTime(0);
+              return;
+            }
+
+            // Ajouter message user
+            const userMessage: Message = {
+              role: 'user',
+              content: text,
+              timestamp: new Date()
+            };
+            setMessages(prev => [...prev, userMessage]);
+
+            // Reset
+            setRecordingTime(0);
+
+            // Envoyer à l'API
+            const apiMessages = [...messages, userMessage].map(m => ({
+              role: m.role,
+              content: m.content
+            }));
+
+            const response = await sendChatMessage(
+              apiMessages,
+              chantierContext
+            );
+
+            const assistantMessage: Message = {
+              role: 'assistant',
+              content: response,
+              timestamp: new Date()
+            };
+
+            // Si autoplay : Audio PUIS texte
+            if (autoPlayAudio) {
+              setIsPlaying(true);
+              const audioBlob = await textToSpeech(response);
+              await playAudio(audioBlob);
+              setMessages(prev => [...prev, assistantMessage]);
+              setIsPlaying(false);
+            } else {
+              // Sinon : texte direct
+              setMessages(prev => [...prev, assistantMessage]);
+            }
+
+          } catch (error) {
+            console.error('Error processing audio:', error);
+            alert('Erreur lors du traitement audio');
+            setRecordingTime(0);
+          } finally {
+            setLoading(false);
+          }
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Error starting recording:', error);
+        alert('Impossible d\'accéder au microphone');
       }
-
-      // Ajouter message user IMMÉDIATEMENT
-      const userMessage: Message = {
-        role: 'user',
-        content: text,
-        timestamp: new Date()
-      };
-      setMessages(prev => [...prev, userMessage]);
-
-      // Reset recording
-      setRecordingTime(0);
-      recordedBlobRef.current = null;
-
-      // Envoyer à l'API
-      const apiMessages = [...messages, userMessage].map(m => ({
-        role: m.role,
-        content: m.content
-      }));
-
-      const response = await sendChatMessage(
-        apiMessages,
-        chantierContext
-      );
-
-      const assistantMessage: Message = {
-        role: 'assistant',
-        content: response,
-        timestamp: new Date()
-      };
-
-      // Si autoplay : Audio PUIS texte
-      if (autoPlayAudio) {
-        setIsPlaying(true);
-        const audioBlob = await textToSpeech(response);
-        await playAudio(audioBlob);
-        setMessages(prev => [...prev, assistantMessage]);
-        setIsPlaying(false);
-      } else {
-        // Sinon : texte direct
-        setMessages(prev => [...prev, assistantMessage]);
-      }
-
-    } catch (error) {
-      console.error('Error processing audio:', error);
-      alert('Erreur lors du traitement audio');
-      setRecordingTime(0);
-      recordedBlobRef.current = null;
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -256,31 +247,7 @@ export default function ChatPage() {
         }}>
           ← Retour
         </Link>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <h1 style={{ fontSize: '1.5rem', margin: 0 }}>🤖 Assistant Bricolage</h1>
-          
-          {/* Toggle lecture audio */}
-          {voiceMode && (
-            <button
-              onClick={() => setAutoPlayAudio(!autoPlayAudio)}
-              style={{
-                padding: '0.4rem 0.8rem',
-                borderRadius: '20px',
-                border: 'none',
-                background: autoPlayAudio ? 'var(--blue-light)' : 'var(--gray-light)',
-                color: autoPlayAudio ? 'var(--blue)' : 'var(--gray)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              {autoPlayAudio ? '🔊' : '🔇'} Audio
-            </button>
-          )}
-        </div>
+        <h1 style={{ fontSize: '1.5rem', margin: 0 }}>🤖 Assistant Bricolage</h1>
       </div>
 
       {/* Messages zone */}
@@ -372,10 +339,11 @@ export default function ChatPage() {
         borderTop: '1px solid var(--gray-light)',
         background: 'white'
       }}>
-        {/* Toggle Texte/Vocal */}
+        {/* Toggle Texte/Vocal + Audio */}
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'center', 
+          justifyContent: 'space-between',
+          alignItems: 'center',
           marginBottom: '0.75rem' 
         }}>
           <div style={{
@@ -417,11 +385,33 @@ export default function ChatPage() {
               🎤 Vocal
             </button>
           </div>
+
+          {/* Toggle lecture audio (visible seulement en mode vocal) */}
+          {voiceMode && (
+            <button
+              onClick={() => setAutoPlayAudio(!autoPlayAudio)}
+              style={{
+                padding: '0.5rem 1rem',
+                borderRadius: '20px',
+                border: 'none',
+                background: autoPlayAudio ? 'var(--blue-light)' : 'var(--gray-light)',
+                color: autoPlayAudio ? 'var(--blue)' : 'var(--gray)',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              {autoPlayAudio ? '🔊' : '🔇'} Lecture auto
+            </button>
+          )}
         </div>
       
         {/* Input selon mode */}
         {voiceMode ? (
-          // MODE VOCAL - WHATSAPP SIMPLE
+          // MODE VOCAL
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
@@ -446,15 +436,15 @@ export default function ChatPage() {
                 color: 'var(--gray)',
                 textAlign: 'center'
               }}>
-                {recordedBlobRef.current ? 'Appuie pour envoyer' : 'Appuie pour parler'}
+                {isRecording ? 'Appuie pour envoyer' : 'Appuie pour parler'}
               </div>
             )}
             
             {/* Bouton principal */}
             <button
-              onClick={isRecording ? sendRecording : startRecording}
+              onClick={handleVoiceAction}
               disabled={loading}
-              className="main-btn"
+              className={`main-btn ${isRecording ? 'btn-green' : 'btn-blue'}`}
               style={{
                 width: '120px',
                 height: '120px',
@@ -463,12 +453,7 @@ export default function ChatPage() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                boxShadow: isRecording 
-                  ? '0 8px 24px rgba(34, 197, 94, 0.3)' 
-                  : '0 4px 16px rgba(37, 99, 235, 0.3)',
-                background: isRecording ? 'var(--green)' : 'var(--blue)',
-                cursor: loading ? 'not-allowed' : 'pointer',
-                transition: 'all 0.2s'
+                cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
               {isRecording ? '📨' : '🎤'}
