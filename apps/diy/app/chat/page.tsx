@@ -329,9 +329,26 @@ export default function ChatPage() {
               padding: '0.75rem 1rem',
               borderRadius: '1rem',
               background: 'white',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
             }}>
-              <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
+              <img 
+                src="/gif/papibricole_loop_attente_1.gif" 
+                alt="Chargement"
+                style={{
+                  width: '32px',
+                  height: '32px'
+                }}
+              />
+              <span style={{
+                color: 'var(--gray-dark)',
+                fontWeight: '600',
+                fontSize: '0.9rem'
+              }}>
+                Traitement en cours...
+              </span>
             </div>
           </div>
         )}
@@ -342,14 +359,25 @@ export default function ChatPage() {
               padding: '0.75rem 1rem',
               borderRadius: '1rem',
               background: 'var(--blue-light)',
-              color: 'var(--blue)',
-              fontWeight: '600',
-              fontSize: '0.9rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.75rem'
             }}>
-              🔊 Lecture en cours...
+              <img 
+                src="/gif/papibricole_loop_attente_1.gif" 
+                alt="Chargement"
+                style={{
+                  width: '32px',
+                  height: '32px'
+                }}
+              />
+              <span style={{
+                color: 'var(--blue)',
+                fontWeight: '600',
+                fontSize: '0.9rem'
+              }}>
+                Génération audio en cours...
+              </span>
             </div>
           </div>
         )}
