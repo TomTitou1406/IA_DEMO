@@ -24,6 +24,7 @@ export default function ChatPage() {
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   
   // Refs pour enregistrement
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -40,6 +41,19 @@ export default function ChatPage() {
     }
     loadContext();
   }, []);
+
+  // Écouter quand l'audio commence vraiment
+useEffect(() => {
+  const handleAudioStarted = () => {
+    setIsGeneratingAudio(false);
+  };
+  
+  window.addEventListener('audioStarted', handleAudioStarted);
+  
+  return () => {
+    window.removeEventListener('audioStarted', handleAudioStarted);
+  };
+}, []);
 
   // Auto-scroll
   useEffect(() => {
@@ -210,7 +224,7 @@ export default function ChatPage() {
 
             // PUIS jouer l'audio si activé (en parallèle)
             if (autoPlayAudio) {
-              setIsPlaying(true);
+              setIsGeneratingAudio(true);
               textToSpeech(response)
                 .then(audioBlob => playAudio(audioBlob, audioElementRef))
                 .then(() => {
@@ -336,7 +350,7 @@ export default function ChatPage() {
           </div>
         )}
 
-        {isPlaying && (
+        {isGeneratingAudio && (
           <>
             {/* Message texte dans le fil */}
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
