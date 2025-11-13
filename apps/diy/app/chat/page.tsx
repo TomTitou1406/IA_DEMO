@@ -211,14 +211,16 @@ export default function ChatPage() {
             // PUIS jouer l'audio si activé (en parallèle)
             if (autoPlayAudio) {
               setIsPlaying(true);
-              textToSpeech(response).then(audioBlob => {
-                return playAudio(audioBlob, audioElementRef);
-              }).then(() => {
-                setIsPlaying(false);
-              }).catch(err => {
-                console.error('Audio playback error:', err);
-                setIsPlaying(false);
-              });
+              textToSpeech(response)
+                .then(audioBlob => playAudio(audioBlob, audioElementRef))
+                .then(() => {
+                  setIsPlaying(false);
+                })
+                .catch(err => {
+                  console.error('Audio playback error:', err);
+                  setIsPlaying(false);
+                  stopAudio(); // Cleanup en cas d'erreur
+                });
             }
 
           } catch (error) {
