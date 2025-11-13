@@ -294,8 +294,8 @@ export default function TravauxPage() {
                 </div>
               </div>
             ) : (
-              // MODE NORMAL : Boutons actions
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              /// MODE NORMAL : Boutons actions
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                 {/* Bouton Ajuster % pour tâches en cours */}
                 {travail.statut === 'en_cours' && (
                   <button 
@@ -314,6 +314,82 @@ export default function TravauxPage() {
                     📊 Ajuster %
                   </button>
                 )}
+                
+                {/* Bouton Débloquer pour tâches bloquées */}
+                {travail.statut === 'bloqué' && (
+                  <button 
+                    className="main-btn btn-orange"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px'
+                    }}
+                  >
+                    💬 Débloquer
+                  </button>
+                )}
+                
+                {/* Bouton Annuler pour tâches à venir */}
+                {travail.statut === 'à_venir' && (
+                  <button 
+                    className="main-btn"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px',
+                      background: 'var(--gray)',
+                      color: 'white'
+                    }}
+                    onClick={() => {
+                      setModalConfig({
+                        isOpen: true,
+                        title: 'Annuler cette tâche ?',
+                        message: `"${travail.titre}" sera déplacée dans "Annulées" et pourra être réactivée à tout moment.`,
+                        onConfirm: async () => {
+                          await annulerTravail(travail.id);
+                          setModalConfig({ ...modalConfig, isOpen: false });
+                          window.location.reload();
+                        }
+                      });
+                    }}
+                  >
+                    🗑️ Annuler
+                  </button>
+                )}
+                
+                {/* Badge nombre d'étapes */}
+                {travail.etapes?.etapes?.length > 0 && (
+                  <Link 
+                    href={`/chantiers/travaux/${travail.id}`}
+                    style={{
+                      background: '#10b98115',
+                      color: '#10b981',
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '8px',
+                      fontSize: '0.85rem',
+                      fontWeight: '600',
+                      textDecoration: 'none',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.25rem',
+                      border: '1px solid #10b98140',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#10b98125';
+                      e.currentTarget.style.transform = 'scale(1.05)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = '#10b98115';
+                      e.currentTarget.style.transform = 'scale(1)';
+                    }}
+                  >
+                    🎯 {travail.etapes.etapes.length} étapes
+                  </Link>
+                )}
+              </div>
                 
                 {/* Bouton Débloquer pour tâches bloquées */}
                 {travail.statut === 'bloqué' && (
