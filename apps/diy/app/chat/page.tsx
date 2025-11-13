@@ -42,16 +42,23 @@ export default function ChatPage() {
     loadContext();
   }, []);
 
-  // Écouter quand l'audio commence vraiment
+  // Écouter les événements audio
 useEffect(() => {
   const handleAudioStarted = () => {
     setIsGeneratingAudio(false);
+    setIsPlaying(true);
+  };
+  
+  const handleAudioEnded = () => {
+    setIsPlaying(false);
   };
   
   window.addEventListener('audioStarted', handleAudioStarted);
+  window.addEventListener('audioEnded', handleAudioEnded);
   
   return () => {
     window.removeEventListener('audioStarted', handleAudioStarted);
+    window.removeEventListener('audioEnded', handleAudioEnded);
   };
 }, []);
 
