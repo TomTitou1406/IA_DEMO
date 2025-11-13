@@ -18,8 +18,8 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [chantierContext, setChantierContext] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const [voiceMode, setVoiceMode] = useState(false);
-  const [autoPlayAudio, setAutoPlayAudio] = useState(true);
+  const [voiceMode, setVoiceMode] = useState(true);
+  const [autoPlayAudio, setAutoPlayAudio] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
@@ -187,16 +187,20 @@ export default function ChatPage() {
               timestamp: new Date()
             };
 
-            // Si autoplay : Audio PUIS texte
+            // AFFICHER LE TEXTE D'ABORD
+            setMessages(prev => [...prev, assistantMessage]);
+
+            // PUIS jouer l'audio si activé (en parallèle)
             if (autoPlayAudio) {
               setIsPlaying(true);
-              const audioBlob = await textToSpeech(response);
-              await playAudio(audioBlob);
-              setMessages(prev => [...prev, assistantMessage]);
-              setIsPlaying(false);
-            } else {
-              // Sinon : texte direct
-              setMessages(prev => [...prev, assistantMessage]);
+              textToSpeech(response).then(audioBlob => {
+                return playAudio(audioBlob);
+              }).then(() => {
+                setIsPlaying(false);
+              }).catch(err => {
+                console.error('Audio playback error:', err);
+                setIsPlaying(false);
+              });
             }
 
           } catch (error) {
@@ -499,29 +503,16 @@ export default function ChatPage() {
             <button
               onClick={handleVoiceAction}
               disabled={loading}
-              className={`main-btn ${isRecording ? 'btn-green' : 'btn-blue'}`}
+              className={`main-btn ${isRecording ? 'btn-blue' : 'btn-green'}`}
               style={{
                 fontSize: '1rem',
                 fontWeight: '600',
                 padding: '1.25rem 3rem',
                 minHeight: 'auto',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              {isRecording ? (
-                <>
-                  <span style={{ fontSize: '1.5rem' }}>📨</span>
-                  Envoyer
-                </>
-              ) : (
-                <>
-                  <span style={{ fontSize: '1.5rem' }}>🎤</span>
-                  Parler
-                </>
-              )}
+              {isRecording ? 'Envoyer' : 'Parler'}
             </button>
           </div>
         ) : (
