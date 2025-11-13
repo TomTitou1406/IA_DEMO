@@ -425,7 +425,7 @@ export default function ChantiersPage() {
                           e.currentTarget.style.transform = 'scale(1)';
                         }}
                       >
-                        🎯 {travail.etapes.etapes.length} étapes
+                        🎯 {travail.etapes?.etapes?.length || 0} étapes
                       </Link>
                     )}
                   </div>
