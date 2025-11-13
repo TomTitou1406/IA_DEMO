@@ -17,10 +17,10 @@ export async function POST(request: NextRequest) {
     }
 
     const mp3 = await openai.audio.speech.create({
-      model: 'tts-1',
-      voice: 'onyx', // Voix masculine naturelle
+      model: 'gpt-4o-mini-tts',  // ← Nouveau modèle steerable
+      voice: 'coral',
       input: text,
-      speed: 1.0
+      instructions: "Parle avec enthousiasme et énergie, comme un ami qui encourage son pote bricoleur"
     });
 
     const buffer = Buffer.from(await mp3.arrayBuffer());
