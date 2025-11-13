@@ -103,17 +103,20 @@ export default function ChatPage() {
     if (audioElementRef.current) {
       audioElementRef.current.pause();
       audioElementRef.current.currentTime = 0;
+      audioElementRef.current.src = ''; // Vider la source
+      audioElementRef.current = null; // Libérer la ref
     }
     setIsPlaying(false);
   };
 
-  // Toggle enregistrement/envoi
   const handleVoiceAction = async () => {
   // Auto-stop audio si en cours
   if (isPlaying) {
     stopAudio();
+    // Attendre un peu que l'audio se libère
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
-
+    
   if (loading) return;
 
   if (isRecording) {
