@@ -334,40 +334,23 @@ export default function TravailDetailPage() {
         )}
       </div>
 
-      {/* CTA Aide */}
+      {/* Info contextuelle */}
       <div style={{
-        background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+        background: '#10b98115',
+        border: '1px solid #10b98140',
         borderRadius: 'var(--card-radius)',
-        padding: '1.5rem',
-        textAlign: 'center',
-        color: 'white',
-        boxShadow: '0 4px 14px rgba(16,185,129,0.3)'
-      }} className="fade-in">
-        <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem' }}>
-          Besoin d'aide sur ces étapes ?
-        </h3>
-        <p style={{ marginBottom: '1rem', opacity: 0.9 }}>
-          L'assistant IA expert en {travail.expertise?.nom || 'bricolage'} est là pour vous guider !
-        </p>
-        <button
-          onClick={() => {
-            // La FAB va s'ouvrir automatiquement grâce au contexte
-            const event = new CustomEvent('openFloatingAssistant');
-            window.dispatchEvent(event);
-          }}
-          className="main-btn"
-          style={{
-            background: 'white',
-            color: '#10b981',
-            fontWeight: '700',
-            fontSize: '1.05rem',
-            padding: '0.875rem 2rem',
-            border: 'none',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.15)'
-          }}
-        >
-          💬 Parler à l'assistant expert
-        </button>
+        padding: '1rem',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '1rem',
+        color: '#065f46'
+      }}>
+        <div style={{ fontSize: '2rem' }}>💡</div>
+        <div>
+          <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: '500' }}>
+            <strong>Astuce :</strong> Utilisez l'assistant IA en bas à droite pour obtenir de l'aide en temps réel sur chaque étape !
+          </p>
+        </div>
       </div>
     </div>
   );
