@@ -21,10 +21,14 @@ export default function ChatPage() {
   const [voiceMode, setVoiceMode] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const [hasRecording, setHasRecording] = useState(false);
   
-  // Refs pour hold-to-talk
+  // Refs pour enregistrement
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const recordedBlobRef = useRef<Blob | null>(null);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Charger contexte chantier
   useEffect(() => {
@@ -63,7 +67,8 @@ export default function ChatPage() {
 
       const response = await sendChatMessage(
         [...apiMessages, { role: 'user', content: input }],
-        chantierContext
+        chantierContext,
+        voiceMode // Passer le mode pour adapter le prompt
       );
 
       const assistantMessage: Message = {
@@ -73,6 +78,14 @@ export default function ChatPage() {
       };
 
       setMessages(prev => [...prev, assistantMessage]);
+
+      // Audio si mode vocal
+      if (voiceMode) {
+        setIsPlaying(true);
+        const audioBlob = await textToSpeech(response);
+        await playAudio(audioBlob);
+        setIsPlaying(false);
+      }
     } catch (error) {
       console.error('Error sending message:', error);
       const errorMessage: Message = {
@@ -86,117 +99,138 @@ export default function ChatPage() {
     }
   };
 
-  // Démarre l'enregistrement (hold-to-talk)
-  const handleStartRecording = async (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (isRecording || loading || isPlaying) return;
-
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
+  // Démarre/Arrête l'enregistrement (CLIC SIMPLE)
+  const toggleRecording = async () => {
+    if (isRecording) {
+      // ARRÊTER
+      if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+        mediaRecorderRef.current.stop();
+        if (timerRef.current) {
+          clearInterval(timerRef.current);
         }
-      };
+      }
+    } else {
+      // DÉMARRER
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const mediaRecorder = new MediaRecorder(stream);
+        
+        mediaRecorderRef.current = mediaRecorder;
+        audioChunksRef.current = [];
+        setRecordingTime(0);
+        setHasRecording(false);
 
-      mediaRecorder.start();
-      setIsRecording(true);
-    } catch (error) {
-      console.error('Error starting recording:', error);
-      alert('Impossible d\'accéder au microphone');
+        // Timer
+        timerRef.current = setInterval(() => {
+          setRecordingTime(prev => prev + 1);
+        }, 1000);
+
+        mediaRecorder.ondataavailable = (event) => {
+          if (event.data.size > 0) {
+            audioChunksRef.current.push(event.data);
+          }
+        };
+
+        mediaRecorder.onstop = () => {
+          stream.getTracks().forEach(track => track.stop());
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          recordedBlobRef.current = audioBlob;
+          setIsRecording(false);
+          setHasRecording(audioBlob.size > 1000);
+        };
+
+        mediaRecorder.start();
+        setIsRecording(true);
+      } catch (error) {
+        console.error('Error starting recording:', error);
+        alert('Impossible d\'accéder au microphone');
+      }
     }
   };
 
-  // Arrête l'enregistrement et traite (hold-to-talk)
-  const handleStopRecording = async (e: React.MouseEvent | React.TouchEvent) => {
-    e.preventDefault();
-    if (!isRecording || !mediaRecorderRef.current) return;
+  // Supprimer l'enregistrement
+  const cancelRecording = () => {
+    recordedBlobRef.current = null;
+    setHasRecording(false);
+    setRecordingTime(0);
+  };
 
-    const mediaRecorder = mediaRecorderRef.current;
+  // Envoyer l'enregistrement
+  const sendRecording = async () => {
+    if (!recordedBlobRef.current) return;
 
-    return new Promise<void>((resolve) => {
-      mediaRecorder.onstop = async () => {
-        // Arrêter le stream
-        mediaRecorder.stream.getTracks().forEach(track => track.stop());
-        
-        // Créer le blob audio
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        
-        setIsRecording(false);
-        
-        // Vérifier taille minimale
-        if (audioBlob.size < 1000) {
-          alert('Enregistrement trop court');
-          resolve();
-          return;
-        }
+    try {
+      setLoading(true);
+      setHasRecording(false);
+      
+      // Transcrire
+      const text = await transcribeAudio(recordedBlobRef.current);
+      
+      if (!text.trim()) {
+        alert('Aucun texte détecté');
+        setLoading(false);
+        return;
+      }
 
-        // Traiter l'audio
-        try {
-          setLoading(true);
-          
-          // Transcrire
-          const text = await transcribeAudio(audioBlob);
-          
-          if (!text.trim()) {
-            alert('Aucun texte détecté');
-            setLoading(false);
-            resolve();
-            return;
-          }
+      // AFFICHER IMMÉDIATEMENT la transcription
+      const userMessage: Message = {
+        role: 'user',
+        content: text,
+        timestamp: new Date()
+      };
+      setMessages(prev => [...prev, userMessage]);
 
-          // Créer message user
-          const userMessage: Message = {
-            role: 'user',
-            content: text,
-            timestamp: new Date()
-          };
+      // Envoyer à l'API
+      const apiMessages = [...messages, userMessage].map(m => ({
+        role: m.role,
+        content: m.content
+      }));
 
-          setMessages(prev => [...prev, userMessage]);
+      const response = await sendChatMessage(
+        apiMessages,
+        chantierContext,
+        voiceMode
+      );
 
-          // Envoyer à l'API
-          const apiMessages = messages.map(m => ({
-            role: m.role,
-            content: m.content
-          }));
-
-          const response = await sendChatMessage(
-            [...apiMessages, { role: 'user', content: text }],
-            chantierContext
-          );
-
-          const assistantMessage: Message = {
-            role: 'assistant',
-            content: response,
-            timestamp: new Date()
-          };
-
-          setMessages(prev => [...prev, assistantMessage]);
-
-          // Synthèse vocale si mode vocal
-          if (voiceMode) {
-            setIsPlaying(true);
-            const audioBlob = await textToSpeech(response);
-            await playAudio(audioBlob);
-            setIsPlaying(false);
-          }
-
-        } catch (error) {
-          console.error('Error processing audio:', error);
-          alert('Erreur lors du traitement audio');
-        } finally {
-          setLoading(false);
-          resolve();
-        }
+      const assistantMessage: Message = {
+        role: 'assistant',
+        content: response,
+        timestamp: new Date()
       };
 
-      mediaRecorder.stop();
-    });
+      // En mode vocal : Audio PUIS texte
+      if (voiceMode) {
+        setIsPlaying(true);
+        const audioBlob = await textToSpeech(response);
+        
+        // Jouer l'audio
+        await playAudio(audioBlob);
+        
+        // PUIS afficher le texte
+        setMessages(prev => [...prev, assistantMessage]);
+        setIsPlaying(false);
+      } else {
+        // Mode texte : afficher directement
+        setMessages(prev => [...prev, assistantMessage]);
+      }
+
+      // Reset
+      recordedBlobRef.current = null;
+      setRecordingTime(0);
+
+    } catch (error) {
+      console.error('Error processing audio:', error);
+      alert('Erreur lors du traitement audio');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Format temps
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
@@ -287,6 +321,24 @@ export default function ChatPage() {
           </div>
         )}
 
+        {isPlaying && (
+          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
+            <div style={{
+              padding: '0.75rem 1rem',
+              borderRadius: '1rem',
+              background: 'var(--blue-light)',
+              color: 'var(--blue)',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              🔊 Lecture en cours...
+            </div>
+          </div>
+        )}
+
         <div ref={messagesEndRef} />
       </div>
 
@@ -345,7 +397,7 @@ export default function ChatPage() {
       
         {/* Input selon mode */}
         {voiceMode ? (
-          // MODE VOCAL - HOLD TO TALK
+          // MODE VOCAL - CLIC SIMPLE
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
@@ -353,85 +405,100 @@ export default function ChatPage() {
             gap: '1rem'
           }}>
             {/* Indicateur état */}
-            {isRecording ? (
+            {isRecording && (
               <div style={{
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                gap: '0.5rem'
+                fontSize: '1.5rem',
+                color: 'var(--red)',
+                fontWeight: '700',
+                animation: 'pulse 1.5s infinite'
               }}>
-                <div style={{
-                  fontSize: '0.9rem',
-                  color: 'var(--red)',
-                  fontWeight: '600',
-                  animation: 'pulse 1.5s infinite'
-                }}>
-                  🔴 Enregistrement en cours...
-                </div>
-                <div style={{
-                  fontSize: '0.85rem',
-                  color: 'var(--gray)',
-                  textAlign: 'center'
-                }}>
-                  Relâche le bouton pour envoyer
-                </div>
+                🔴 {formatTime(recordingTime)}
               </div>
-            ) : (
+            )}
+
+            {hasRecording && !isRecording && (
+              <div style={{
+                fontSize: '0.9rem',
+                color: 'var(--green)',
+                fontWeight: '600'
+              }}>
+                ✓ Enregistrement prêt ({formatTime(recordingTime)})
+              </div>
+            )}
+            
+            {!isRecording && !hasRecording && (
               <div style={{
                 fontSize: '0.85rem',
                 color: 'var(--gray)',
                 textAlign: 'center'
               }}>
-                Maintiens le micro enfoncé pour parler
+                Clique sur le micro pour parler
               </div>
             )}
             
-            {/* Bouton Hold-to-talk */}
-            <button
-              onMouseDown={handleStartRecording}
-              onMouseUp={handleStopRecording}
-              onMouseLeave={handleStopRecording}
-              onTouchStart={handleStartRecording}
-              onTouchEnd={handleStopRecording}
-              disabled={loading || isPlaying}
-              className="main-btn btn-blue"
-              style={{
-                width: '100px',
-                height: '100px',
-                borderRadius: '50%',
-                fontSize: '3rem',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                boxShadow: isRecording 
-                  ? '0 8px 24px rgba(239, 68, 68, 0.4)' 
-                  : '0 4px 12px rgba(37, 99, 235, 0.3)',
-                background: isRecording ? 'var(--red)' : 'var(--blue)',
-                transform: isRecording ? 'scale(1.1)' : 'scale(1)',
-                transition: 'all 0.2s',
-                cursor: loading || isPlaying ? 'not-allowed' : 'pointer',
-                userSelect: 'none',
-                WebkitUserSelect: 'none'
-              }}
-            >
-              {isRecording ? '🔴' : '🎤'}
-            </button>
-        
-            {isPlaying && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.75rem',
-                padding: '0.75rem 1.5rem',
-                background: 'var(--blue-light)',
-                borderRadius: '25px',
-                fontSize: '0.9rem',
-                color: 'var(--blue)',
-                fontWeight: '600'
-              }}>
-                <div className="spinner" style={{ width: '16px', height: '16px', borderColor: 'var(--blue)' }}></div>
-                🔊 Lecture en cours...
+            {/* Boutons selon état */}
+            {hasRecording ? (
+              // PREVIEW : Envoyer ou Supprimer
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button
+                  onClick={sendRecording}
+                  disabled={loading}
+                  className="main-btn btn-green"
+                  style={{
+                    width: '100px',
+                    height: '100px',
+                    borderRadius: '50%',
+                    fontSize: '2.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(34, 197, 94, 0.3)'
+                  }}
+                >
+                  ▶️
+                </button>
+                <button
+                  onClick={cancelRecording}
+                  disabled={loading}
+                  className="main-btn"
+                  style={{
+                    width: '60px',
+                    height: '60px',
+                    borderRadius: '50%',
+                    fontSize: '1.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--gray)',
+                    alignSelf: 'center'
+                  }}
+                >
+                  🗑️
+                </button>
               </div>
+            ) : (
+              // ENREGISTREMENT : Micro
+              <button
+                onClick={toggleRecording}
+                disabled={loading || isPlaying}
+                className="main-btn btn-blue"
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  fontSize: '3rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  boxShadow: isRecording 
+                    ? '0 8px 24px rgba(239, 68, 68, 0.4)' 
+                    : '0 4px 12px rgba(37, 99, 235, 0.3)',
+                  background: isRecording ? 'var(--red)' : 'var(--blue)',
+                  cursor: loading || isPlaying ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isRecording ? '⏹️' : '🎤'}
+              </button>
             )}
           </div>
         ) : (
