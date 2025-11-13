@@ -10,7 +10,7 @@ export default function FloatingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const { pageContext, contextColor, welcomeMessage, placeholder } = useAssistantContext();
+  const { pageContext, contextColor, welcomeMessage, placeholder, additionalContext } = useAssistantContext();
   // DEBUG TEMPORAIRE
   console.log('🔍 Assistant Context:', { pageContext, hasAdditionalContext: !!useAssistantContext().additionalContext });
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -237,8 +237,9 @@ export default function FloatingAssistant() {
               contextColor={contextColor}
               placeholder={placeholder}
               welcomeMessage={welcomeMessage}
+              additionalContext={additionalContext}  // ← AJOUTE CETTE LIGNE
               onStateChange={handleStateChange}
-              compact={!isFullscreen}
+              compact={true}
             />
           </div>
         </div>
