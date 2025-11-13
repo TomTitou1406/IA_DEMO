@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierDemo } from '../../lib/services/chantierService';
-import { getTravauxByChantier, updateTravailProgression } from '../../lib/services/travauxService';
+import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail } from '../../lib/services/travauxService';
 
 interface Travail {
   id: string;
@@ -24,6 +24,7 @@ export default function TravauxPage() {
   const [showAVenir, setShowAVenir] = useState(false);
   const [editingTravailId, setEditingTravailId] = useState<string | null>(null);
   const [tempProgression, setTempProgression] = useState<number>(0);
+  const [showAnnulees, setShowAnnulees] = useState(false);
 
   useEffect(() => {
     async function loadData() {
@@ -57,6 +58,7 @@ export default function TravauxPage() {
   const enCours = travaux.filter(t => t.statut === 'en_cours');
   const bloques = travaux.filter(t => t.statut === 'bloqué');
   const aVenir = travaux.filter(t => t.statut === 'à_venir');
+  const annulees = travaux.filter(t => t.statut === 'annulé');
 
   const TravailCard = ({ travail }: { travail: Travail }) => {
     const getStatusColor = (statut: string) => {
@@ -325,6 +327,27 @@ export default function TravauxPage() {
                   💬 Discuter
                 </button>
               )}
+              {travail.statut === 'à_venir' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.85rem',
+                    padding: '0.4rem 0.8rem',
+                    minHeight: 'auto',
+                    maxWidth: '140px',
+                    background: 'var(--gray)',
+                    color: 'white'
+                  }}
+                  onClick={async () => {
+                    if (confirm(`Annuler la tâche "${travail.titre}" ?\n\nElle sera déplacée dans "Annulées" et pourra être réactivée.`)) {
+                      await annulerTravail(travail.id);
+                      window.location.reload();
+                    }
+                  }}
+                >
+                  🗑️ Annuler
+                </button>
+              )}  
             </div>
             )}
           </>
@@ -413,6 +436,70 @@ export default function TravauxPage() {
           {showAVenir && (
             <div>
               {aVenir.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+            </div>
+          )}
+        </section>
+      )}
+
+      {/* Section ANNULÉES */}
+      {annulees.length > 0 && (
+        <section style={{ marginBottom: '2rem' }} className="fade-in">
+          <div 
+            onClick={() => setShowAnnulees(!showAnnulees)}
+            style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              cursor: 'pointer',
+              padding: '0.5rem 0',
+              marginBottom: '0.75rem'
+            }}
+          >
+            <h2 style={{ fontSize: '1.1rem', margin: 0, color: 'var(--gray)', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1rem' }}>{showAnnulees ? '▽' : '▶'}</span>
+              🗑️ Annulées ({annulees.length})
+            </h2>
+          </div>
+          {showAnnulees && (
+            <div>
+              {annulees.map(travail => (
+                <div key={travail.id} style={{
+                  background: 'rgba(255,255,255,0.7)',
+                  backdropFilter: 'blur(5px)',
+                  borderRadius: 'var(--card-radius)',
+                  padding: '1rem',
+                  marginBottom: '0.75rem',
+                  borderLeft: '4px solid var(--gray)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                  opacity: 0.85
+                }}>
+                  <h3 style={{ fontSize: '1rem', margin: 0, marginBottom: '0.5rem', color: 'var(--gray)' }}>
+                    🗑️ {travail.titre}
+                  </h3>
+                  {travail.description && (
+                    <p style={{ fontSize: '0.85rem', color: 'var(--gray)', margin: 0, marginBottom: '0.75rem' }}>
+                      {travail.description}
+                    </p>
+                  )}
+                  <button 
+                    className="main-btn btn-blue"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px'
+                    }}
+                    onClick={async () => {
+                      if (confirm(`Réactiver la tâche "${travail.titre}" ?\n\nElle reviendra dans "À venir".`)) {
+                        await reactiverTravail(travail.id);
+                        window.location.reload();
+                      }
+                    }}
+                  >
+                    🔄 Réactiver
+                  </button>
+                </div>
+              ))}
             </div>
           )}
         </section>
