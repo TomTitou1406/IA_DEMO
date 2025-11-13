@@ -115,6 +115,11 @@ export default function ChatInterface({
         content: m.content
       }));
 
+      // DEBUG TEMPORAIRE
+      console.log('📤 Sending to API with context:', {
+        hasAdditionalContext: !!additionalContext,
+        contextLength: additionalContext?.length || 0
+      });
       const response = await sendChatMessage(
         [...apiMessages, { role: 'user', content: input }],
         additionalContext,
