@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierDemo } from '../../lib/services/chantierService';
 import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail } from '../../lib/services/travauxService';
+import ConfirmModal from '../../components/ConfirmModal';
 
 interface Travail {
   id: string;
@@ -25,6 +26,17 @@ export default function TravauxPage() {
   const [editingTravailId, setEditingTravailId] = useState<string | null>(null);
   const [tempProgression, setTempProgression] = useState<number>(0);
   const [showAnnulees, setShowAnnulees] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     async function loadData() {
@@ -338,11 +350,17 @@ export default function TravauxPage() {
                     background: 'var(--gray)',
                     color: 'white'
                   }}
-                  onClick={async () => {
-                    if (confirm(`Annuler la tâche "${travail.titre}" ?\n\nElle sera déplacée dans "Annulées" et pourra être réactivée.`)) {
-                      await annulerTravail(travail.id);
-                      window.location.reload();
-                    }
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Annuler cette tâche ?',
+                      message: `"${travail.titre}" sera déplacée dans "Annulées" et pourra être réactivée à tout moment.`,
+                      onConfirm: async () => {
+                        await annulerTravail(travail.id);
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
+                      }
+                    });
                   }}
                 >
                   🗑️ Annuler
@@ -489,11 +507,17 @@ export default function TravauxPage() {
                       minHeight: 'auto',
                       maxWidth: '140px'
                     }}
-                    onClick={async () => {
-                      if (confirm(`Réactiver la tâche "${travail.titre}" ?\n\nElle reviendra dans "À venir".`)) {
-                        await reactiverTravail(travail.id);
-                        window.location.reload();
-                      }
+                    onClick={() => {
+                      setModalConfig({
+                        isOpen: true,
+                        title: 'Réactiver cette tâche ?',
+                        message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
+                        onConfirm: async () => {
+                          await reactiverTravail(travail.id);
+                          setModalConfig({ ...modalConfig, isOpen: false });
+                          window.location.reload();
+                        }
+                      });
                     }}
                   >
                     🔄 Réactiver
@@ -515,6 +539,17 @@ export default function TravauxPage() {
           🤖 Parler à l'assistant
         </Link>
       </div>
+      {/* Modal de confirmation */}
+      <ConfirmModal
+        isOpen={modalConfig.isOpen}
+        title={modalConfig.title}
+        message={modalConfig.message}
+        confirmText="Confirmer"
+        cancelText="Annuler"
+        onConfirm={modalConfig.onConfirm}
+        onCancel={() => setModalConfig({ ...modalConfig, isOpen: false })}
+        type="warning"
+      />
     </div>
   );
 }
