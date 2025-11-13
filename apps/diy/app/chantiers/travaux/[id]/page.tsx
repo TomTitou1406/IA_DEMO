@@ -21,7 +21,7 @@ interface Travail {
   description: string;
   statut: string;
   progression: number;
-  expertise: {
+  expertise?: {
     nom: string;
     code: string;
   };
