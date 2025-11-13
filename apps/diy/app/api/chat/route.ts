@@ -32,8 +32,9 @@ RÈGLES CONVERSATIONNELLES :
 - Utilise des connecteurs naturels : "d'abord", "ensuite", "enfin", "aussi"
 - Reste conversationnel, comme si tu parlais à un ami
 - Le BON SENS prime : si 5 étapes nécessaires, cite les 5
-- Sois clair mais agréable à écouter`;
-      maxTokens = 200; // Un peu plus de marge
+- Sois clair mais agréable à écouter
+- N'utilise JAMAIS de formatage Markdown (**, __, etc.) car c'est pour l'audio`;  // ← NOUVEAU
+      maxTokens = 200;
     }
 
     const systemMessage = {
