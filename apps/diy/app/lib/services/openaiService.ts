@@ -12,7 +12,8 @@ interface Message {
 export async function sendChatMessage(
   messages: Message[],
   context?: string,
-  isVoiceMode?: boolean
+  isVoiceMode?: boolean,
+  pageContext?: string // ← NOUVEAU paramètre
 ): Promise<string> {
   try {
     const response = await fetch('/api/chat', {
@@ -21,7 +22,8 @@ export async function sendChatMessage(
       body: JSON.stringify({ 
         messages, 
         context,
-        isVoiceMode 
+        isVoiceMode,
+        pageContext // ← Passer à l'API
       })
     });
 
