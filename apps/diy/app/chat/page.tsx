@@ -337,19 +337,6 @@ useEffect(() => {
           </div>
         ))}
 
-        {loading && (
-          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
-            <div style={{
-              padding: '0.75rem 1rem',
-              borderRadius: '1rem',
-              background: 'white',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
-            }}>
-              <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
-            </div>
-          </div>
-        )}
-
         {isGeneratingAudio && (
           <>
             {/* Message texte dans le fil */}
@@ -366,7 +353,7 @@ useEffect(() => {
               </div>
             </div>
 
-            {/* GIF centré et gros */}
+            {/* GIF centré - carré découpé en rond */}
             <div style={{
               position: 'fixed',
               top: '50%',
@@ -375,27 +362,17 @@ useEffect(() => {
               zIndex: 1000,
               pointerEvents: 'none'
             }}>
-              <div style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                background: 'white',
-                boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: '20px'
-              }}>
-                <img 
-                  src="/gif/papibricole_loop_attente_1.gif" 
-                  alt="Chargement"
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    objectFit: 'contain'
-                  }}
-                />
-              </div>
+              <img 
+                src="/gif/papibricole_loop_attente_1.gif" 
+                alt="Chargement"
+                style={{
+                  width: '100px',
+                  height: '100px',
+                  borderRadius: '50%',
+                  objectFit: 'cover',
+                  boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
+                }}
+              />
             </div>
           </>
         )}
