@@ -386,14 +386,6 @@ export default function ChantiersPage() {
                     >
                       📊 Ajuster %
                     </button>
-                    <button className="main-btn btn-blue" style={{
-                      fontSize: '0.85rem',
-                      padding: '0.4rem 0.8rem',
-                      minHeight: 'auto',
-                      maxWidth: '140px'
-                    }}>
-                      💬 Discuter
-                    </button>
                   </div>
                 )}
               </div>
@@ -446,9 +438,6 @@ export default function ChantiersPage() {
       }} className="fade-in">
         <Link href="/chantiers/travaux" className="main-btn btn-blue">
           📋 Tous les travaux
-        </Link>
-        <Link href="/chat" className="main-btn btn-green">
-          🤖 Parler à l'assistant
         </Link>
       </div>
     </div>
