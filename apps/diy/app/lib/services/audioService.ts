@@ -111,6 +111,12 @@ export function playAudio(
       reject(new Error('Erreur lecture audio'));
     };
     
-    audio.play().catch(reject);
+    // ATTENDRE que l'audio soit prêt AVANT de jouer
+    audio.oncanplaythrough = () => {
+      audio.play().catch(reject);
+    };
+    
+    // Déclencher le chargement
+    audio.load();
   });
 }
