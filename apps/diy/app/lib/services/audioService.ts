@@ -110,6 +110,10 @@ export function playAudio(
     
     audio.onended = () => {
       cleanup();
+      // Signal que l'audio est terminé
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('audioEnded'));
+      }
       resolve();
     };
     
