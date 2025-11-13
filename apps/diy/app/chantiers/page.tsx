@@ -370,7 +370,7 @@ export default function ChantiersPage() {
                   </div>
                 ) : (
                   // MODE NORMAL : Boutons actions
-                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <button 
                       className="main-btn btn-green"
                       style={{
@@ -386,6 +386,37 @@ export default function ChantiersPage() {
                     >
                       📊 Ajuster %
                     </button>
+                    
+                    {/* Badge nombre d'étapes */}
+                    {travail.etapes?.etapes?.length > 0 && (
+                      <Link 
+                        href={`/chantiers/travaux/${travail.id}`}
+                        style={{
+                          background: '#10b98115',
+                          color: '#10b981',
+                          padding: '0.4rem 0.8rem',
+                          borderRadius: '8px',
+                          fontSize: '0.85rem',
+                          fontWeight: '600',
+                          textDecoration: 'none',
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.25rem',
+                          border: '1px solid #10b98140',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = '#10b98125';
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = '#10b98115';
+                          e.currentTarget.style.transform = 'scale(1)';
+                        }}
+                      >
+                        🎯 {travail.etapes.etapes.length} étapes
+                      </Link>
+                    )}
                   </div>
                 )}
               </div>
