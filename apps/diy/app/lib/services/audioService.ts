@@ -120,10 +120,19 @@ export function playAudio(
     
     // ATTENDRE que l'audio soit prêt AVANT de jouer
     audio.oncanplaythrough = () => {
+      // Jouer l'audio
       audio.play().catch(err => {
         cleanup();
         reject(err);
       });
+    };
+    
+    // Callback quand l'audio commence vraiment
+    audio.onplaying = () => {
+      // Déclencher un événement custom pour cacher le loader
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('audioStarted'));
+      }
     };
     
     // Déclencher le chargement
