@@ -70,7 +70,7 @@ Tu es un expert en ${travail.expertise?.nom || 'bricolage'}. Le bricoleur travai
     // TRAVAIL DÉTAIL (priorité max)
     if (pathname.match(/^\/chantiers\/travaux\/[^\/]+$/)) {
       return {
-        pageContext: 'travail-detail',
+        pageContext: 'travaux',
         contextColor: '#10b981',
         welcomeMessage: 'Je suis ton expert bricolage ! Sur quelle étape as-tu besoin d\'aide ?',
         placeholder: 'Demande-moi de l\'aide sur une étape...',
