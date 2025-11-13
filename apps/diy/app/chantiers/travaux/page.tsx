@@ -127,8 +127,8 @@ export default function TravauxPage() {
         {/* Actions */}
         {travail.statut !== 'terminé' && (
           <>
-            {/* Progress bar - MASQUÉE en mode édition */}
-            {editingTravailId !== travail.id && (
+            {/* Progress bar - MASQUÉE en mode édition ET pour tâches bloquées */}
+            {travail.statut !== 'bloqué' && editingTravailId !== travail.id && (
               <div style={{
                 width: '100%',
                 height: '6px',
