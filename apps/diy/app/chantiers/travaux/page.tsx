@@ -298,75 +298,67 @@ export default function TravauxPage() {
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {/* Bouton Ajuster % pour tâches en cours */}
                 {travail.statut === 'en_cours' && (
-                <button 
-                  className="main-btn btn-green"
-                  style={{
-                    fontSize: '0.85rem',
-                    padding: '0.4rem 0.8rem',
-                    minHeight: 'auto',
-                    maxWidth: '140px'
-                  }}
-                  onClick={() => {
-                    setTempProgression(travail.progression);
-                    setEditingTravailId(travail.id);
-                  }}
-                >
-                  📊 Ajuster %
-                </button>
-              )}
-              {travail.statut === 'bloqué' ? (
-                <button 
-                  className="main-btn btn-orange"
-                  style={{
-                    fontSize: '0.85rem',
-                    padding: '0.4rem 0.8rem',
-                    minHeight: 'auto',
-                    maxWidth: '140px'
-                  }}
-                >
-                  💬 Débloquer
-                </button>
-              ) : (
-                <button 
-                  className="main-btn btn-blue"
-                  style={{
-                    fontSize: '0.85rem',
-                    padding: '0.4rem 0.8rem',
-                    minHeight: 'auto',
-                    maxWidth: '140px'
-                  }}
-                >
-                  💬 Discuter
-                </button>
-              )}
-              {travail.statut === 'à_venir' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.85rem',
-                    padding: '0.4rem 0.8rem',
-                    minHeight: 'auto',
-                    maxWidth: '140px',
-                    background: 'var(--gray)',
-                    color: 'white'
-                  }}
-                  onClick={() => {
-                    setModalConfig({
-                      isOpen: true,
-                      title: 'Annuler cette tâche ?',
-                      message: `"${travail.titre}" sera déplacée dans "Annulées" et pourra être réactivée à tout moment.`,
-                      onConfirm: async () => {
-                        await annulerTravail(travail.id);
-                        setModalConfig({ ...modalConfig, isOpen: false });
-                        window.location.reload();
-                      }
-                    });
-                  }}
-                >
-                  🗑️ Annuler
-                </button>
-              )}  
-            </div>
+                  <button 
+                    className="main-btn btn-green"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px'
+                    }}
+                    onClick={() => {
+                      setTempProgression(travail.progression);
+                      setEditingTravailId(travail.id);
+                    }}
+                  >
+                    📊 Ajuster %
+                  </button>
+                )}
+                
+                {/* Bouton Débloquer pour tâches bloquées */}
+                {travail.statut === 'bloqué' && (
+                  <button 
+                    className="main-btn btn-orange"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px'
+                    }}
+                  >
+                    💬 Débloquer
+                  </button>
+                )}
+                
+                {/* Bouton Annuler pour tâches à venir */}
+                {travail.statut === 'à_venir' && (
+                  <button 
+                    className="main-btn"
+                    style={{
+                      fontSize: '0.85rem',
+                      padding: '0.4rem 0.8rem',
+                      minHeight: 'auto',
+                      maxWidth: '140px',
+                      background: 'var(--gray)',
+                      color: 'white'
+                    }}
+                    onClick={() => {
+                      setModalConfig({
+                        isOpen: true,
+                        title: 'Annuler cette tâche ?',
+                        message: `"${travail.titre}" sera déplacée dans "Annulées" et pourra être réactivée à tout moment.`,
+                        onConfirm: async () => {
+                          await annulerTravail(travail.id);
+                          setModalConfig({ ...modalConfig, isOpen: false });
+                          window.location.reload();
+                        }
+                      });
+                    }}
+                  >
+                    🗑️ Annuler
+                  </button>
+                )}  
+              </div>
             )}
           </>
         )}
@@ -528,17 +520,7 @@ export default function TravauxPage() {
           )}
         </section>
       )}
-
-      {/* CTA bas de page */}
-      <div style={{ 
-        marginTop: '2rem',
-        display: 'flex',
-        gap: '1rem'
-      }}>
-        <Link href="/chat" className="main-btn btn-green" style={{ flex: 1 }}>
-          🤖 Parler à l'assistant
-        </Link>
-      </div>
+      
       {/* Modal de confirmation */}
       <ConfirmModal
         isOpen={modalConfig.isOpen}
