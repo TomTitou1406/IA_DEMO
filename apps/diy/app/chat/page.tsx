@@ -101,10 +101,10 @@ useEffect(() => {
 
       // Audio si mode vocal ET autoplay activé
       if (voiceMode && autoPlayAudio) {
-        setIsPlaying(true);
+        setIsGeneratingAudio(true);
         const audioBlob = await textToSpeech(response);
         await playAudio(audioBlob, audioElementRef);
-        setIsPlaying(false);
+        // NE RIEN FAIRE ICI - géré par l'événement audioEnded
       }
     } catch (error) {
       console.error('Error sending message:', error);
@@ -236,13 +236,14 @@ useEffect(() => {
               textToSpeech(response)
                 .then(audioBlob => playAudio(audioBlob, audioElementRef))
                 .then(() => {
+                  // NE RIEN FAIRE ICI - géré par l'événement audioEnded
+                })
+                .catch(err => {
+                  console.error('Audio playback error:', err);
                   setIsPlaying(false);
-                }).catch(err => {
-                console.error('Audio playback error:', err);
-                setIsPlaying(false);
-                setIsGeneratingAudio(false); // IMPORTANT
-                stopAudio();
-              });
+                  setIsGeneratingAudio(false);
+                  stopAudio();
+                });
             }
 
           } catch (error) {
