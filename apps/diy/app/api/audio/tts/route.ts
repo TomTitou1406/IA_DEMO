@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       model: 'gpt-4o-mini-tts',  // ← Nouveau modèle steerable
       voice: 'onyx',
       input: text,
-      instructions: "Parle avec enthousiasme et énergie, comme un ami qui encourage son pote bricoleur"
+      instructions: "Parle avec enthousiasme et énergie, comme un ami qui encourage son pote bricoleur",
       speed: 0.9  // Ralentir légèrement (0.25 à 4.0, défaut = 1.0)
     });
     
