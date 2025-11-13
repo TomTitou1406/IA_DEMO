@@ -5,16 +5,24 @@ interface Message {
 
 /**
  * Envoie un message à OpenAI et retourne la réponse
+ * @param messages - Historique de la conversation
+ * @param context - Contexte additionnel (chantier, page, etc.)
+ * @param isVoiceMode - Si true, force des réponses courtes pour le vocal
  */
 export async function sendChatMessage(
   messages: Message[],
-  context?: string
+  context?: string,
+  isVoiceMode?: boolean
 ): Promise<string> {
   try {
     const response = await fetch('/api/chat', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages, context })
+      body: JSON.stringify({ 
+        messages, 
+        context,
+        isVoiceMode 
+      })
     });
 
     if (!response.ok) {
