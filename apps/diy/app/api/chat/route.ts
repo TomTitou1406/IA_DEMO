@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
+import { getSystemPromptForContext } from '@/app/lib/services/promptService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -7,29 +8,19 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, context, isVoiceMode } = await request.json();
+    const { messages, context, isVoiceMode, pageContext } = await request.json();
 
-    // Prompt de base
-    const basePrompt = `Tu es un assistant bricolage expert et pédagogue pour l'application Papibricole DIY.
+    // Déterminer le contexte (par défaut: chat)
+    const contextType = pageContext || 'chat';
 
-Tu aides les bricoleurs à :
-- Planifier leurs travaux
-- Résoudre des problèmes techniques
-- Débloquer des situations
-- Comprendre les étapes d'un chantier
+    // Récupérer le prompt système depuis la DB
+    const promptConfig = await getSystemPromptForContext(contextType, context);
 
-Ton style :
-- Direct, clair, pas de blabla
-- Pédagogue mais pas condescendant
-- Donne des conseils pratiques et actionnables
-- Utilise des émojis avec parcimonie`;
-
-    // ADAPTATION SELON MODE
-    let finalPrompt = basePrompt;
+    let finalPrompt = promptConfig.systemPrompt;
     let maxTokens = 800;
 
+    // ADAPTATION MODE VOCAL
     if (isVoiceMode) {
-      // MODE VOCAL : Réponses COURTES
       finalPrompt += `
 
 🎤 MODE VOCAL ACTIVÉ :
@@ -43,11 +34,6 @@ RÈGLES STRICTES :
       maxTokens = 150; // Forcer des réponses courtes
     }
 
-    // Ajouter le contexte si présent
-    if (context) {
-      finalPrompt += `\n\nCONTEXTE ACTUEL :\n${context}`;
-    }
-
     const systemMessage = {
       role: 'system' as const,
       content: finalPrompt
@@ -56,12 +42,13 @@ RÈGLES STRICTES :
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [systemMessage, ...messages],
-      temperature: 0.2, // Déterministe mais naturel possible 0,5 plus équilibré
+      temperature: 0.2, // Déterministe pour instructions bricolage précises
       max_tokens: maxTokens
     });
 
     return NextResponse.json({
-      message: completion.choices[0].message.content
+      message: completion.choices[0].message.content,
+      promptUsed: promptConfig.code // Pour debug
     });
   } catch (error) {
     console.error('Error in chat API:', error);
