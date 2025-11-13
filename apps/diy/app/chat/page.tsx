@@ -329,57 +329,61 @@ export default function ChatPage() {
               padding: '0.75rem 1rem',
               borderRadius: '1rem',
               background: 'white',
-              boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem'
+              boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
             }}>
-              <img 
-                src="/gif/papibricole_loop_attente_1.gif" 
-                alt="Chargement"
-                style={{
-                  width: '32px',
-                  height: '32px'
-                }}
-              />
-              <span style={{
-                color: 'var(--gray-dark)',
-                fontWeight: '600',
-                fontSize: '0.9rem'
-              }}>
-                Traitement en cours...
-              </span>
+              <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
             </div>
           </div>
         )}
 
         {isPlaying && (
-          <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
-            <div style={{
-              padding: '0.75rem 1rem',
-              borderRadius: '1rem',
-              background: 'var(--blue-light)',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem'
-            }}>
-              <img 
-                src="/gif/papibricole_loop_attente_1.gif" 
-                alt="Chargement"
-                style={{
-                  width: '32px',
-                  height: '32px'
-                }}
-              />
-              <span style={{
+          <>
+            {/* Message texte dans le fil */}
+            <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
+              <div style={{
+                padding: '0.75rem 1rem',
+                borderRadius: '1rem',
+                background: 'var(--blue-light)',
                 color: 'var(--blue)',
                 fontWeight: '600',
                 fontSize: '0.9rem'
               }}>
-                Génération audio en cours...
-              </span>
+                🔊 Génération audio en cours...
+              </div>
             </div>
-          </div>
+
+            {/* GIF centré et gros */}
+            <div style={{
+              position: 'fixed',
+              top: '50%',
+              left: '50%',
+              transform: 'translate(-50%, -50%)',
+              zIndex: 1000,
+              pointerEvents: 'none'
+            }}>
+              <div style={{
+                width: '120px',
+                height: '120px',
+                borderRadius: '50%',
+                background: 'white',
+                boxShadow: '0 8px 32px rgba(0,0,0,0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                padding: '20px'
+              }}>
+                <img 
+                  src="/gif/papibricole_loop_attente_1.gif" 
+                  alt="Chargement"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    objectFit: 'contain'
+                  }}
+                />
+              </div>
+            </div>
+          </>
         )}
 
         <div ref={messagesEndRef} />
