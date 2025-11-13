@@ -89,7 +89,8 @@ useEffect(() => {
       const response = await sendChatMessage(
         [...apiMessages, { role: 'user', content: input }],
         chantierContext,
-        voiceMode  // ← Ajouter le mode vocal
+        voiceMode,  // ← Ajouter le mode vocal
+        'chat' // ← Contexte de la page
       );
 
       const assistantMessage: Message = {
@@ -220,7 +221,8 @@ useEffect(() => {
             const response = await sendChatMessage(
               apiMessages,
               chantierContext,
-              voiceMode  // ← Ajouter le mode vocal
+              voiceMode,  // ← Ajouter le mode vocal
+              'chat' // ← Contexte de la page
             );
 
             const assistantMessage: Message = {
