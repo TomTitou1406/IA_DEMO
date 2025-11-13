@@ -181,7 +181,7 @@ export async function getEtapesByTravail(travailId: string) {
       description: data.description,
       statut: data.statut,
       progression: data.progression,
-      expertise: data.expertises
+      expertise: data.expertises?.[0] || null
     },
     etapes: data.etapes?.etapes || []
   };
