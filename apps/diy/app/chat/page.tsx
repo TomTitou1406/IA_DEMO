@@ -350,7 +350,7 @@ useEffect(() => {
           </div>
         ))}
 
-      {(isGeneratingAudio || isPlaying) && (
+      {isGeneratingAudio && (
           <>
             {/* Message texte dans le fil */}
             <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '1rem' }}>
