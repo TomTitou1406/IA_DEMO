@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { sendChatMessage } from '../lib/services/openaiService';
 import { getChantierDemo } from '../lib/services/chantierService';
+import { recordAudio, transcribeAudio, textToSpeech, playAudio } from '../lib/services/audioService';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -17,6 +18,9 @@ export default function ChatPage() {
   const [loading, setLoading] = useState(false);
   const [chantierContext, setChantierContext] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const [voiceMode, setVoiceMode] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
 
   // Charger contexte chantier
   useEffect(() => {
@@ -77,6 +81,77 @@ export default function ChatPage() {
       setLoading(false);
     }
   };
+
+  const handleVoiceMessage = async () => {
+  if (isRecording) return;
+
+  setIsRecording(true);
+  
+  try {
+    // Enregistrer
+    const audioBlob = await recordAudio();
+    
+    // Transcrire
+    const text = await transcribeAudio(audioBlob);
+    
+    if (!text.trim()) {
+      alert('Aucun texte détecté');
+      setIsRecording(false);
+      return;
+    }
+
+    // Créer message user
+    const userMessage: Message = {
+      role: 'user',
+      content: text,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setLoading(true);
+    setIsRecording(false);
+
+    // Envoyer à l'API
+    const apiMessages = messages.map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    const response = await sendChatMessage(
+      [...apiMessages, { role: 'user', content: text }],
+      chantierContext
+    );
+
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: response,
+      timestamp: new Date()
+    };
+
+    setMessages(prev => [...prev, assistantMessage]);
+
+    // Synthèse vocale si mode vocal
+    if (voiceMode) {
+      setIsPlaying(true);
+      const audioBlob = await textToSpeech(response);
+      await playAudio(audioBlob);
+      setIsPlaying(false);
+    }
+
+  } catch (error) {
+    console.error('Error in voice message:', error);
+    alert('Erreur lors de l\'enregistrement');
+    setIsRecording(false);
+  } finally {
+    setLoading(false);
+  }
+};
+
+const stopRecording = () => {
+  if ((window as any).__stopRecording) {
+    (window as any).__stopRecording();
+  }
+};
 
   return (
     <div className="container" style={{ 
@@ -175,40 +250,168 @@ export default function ChatPage() {
         borderTop: '1px solid var(--gray-light)',
         background: 'white'
       }}>
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <input
-            type="text"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-            placeholder="Pose ta question..."
-            disabled={loading}
-            style={{
-              flex: 1,
-              padding: '0.75rem 1rem',
-              borderRadius: '25px',
-              border: '2px solid var(--gray-light)',
-              fontSize: '1rem',
-              outline: 'none',
-              transition: 'border-color 0.2s'
-            }}
-            onFocus={(e) => e.target.style.borderColor = 'var(--blue)'}
-            onBlur={(e) => e.target.style.borderColor = 'var(--gray-light)'}
-          />
-          <button
-            onClick={handleSend}
-            disabled={!input.trim() || loading}
-            className="main-btn btn-blue"
-            style={{
-              minWidth: '60px',
-              borderRadius: '25px',
-              padding: '0.75rem 1.5rem'
-            }}
-          >
-            ➤
-          </button>
+        {/* Toggle Texte/Vocal */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          marginBottom: '0.75rem' 
+        }}>
+          <div style={{
+            display: 'inline-flex',
+            background: 'var(--gray-light)',
+            borderRadius: '25px',
+            padding: '0.25rem'
+          }}>
+            <button
+              onClick={() => setVoiceMode(false)}
+              style={{
+                padding: '0.5rem 1.5rem',
+                borderRadius: '20px',
+                border: 'none',
+                background: !voiceMode ? 'white' : 'transparent',
+                color: !voiceMode ? 'var(--blue)' : 'var(--gray)',
+                fontWeight: !voiceMode ? '600' : 'normal',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: !voiceMode ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
+              }}
+            >
+              ✍️ Texte
+            </button>
+            <button
+              onClick={() => setVoiceMode(true)}
+              style={{
+                padding: '0.5rem 1.5rem',
+                borderRadius: '20px',
+                border: 'none',
+                background: voiceMode ? 'white' : 'transparent',
+                color: voiceMode ? 'var(--blue)' : 'var(--gray)',
+                fontWeight: voiceMode ? '600' : 'normal',
+                cursor: 'pointer',
+                transition: 'all 0.2s',
+                boxShadow: voiceMode ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
+              }}
+            >
+              🎤 Vocal
+            </button>
+          </div>
         </div>
+      
+        {/* Input selon mode */}
+        {voiceMode ? (
+          // MODE VOCAL
+          <div style={{ 
+            display: 'flex', 
+            flexDirection: 'column',
+            alignItems: 'center',
+            gap: '1rem'
+          }}>
+            {isRecording && (
+              <div style={{
+                fontSize: '0.9rem',
+                color: 'var(--red)',
+                fontWeight: '600',
+                animation: 'pulse 1.5s infinite'
+              }}>
+                🔴 Enregistrement en cours...
+              </div>
+            )}
+            
+            <div style={{ display: 'flex', gap: '1rem' }}>
+              {!isRecording ? (
+                <button
+                  onClick={handleVoiceMessage}
+                  disabled={loading || isPlaying}
+                  className="main-btn btn-blue"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
+                  }}
+                >
+                  🎤
+                </button>
+              ) : (
+                <button
+                  onClick={stopRecording}
+                  className="main-btn"
+                  style={{
+                    width: '80px',
+                    height: '80px',
+                    borderRadius: '50%',
+                    fontSize: '2rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    background: 'var(--red)',
+                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
+                  }}
+                >
+                  ⏹️
+                </button>
+              )}
+            </div>
+            
+            <p style={{ 
+              fontSize: '0.85rem', 
+              color: 'var(--gray)',
+              textAlign: 'center'
+            }}>
+              {isRecording 
+                ? 'Appuie sur stop ou attends 30s max' 
+                : 'Appuie pour parler'}
+            </p>
+          </div>
+        ) : (
+          // MODE TEXTE
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Pose ta question..."
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: '0.75rem 1rem',
+                borderRadius: '25px',
+                border: '2px solid var(--gray-light)',
+                fontSize: '1rem',
+                outline: 'none',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => e.target.style.borderColor = 'var(--blue)'}
+              onBlur={(e) => e.target.style.borderColor = 'var(--gray-light)'}
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || loading}
+              className="main-btn btn-blue"
+              style={{
+                minWidth: '60px',
+                borderRadius: '25px',
+                padding: '0.75rem 1.5rem'
+              }}
+            >
+              ➤
+            </button>
+          </div>
+        )}
       </div>
+      
+      {/* Animation pulse */}
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.5; }
+        }
+      `}</style>
     </div>
   );
 }
