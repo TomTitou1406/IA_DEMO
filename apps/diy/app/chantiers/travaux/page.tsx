@@ -16,6 +16,17 @@ interface Travail {
   ordre: number;
   blocage_raison?: string;
   duree_estimee_heures?: number;
+  etapes?: {
+    etapes: Array<{
+      numero: number;
+      titre: string;
+      description: string;
+      duree_minutes: number;
+      outils: string[];
+      difficulte: string;
+      conseils?: string;
+    }>;
+  };
 }
 
 export default function TravauxPage() {
