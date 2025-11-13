@@ -115,16 +115,19 @@ export default function FloatingAssistant() {
       {/* Modal Chat - Responsive modal/fullscreen */}
       {isOpen && (
         <div style={{
+          // Mode plein écran avec limites élégantes
           position: 'fixed',
-          top: isFullscreen ? 0 : 'auto',
-          bottom: isFullscreen ? 0 : '2rem',
-          left: isFullscreen ? 0 : 'auto',
-          right: isFullscreen ? 0 : '2rem',
-          width: isFullscreen ? '100vw' : 'min(420px, calc(100vw - 2rem))',
-          height: isFullscreen ? '100vh' : 'min(650px, calc(100vh - 4rem))',
-          borderRadius: isFullscreen ? 0 : '20px',
+          top: window.innerWidth < 768 ? 0 : '2rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: window.innerWidth < 768 ? '100vw' : 'min(95vw, 1200px)',
+          height: window.innerWidth < 768 ? '100vh' : 'calc(100vh - 4rem)',
+          maxHeight: window.innerWidth < 768 ? 'none' : '900px',
+          borderRadius: window.innerWidth < 768 ? 0 : (isFullscreen ? '16px' : '20px'),
           background: 'white',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+          boxShadow: window.innerWidth < 768 
+            ? 'none' 
+            : '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
