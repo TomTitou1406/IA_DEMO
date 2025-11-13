@@ -90,30 +90,40 @@ export function playAudio(
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     
+    // Cleanup function
+    const cleanup = () => {
+      URL.revokeObjectURL(audioUrl);
+      if (audioRef && audioRef.current === audio) {
+        audioRef.current = null;
+      }
+    };
+    
     // Stocker la ref si fournie
     if (audioRef) {
+      // Arrêter l'ancien audio s'il existe
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
       audioRef.current = audio;
     }
     
     audio.onended = () => {
-      URL.revokeObjectURL(audioUrl);
-      if (audioRef) {
-        audioRef.current = null;
-      }
+      cleanup();
       resolve();
     };
     
-    audio.onerror = () => {
-      URL.revokeObjectURL(audioUrl);
-      if (audioRef) {
-        audioRef.current = null;
-      }
+    audio.onerror = (e) => {
+      cleanup();
       reject(new Error('Erreur lecture audio'));
     };
     
     // ATTENDRE que l'audio soit prêt AVANT de jouer
     audio.oncanplaythrough = () => {
-      audio.play().catch(reject);
+      audio.play().catch(err => {
+        cleanup();
+        reject(err);
+      });
     };
     
     // Déclencher le chargement
