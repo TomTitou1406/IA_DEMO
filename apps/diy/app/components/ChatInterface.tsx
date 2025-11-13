@@ -474,7 +474,7 @@ export default function ChatInterface({
                     transition: 'all 0.2s'
                   }}
                 >
-                  ⏹️ Stop
+                  ⏹️ Interrompre
                 </button>
               )}
             </div>
