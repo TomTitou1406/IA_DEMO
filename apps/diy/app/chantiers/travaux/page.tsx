@@ -401,51 +401,6 @@ export default function TravauxPage() {
                   </Link>
                 )}
               </div>
-                
-                {/* Bouton Débloquer pour tâches bloquées */}
-                {travail.statut === 'bloqué' && (
-                  <button 
-                    className="main-btn btn-orange"
-                    style={{
-                      fontSize: '0.85rem',
-                      padding: '0.4rem 0.8rem',
-                      minHeight: 'auto',
-                      maxWidth: '140px'
-                    }}
-                  >
-                    💬 Débloquer
-                  </button>
-                )}
-                
-                {/* Bouton Annuler pour tâches à venir */}
-                {travail.statut === 'à_venir' && (
-                  <button 
-                    className="main-btn"
-                    style={{
-                      fontSize: '0.85rem',
-                      padding: '0.4rem 0.8rem',
-                      minHeight: 'auto',
-                      maxWidth: '140px',
-                      background: 'var(--gray)',
-                      color: 'white'
-                    }}
-                    onClick={() => {
-                      setModalConfig({
-                        isOpen: true,
-                        title: 'Annuler cette tâche ?',
-                        message: `"${travail.titre}" sera déplacée dans "Annulées" et pourra être réactivée à tout moment.`,
-                        onConfirm: async () => {
-                          await annulerTravail(travail.id);
-                          setModalConfig({ ...modalConfig, isOpen: false });
-                          window.location.reload();
-                        }
-                      });
-                    }}
-                  >
-                    🗑️ Annuler
-                  </button>
-                )}  
-              </div>
             )}
           </>
         )}
