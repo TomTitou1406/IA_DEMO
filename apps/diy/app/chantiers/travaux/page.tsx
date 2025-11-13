@@ -371,7 +371,7 @@ export default function TravauxPage() {
                 )}
                 
                 {/* Badge nombre d'étapes */}
-                {travail.etapes?.etapes?.length > 0 && (
+                {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
                   <Link 
                     href={`/chantiers/travaux/${travail.id}`}
                     style={{
@@ -397,7 +397,7 @@ export default function TravauxPage() {
                       e.currentTarget.style.transform = 'scale(1)';
                     }}
                   >
-                    🎯 {travail.etapes.etapes.length} étapes
+                    🎯 {travail.etapes?.etapes?.length || 0} étapes
                   </Link>
                 )}
               </div>
