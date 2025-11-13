@@ -125,7 +125,7 @@ export default function TravauxPage() {
         </div>
 
         {/* Actions */}
-        {travail.statut !== 'terminé' && travail.statut !== 'bloqué' && (
+        {travail.statut !== 'terminé' && (
           <>
             {/* Progress bar - MASQUÉE en mode édition */}
             {editingTravailId !== travail.id && (
@@ -282,7 +282,8 @@ export default function TravauxPage() {
             ) : (
               // MODE NORMAL : Boutons actions
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-              {travail.statut === 'en_cours' && (
+                {/* Bouton Ajuster % pour tâches en cours */}
+                {travail.statut === 'en_cours' && (
                 <button 
                   className="main-btn btn-green"
                   style={{
