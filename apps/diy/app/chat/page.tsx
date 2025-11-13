@@ -23,6 +23,7 @@ export default function ChatPage() {
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const audioElementRef = useRef<HTMLAudioElement | null>(null);
   
   // Refs pour enregistrement
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -95,6 +96,15 @@ export default function ChatPage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Stopper l'audio en cours
+  const stopAudio = () => {
+    if (audioElementRef.current) {
+      audioElementRef.current.pause();
+      audioElementRef.current.currentTime = 0;
+    }
+    setIsPlaying(false);
   };
 
   // Toggle enregistrement/envoi
