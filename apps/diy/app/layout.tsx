@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "../styles/globals.css";
+import FloatingAssistant from './components/FloatingAssistant';
 
 export const metadata: Metadata = {
   title: "Papibricole - Ton coach IA bricolage",
@@ -25,6 +26,7 @@ export default function RootLayout({
           </div>
         </header>
         <main>{children}</main>
+        <FloatingAssistant />
       </body>
     </html>
   );
