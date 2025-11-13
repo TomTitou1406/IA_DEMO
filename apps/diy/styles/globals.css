@@ -408,11 +408,16 @@ ul {
 }
 
 .btn-red {
-  background: var(--red) !important;
+  background-color: #ef4444 !important;
   color: white !important;
+  border: none !important;
 }
 
 .btn-red:hover:not(:disabled) {
-  background: #dc2626 !important;
+  background-color: #dc2626 !important;
   transform: translateY(-2px);
+}
+
+.btn-red:active:not(:disabled) {
+  background-color: #b91c1c !important;
 }
