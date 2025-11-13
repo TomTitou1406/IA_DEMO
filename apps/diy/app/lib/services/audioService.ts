@@ -79,17 +79,38 @@ export async function textToSpeech(text: string): Promise<Blob> {
 
 /**
  * Joue un blob audio
+ * @param audioBlob - Le blob audio à jouer
+ * @param audioRef - Référence optionnelle pour contrôler l'audio (pause, stop)
  */
-export function playAudio(audioBlob: Blob): Promise<void> {
-  return new Promise((resolve) => {
+export function playAudio(
+  audioBlob: Blob, 
+  audioRef?: { current: HTMLAudioElement | null }
+): Promise<void> {
+  return new Promise((resolve, reject) => {
     const audioUrl = URL.createObjectURL(audioBlob);
     const audio = new Audio(audioUrl);
     
+    // Stocker la ref si fournie
+    if (audioRef) {
+      audioRef.current = audio;
+    }
+    
     audio.onended = () => {
       URL.revokeObjectURL(audioUrl);
+      if (audioRef) {
+        audioRef.current = null;
+      }
       resolve();
     };
     
-    audio.play();
+    audio.onerror = () => {
+      URL.revokeObjectURL(audioUrl);
+      if (audioRef) {
+        audioRef.current = null;
+      }
+      reject(new Error('Erreur lecture audio'));
+    };
+    
+    audio.play().catch(reject);
   });
 }
