@@ -11,6 +11,8 @@ export default function FloatingAssistant() {
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
   const [isFullscreen, setIsFullscreen] = useState(false);
   const { pageContext, contextColor, welcomeMessage, placeholder } = useAssistantContext();
+  // DEBUG TEMPORAIRE
+  console.log('🔍 Assistant Context:', { pageContext, hasAdditionalContext: !!useAssistantContext().additionalContext });
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Détection inactivité pour pulse
