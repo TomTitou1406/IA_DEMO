@@ -113,3 +113,51 @@ export async function updateTravailProgression(travailId: string, progression: n
     return false;
   }
 }
+
+/**
+ * Annule un travail (soft delete)
+ */
+export async function annulerTravail(travailId: string) {
+  try {
+    const { error } = await supabase
+      .from('travaux')
+      .update({ 
+        statut: 'annulé',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', travailId);
+
+    if (error) {
+      console.error('Error annuler travail:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error in annulerTravail:', err);
+    return false;
+  }
+}
+
+/**
+ * Réactive un travail annulé
+ */
+export async function reactiverTravail(travailId: string) {
+  try {
+    const { error } = await supabase
+      .from('travaux')
+      .update({ 
+        statut: 'à_venir',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', travailId);
+
+    if (error) {
+      console.error('Error reactiver travail:', error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error('Error in reactiverTravail:', err);
+    return false;
+  }
+}
