@@ -82,7 +82,7 @@ export default function ChatPage() {
       if (voiceMode && autoPlayAudio) {
         setIsPlaying(true);
         const audioBlob = await textToSpeech(response);
-        await playAudio(audioBlob);
+        await playAudio(audioBlob, audioElementRef);
         setIsPlaying(false);
       }
     } catch (error) {
@@ -109,9 +109,14 @@ export default function ChatPage() {
 
   // Toggle enregistrement/envoi
   const handleVoiceAction = async () => {
-    if (loading) return;
+  // Auto-stop audio si en cours
+  if (isPlaying) {
+    stopAudio();
+  }
 
-    if (isRecording) {
+  if (loading) return;
+
+  if (isRecording) {
       // ENVOYER
       if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
         mediaRecorderRef.current.stop();
@@ -204,7 +209,7 @@ export default function ChatPage() {
             if (autoPlayAudio) {
               setIsPlaying(true);
               textToSpeech(response).then(audioBlob => {
-                return playAudio(audioBlob);
+                return playAudio(audioBlob, audioElementRef);
               }).then(() => {
                 setIsPlaying(false);
               }).catch(err => {
@@ -509,21 +514,44 @@ export default function ChatPage() {
               </div>
             )}
             
-            {/* Bouton principal - avec texte */}
-            <button
-              onClick={handleVoiceAction}
-              disabled={loading}
-              className={`main-btn ${isRecording ? 'btn-blue' : 'btn-green'}`}
-              style={{
-                fontSize: '1rem',
-                fontWeight: '600',
-                padding: '1.25rem 3rem',
-                minHeight: 'auto',
-                cursor: loading ? 'not-allowed' : 'pointer'
-              }}
-            >
-              {isRecording ? 'Envoyer' : 'Parler'}
-            </button>
+            {/* Boutons - Parler/Envoyer + Interrompre si audio */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '1rem', 
+              alignItems: 'center' 
+            }}>
+              <button
+                onClick={handleVoiceAction}
+                disabled={loading}
+                className={`main-btn ${isRecording ? 'btn-blue' : 'btn-green'}`}
+                style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  padding: '1.25rem 3rem',
+                  minHeight: 'auto',
+                  cursor: loading ? 'not-allowed' : 'pointer'
+                }}
+              >
+                {isRecording ? 'Envoyer' : 'Parler'}
+              </button>
+
+              {/* Bouton Interrompre (visible seulement si audio en cours) */}
+              {isPlaying && (
+                <button
+                  onClick={stopAudio}
+                  className="main-btn btn-red"
+                  style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    padding: '1.25rem 2rem',
+                    minHeight: 'auto',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Interrompre
+                </button>
+              )}
+            </div>
           </div>
         ) : (
           // MODE TEXTE
