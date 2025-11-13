@@ -406,12 +406,13 @@ ul {
     padding: 1.5rem;
   }
 }
+
 .btn-red {
-  background: var(--red);
-  color: white;
+  background: var(--red) !important;
+  color: white !important;
 }
 
 .btn-red:hover:not(:disabled) {
-  background: #dc2626;
+  background: #dc2626 !important;
   transform: translateY(-2px);
 }
