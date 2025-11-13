@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { sendChatMessage } from '../lib/services/openaiService';
 import { getChantierDemo } from '../lib/services/chantierService';
-import { recordAudio, transcribeAudio, textToSpeech, playAudio } from '../lib/services/audioService';
+import { transcribeAudio, textToSpeech, playAudio } from '../lib/services/audioService';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -21,6 +21,10 @@ export default function ChatPage() {
   const [voiceMode, setVoiceMode] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
+  
+  // Refs pour hold-to-talk
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
 
   // Charger contexte chantier
   useEffect(() => {
@@ -82,76 +86,118 @@ export default function ChatPage() {
     }
   };
 
-  const handleVoiceMessage = async () => {
-  if (isRecording) return;
+  // Démarre l'enregistrement (hold-to-talk)
+  const handleStartRecording = async (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    if (isRecording || loading || isPlaying) return;
 
-  setIsRecording(true);
-  
-  try {
-    // Enregistrer
-    const audioBlob = await recordAudio();
-    
-    // Transcrire
-    const text = await transcribeAudio(audioBlob);
-    
-    if (!text.trim()) {
-      alert('Aucun texte détecté');
-      setIsRecording(false);
-      return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream);
+      
+      mediaRecorderRef.current = mediaRecorder;
+      audioChunksRef.current = [];
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.start();
+      setIsRecording(true);
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      alert('Impossible d\'accéder au microphone');
     }
+  };
 
-    // Créer message user
-    const userMessage: Message = {
-      role: 'user',
-      content: text,
-      timestamp: new Date()
-    };
+  // Arrête l'enregistrement et traite (hold-to-talk)
+  const handleStopRecording = async (e: React.MouseEvent | React.TouchEvent) => {
+    e.preventDefault();
+    if (!isRecording || !mediaRecorderRef.current) return;
 
-    setMessages(prev => [...prev, userMessage]);
-    setLoading(true);
-    setIsRecording(false);
+    const mediaRecorder = mediaRecorderRef.current;
 
-    // Envoyer à l'API
-    const apiMessages = messages.map(m => ({
-      role: m.role,
-      content: m.content
-    }));
+    return new Promise<void>((resolve) => {
+      mediaRecorder.onstop = async () => {
+        // Arrêter le stream
+        mediaRecorder.stream.getTracks().forEach(track => track.stop());
+        
+        // Créer le blob audio
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        setIsRecording(false);
+        
+        // Vérifier taille minimale
+        if (audioBlob.size < 1000) {
+          alert('Enregistrement trop court');
+          resolve();
+          return;
+        }
 
-    const response = await sendChatMessage(
-      [...apiMessages, { role: 'user', content: text }],
-      chantierContext
-    );
+        // Traiter l'audio
+        try {
+          setLoading(true);
+          
+          // Transcrire
+          const text = await transcribeAudio(audioBlob);
+          
+          if (!text.trim()) {
+            alert('Aucun texte détecté');
+            setLoading(false);
+            resolve();
+            return;
+          }
 
-    const assistantMessage: Message = {
-      role: 'assistant',
-      content: response,
-      timestamp: new Date()
-    };
+          // Créer message user
+          const userMessage: Message = {
+            role: 'user',
+            content: text,
+            timestamp: new Date()
+          };
 
-    setMessages(prev => [...prev, assistantMessage]);
+          setMessages(prev => [...prev, userMessage]);
 
-    // Synthèse vocale si mode vocal
-    if (voiceMode) {
-      setIsPlaying(true);
-      const audioBlob = await textToSpeech(response);
-      await playAudio(audioBlob);
-      setIsPlaying(false);
-    }
+          // Envoyer à l'API
+          const apiMessages = messages.map(m => ({
+            role: m.role,
+            content: m.content
+          }));
 
-  } catch (error) {
-    console.error('Error in voice message:', error);
-    alert('Erreur lors de l\'enregistrement');
-    setIsRecording(false);
-  } finally {
-    setLoading(false);
-  }
-};
+          const response = await sendChatMessage(
+            [...apiMessages, { role: 'user', content: text }],
+            chantierContext
+          );
 
-const stopRecording = () => {
-  if ((window as any).__stopRecording) {
-    (window as any).__stopRecording();
-  }
-};
+          const assistantMessage: Message = {
+            role: 'assistant',
+            content: response,
+            timestamp: new Date()
+          };
+
+          setMessages(prev => [...prev, assistantMessage]);
+
+          // Synthèse vocale si mode vocal
+          if (voiceMode) {
+            setIsPlaying(true);
+            const audioBlob = await textToSpeech(response);
+            await playAudio(audioBlob);
+            setIsPlaying(false);
+          }
+
+        } catch (error) {
+          console.error('Error processing audio:', error);
+          alert('Erreur lors du traitement audio');
+        } finally {
+          setLoading(false);
+          resolve();
+        }
+      };
+
+      mediaRecorder.stop();
+    });
+  };
 
   return (
     <div className="container" style={{ 
@@ -299,73 +345,94 @@ const stopRecording = () => {
       
         {/* Input selon mode */}
         {voiceMode ? (
-          // MODE VOCAL
+          // MODE VOCAL - HOLD TO TALK
           <div style={{ 
             display: 'flex', 
             flexDirection: 'column',
             alignItems: 'center',
             gap: '1rem'
           }}>
-            {isRecording && (
+            {/* Indicateur état */}
+            {isRecording ? (
               <div style={{
-                fontSize: '0.9rem',
-                color: 'var(--red)',
-                fontWeight: '600',
-                animation: 'pulse 1.5s infinite'
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                gap: '0.5rem'
               }}>
-                🔴 Enregistrement en cours...
+                <div style={{
+                  fontSize: '0.9rem',
+                  color: 'var(--red)',
+                  fontWeight: '600',
+                  animation: 'pulse 1.5s infinite'
+                }}>
+                  🔴 Enregistrement en cours...
+                </div>
+                <div style={{
+                  fontSize: '0.85rem',
+                  color: 'var(--gray)',
+                  textAlign: 'center'
+                }}>
+                  Relâche le bouton pour envoyer
+                </div>
+              </div>
+            ) : (
+              <div style={{
+                fontSize: '0.85rem',
+                color: 'var(--gray)',
+                textAlign: 'center'
+              }}>
+                Maintiens le micro enfoncé pour parler
               </div>
             )}
             
-            <div style={{ display: 'flex', gap: '1rem' }}>
-              {!isRecording ? (
-                <button
-                  onClick={handleVoiceMessage}
-                  disabled={loading || isPlaying}
-                  className="main-btn btn-blue"
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '50%',
-                    fontSize: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)'
-                  }}
-                >
-                  🎤
-                </button>
-              ) : (
-                <button
-                  onClick={stopRecording}
-                  className="main-btn"
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '50%',
-                    fontSize: '2rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    background: 'var(--red)',
-                    boxShadow: '0 4px 12px rgba(239, 68, 68, 0.3)'
-                  }}
-                >
-                  ⏹️
-                </button>
-              )}
-            </div>
-            
-            <p style={{ 
-              fontSize: '0.85rem', 
-              color: 'var(--gray)',
-              textAlign: 'center'
-            }}>
-              {isRecording 
-                ? 'Appuie sur stop ou attends 30s max' 
-                : 'Appuie pour parler'}
-            </p>
+            {/* Bouton Hold-to-talk */}
+            <button
+              onMouseDown={handleStartRecording}
+              onMouseUp={handleStopRecording}
+              onMouseLeave={handleStopRecording}
+              onTouchStart={handleStartRecording}
+              onTouchEnd={handleStopRecording}
+              disabled={loading || isPlaying}
+              className="main-btn btn-blue"
+              style={{
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                fontSize: '3rem',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                boxShadow: isRecording 
+                  ? '0 8px 24px rgba(239, 68, 68, 0.4)' 
+                  : '0 4px 12px rgba(37, 99, 235, 0.3)',
+                background: isRecording ? 'var(--red)' : 'var(--blue)',
+                transform: isRecording ? 'scale(1.1)' : 'scale(1)',
+                transition: 'all 0.2s',
+                cursor: loading || isPlaying ? 'not-allowed' : 'pointer',
+                userSelect: 'none',
+                WebkitUserSelect: 'none'
+              }}
+            >
+              {isRecording ? '🔴' : '🎤'}
+            </button>
+        
+            {isPlaying && (
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.75rem 1.5rem',
+                background: 'var(--blue-light)',
+                borderRadius: '25px',
+                fontSize: '0.9rem',
+                color: 'var(--blue)',
+                fontWeight: '600'
+              }}>
+                <div className="spinner" style={{ width: '16px', height: '16px', borderColor: 'var(--blue)' }}></div>
+                🔊 Lecture en cours...
+              </div>
+            )}
           </div>
         ) : (
           // MODE TEXTE
