@@ -339,73 +339,127 @@ export default function ChatPage() {
         borderTop: '1px solid var(--gray-light)',
         background: 'white'
       }}>
-        {/* Toggle Texte/Vocal + Audio */}
+        {/* Contrôles - Style pro */}
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '0.75rem' 
+          flexDirection: 'column',
+          gap: '0.75rem',
+          marginBottom: '1rem'
         }}>
+          {/* Ligne 1 : Mode saisie */}
           <div style={{
-            display: 'inline-flex',
-            background: 'var(--gray-light)',
-            borderRadius: '25px',
-            padding: '0.25rem'
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            gap: '1rem'
           }}>
-            <button
-              onClick={() => setVoiceMode(false)}
-              style={{
-                padding: '0.5rem 1.5rem',
-                borderRadius: '20px',
-                border: 'none',
-                background: !voiceMode ? 'white' : 'transparent',
-                color: !voiceMode ? 'var(--blue)' : 'var(--gray)',
-                fontWeight: !voiceMode ? '600' : 'normal',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: !voiceMode ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
-              }}
-            >
-              ✍️ Texte
-            </button>
-            <button
-              onClick={() => setVoiceMode(true)}
-              style={{
-                padding: '0.5rem 1.5rem',
-                borderRadius: '20px',
-                border: 'none',
-                background: voiceMode ? 'white' : 'transparent',
-                color: voiceMode ? 'var(--blue)' : 'var(--gray)',
-                fontWeight: voiceMode ? '600' : 'normal',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: voiceMode ? '0 2px 4px rgba(0,0,0,0.1)' : 'none'
-              }}
-            >
-              🎤 Vocal
-            </button>
+            <span style={{
+              fontSize: '0.9rem',
+              color: 'var(--gray)',
+              fontWeight: '500'
+            }}>
+              Mode :
+            </span>
+            <div style={{
+              display: 'inline-flex',
+              background: 'var(--gray-light)',
+              borderRadius: '8px',
+              padding: '0.25rem'
+            }}>
+              <button
+                onClick={() => setVoiceMode(false)}
+                style={{
+                  padding: '0.5rem 1.25rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: !voiceMode ? 'white' : 'transparent',
+                  color: !voiceMode ? 'var(--blue)' : 'var(--gray)',
+                  fontSize: '0.9rem',
+                  fontWeight: !voiceMode ? '600' : 'normal',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: !voiceMode ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                }}
+              >
+                ✍️ J'écris
+              </button>
+              <button
+                onClick={() => setVoiceMode(true)}
+                style={{
+                  padding: '0.5rem 1.25rem',
+                  borderRadius: '6px',
+                  border: 'none',
+                  background: voiceMode ? 'white' : 'transparent',
+                  color: voiceMode ? 'var(--blue)' : 'var(--gray)',
+                  fontSize: '0.9rem',
+                  fontWeight: voiceMode ? '600' : 'normal',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  boxShadow: voiceMode ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                }}
+              >
+                🎤 Je dicte
+              </button>
+            </div>
           </div>
 
-          {/* Toggle lecture audio (visible seulement en mode vocal) */}
+          {/* Ligne 2 : Lecture audio (seulement si mode vocal) */}
           {voiceMode && (
-            <button
-              onClick={() => setAutoPlayAudio(!autoPlayAudio)}
-              style={{
-                padding: '0.5rem 1rem',
-                borderRadius: '20px',
-                border: 'none',
-                background: autoPlayAudio ? 'var(--blue-light)' : 'var(--gray-light)',
-                color: autoPlayAudio ? 'var(--blue)' : 'var(--gray)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              {autoPlayAudio ? '🔊' : '🔇'} Lecture auto
-            </button>
+            <div style={{
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              gap: '1rem'
+            }}>
+              <span style={{
+                fontSize: '0.9rem',
+                color: 'var(--gray)',
+                fontWeight: '500'
+              }}>
+                Réponse vocalisée :
+              </span>
+              <div style={{
+                display: 'inline-flex',
+                background: 'var(--gray-light)',
+                borderRadius: '8px',
+                padding: '0.25rem'
+              }}>
+                <button
+                  onClick={() => setAutoPlayAudio(true)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: autoPlayAudio ? 'white' : 'transparent',
+                    color: autoPlayAudio ? 'var(--green)' : 'var(--gray)',
+                    fontSize: '0.9rem',
+                    fontWeight: autoPlayAudio ? '600' : 'normal',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: autoPlayAudio ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                  }}
+                >
+                  🔊 Oui
+                </button>
+                <button
+                  onClick={() => setAutoPlayAudio(false)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    borderRadius: '6px',
+                    border: 'none',
+                    background: !autoPlayAudio ? 'white' : 'transparent',
+                    color: !autoPlayAudio ? 'var(--gray-dark)' : 'var(--gray)',
+                    fontSize: '0.9rem',
+                    fontWeight: !autoPlayAudio ? '600' : 'normal',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    boxShadow: !autoPlayAudio ? '0 2px 4px rgba(0,0,0,0.08)' : 'none'
+                  }}
+                >
+                  🔇 Non
+                </button>
+              </div>
+            </div>
           )}
         </div>
       
@@ -421,44 +475,93 @@ export default function ChatPage() {
             {/* Timer */}
             {isRecording && (
               <div style={{
-                fontSize: '1.5rem',
+                fontSize: '1.2rem',
                 color: 'var(--red)',
                 fontWeight: '700',
                 animation: 'pulse 1.5s infinite'
               }}>
-                🔴 {formatTime(recordingTime)}
+                🔴 Enregistrement : {formatTime(recordingTime)}
               </div>
             )}
 
             {!isRecording && (
               <div style={{
                 fontSize: '0.9rem',
-                color: 'var(--gray)',
-                textAlign: 'center'
+                color: 'var(--gray-dark)',
+                textAlign: 'center',
+                fontWeight: '500'
               }}>
-                {isRecording ? 'Appuie pour envoyer' : 'Appuie pour parler'}
+                {isRecording ? 'Cliquez pour envoyer vos instructions' : 'Cliquez pour donner vos instructions'}
               </div>
             )}
             
-            {/* Bouton principal */}
+            {/* Bouton principal - avec texte */}
             <button
               onClick={handleVoiceAction}
               disabled={loading}
               className={`main-btn ${isRecording ? 'btn-green' : 'btn-blue'}`}
               style={{
-                width: '120px',
-                height: '120px',
-                borderRadius: '50%',
-                fontSize: '3.5rem',
+                fontSize: '1rem',
+                fontWeight: '600',
+                padding: '1.25rem 3rem',
+                minHeight: 'auto',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
+                gap: '0.75rem',
                 cursor: loading ? 'not-allowed' : 'pointer'
               }}
             >
-              {isRecording ? '📨' : '🎤'}
+              {isRecording ? (
+                <>
+                  <span style={{ fontSize: '1.5rem' }}>📨</span>
+                  Envoyer
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: '1.5rem' }}>🎤</span>
+                  Parler
+                </>
+              )}
             </button>
           </div>
+        ) : (
+          // MODE TEXTE
+          <div style={{ display: 'flex', gap: '0.75rem' }}>
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
+              placeholder="Écrivez votre question..."
+              disabled={loading}
+              style={{
+                flex: 1,
+                padding: '0.75rem 1rem',
+                borderRadius: '8px',
+                border: '2px solid var(--gray-light)',
+                fontSize: '1rem',
+                outline: 'none',
+                transition: 'border-color 0.2s'
+              }}
+              onFocus={(e) => e.target.style.borderColor = 'var(--blue)'}
+              onBlur={(e) => e.target.style.borderColor = 'var(--gray-light)'}
+            />
+            <button
+              onClick={handleSend}
+              disabled={!input.trim() || loading}
+              className="main-btn btn-blue"
+              style={{
+                padding: '0.75rem 1.5rem',
+                minHeight: 'auto',
+                fontSize: '1rem',
+                fontWeight: '600'
+              }}
+            >
+              Envoyer
+            </button>
+          </div>
+        )}
+      </div>
         ) : (
           // MODE TEXTE
           <div style={{ display: 'flex', gap: '0.75rem' }}>
