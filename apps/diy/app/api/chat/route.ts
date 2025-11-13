@@ -56,7 +56,7 @@ RÈGLES STRICTES :
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [systemMessage, ...messages],
-      temperature: isVoiceMode ? 0.2, // Déterministe mais naturel possible 0,5 plus équilibré
+      temperature: 0.2, // Déterministe mais naturel possible 0,5 plus équilibré
       max_tokens: maxTokens
     });
 
