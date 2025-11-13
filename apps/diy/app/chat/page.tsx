@@ -68,7 +68,6 @@ export default function ChatPage() {
       const response = await sendChatMessage(
         [...apiMessages, { role: 'user', content: input }],
         chantierContext,
-        voiceMode // Passer le mode pour adapter le prompt
       );
 
       const assistantMessage: Message = {
@@ -189,7 +188,6 @@ export default function ChatPage() {
       const response = await sendChatMessage(
         apiMessages,
         chantierContext,
-        voiceMode
       );
 
       const assistantMessage: Message = {
