@@ -399,7 +399,7 @@ export default function ChantiersPage() {
                     </button>
                     
                     {/* Badge nombre d'étapes */}
-                    {travail.etapes?.etapes?.length > 0 && (
+                    {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
                       <Link 
                         href={`/chantiers/travaux/${travail.id}`}
                         style={{
