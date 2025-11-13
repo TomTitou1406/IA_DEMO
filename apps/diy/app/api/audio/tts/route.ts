@@ -18,11 +18,12 @@ export async function POST(request: NextRequest) {
 
     const mp3 = await openai.audio.speech.create({
       model: 'gpt-4o-mini-tts',  // ← Nouveau modèle steerable
-      voice: 'coral',
+      voice: 'onyx',
       input: text,
       instructions: "Parle avec enthousiasme et énergie, comme un ami qui encourage son pote bricoleur"
+      speed: 0.9  // Ralentir légèrement (0.25 à 4.0, défaut = 1.0)
     });
-
+    
     const buffer = Buffer.from(await mp3.arrayBuffer());
 
     return new NextResponse(buffer, {
