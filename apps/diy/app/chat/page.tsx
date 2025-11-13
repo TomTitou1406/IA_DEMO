@@ -562,43 +562,6 @@ export default function ChatPage() {
           </div>
         )}
       </div>
-        ) : (
-          // MODE TEXTE
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
-            <input
-              type="text"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Pose ta question..."
-              disabled={loading}
-              style={{
-                flex: 1,
-                padding: '0.75rem 1rem',
-                borderRadius: '25px',
-                border: '2px solid var(--gray-light)',
-                fontSize: '1rem',
-                outline: 'none',
-                transition: 'border-color 0.2s'
-              }}
-              onFocus={(e) => e.target.style.borderColor = 'var(--blue)'}
-              onBlur={(e) => e.target.style.borderColor = 'var(--gray-light)'}
-            />
-            <button
-              onClick={handleSend}
-              disabled={!input.trim() || loading}
-              className="main-btn btn-blue"
-              style={{
-                minWidth: '60px',
-                borderRadius: '25px',
-                padding: '0.75rem 1.5rem'
-              }}
-            >
-              ➤
-            </button>
-          </div>
-        )}
-      </div>
       
       {/* Animation pulse */}
       <style jsx>{`
