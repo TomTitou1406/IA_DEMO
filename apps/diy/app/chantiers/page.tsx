@@ -25,6 +25,17 @@ interface Travail {
     nom: string;
     code: string;
   };
+  etapes?: {
+    etapes: Array<{
+      numero: number;
+      titre: string;
+      description: string;
+      duree_minutes: number;
+      outils: string[];
+      difficulte: string;
+      conseils?: string;
+    }>;
+  };
 }
 
 export default function ChantiersPage() {
