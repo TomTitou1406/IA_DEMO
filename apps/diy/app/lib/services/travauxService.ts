@@ -161,3 +161,33 @@ export async function reactiverTravail(travailId: string) {
     return false;
   }
 }
+// Récupérer les étapes d'un travail
+export async function getEtapesByTravail(travailId: string) {
+  const { data, error } = await supabase
+    .from('travaux')
+    .select('id, titre, description, statut, progression, etapes, expertises(nom, code)')
+    .eq('id', travailId)
+    .single();
+
+  if (error) {
+    console.error('Error fetching etapes:', error);
+    return null;
+  }
+
+  return {
+    travail: {
+      id: data.id,
+      titre: data.titre,
+      description: data.description,
+      statut: data.statut,
+      progression: data.progression,
+      expertise: data.expertises
+    },
+    etapes: data.etapes?.etapes || []
+  };
+}
+
+// Compter le nombre d'étapes d'un travail
+export function countEtapes(travail: any): number {
+  return travail.etapes?.etapes?.length || 0;
+}
