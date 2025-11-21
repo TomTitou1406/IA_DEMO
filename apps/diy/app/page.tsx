@@ -17,7 +17,7 @@ export default function HomePage() {
           <div className="card-illu">
             <img src="/images/chantiers.webp" alt="Mes projets" />
           </div>
-          <h3>Mes projets</h3>
+          <h3>Tous mes projets</h3>
           <p>Crée et pilote tes chantiers</p>
           <Link href="/chantiers" className="main-btn btn-orange">
             Accéder à mes projets
@@ -30,7 +30,7 @@ export default function HomePage() {
             <img src="/images/assistance.webp" alt="Besoin d'aide" />
           </div>
           <h3>J'ai besoin d'aide</h3>
-          <p>Besoin d'un coup de pouce ?</p>
+          <p>Coup de pouce précis et rapide</p>
           <button className="main-btn btn-disabled" disabled>
             Bientôt disponible 🔒
           </button>
