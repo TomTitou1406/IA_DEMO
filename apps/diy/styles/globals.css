@@ -23,7 +23,6 @@
   --touch-size: 48px;
   --font-main: 'Inter', Arial, Helvetica, sans-serif;
   
-  
 }
 
 /* ----- BASE ----- */
@@ -470,6 +469,7 @@ ul {
 }
 
 /* ----- ANIMATIONS ----- */
+/* ----- ANIMATIONS ----- */
 .fade-in {
   opacity: 0;
   transform: translateY(20px);
@@ -479,7 +479,7 @@ ul {
 @keyframes fadeInUp {
   to {
     opacity: 1;
-    transform: none;
+    transform: translateY(0);  /* ✅ BON - garde le transform actif */
   }
 }
 
