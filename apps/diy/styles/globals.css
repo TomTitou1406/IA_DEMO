@@ -15,11 +15,15 @@
   --yellow: #F59E0B;
   --white: #FFF;
   --black: #000;
+  --header-bg: #0A0A0A;
+  --header-border: #232323;
+  --body-bg: #000000;
   --card-radius: 20px;
   --spacing: 1rem;
   --touch-size: 48px;
   --font-main: 'Inter', Arial, Helvetica, sans-serif;
-  --bkgrd: #1a1a1a; /* Test fond body */
+  
+  
 }
 
 /* ----- BASE ----- */
@@ -29,7 +33,7 @@
 
 body {
   font-family: var(--font-main);
-  background: var(--black);
+  background: var(--body-bg);
   color: var(--gray-light);
   margin: 0;
   padding: 0;
@@ -97,15 +101,15 @@ ul {
 
 /* ----- HEADER ----- */
 .header {
-  background: --bkgrd;
+  background: var(--header-bg);
   backdrop-filter: blur(10px);
-  border-bottom: 1px solid var(--gray-light);
+  border-bottom: 1px solid var(--header-border);
   position: sticky;
   top: 0;
   left: 0;
   right: 0;
   z-index: 100;
-  box-shadow: 0 1px 6px 0 rgba(0, 0, 0, 0.04);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
 .header-content {
@@ -212,15 +216,25 @@ ul {
 
 /* Fond coloré pour chaque type de carte */
 .main-card.card-orange {
-  background: var(--orange-light);
+  background: var(--orange);
 }
 
 .main-card.card-blue {
-  background: var(--blue-light);
+  background: var(--blue);
 }
 
 .main-card.card-green {
-  background: var(--green-light);
+  background: var(--green);
+}
+
+/* Texte blanc dans les cartes colorées */
+.main-card.card-orange h3,
+.main-card.card-orange p,
+.main-card.card-blue h3,
+.main-card.card-blue p,
+.main-card.card-green h3,
+.main-card.card-green p {
+  color: white;
 }
 
 .main-card:hover {
@@ -334,46 +348,33 @@ ul {
 }
 
 /* Boutons dans les cartes colorées - Style outline élégant */
-.main-card .btn-orange {
-  background: white;
-  color: var(--orange);
-  border-color: var(--orange);
-  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
-}
-
-.main-card .btn-orange:hover {
-  background: var(--orange);
-  color: white;
-  border-color: var(--orange);
-  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.35);
-}
-
-.main-card .btn-blue {
-  background: white;
-  color: var(--blue);
-  border-color: var(--blue);
-  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
-}
-
-.main-card .btn-blue:hover {
-  background: var(--blue);
-  color: white;
-  border-color: var(--blue);
-  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
-}
-
+.main-card .btn-orange,
+.main-card .btn-blue,
 .main-card .btn-green {
   background: white;
-  color: var(--green);
-  border-color: var(--green);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+  color: inherit;  /* Hérite la couleur du parent */
+  border: 2px solid white;
+  font-weight: 700;
 }
 
+.main-card.card-orange .btn-orange {
+  color: var(--orange);
+}
+
+.main-card.card-blue .btn-blue {
+  color: var(--blue);
+}
+
+.main-card.card-green .btn-green {
+  color: var(--green);
+}
+
+.main-card .btn-orange:hover,
+.main-card .btn-blue:hover,
 .main-card .btn-green:hover {
-  background: var(--green);
-  color: white;
-  border-color: var(--green);
-  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+  background: rgba(255, 255, 255, 0.9);
+  transform: translateY(-3px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(255, 255, 255, 0.3);
 }
 
 /* Bouton désactivé */
