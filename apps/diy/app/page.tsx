@@ -13,36 +13,36 @@ export default function HomePage() {
       {/* Navigation Cards */}
       <div className="hub-grid">
         {/* Card 1 : Mes Projets - ACTIVE */}
-        <div className="main-card card-orange fade-in">
+        <div className="main-card card-orange">
           <div className="card-illu">
             <img src="/images/chantiers.webp" alt="Mes projets" />
           </div>
           <h3>Mes projets</h3>
-          <p>Crée et pilote tous tes chantiers ici !</p>
+          <p>Crée et pilote tes chantiers</p>
           <Link href="/chantiers" className="main-btn btn-orange">
             Accéder à mes projets
           </Link>
         </div>
 
         {/* Card 2 : Assistance - DISABLED */}
-        <div className="main-card card-blue fade-in">
+        <div className="main-card card-blue">
           <div className="card-illu">
             <img src="/images/assistance.webp" alt="Besoin d'aide" />
           </div>
           <h3>J'ai besoin d'aide</h3>
-          <p>Besoin d'un coup de main précis et ultra rapide ?</p>
+          <p>Besoin d'un coup de pouce ?</p>
           <button className="main-btn btn-disabled" disabled>
             Bientôt disponible 🔒
           </button>
         </div>
 
         {/* Card 3 : Tutos - DISABLED */}
-        <div className="main-card card-green fade-in">
+        <div className="main-card card-green">
           <div className="card-illu">
             <img src="/images/tutos.webp" alt="Tous les tutos utiles" />
           </div>
           <h3>Tutos & Astuces</h3>
-          <p>Tous les guides vidéos illustrés sont ici !</p>
+          <p>Guides vidéos illustrés</p>
           <button className="main-btn btn-disabled" disabled>
             Bientôt disponible 🔒
           </button>
