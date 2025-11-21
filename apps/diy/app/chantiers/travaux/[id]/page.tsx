@@ -68,7 +68,7 @@ export default function TravailDetailPage() {
       <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
         <h2>❌ Travail introuvable</h2>
         <Link href="/chantiers/travaux" className="main-btn btn-blue" style={{ marginTop: '2rem' }}>
-          ← Retour aux travaux
+          ← Retour aux lots (travaux)
         </Link>
       </div>
     );
@@ -97,7 +97,7 @@ export default function TravailDetailPage() {
       {/* Header */}
       <div style={{ marginBottom: '1.5rem' }}>
         <Link href="/chantiers/travaux" style={{ color: 'var(--gray)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-          ← Tous les travaux
+          ← Tous les lots (travaux)
         </Link>
       </div>
 
