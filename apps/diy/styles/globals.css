@@ -245,6 +245,7 @@ ul {
   max-width: 340px;  /* ✅ Plus étroite (était 360px) */
   margin: 0 auto;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
 }
 
 /* VRAIES COULEURS VIVES */
