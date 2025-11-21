@@ -5,10 +5,9 @@ export default function HomePage() {
     <div className="container">
       {/* Hero Section */}
       <section className="hero-section fade-in">
-        <h1>
-          Tes projets deviennent <span className="color-orange">réalité</span> !
-        </h1>
-        <h2>Je t'aide pas à pas et à chaque étape !</h2>
+       <h1>
+          Et si on mettait tes <span className="color-orange">rêves</span> en œuvre ?
+       </h1>
       </section>
 
       {/* Navigation Cards */}
