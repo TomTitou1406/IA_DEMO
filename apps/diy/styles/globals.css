@@ -179,7 +179,7 @@ ul {
 /* ----- HERO ----- */
 .hero-section {
   text-align: center;
-  margin: 1.5rem auto 1.5rem;  /* Réduit de 3rem à 1.5rem */
+  margin: 1rem auto 1rem;  /* Réduit de 3rem à 1.5rem */
   max-width: 750px;
   padding: 1rem;
 }
@@ -226,7 +226,6 @@ ul {
   }
 }
 
-/* ----- CARDS ----- */
 /* ----- CARDS ----- */
 .main-card {
   background: rgba(255, 255, 255, 0.95);
@@ -294,7 +293,7 @@ ul {
 
 /* ✅ TITRE CARTE PLUS GROS */
 .main-card h3 {
-  font-size: 1.5rem;  /* ✅ Plus gros (était 1.25rem) */
+  font-size: 2rem;  
   margin: 0.5em 0 0.5em 0;
   text-align: center;
   font-weight: 700;
@@ -304,7 +303,7 @@ ul {
 .main-card p {
   color: white;
   margin-bottom: 1.5rem;
-  margin-top: 0.75rem;  /* ✅ Espace après titre */
+  margin-top: 0.25rem;  /* ✅ Espace après titre */
   text-align: center;
   line-height: 1.6;
   font-size: 0.95rem;
