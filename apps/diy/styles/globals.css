@@ -115,7 +115,7 @@ ul {
 .header-content {
   display: flex;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   max-width: 1200px;
   margin: 0 auto;
   padding: 1rem 1.5rem;
@@ -130,16 +130,23 @@ ul {
 }
 
 .logo-icon {
-  background: var(--orange);
-  color: #fff;
-  width: 2.2rem;
-  height: 2.2rem;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 10px;
-  font-size: 1.1rem;
   margin-right: 0.6rem;
+}
+
+.logo-icon img {
+  height: 72px;  /* Hauteur fixe */
+  width: auto;   /* Largeur automatique (garde les proportions) */
+  object-fit: contain;
+}
+
+/* Responsive - plus petit sur mobile */
+@media (max-width: 640px) {
+  .logo-icon img {
+    height: 64px;
+  }
 }
 
 .logo-title {
