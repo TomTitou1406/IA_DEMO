@@ -149,9 +149,33 @@ ul {
   }
 }
 
+.logo-text {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
 .logo-title {
   letter-spacing: 0.04em;
+  font-weight: 700;
+  font-size: 1.3rem;
+  color: var(--white);
 }
+
+.logo-baseline {
+  font-size: 0.85rem;
+  color: var(--gray);
+  font-weight: 400;
+  font-style: italic;
+}
+
+/* Responsive - Masquer baseline sur très petit écran */
+@media (max-width: 480px) {
+  .logo-baseline {
+    display: none;
+  }
+}
+
 
 /* ----- HERO ----- */
 .hero-section {
