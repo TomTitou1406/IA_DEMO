@@ -479,7 +479,7 @@ export default function ChantiersPage() {
         marginTop: '2rem'
       }} className="fade-in">
         <Link href="/chantiers/travaux" className="main-btn btn-blue">
-          📋 Tous les travaux
+          📋 Tous les lots (travaux)
         </Link>
       </div>
     </div>
