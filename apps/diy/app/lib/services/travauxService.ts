@@ -170,12 +170,27 @@ export async function getEtapesByTravail(travailId: string) {
     .eq('id', travailId)
     .single();
 
+  if (travailError) {
+    console.error('Error fetching travail:', travailError);
+    return null;
+  }
+
+  if (!travailData) {
+    console.error('Travail not found');
+    return null;
+  }
+
   // 2. Récupérer les étapes depuis la table etapes
   const { data: etapesData, error: etapesError } = await supabase
     .from('etapes')
     .select('*')
     .eq('travail_id', travailId)
     .order('numero', { ascending: true });
+
+  if (etapesError) {
+    console.error('Error fetching etapes:', etapesError);
+    // Continue même si erreur sur les étapes
+  }
 
   return {
     travail: {
