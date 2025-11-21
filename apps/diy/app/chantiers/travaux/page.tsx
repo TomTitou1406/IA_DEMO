@@ -417,7 +417,7 @@ export default function TravauxPage() {
         </Link>
       </div>
 
-      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>📋 Tous les travaux ({travaux.length})</h1>
+      <h1 style={{ fontSize: '1.75rem', marginBottom: '1.5rem' }}>📋 Tous les lots (travaux) ({travaux.length})</h1>
 
       {/* Section TERMINÉS */}
       {termines.length > 0 && (
