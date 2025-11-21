@@ -29,7 +29,7 @@
 
 body {
   font-family: var(--font-main);
-  background: var(--gray-dark);
+  background: var(--black);
   color: var(--gray-light);
   margin: 0;
   padding: 0;
@@ -97,7 +97,7 @@ ul {
 
 /* ----- HEADER ----- */
 .header {
-  background: rgba(255, 255, 255, 0.95);
+  background: --bkgrd;
   backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--gray-light);
   position: sticky;
@@ -122,6 +122,7 @@ ul {
   display: flex;
   align-items: center;
   font-weight: 700;
+  color: var(--white);
 }
 
 .logo-icon {
@@ -191,8 +192,8 @@ ul {
 
 /* ----- CARDS ----- */
 .main-card {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(2.5px);
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
   border-radius: var(--card-radius);
   box-shadow: 0 4px 14px 1px rgba(0, 0, 0, 0.1);
   padding: 1.5rem;
@@ -259,6 +260,7 @@ ul {
   font-size: 1.25rem;
   margin: 0.5em 0 0.5em 0;
   text-align: center;
+  color: var(--gray-dark);
 }
 
 .main-card p {
