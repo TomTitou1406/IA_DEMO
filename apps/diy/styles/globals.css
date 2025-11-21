@@ -210,22 +210,23 @@ ul {
   transition: transform 0.17s cubic-bezier(0.38, 0.87, 0.48, 1.2), box-shadow 0.17s;
 }
 
+/* Fond coloré pour chaque type de carte */
+.main-card.card-orange {
+  background: var(--orange-light);
+}
+
+.main-card.card-blue {
+  background: var(--blue-light);
+}
+
+.main-card.card-green {
+  background: var(--green-light);
+}
+
 .main-card:hover {
   transform: scale(1.05);
   z-index: 2;
   box-shadow: 0 16px 50px 0 rgba(0, 0, 0, 0.12), 0 2px 14px rgba(0, 0, 0, 0.1);
-}
-
-.main-card.card-orange:hover {
-  border-color: var(--orange);
-}
-
-.main-card.card-blue:hover {
-  border-color: var(--blue);
-}
-
-.main-card.card-green:hover {
-  border-color: var(--green);
 }
 
 .main-card.disabled {
@@ -273,7 +274,7 @@ ul {
 /* ----- BUTTONS ----- */
 .main-btn {
   color: #fff;
-  border: none;
+  border: 2px solid transparent;
   border-radius: 12px;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
@@ -287,45 +288,98 @@ ul {
   align-items: center;
   justify-content: center;
   text-align: center;
-  transition: all 0.2s;
+  transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   font-family: var(--font-main);
 }
 
 .main-btn:hover {
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
-  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.25);
+  transform: translateY(-3px);
 }
 
 .main-btn:active {
-  transform: translateY(0);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
+/* Boutons par défaut (hors cartes) */
 .btn-orange {
   background: var(--orange);
+  border-color: var(--orange);
 }
 
 .btn-orange:hover {
   background: #e54e20;
+  border-color: #e54e20;
 }
 
 .btn-blue {
   background: var(--blue);
+  border-color: var(--blue);
 }
 
 .btn-blue:hover {
   background: #1e40af;
+  border-color: #1e40af;
 }
 
 .btn-green {
   background: var(--green);
+  border-color: var(--green);
 }
 
 .btn-green:hover {
   background: #047857;
+  border-color: #047857;
 }
 
+/* Boutons dans les cartes colorées - Style outline élégant */
+.main-card .btn-orange {
+  background: white;
+  color: var(--orange);
+  border-color: var(--orange);
+  box-shadow: 0 2px 8px rgba(255, 107, 53, 0.2);
+}
+
+.main-card .btn-orange:hover {
+  background: var(--orange);
+  color: white;
+  border-color: var(--orange);
+  box-shadow: 0 8px 20px rgba(255, 107, 53, 0.35);
+}
+
+.main-card .btn-blue {
+  background: white;
+  color: var(--blue);
+  border-color: var(--blue);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.2);
+}
+
+.main-card .btn-blue:hover {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
+}
+
+.main-card .btn-green {
+  background: white;
+  color: var(--green);
+  border-color: var(--green);
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.2);
+}
+
+.main-card .btn-green:hover {
+  background: var(--green);
+  color: white;
+  border-color: var(--green);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.35);
+}
+
+/* Bouton désactivé */
 .btn-disabled {
   background: var(--gray);
+  border-color: var(--gray);
   cursor: not-allowed;
   opacity: 0.5;
 }
@@ -333,6 +387,37 @@ ul {
 .btn-disabled:hover {
   transform: none;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  background: var(--gray);
+}
+
+.main-card .btn-disabled {
+  background: white;
+  color: var(--gray);
+  border-color: var(--gray);
+}
+
+.main-card .btn-disabled:hover {
+  background: white;
+  color: var(--gray);
+}
+
+/* Bouton rouge (pour actions critiques) */
+.btn-red {
+  background-color: #ef4444;
+  border-color: #ef4444;
+  color: white;
+}
+
+.btn-red:hover:not(:disabled) {
+  background-color: #dc2626;
+  border-color: #dc2626;
+  transform: translateY(-3px);
+}
+
+.btn-red:active:not(:disabled) {
+  background-color: #b91c1c;
+  border-color: #b91c1c;
+  transform: translateY(-1px);
 }
 
 /* ----- LOCK ICON ----- */
