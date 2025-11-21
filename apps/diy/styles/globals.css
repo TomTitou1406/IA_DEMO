@@ -19,6 +19,7 @@
   --spacing: 1rem;
   --touch-size: 48px;
   --font-main: 'Inter', Arial, Helvetica, sans-serif;
+  --bkgrd: #1a1a1a;
 }
 
 /* ----- BASE ----- */
@@ -28,32 +29,21 @@
 
 body {
   font-family: var(--font-main);
-  background: var(--gray-light);
-  color: var(--gray-dark);
+  background: var(--bkgrd);
+  color: var(--gray-light);
   margin: 0;
   padding: 0;
   min-height: 100vh;
   letter-spacing: 0.01em;
   
   /* Background image avec overlay */
-  background-image: url('/images/bkg_1_1920_1080.webp');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  background-attachment: fixed;
-  position: relative;
-}
-
-/* Overlay blanc semi-transparent pour adoucir */
-body::before {
-  content: "";
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: rgba(255, 255, 255, 0.92); /* Ajuste l'opacité ici */
-  backdrop-filter: blur(2px); /* Léger flou pour adoucir */
-}
+  /* background-image: url('/images/bkg_1_1920_1080.webp'); */
+  /* background-size: cover; */
+  /* background-position: center; */
+  /* background-repeat: no-repeat; */
+  /* background-attachment: fixed; */
+  /* position: relative; */
+  /* } */
 
 /* Assure que le contenu passe au-dessus */
 body > * {
@@ -199,7 +189,6 @@ ul {
   }
 }
 
-/* ----- CARDS ----- */
 /* ----- CARDS ----- */
 .main-card {
   background: rgba(255, 255, 255, 0.6);
