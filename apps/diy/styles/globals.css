@@ -43,7 +43,7 @@ body {
   /* background-repeat: no-repeat; */
   /* background-attachment: fixed; */
   /* position: relative; */
-  /* } */
+}
 
 /* Assure que le contenu passe au-dessus */
 body > * {
