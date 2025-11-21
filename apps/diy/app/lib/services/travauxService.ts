@@ -163,31 +163,45 @@ export async function reactiverTravail(travailId: string) {
 }
 // Récupérer les étapes d'un travail
 export async function getEtapesByTravail(travailId: string) {
-  const { data, error } = await supabase
+  // 1. Récupérer le travail (sans le champ etapes)
+  const { data: travailData, error: travailError } = await supabase
     .from('travaux')
-    .select('id, titre, description, statut, progression, etapes, expertises(nom, code)')
+    .select('id, titre, description, statut, progression, expertises(nom, code)')
     .eq('id', travailId)
     .single();
 
-  if (error) {
-    console.error('Error fetching etapes:', error);
-    return null;
-  }
+  // 2. Récupérer les étapes depuis la table etapes
+  const { data: etapesData, error: etapesError } = await supabase
+    .from('etapes')
+    .select('*')
+    .eq('travail_id', travailId)
+    .order('numero', { ascending: true });
 
   return {
-    travail: {
-      id: data.id,
-      titre: data.titre,
-      description: data.description,
-      statut: data.statut,
-      progression: data.progression,
-      expertise: data.expertises?.[0] || null
-    },
-    etapes: data.etapes?.etapes || []
+    travail: {...},
+    etapes: (etapesData || []).map(etape => ({
+      numero: etape.numero,
+      titre: etape.titre,
+      description: etape.description || '',
+      duree_minutes: etape.duree_estimee_minutes || 0,
+      outils: etape.outils_necessaires || [],
+      difficulte: etape.difficulte || 'moyen',
+      conseils: etape.conseils_pro || ''
+    }))
   };
 }
 
 // Compter le nombre d'étapes d'un travail
-export function countEtapes(travail: any): number {
-  return travail.etapes?.etapes?.length || 0;
+export async function countEtapes(travailId: string): Promise<number> {
+  const { count, error } = await supabase
+    .from('etapes')
+    .select('*', { count: 'exact', head: true })
+    .eq('travail_id', travailId);
+
+  if (error) {
+    console.error('Error counting etapes:', error);
+    return 0;
+  }
+
+  return count || 0;
 }
