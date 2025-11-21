@@ -99,15 +99,22 @@ export default function ChantiersPage() {
   }
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '1rem' }}>
-      {/* Back button */}
-      <div style={{ marginBottom: '1.5rem' }}>
+    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0.75rem 1rem' }}>
+      {/* Back button + Header compact inline */}
+      <div style={{ 
+        display: 'flex', 
+        justifyContent: 'space-between', 
+        alignItems: 'center',
+        marginBottom: '1rem',
+        paddingBottom: '0.75rem',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
+      }}>
         <Link href="/" style={{ 
           color: 'var(--gray)', 
           display: 'inline-flex', 
           alignItems: 'center', 
-          gap: '0.5rem',
-          fontSize: '0.9rem',
+          gap: '0.35rem',
+          fontSize: '0.85rem',
           transition: 'color 0.2s'
         }}
         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
@@ -115,151 +122,118 @@ export default function ChantiersPage() {
         >
           ← Retour
         </Link>
+
+        <Link 
+          href="/chantiers/travaux" 
+          className="main-btn btn-blue"
+          style={{
+            fontSize: '0.8rem',
+            padding: '0.5rem 1rem',
+            minHeight: 'auto',
+            background: 'rgba(37, 99, 235, 0.15)',
+            color: 'var(--blue)',
+            border: '1px solid rgba(37, 99, 235, 0.3)',
+            backdropFilter: 'blur(10px)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'var(--blue)';
+            e.currentTarget.style.color = 'white';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
+            e.currentTarget.style.color = 'var(--blue)';
+          }}
+        >
+          📋 Tous les lots
+        </Link>
       </div>
 
-      {/* Header compact avec stats inline */}
+      {/* État des lieux compact */}
       <div style={{
-        marginBottom: '3rem',
-        padding: '2rem 0',
-        borderBottom: '1px solid rgba(255,255,255,0.1)'
+        marginBottom: '1.5rem',
+        paddingBottom: '1rem',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
       }}>
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'flex-start',
-          marginBottom: '1.5rem',
-          flexWrap: 'wrap',
-          gap: '1rem'
+        <h1 style={{ 
+          fontSize: '1.5rem', 
+          marginBottom: '0.5rem',
+          color: 'var(--gray-light)',
+          fontWeight: '700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
         }}>
-          <div style={{ flex: '1', minWidth: '300px' }}>
-            <h1 style={{ 
-              fontSize: '1.75rem', 
-              marginBottom: '0.5rem',
-              color: 'var(--gray-light)',
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem'
-            }}>
-              🏗️ {chantier.titre}
-            </h1>
-            <p style={{ 
-              color: 'var(--gray)', 
-              fontSize: '0.95rem',
-              margin: 0 
-            }}>
-              Suivi détaillé de votre projet
-            </p>
-          </div>
+          🏗️ {chantier.titre}
+        </h1>
 
-          <Link 
-            href="/chantiers/travaux" 
-            className="main-btn btn-blue"
-            style={{
-              fontSize: '0.9rem',
-              padding: '0.7rem 1.5rem',
-              minHeight: 'auto',
-              maxWidth: '200px',
-              background: 'rgba(37, 99, 235, 0.15)',
-              color: 'var(--blue)',
-              border: '1px solid rgba(37, 99, 235, 0.3)',
-              backdropFilter: 'blur(10px)'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--blue)';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-              e.currentTarget.style.color = 'var(--blue)';
-            }}
-          >
-            📋 Tous les lots
-          </Link>
-        </div>
-
-        {/* Progress bar élégante */}
-        <div style={{ marginBottom: '1.5rem' }}>
+        {/* Progress bar */}
+        <div style={{ marginBottom: '0.75rem' }}>
           <div style={{
             width: '100%',
             height: '6px',
             background: 'rgba(255,255,255,0.08)',
             borderRadius: '10px',
-            overflow: 'hidden',
-            position: 'relative'
+            overflow: 'hidden'
           }}>
             <div style={{
               width: `${stats?.progressionMoyenne || 0}%`,
               height: '100%',
               background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
-              transition: 'width 0.5s ease',
-              boxShadow: '0 0 10px rgba(37, 99, 235, 0.5)'
+              transition: 'width 0.5s ease'
             }}></div>
           </div>
           <p style={{ 
-            marginTop: '0.75rem', 
+            marginTop: '0.4rem', 
             color: 'var(--gray-light)', 
-            fontSize: '1.1rem', 
+            fontSize: '0.95rem', 
             fontWeight: '600' 
           }}>
             {stats?.progressionMoyenne || 0}% complété
           </p>
         </div>
 
-        {/* Stats inline compactes */}
+        {/* Stats inline ultra compact */}
         <div style={{ 
           display: 'flex',
           flexWrap: 'wrap',
-          gap: '2rem',
-          fontSize: '0.9rem',
+          gap: '1.5rem',
+          fontSize: '0.85rem',
           color: 'var(--gray)'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.2rem' }}>⏱️</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>⏱️</span>
             <span>
               <strong style={{ color: 'var(--gray-light)' }}>
                 {stats?.heuresEffectuees || 0}h
               </strong>
-              <span style={{ opacity: 0.6 }}> / {stats?.heuresEstimees || 0}h</span>
-              <span style={{ 
-                color: 'var(--blue)', 
-                marginLeft: '0.5rem',
-                fontWeight: '600' 
-              }}>
+              <span style={{ opacity: 0.5 }}> / {stats?.heuresEstimees || 0}h</span>
+              <span style={{ color: 'var(--blue)', marginLeft: '0.4rem', fontWeight: '600' }}>
                 {stats?.progressionHeures || 0}%
               </span>
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.2rem' }}>💰</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>💰</span>
             <span>
               <strong style={{ color: 'var(--gray-light)' }}>
                 {stats?.budgetReel?.toLocaleString() || 0}€
               </strong>
-              <span style={{ opacity: 0.6 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
-              <span style={{ 
-                color: 'var(--green)', 
-                marginLeft: '0.5rem',
-                fontWeight: '600' 
-              }}>
+              <span style={{ opacity: 0.5 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
+              <span style={{ color: 'var(--green)', marginLeft: '0.4rem', fontWeight: '600' }}>
                 {stats?.progressionBudget || 0}%
               </span>
             </span>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.2rem' }}>✅</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>✅</span>
             <span>
               <strong style={{ color: 'var(--gray-light)' }}>
                 {stats?.termines || 0}
               </strong>
-              <span style={{ opacity: 0.6 }}> / {stats?.total || 0}</span>
-              <span style={{ 
-                color: 'var(--orange)', 
-                marginLeft: '0.75rem',
-                fontWeight: '600' 
-              }}>
+              <span style={{ opacity: 0.5 }}> / {stats?.total || 0}</span>
+              <span style={{ color: 'var(--orange)', marginLeft: '0.5rem', fontWeight: '600' }}>
                 • {stats?.enCours || 0} en cours
               </span>
             </span>
@@ -269,10 +243,10 @@ export default function ChantiersPage() {
       
       {/* Section EN COURS */}
       {travauxEnCours.length > 0 && (
-        <section style={{ marginBottom: '3rem' }}>
+        <section style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ 
-            fontSize: '1.2rem', 
-            marginBottom: '1.5rem',
+            fontSize: '1.05rem', 
+            marginBottom: '0.75rem',
             color: 'var(--gray-light)',
             fontWeight: '600',
             display: 'flex',
@@ -281,245 +255,82 @@ export default function ChantiersPage() {
           }}>
             <span style={{ 
               background: 'rgba(37, 99, 235, 0.2)', 
-              padding: '0.25rem 0.6rem', 
-              borderRadius: '8px',
-              fontSize: '1rem'
+              padding: '0.2rem 0.5rem', 
+              borderRadius: '6px',
+              fontSize: '0.9rem'
             }}>
               🎯 En cours
             </span>
             <span style={{ 
               background: 'rgba(255,255,255,0.08)', 
-              padding: '0.25rem 0.6rem', 
-              borderRadius: '8px',
-              fontSize: '0.9rem',
+              padding: '0.2rem 0.5rem', 
+              borderRadius: '6px',
+              fontSize: '0.85rem',
               fontWeight: '600'
             }}>
               {travauxEnCours.length}
             </span>
           </h2>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {travauxEnCours.map((travail) => (
               <div key={travail.id} style={{
                 background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
-                borderRadius: '16px',
-                padding: '1.75rem',
-                borderLeft: '6px solid var(--blue)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'relative',
-                overflow: 'hidden'
+                borderRadius: '12px',
+                padding: '1rem',
+                borderLeft: '4px solid var(--blue)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s',
+                position: 'relative'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(37, 99, 235, 0.3)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(37, 99, 235, 0.25)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)';
-                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
               }}>
-                {/* Gradient overlay subtil */}
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: '200px',
-                  height: '200px',
-                  background: 'radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%)',
-                  pointerEvents: 'none'
-                }}></div>
-
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <div style={{ marginBottom: '1.25rem' }}>
+                {/* Header avec titre + boutons */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'flex-start',
+                  marginBottom: '0.75rem',
+                  gap: '1rem'
+                }}>
+                  <div style={{ flex: 1 }}>
                     <h3 style={{ 
-                      fontSize: '1.3rem', 
-                      marginBottom: '0.5rem', 
+                      fontSize: '1.1rem', 
+                      marginBottom: '0.35rem', 
                       fontWeight: '700',
                       color: 'var(--gray-light)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem'
+                      lineHeight: '1.2'
                     }}>
                       ⚡ {travail.titre}
                     </h3>
                     <p style={{ 
-                      fontSize: '0.95rem', 
+                      fontSize: '0.85rem', 
                       color: 'var(--gray)', 
-                      marginBottom: '1rem',
-                      lineHeight: '1.5'
+                      margin: 0,
+                      lineHeight: '1.4'
                     }}>
                       {travail.description}
                     </p>
-                    
-                    {travail.expertises && (
-                      <div style={{
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.5rem',
-                        background: 'rgba(37, 99, 235, 0.15)',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '10px',
-                        fontSize: '0.85rem',
-                        fontWeight: '600',
-                        color: 'var(--blue)',
-                        border: '1px solid rgba(37, 99, 235, 0.3)'
-                      }}>
-                        🛠️ {travail.expertises.nom}
-                      </div>
-                    )}
                   </div>
 
-                  {/* Barre de progression élégante */}
-                  <div style={{ marginBottom: '1.25rem' }}>
-                    <div style={{
-                      width: '100%',
-                      height: '8px',
-                      background: 'rgba(255,255,255,0.08)',
-                      borderRadius: '10px',
-                      overflow: 'hidden',
-                      position: 'relative'
-                    }}>
-                      <div style={{
-                        width: `${travail.progression}%`,
-                        height: '100%',
-                        background: 'var(--blue)',
-                        transition: 'width 0.5s ease',
-                        boxShadow: '0 0 10px rgba(37, 99, 235, 0.5)',
-                        position: 'relative'
-                      }}>
-                        <div style={{
-                          position: 'absolute',
-                          top: 0,
-                          right: 0,
-                          width: '50%',
-                          height: '100%',
-                          background: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.3))',
-                          animation: 'shimmer 2s infinite'
-                        }}></div>
-                      </div>
-                    </div>
-                    <p style={{ 
-                      marginTop: '0.75rem', 
-                      fontSize: '0.95rem', 
-                      fontWeight: '600',
-                      color: 'var(--gray-light)'
-                    }}>
-                      {travail.progression}% complété
-                    </p>
-                  </div>
-
-                  {/* Actions */}
-                  {editingTravailId === travail.id ? (
-                    <div style={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      gap: '1rem',
-                      background: 'rgba(0,0,0,0.3)',
-                      padding: '1.25rem',
-                      borderRadius: '12px',
-                      border: '1px solid rgba(255,255,255,0.1)'
-                    }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={tempProgression}
-                          onChange={(e) => setTempProgression(Number(e.target.value))}
-                          style={{
-                            flex: 1,
-                            height: '8px',
-                            borderRadius: '10px',
-                            outline: 'none',
-                            background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, rgba(255,255,255,0.1) ${tempProgression}%, rgba(255,255,255,0.1) 100%)`,
-                            cursor: 'pointer',
-                            WebkitAppearance: 'none',
-                            appearance: 'none'
-                          }}
-                        />
-                        <button
-                          onClick={() => setTempProgression(100)}
-                          style={{
-                            background: 'rgba(255,255,255,0.1)',
-                            border: '1px solid rgba(255,255,255,0.2)',
-                            borderRadius: '8px',
-                            padding: '0.4rem 0.8rem',
-                            fontSize: '0.8rem',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            color: 'var(--gray-light)',
-                            transition: 'all 0.2s'
-                          }}
-                          onMouseEnter={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                          }}
-                          onMouseLeave={(e) => {
-                            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                          }}
-                        >
-                          100%
-                        </button>
-                        <span style={{ 
-                          fontWeight: '700', 
-                          minWidth: '60px', 
-                          textAlign: 'right',
-                          fontSize: '1.2rem',
-                          color: 'var(--blue)'
-                        }}>
-                          {tempProgression}%
-                        </span>
-                      </div>
-
-                      <div style={{ display: 'flex', gap: '0.75rem' }}>
-                        <button 
-                          className="main-btn"
-                          style={{
-                            fontSize: '0.9rem',
-                            padding: '0.7rem 1.5rem',
-                            minHeight: 'auto',
-                            flex: 1,
-                            background: 'var(--green)',
-                            color: 'white',
-                            fontWeight: '700',
-                            border: 'none'
-                          }}
-                          onClick={async () => {
-                            await updateTravailProgression(travail.id, tempProgression);
-                            setEditingTravailId(null);
-                            window.location.reload();
-                          }}
-                        >
-                          ✓ Valider
-                        </button>
-                        <button 
-                          className="main-btn"
-                          style={{
-                            fontSize: '0.9rem',
-                            padding: '0.7rem 1.5rem',
-                            minHeight: 'auto',
-                            flex: 1,
-                            background: 'rgba(255,255,255,0.1)',
-                            color: 'var(--gray-light)',
-                            border: '1px solid rgba(255,255,255,0.2)'
-                          }}
-                          onClick={() => setEditingTravailId(null)}
-                        >
-                          ✕ Annuler
-                        </button>
-                      </div>
-                    </div>
-                  ) : (
-                    <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  {/* Boutons à droite */}
+                  {editingTravailId !== travail.id && (
+                    <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
                       <button 
                         className="main-btn"
                         style={{
-                          fontSize: '0.9rem',
-                          padding: '0.7rem 1.25rem',
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 0.85rem',
                           minHeight: 'auto',
                           background: 'rgba(16, 185, 129, 0.15)',
                           color: 'var(--green)',
-                          fontWeight: '700',
-                          border: '1px solid rgba(16, 185, 129, 0.3)'
+                          fontWeight: '600',
+                          border: '1px solid rgba(16, 185, 129, 0.3)',
+                          whiteSpace: 'nowrap'
                         }}
                         onMouseEnter={(e) => {
                           e.currentTarget.style.background = 'var(--green)';
@@ -534,7 +345,7 @@ export default function ChantiersPage() {
                           setEditingTravailId(travail.id);
                         }}
                       >
-                        📊 Ajuster %
+                        📊 Ajuster
                       </button>
                       
                       {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
@@ -543,32 +354,153 @@ export default function ChantiersPage() {
                           style={{
                             display: 'inline-flex',
                             alignItems: 'center',
-                            gap: '0.5rem',
+                            gap: '0.35rem',
                             background: 'rgba(255,255,255,0.08)',
                             color: 'var(--gray-light)',
-                            padding: '0.7rem 1.25rem',
+                            padding: '0.5rem 0.85rem',
                             borderRadius: '12px',
-                            fontSize: '0.9rem',
+                            fontSize: '0.8rem',
                             fontWeight: '600',
                             textDecoration: 'none',
                             border: '1px solid rgba(255,255,255,0.1)',
-                            transition: 'all 0.2s'
+                            transition: 'all 0.2s',
+                            whiteSpace: 'nowrap'
                           }}
                           onMouseEnter={(e) => {
                             e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
                           }}
                           onMouseLeave={(e) => {
                             e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                           }}
                         >
-                          🎯 {travail.etapes?.etapes?.length || 0} étapes
+                          🎯 {travail.etapes?.etapes?.length || 0}
                         </Link>
                       )}
                     </div>
                   )}
                 </div>
+
+                {/* Barre de progression OU Slider inline */}
+                {editingTravailId === travail.id ? (
+                  // MODE ÉDITION : Slider inline remplace la barre
+                  <div style={{ marginTop: '0.75rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={tempProgression}
+                        onChange={(e) => setTempProgression(Number(e.target.value))}
+                        style={{
+                          flex: 1,
+                          height: '8px',
+                          borderRadius: '10px',
+                          outline: 'none',
+                          background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, rgba(255,255,255,0.1) ${tempProgression}%, rgba(255,255,255,0.1) 100%)`,
+                          cursor: 'pointer',
+                          WebkitAppearance: 'none',
+                          appearance: 'none'
+                        }}
+                      />
+                      <button
+                        onClick={() => setTempProgression(100)}
+                        style={{
+                          background: 'rgba(255,255,255,0.1)',
+                          border: '1px solid rgba(255,255,255,0.2)',
+                          borderRadius: '6px',
+                          padding: '0.3rem 0.6rem',
+                          fontSize: '0.75rem',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          color: 'var(--gray-light)',
+                          transition: 'all 0.2s'
+                        }}
+                        onMouseEnter={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                        }}
+                        onMouseLeave={(e) => {
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                        }}
+                      >
+                        100%
+                      </button>
+                      <span style={{ 
+                        fontWeight: '700', 
+                        minWidth: '50px', 
+                        textAlign: 'right',
+                        fontSize: '1rem',
+                        color: 'var(--blue)'
+                      }}>
+                        {tempProgression}%
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button 
+                        className="main-btn"
+                        style={{
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 1rem',
+                          minHeight: 'auto',
+                          flex: 1,
+                          background: 'var(--green)',
+                          color: 'white',
+                          fontWeight: '700',
+                          border: 'none'
+                        }}
+                        onClick={async () => {
+                          await updateTravailProgression(travail.id, tempProgression);
+                          setEditingTravailId(null);
+                          window.location.reload();
+                        }}
+                      >
+                        ✓ Valider
+                      </button>
+                      <button 
+                        className="main-btn"
+                        style={{
+                          fontSize: '0.8rem',
+                          padding: '0.5rem 1rem',
+                          minHeight: 'auto',
+                          flex: 1,
+                          background: 'rgba(255,255,255,0.1)',
+                          color: 'var(--gray-light)',
+                          border: '1px solid rgba(255,255,255,0.2)'
+                        }}
+                        onClick={() => setEditingTravailId(null)}
+                      >
+                        ✕ Annuler
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  // MODE NORMAL : Barre de progression simple
+                  <div>
+                    <div style={{
+                      width: '100%',
+                      height: '6px',
+                      background: 'rgba(255,255,255,0.08)',
+                      borderRadius: '10px',
+                      overflow: 'hidden',
+                      marginBottom: '0.4rem'
+                    }}>
+                      <div style={{
+                        width: `${travail.progression}%`,
+                        height: '100%',
+                        background: 'var(--blue)',
+                        transition: 'width 0.5s ease'
+                      }}></div>
+                    </div>
+                    <p style={{ 
+                      fontSize: '0.85rem', 
+                      fontWeight: '600',
+                      color: 'var(--gray-light)',
+                      margin: 0
+                    }}>
+                      {travail.progression}%
+                    </p>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -577,10 +509,10 @@ export default function ChantiersPage() {
 
       {/* Section BLOQUÉ */}
       {travauxBloques.length > 0 && (
-        <section style={{ marginBottom: '3rem' }}>
+        <section style={{ marginBottom: '1.5rem' }}>
           <h2 style={{ 
-            fontSize: '1.2rem', 
-            marginBottom: '1.5rem',
+            fontSize: '1.05rem', 
+            marginBottom: '0.75rem',
             color: 'var(--gray-light)',
             fontWeight: '600',
             display: 'flex',
@@ -589,88 +521,77 @@ export default function ChantiersPage() {
           }}>
             <span style={{ 
               background: 'rgba(255, 107, 53, 0.2)', 
-              padding: '0.25rem 0.6rem', 
-              borderRadius: '8px',
-              fontSize: '1rem'
+              padding: '0.2rem 0.5rem', 
+              borderRadius: '6px',
+              fontSize: '0.9rem'
             }}>
               ⚠️ Bloqué
             </span>
             <span style={{ 
               background: 'rgba(255,255,255,0.08)', 
-              padding: '0.25rem 0.6rem', 
-              borderRadius: '8px',
-              fontSize: '0.9rem',
+              padding: '0.2rem 0.5rem', 
+              borderRadius: '6px',
+              fontSize: '0.85rem',
               fontWeight: '600'
             }}>
               {travauxBloques.length}
             </span>
           </h2>
           
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
             {travauxBloques.map((travail) => (
               <div key={travail.id} style={{
                 background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
-                borderRadius: '16px',
-                padding: '1.75rem',
-                borderLeft: '6px solid var(--orange)',
-                boxShadow: '0 4px 16px rgba(0,0,0,0.3)',
-                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                position: 'relative',
-                overflow: 'hidden'
+                borderRadius: '12px',
+                padding: '1rem',
+                borderLeft: '4px solid var(--orange)',
+                boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 8px 32px rgba(255, 107, 53, 0.3)';
-                e.currentTarget.style.transform = 'translateY(-2px)';
+                e.currentTarget.style.boxShadow = '0 4px 16px rgba(255, 107, 53, 0.25)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.3)';
-                e.currentTarget.style.transform = 'translateY(0)';
+                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
               }}>
-                {/* Gradient overlay */}
-                <div style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: '200px',
-                  height: '200px',
-                  background: 'radial-gradient(circle, rgba(255, 107, 53, 0.15) 0%, transparent 70%)',
-                  pointerEvents: 'none'
-                }}></div>
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'flex-start',
+                  gap: '1rem'
+                }}>
+                  <div style={{ flex: 1 }}>
+                    <h3 style={{ 
+                      fontSize: '1.1rem', 
+                      marginBottom: '0.35rem', 
+                      fontWeight: '700',
+                      color: 'var(--gray-light)',
+                      lineHeight: '1.2'
+                    }}>
+                      🚫 {travail.titre}
+                    </h3>
+                    <p style={{ 
+                      fontSize: '0.85rem', 
+                      color: 'var(--gray)',
+                      margin: 0,
+                      lineHeight: '1.4'
+                    }}>
+                      💬 {travail.blocage_raison || 'Raison du blocage non spécifiée'}
+                    </p>
+                  </div>
 
-                <div style={{ position: 'relative', zIndex: 1 }}>
-                  <h3 style={{ 
-                    fontSize: '1.3rem', 
-                    marginBottom: '0.75rem', 
-                    fontWeight: '700',
-                    color: 'var(--gray-light)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    🚫 {travail.titre}
-                  </h3>
-                  <p style={{ 
-                    fontSize: '0.95rem', 
-                    marginBottom: '1.25rem',
-                    color: 'var(--gray)',
-                    lineHeight: '1.5',
-                    padding: '1rem',
-                    background: 'rgba(255, 107, 53, 0.1)',
-                    borderRadius: '10px',
-                    border: '1px solid rgba(255, 107, 53, 0.2)'
-                  }}>
-                    💬 {travail.blocage_raison || 'Raison du blocage non spécifiée'}
-                  </p>
                   <button 
                     className="main-btn"
                     style={{ 
-                      fontSize: '0.9rem',
-                      padding: '0.7rem 1.5rem',
+                      fontSize: '0.8rem',
+                      padding: '0.5rem 0.85rem',
                       minHeight: 'auto',
                       background: 'rgba(255, 107, 53, 0.15)',
                       color: 'var(--orange)',
-                      fontWeight: '700',
-                      border: '1px solid rgba(255, 107, 53, 0.3)'
+                      fontWeight: '600',
+                      border: '1px solid rgba(255, 107, 53, 0.3)',
+                      whiteSpace: 'nowrap',
+                      flexShrink: 0
                     }}
                     onMouseEnter={(e) => {
                       e.currentTarget.style.background = 'var(--orange)';
@@ -689,14 +610,6 @@ export default function ChantiersPage() {
           </div>
         </section>
       )}
-
-      {/* Animation shimmer pour les progress bars */}
-      <style jsx>{`
-        @keyframes shimmer {
-          0% { transform: translateX(-100%); }
-          100% { transform: translateX(100%); }
-        }
-      `}</style>
     </div>
   );
 }
