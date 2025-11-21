@@ -18,10 +18,13 @@ export default function RootLayout({
         <header className="header">
           <div className="header-content">
             <div className="logo">
-              <span className="logo-icon">PB</span>
-              <span className="logo-title">
-                PapiBricole <span className="color-orange"></span>
-              </span>
+              <div className="logo-icon">
+                <img src="/images/papibricole_logo_tete.png" alt="PapiBricole" />
+              </div>
+              <div className="logo-text">
+                <span className="logo-title">PapiBricole</span>
+                <span className="logo-baseline">Je t'aide pas à pas et à chaque étape !</span>
+              </div>
             </div>
           </div>
         </header>
