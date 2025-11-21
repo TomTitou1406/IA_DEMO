@@ -19,7 +19,7 @@
   --spacing: 1rem;
   --touch-size: 48px;
   --font-main: 'Inter', Arial, Helvetica, sans-serif;
-  --bkgrd: #1a1a1a;
+  --bkgrd: #1a1a1a; /* Test fond body */
 }
 
 /* ----- BASE ----- */
@@ -29,7 +29,7 @@
 
 body {
   font-family: var(--font-main);
-  background: var(--bkgrd);
+  background: var(--gray-dark);
   color: var(--gray-light);
   margin: 0;
   padding: 0;
