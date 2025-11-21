@@ -178,7 +178,14 @@ export async function getEtapesByTravail(travailId: string) {
     .order('numero', { ascending: true });
 
   return {
-    travail: {...},
+    travail: {
+      id: travailData.id,
+      titre: travailData.titre,
+      description: travailData.description,
+      statut: travailData.statut,
+      progression: travailData.progression,
+      expertise: travailData.expertises?.[0] || null
+    },
     etapes: (etapesData || []).map(etape => ({
       numero: etape.numero,
       titre: etape.titre,
