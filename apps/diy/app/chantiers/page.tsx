@@ -50,20 +50,18 @@ export default function ChantiersPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        // Récupère le chantier
         const chantierData = await getChantierDemo();
         
         if (chantierData) {
           setChantier(chantierData);
         
-          // Récupère stats ET travaux en parallèle
           const [statsData, enCours, bloques] = await Promise.all([
-            getChantierStats(chantierData.id),  // ← AJOUTÉ
+            getChantierStats(chantierData.id),
             getTravauxByStatut(chantierData.id, 'en_cours'),
             getTravauxByStatut(chantierData.id, 'bloqué')
           ]);
         
-          setStats(statsData);  // ← AJOUTÉ
+          setStats(statsData);
           setTravauxEnCours(enCours);
           setTravauxBloques(bloques);
         }
@@ -101,24 +99,26 @@ export default function ChantiersPage() {
   }
 
   return (
-    <div className="container">
+    <div className="container" style={{ maxWidth: '1000px', margin: '0 auto' }}>
       {/* Back button */}
       <div style={{ marginBottom: '1.5rem' }}>
-        <Link href="/" style={{ color: 'var(--gray)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
+        <Link href="/" style={{ color: 'var(--gray-light)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
           ← Retour
         </Link>
       </div>
 
       {/* Header Chantier */}
-      <div className="chantier-header fade-in" style={{
+      <div style={{
         background: 'rgba(255,255,255,0.95)',
         backdropFilter: 'blur(5px)',
         borderRadius: 'var(--card-radius)',
         padding: '1.5rem',
         marginBottom: '2rem',
-        boxShadow: '0 4px 14px rgba(0,0,0,0.1)'
+        boxShadow: '0 4px 14px rgba(0,0,0,0.3)',
+        maxWidth: '900px',
+        margin: '0 auto 2rem auto'
       }}>
-        <h1 style={{ marginBottom: '1rem', fontSize: '1.5rem' }}>
+        <h1 style={{ marginBottom: '1rem', fontSize: '1.5rem', color: 'var(--gray-dark)' }}>
           🏗️ {chantier.titre}
         </h1>
       
@@ -143,7 +143,7 @@ export default function ChantiersPage() {
           </p>
         </div>
       
-        {/* Stats détaillées - VERSION COMPACTE ALIGNÉE */}
+        {/* Stats détaillées */}
         <div style={{ 
           display: 'flex',
           flexDirection: 'column',
@@ -187,174 +187,136 @@ export default function ChantiersPage() {
       
       {/* Section EN COURS */}
       {travauxEnCours.length > 0 && (
-        <section style={{ marginBottom: '2rem' }} className="fade-in">
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <section style={{ marginBottom: '2rem', maxWidth: '800px', margin: '0 auto 2rem auto' }}>
+          <h2 style={{ 
+            fontSize: '1.3rem', 
+            marginBottom: '1rem', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--gray-light)',
+            fontWeight: '700'
+          }}>
             🎯 En cours ({travauxEnCours.length})
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {travauxEnCours.map((travail) => (
               <div key={travail.id} style={{
-                background: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(5px)',
+                background: 'var(--blue)',
+                color: 'white',
                 borderRadius: 'var(--card-radius)',
-                padding: '1.25rem',
-                borderLeft: '4px solid var(--blue)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                transition: 'all 0.2s'
+                padding: '1.5rem',
+                borderLeft: '4px solid #1e40af',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                transition: 'all 0.3s'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
-                e.currentTarget.style.transform = 'translateX(4px)';
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-                e.currentTarget.style.transform = 'translateX(0)';
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}>
-                <div style={{ marginBottom: '0.75rem' }}>
-                  <h3 style={{ fontSize: '1.1rem', margin: 0, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span>⚡ {travail.titre}</span>
-                    <span style={{
-                      background: 'var(--blue-light)',
-                      color: 'var(--blue)',
-                      padding: '0.25rem 0.5rem',
+                <div style={{ marginBottom: '1rem' }}>
+                  <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', fontWeight: '700' }}>
+                    ⚡ {travail.titre}
+                  </h3>
+                  <p style={{ fontSize: '0.9rem', opacity: 0.9, marginBottom: '1rem' }}>
+                    {travail.description}
+                  </p>
+                  
+                  {travail.expertises && (
+                    <div style={{
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      background: 'rgba(255,255,255,0.2)',
+                      padding: '0.4rem 0.8rem',
                       borderRadius: '8px',
                       fontSize: '0.85rem',
                       fontWeight: '600'
                     }}>
-                      {travail.progression}%
-                    </span>
-                  </h3>
+                      🛠️ {travail.expertises.nom}
+                    </div>
+                  )}
                 </div>
 
-                {/* Progress bar - MASQUÉE en mode édition */}
-                {editingTravailId !== travail.id && (
+                {/* Barre de progression */}
+                <div style={{ marginBottom: '1rem' }}>
                   <div style={{
                     width: '100%',
-                    height: '6px',
-                    background: '#DBEAFE',
+                    height: '10px',
+                    background: 'rgba(255,255,255,0.2)',
                     borderRadius: '10px',
-                    overflow: 'hidden',
-                    marginBottom: '1rem'
+                    overflow: 'hidden'
                   }}>
                     <div style={{
                       width: `${travail.progression}%`,
                       height: '100%',
-                      background: 'var(--blue)',
+                      background: 'rgba(255,255,255,0.9)',
                       transition: 'width 0.3s'
                     }}></div>
                   </div>
-                )}
-                
+                  <p style={{ marginTop: '0.5rem', fontSize: '0.9rem', fontWeight: '600' }}>
+                    {travail.progression}% complété
+                  </p>
+                </div>
+
+                {/* Actions */}
                 {editingTravailId === travail.id ? (
-                  // MODE ÉDITION : Slider amélioré
-                  <div style={{ marginBottom: '1rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                      {/* Bouton 0% */}
-                      <button
-                        onClick={() => setTempProgression(0)}
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', background: 'rgba(255,255,255,0.15)', padding: '1rem', borderRadius: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <input
+                        type="range"
+                        min="0"
+                        max="100"
+                        value={tempProgression}
+                        onChange={(e) => setTempProgression(Number(e.target.value))}
                         style={{
-                          background: 'var(--gray-light)',
-                          border: 'none',
-                          borderRadius: '8px',
-                          padding: '0.25rem 0.5rem',
-                          fontSize: '0.75rem',
+                          flex: 1,
+                          width: '100%',
+                          height: '12px',
+                          borderRadius: '10px',
+                          outline: 'none',
+                          background: `linear-gradient(to right, white 0%, white ${tempProgression}%, rgba(255,255,255,0.3) ${tempProgression}%, rgba(255,255,255,0.3) 100%)`,
                           cursor: 'pointer',
-                          fontWeight: '600',
-                          color: 'var(--gray)'
+                          WebkitAppearance: 'none',
+                          appearance: 'none'
                         }}
-                      >
-                        0%
-                      </button>
-                
-                      {/* Slider */}
-                      <div style={{ flex: 1, position: 'relative' }}>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          step="5"
-                          value={tempProgression}
-                          onChange={(e) => setTempProgression(parseInt(e.target.value))}
-                          style={{
-                            width: '100%',
-                            height: '12px',
-                            borderRadius: '10px',
-                            outline: 'none',
-                            background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, #DBEAFE ${tempProgression}%, #DBEAFE 100%)`,
-                            cursor: 'pointer',
-                            WebkitAppearance: 'none',
-                            appearance: 'none'
-                          }}
-                        />
-                        <style jsx>{`
-                          input[type="range"]::-webkit-slider-thumb {
-                            -webkit-appearance: none;
-                            appearance: none;
-                            width: 24px;
-                            height: 24px;
-                            border-radius: 50%;
-                            background: white;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
-                            border: 3px solid var(--blue);
-                          }
-                          
-                          input[type="range"]::-moz-range-thumb {
-                            width: 24px;
-                            height: 24px;
-                            border-radius: 50%;
-                            background: white;
-                            cursor: pointer;
-                            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.4);
-                            border: 3px solid var(--blue);
-                          }
-                
-                          input[type="range"]::-webkit-slider-thumb:hover {
-                            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.6);
-                            transform: scale(1.1);
-                          }
-                        `}</style>
-                      </div>
-                
-                      {/* Bouton 100% */}
+                      />
                       <button
                         onClick={() => setTempProgression(100)}
                         style={{
-                          background: 'var(--gray-light)',
+                          background: 'rgba(255,255,255,0.2)',
                           border: 'none',
                           borderRadius: '8px',
                           padding: '0.25rem 0.5rem',
                           fontSize: '0.75rem',
                           cursor: 'pointer',
                           fontWeight: '600',
-                          color: 'var(--gray)'
+                          color: 'white'
                         }}
                       >
                         100%
                       </button>
-                
-                      {/* Affichage % */}
-                      <span style={{ 
-                        fontWeight: '700', 
-                        color: 'var(--blue)',
-                        minWidth: '50px',
-                        textAlign: 'right',
-                        fontSize: '1.1rem'
-                      }}>
+                      <span style={{ fontWeight: '700', minWidth: '50px', textAlign: 'right', fontSize: '1.1rem' }}>
                         {tempProgression}%
                       </span>
                     </div>
-                
-                    {/* Boutons Valider / Annuler */}
+
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
                       <button 
-                        className="main-btn btn-green"
+                        className="main-btn"
                         style={{
                           fontSize: '0.85rem',
                           padding: '0.5rem 1rem',
                           minHeight: 'auto',
-                          flex: 1
+                          flex: 1,
+                          background: 'white',
+                          color: 'var(--blue)',
+                          fontWeight: '700'
                         }}
                         onClick={async () => {
                           await updateTravailProgression(travail.id, tempProgression);
@@ -365,13 +327,15 @@ export default function ChantiersPage() {
                         ✓ Valider
                       </button>
                       <button 
-                        className="main-btn btn-disabled"
+                        className="main-btn"
                         style={{
                           fontSize: '0.85rem',
                           padding: '0.5rem 1rem',
                           minHeight: 'auto',
                           flex: 1,
-                          background: 'var(--gray)'
+                          background: 'rgba(255,255,255,0.2)',
+                          color: 'white',
+                          border: '2px solid rgba(255,255,255,0.4)'
                         }}
                         onClick={() => setEditingTravailId(null)}
                       >
@@ -380,15 +344,18 @@ export default function ChantiersPage() {
                     </div>
                   </div>
                 ) : (
-                  // MODE NORMAL : Boutons actions
                   <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
                     <button 
-                      className="main-btn btn-green"
+                      className="main-btn"
                       style={{
                         fontSize: '0.85rem',
-                        padding: '0.4rem 0.8rem',
+                        padding: '0.5rem 1rem',
                         minHeight: 'auto',
-                        maxWidth: '140px'
+                        maxWidth: '160px',
+                        background: 'white',
+                        color: 'var(--blue)',
+                        fontWeight: '700',
+                        border: '2px solid white'
                       }}
                       onClick={() => {
                         setTempProgression(travail.progression);
@@ -398,30 +365,29 @@ export default function ChantiersPage() {
                       📊 Ajuster %
                     </button>
                     
-                    {/* Badge nombre d'étapes */}
                     {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
                       <Link 
                         href={`/chantiers/travaux/${travail.id}`}
                         style={{
-                          background: '#10b98115',
-                          color: '#10b981',
-                          padding: '0.4rem 0.8rem',
-                          borderRadius: '8px',
+                          background: 'rgba(255,255,255,0.2)',
+                          color: 'white',
+                          padding: '0.5rem 1rem',
+                          borderRadius: '10px',
                           fontSize: '0.85rem',
                           fontWeight: '600',
                           textDecoration: 'none',
                           display: 'inline-flex',
                           alignItems: 'center',
                           gap: '0.25rem',
-                          border: '1px solid #10b98140',
+                          border: '2px solid rgba(255,255,255,0.3)',
                           transition: 'all 0.2s'
                         }}
                         onMouseEnter={(e) => {
-                          e.currentTarget.style.background = '#10b98125';
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.3)';
                           e.currentTarget.style.transform = 'scale(1.05)';
                         }}
                         onMouseLeave={(e) => {
-                          e.currentTarget.style.background = '#10b98115';
+                          e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
                           e.currentTarget.style.transform = 'scale(1)';
                         }}
                       >
@@ -438,31 +404,57 @@ export default function ChantiersPage() {
 
       {/* Section BLOQUÉ */}
       {travauxBloques.length > 0 && (
-        <section style={{ marginBottom: '2rem' }} className="fade-in">
-          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <section style={{ marginBottom: '2rem', maxWidth: '800px', margin: '0 auto 2rem auto' }}>
+          <h2 style={{ 
+            fontSize: '1.3rem', 
+            marginBottom: '1rem', 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            color: 'var(--gray-light)',
+            fontWeight: '700'
+          }}>
             ⚠️ Bloqué ({travauxBloques.length})
           </h2>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {travauxBloques.map((travail) => (
               <div key={travail.id} style={{
-                background: 'rgba(255,255,255,0.95)',
-                backdropFilter: 'blur(5px)',
+                background: 'var(--orange)',
+                color: 'white',
                 borderRadius: 'var(--card-radius)',
-                padding: '1.25rem',
-                borderLeft: '4px solid var(--orange)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.1)'
+                padding: '1.5rem',
+                borderLeft: '4px solid #e54e20',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.boxShadow = '0 8px 24px rgba(0,0,0,0.4)';
+                e.currentTarget.style.transform = 'translateY(-4px)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.3)';
+                e.currentTarget.style.transform = 'translateY(0)';
               }}>
-                <h3 style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>🚫 {travail.titre}</h3>
-                <p style={{ color: 'var(--orange)', fontSize: '0.9rem', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '1.2rem', marginBottom: '0.5rem', fontWeight: '700' }}>
+                  🚫 {travail.titre}
+                </h3>
+                <p style={{ fontSize: '0.95rem', marginBottom: '1rem', opacity: 0.95, fontWeight: '500' }}>
                   {travail.blocage_raison || 'Raison du blocage non spécifiée'}
                 </p>
-                <button className="main-btn btn-orange" style={{ 
-                  maxWidth: '200px',
-                  fontSize: '0.9rem',
-                  padding: '0.6rem 1rem',
-                  minHeight: 'auto'
-                }}>
+                <button 
+                  className="main-btn"
+                  style={{ 
+                    maxWidth: '200px',
+                    fontSize: '0.9rem',
+                    padding: '0.6rem 1rem',
+                    minHeight: 'auto',
+                    background: 'white',
+                    color: 'var(--orange)',
+                    fontWeight: '700',
+                    border: '2px solid white'
+                  }}
+                >
                   💬 Débloquer
                 </button>
               </div>
@@ -476,8 +468,10 @@ export default function ChantiersPage() {
         display: 'grid',
         gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
         gap: '1rem',
-        marginTop: '2rem'
-      }} className="fade-in">
+        marginTop: '2rem',
+        maxWidth: '800px',
+        margin: '2rem auto'
+      }}>
         <Link href="/chantiers/travaux" className="main-btn btn-blue">
           📋 Tous les lots (travaux)
         </Link>
