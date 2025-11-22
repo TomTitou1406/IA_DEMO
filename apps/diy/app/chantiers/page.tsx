@@ -255,7 +255,7 @@ export default function ChantiersPage() {
             {(chantier.statut === 'en_cours' || chantier.statut === 'actif' || !chantier.statut) && (
               <>
                 <Link 
-                  href={`/chantiers/travaux`}
+                  href={`/chantiers/${chantier.id}/travaux`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
