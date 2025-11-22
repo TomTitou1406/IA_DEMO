@@ -660,7 +660,7 @@ export default function TravauxPage() {
         background: 'rgba(0, 0, 0, 0.95)',    // Noir avec 95% opacité
         backdropFilter: 'blur(10px)',         // Effet flou moderne
         borderBottom: '1px solid rgba(255,255,255,0.08)',
-        paddingTop: '0.75rem',
+        paddingTop: '1rem',
         paddingBottom: '1rem'
       }}>
         <div style={{ 
@@ -697,8 +697,8 @@ export default function TravauxPage() {
         <div style={{ 
           maxWidth: '1100px', 
           margin: '0 auto', 
-          padding: '0.75rem 1rem',
-          paddingTop: '80px'  // Padding pour éviter chevauchement avec breadcrumb
+          padding: '0.75rem 0.75rem',
+          paddingTop: '70px'  // Padding pour éviter chevauchement avec breadcrumb
         }}>
         {/* État d'avancement du chantier - PLUS VISIBLE */}
         <div style={{
@@ -774,9 +774,6 @@ export default function TravauxPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1.1rem' }}>✅</span>
               <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats?.termines || 0}
-                </strong>
                 <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
                   • {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
                 </span>
