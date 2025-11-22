@@ -356,6 +356,26 @@ export default function TravailDetailPage() {
                 </button>
               )}
 
+              {/* Bouton voir tâches - toujours visible */}
+              <button 
+                className="main-btn"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.45rem 0.75rem',
+                  minHeight: 'auto',
+                  background: 'rgba(37, 99, 235, 0.15)',
+                  color: 'var(--blue)',
+                  fontWeight: '600',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => {
+                  window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                }}
+              >
+                📋 Tâches
+              </button>
+
               {etape.statut === 'bloqué' && (
                 <button 
                   className="main-btn"
