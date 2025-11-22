@@ -404,7 +404,7 @@ export default function ChantiersPage() {
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
                   {stats.progressionMoyenne || 0}%
                 </strong>
-                <span style={{ opacity: 0.6, marginLeft: '0.3rem' }}>complété</span>
+                <span style={{ opacity: 0.8, marginLeft: '0.3rem' }}>complété</span>
               </span>
             </div>
           )}
@@ -417,7 +417,7 @@ export default function ChantiersPage() {
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
                   {stats.heuresEffectuees || 0}h
                 </strong>
-                <span style={{ opacity: 0.6 }}> / {stats.heuresEstimees || 0}h</span>
+                <span style={{ opacity: 0.8 }}> / {stats.heuresEstimees || 0}h</span>
                 <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
                   {stats.progressionHeures || 0}%
                 </span>
@@ -433,7 +433,7 @@ export default function ChantiersPage() {
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
                   {stats.budgetReel?.toLocaleString() || 0}€
                 </strong>
-                <span style={{ opacity: 0.6 }}> / {stats.budgetEstime?.toLocaleString() || 0}€</span>
+                <span style={{ opacity: 0.8 }}> / {stats.budgetEstime?.toLocaleString() || 0}€</span>
                 <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
                   {stats.progressionBudget || 0}%
                 </span>
@@ -449,7 +449,7 @@ export default function ChantiersPage() {
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
                   {stats.termines || 0}
                 </strong>
-                <span style={{ opacity: 0.6 }}> / {stats.total || 0}</span>
+                <span style={{ opacity: 0.8 }}> / {stats.total || 0}</span>
                 <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
                   • {stats.termines || 0} terminé{stats.termines > 1 ? 's' : ''}
                 </span>
