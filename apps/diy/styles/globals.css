@@ -22,7 +22,7 @@
   --spacing: 1rem;
   --touch-size: 48px;
   --font-main: 'Inter', Arial, Helvetica, sans-serif;
-  
+  --breadcrumb-bg: rgba(10, 10, 10, 0.95);
 }
 
 /* ----- BASE ----- */
