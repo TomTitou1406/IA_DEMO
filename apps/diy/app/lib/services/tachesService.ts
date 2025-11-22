@@ -55,14 +55,15 @@ export async function getTacheById(tacheId: string) {
 }
 
 /**
- * Démarre une tâche (à_faire → en_cours)
+ * Remet une tâche à faire (terminée → à_faire)
  */
 export async function demarrerTache(tacheId: string) {
   try {
     const { data, error } = await supabase
       .from('taches')
       .update({
-        statut: 'en_cours',
+        statut: 'à_faire',
+        completed_at: null,
         updated_at: new Date().toISOString()
       })
       .eq('id', tacheId)
@@ -72,7 +73,7 @@ export async function demarrerTache(tacheId: string) {
     if (error) throw error;
     return data;
   } catch (error) {
-    console.error('Error starting tache:', error);
+    console.error('Error restarting tache:', error);
     throw error;
   }
 }
@@ -167,7 +168,6 @@ export async function getEtapeStatsFromTaches(etapeId: string) {
 
     const total = taches?.length || 0;
     const terminees = taches?.filter(t => t.statut === 'terminée').length || 0;
-    const enCours = taches?.filter(t => t.statut === 'en_cours').length || 0;
     const aFaire = taches?.filter(t => t.statut === 'à_faire' || !t.statut).length || 0;
 
     const progressionAuto = total > 0
@@ -182,7 +182,6 @@ export async function getEtapeStatsFromTaches(etapeId: string) {
     return {
       total,
       terminees,
-      enCours,
       aFaire,
       progressionAuto,
       dureeEstimeeMinutes,
