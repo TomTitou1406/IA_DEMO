@@ -47,6 +47,7 @@ export default function TravailDetailPage() {
   const [loading, setLoading] = useState(true);
   const [showEnCours, setShowEnCours] = useState(true);
   const [showBloques, setShowBloques] = useState(true);
+  const [showAnnulees, setShowAnnulees] = useState(false);
   const [showTerminees, setShowTerminees] = useState(false);
   const [showAVenir, setShowAVenir] = useState(true);
   const [modalConfig, setModalConfig] = useState<{
@@ -103,6 +104,7 @@ export default function TravailDetailPage() {
   const terminees = etapes.filter(e => e.statut === 'terminé');
   const enCours = etapes.filter(e => e.statut === 'en_cours');
   const bloquees = etapes.filter(e => e.statut === 'bloqué');
+  const annulees = etapes.filter(e => e.statut === 'annulé');
   const aVenir = etapes.filter(e => e.statut === 'à_venir' || !e.statut);
 
   // Calculer les stats
@@ -121,6 +123,7 @@ export default function TravailDetailPage() {
       case 'terminé': return 'var(--green)';
       case 'en_cours': return 'var(--blue)';
       case 'bloqué': return 'var(--orange)';
+      case 'annulé': return 'var(--gray)';
       default: return 'var(--gray)';
     }
   };
@@ -128,8 +131,9 @@ export default function TravailDetailPage() {
   const getStatusIcon = (statut: string) => {
     switch (statut) {
       case 'terminé': return '✓';
-      case 'en_cours': return '⚡';
+      case 'en_cours': return '🔨';
       case 'bloqué': return '🚫';
+      case 'annulé': return '🗑️';
       default: return '📅';
     }
   };
