@@ -113,7 +113,7 @@ export default function TravauxPage() {
   const getStatusIcon = (statut: string) => {
     switch (statut) {
       case 'terminé': return '✓';
-      case 'en_cours': return '⚡';
+      case 'en_cours': return '🔨';
       case 'bloqué': return '🚫';
       case 'annulé': return '🗑️';
       default: return '📅';
