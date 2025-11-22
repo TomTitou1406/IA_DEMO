@@ -13,7 +13,7 @@ interface Chantier {
   duree_reelle_heures?: number;
   budget_initial: number;
   budget_reel?: number;
-  statut: 'nouveau' | 'en_cours' | 'terminé';
+  statut: string;
   date_creation: string;
   date_debut?: string;
   date_fin?: string;
@@ -52,15 +52,23 @@ export default function ChantiersPage() {
     );
   }
 
-  // Grouper par statut
+  // Grouper par statut - GÉRER LES ANCIENS STATUTS
   const nouveaux = chantiers.filter(c => c.statut === 'nouveau');
-  const enCours = chantiers.filter(c => c.statut === 'en_cours');
+  const enCours = chantiers.filter(c => 
+    c.statut === 'en_cours' || 
+    c.statut === 'actif' || 
+    !c.statut || 
+    c.statut === null
+  );
   const termines = chantiers.filter(c => c.statut === 'terminé');
 
   const getStatusColor = (statut: string) => {
     switch (statut) {
       case 'nouveau': return 'var(--blue)';
-      case 'en_cours': return 'var(--orange)';
+      case 'en_cours':
+      case 'actif': 
+      case null:
+        return 'var(--orange)';
       case 'terminé': return 'var(--green)';
       default: return 'var(--gray)';
     }
@@ -69,7 +77,10 @@ export default function ChantiersPage() {
   const getStatusIcon = (statut: string) => {
     switch (statut) {
       case 'nouveau': return '✨';
-      case 'en_cours': return '🔨';
+      case 'en_cours':
+      case 'actif':
+      case null:
+        return '🔨';
       case 'terminé': return '✅';
       default: return '🏗️';
     }
@@ -210,11 +221,11 @@ export default function ChantiersPage() {
               </>
             )}
 
-            {/* EN COURS */}
-            {chantier.statut === 'en_cours' && (
+            {/* EN COURS (ou ACTIF ou NULL - anciens statuts) */}
+            {(chantier.statut === 'en_cours' || chantier.statut === 'actif' || !chantier.statut) && (
               <>
                 <Link 
-                  href={`/chantiers/travaux?chantier=${chantier.id}`}
+                  href={`/chantiers/travaux`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -262,29 +273,6 @@ export default function ChantiersPage() {
                 >
                   ✏️ Modifier
                 </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(255, 107, 53, 0.15)',
-                    color: 'var(--orange)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(255, 107, 53, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--orange)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 107, 53, 0.15)';
-                    e.currentTarget.style.color = 'var(--orange)';
-                  }}
-                >
-                  ⏸️ Suspendre
-                </button>
               </>
             )}
 
@@ -292,7 +280,7 @@ export default function ChantiersPage() {
             {chantier.statut === 'terminé' && (
               <>
                 <Link 
-                  href={`/chantiers/travaux?chantier=${chantier.id}`}
+                  href={`/chantiers/travaux`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
@@ -341,29 +329,6 @@ export default function ChantiersPage() {
                   }}
                 >
                   📊 Rapport
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    color: 'var(--gray)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(107, 114, 128, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--gray)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
-                    e.currentTarget.style.color = 'var(--gray)';
-                  }}
-                >
-                  📦 Archiver
                 </button>
               </>
             )}
@@ -515,7 +480,7 @@ export default function ChantiersPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED */}
+      {/* BREADCRUMB FIXED - SANS BOUTON */}
       <div style={{ 
         position: 'fixed',
         top: '100px',
@@ -532,54 +497,24 @@ export default function ChantiersPage() {
           margin: '0 auto', 
           padding: '0.75rem 1rem',
           display: 'flex', 
-          justifyContent: 'space-between',
           alignItems: 'center',
-          gap: '1rem'
+          gap: '0.5rem',
+          fontSize: '1rem'
         }}>
-          <div style={{ 
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            fontSize: '1rem'
-          }}>
-            <Link href="/" style={{ 
-              color: 'var(--gray)', 
-              transition: 'color 0.2s',
-              fontWeight: '500'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-            onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-            >
-              ← Accueil
-            </Link>
-            <span style={{ color: 'var(--gray)' }}>/</span>
-            <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-              🏗️ Mes chantiers ({chantiers.length})
-            </span>
-          </div>
-
-          {/* Bouton Nouveau chantier */}
-          <button 
-            className="main-btn"
-            style={{
-              fontSize: '0.85rem',
-              padding: '0.6rem 1.2rem',
-              minHeight: 'auto',
-              background: 'var(--orange)',
-              color: 'white',
-              fontWeight: '700',
-              border: 'none',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
+          <Link href="/" style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
           >
-            ✨ Nouveau chantier
-          </button>
+            ← Accueil
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
+            🏗️ Mes chantiers ({chantiers.length})
+          </span>
         </div>
       </div>
 
@@ -590,35 +525,6 @@ export default function ChantiersPage() {
         padding: '0.75rem 1rem',
         paddingTop: '100px'
       }}>
-        {/* Message si aucun chantier */}
-        {chantiers.length === 0 && (
-          <div style={{ 
-            textAlign: 'center', 
-            padding: '4rem 1rem',
-            background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.08)'
-          }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '1rem' }}>🏗️ Aucun chantier</h2>
-            <p style={{ color: 'var(--gray)', marginBottom: '2rem' }}>
-              Créez votre premier chantier pour commencer !
-            </p>
-            <button 
-              className="main-btn"
-              style={{
-                fontSize: '1rem',
-                padding: '0.75rem 1.5rem',
-                background: 'var(--orange)',
-                color: 'white',
-                fontWeight: '700',
-                border: 'none'
-              }}
-            >
-              ✨ Créer mon premier chantier
-            </button>
-          </div>
-        )}
-
         {/* Section NOUVEAUX */}
         {nouveaux.length > 0 && (
           <section style={{ marginBottom: '2rem' }}>
