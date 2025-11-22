@@ -554,12 +554,12 @@ export default function ChantiersPage() {
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.98)',
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)'
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         <div style={{ 
           maxWidth: '1100px', 
           margin: '0 auto', 
-          padding: '0.75rem 1rem 1rem 1rem',
+          padding: '1rem',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
@@ -587,20 +587,20 @@ export default function ChantiersPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '100px'
+        paddingTop: '50px'
       }}>
     
         {/* BOUTON NOUVEAU CHANTIER - AU DESSUS DES SECTIONS */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'flex-end', 
-          marginBottom: '2rem',
+          marginBottom: '1.5rem',
         }}>
           <button 
             className="main-btn"
             style={{
               fontSize: '0.85rem',
-              padding: '0.6rem 1.2rem',
+              padding: '0.6rem 1rem',
               minHeight: 'auto',
               background: 'var(--orange)',
               color: 'white',
