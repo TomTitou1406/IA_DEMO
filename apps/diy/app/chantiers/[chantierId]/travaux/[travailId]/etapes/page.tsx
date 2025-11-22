@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getEtapesByTravail } from '../../../../../lib/services/travauxService';
-import ConfirmModal from '../../../../../components/ConfirmModal';
+import { getEtapesByTravail } from '@/app/lib/services/travauxService';
+import ConfirmModal from '@/app/components/ConfirmModal';
 
 interface Etape {
   id: string;
@@ -28,7 +28,7 @@ interface Travail {
   description: string;
   statut: string;
   progression: number;
-  duree_estimee_heures: number;
+  duree_estimee_heures?: number;     // ← Optionnel
   duree_reelle_heures?: number;
   budget_estime?: number;
   budget_reel?: number;
