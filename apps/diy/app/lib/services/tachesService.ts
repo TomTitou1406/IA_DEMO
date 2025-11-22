@@ -79,10 +79,21 @@ export async function demarrerTache(tacheId: string) {
 }
 
 /**
- * Termine une tâche (en_cours → terminée)
+ * Termine une tâche (à_faire → terminée)
+ * ET met à jour l'étape en "en_cours" si c'était la 1ère tâche
  */
 export async function terminerTache(tacheId: string, dureeReelleMinutes?: number) {
   try {
+    // 1. Récupérer la tâche pour avoir l'etape_id
+    const { data: tache } = await supabase
+      .from('taches')
+      .select('etape_id')
+      .eq('id', tacheId)
+      .single();
+
+    if (!tache) throw new Error('Tâche introuvable');
+
+    // 2. Marquer la tâche comme terminée
     const updates: any = {
       statut: 'terminée',
       completed_at: new Date().toISOString(),
@@ -101,6 +112,25 @@ export async function terminerTache(tacheId: string, dureeReelleMinutes?: number
       .single();
 
     if (error) throw error;
+
+    // 3. Vérifier si l'étape doit passer en "en_cours"
+    const { data: etape } = await supabase
+      .from('etapes')
+      .select('statut')
+      .eq('id', tache.etape_id)
+      .single();
+
+    // Si l'étape est "à_venir", la passer en "en_cours"
+    if (etape && etape.statut === 'à_venir') {
+      await supabase
+        .from('etapes')
+        .update({
+          statut: 'en_cours',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tache.etape_id);
+    }
+
     return data;
   } catch (error) {
     console.error('Error completing tache:', error);
