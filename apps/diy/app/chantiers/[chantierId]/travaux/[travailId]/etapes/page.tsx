@@ -28,7 +28,7 @@ interface Travail {
   description: string;
   statut: string;
   progression: number;
-  duree_estimee_heures?: number;     // ← Optionnel
+  duree_estimee_heures?: number;     
   duree_reelle_heures?: number;
   budget_estime?: number;
   budget_reel?: number;
@@ -47,7 +47,7 @@ export default function TravailDetailPage() {
   const [showEnCours, setShowEnCours] = useState(true);
   const [showBloques, setShowBloques] = useState(true);
   const [showTerminees, setShowTerminees] = useState(false);
-  const [showAVenir, setShowAVenir] = useState(false);
+  const [showAVenir, setShowAVenir] = useState(true);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
