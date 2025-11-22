@@ -343,7 +343,7 @@ export default function TravailDetailPage() {
                       message: `"${etape.titre}" sera marquée comme annulée.`,
                       onConfirm: async () => {
                         setModalConfig({ ...modalConfig, isOpen: false });
-                        await loadData();
+                        window.location.reload();
                       }
                     });
                   }}
@@ -435,7 +435,7 @@ export default function TravailDetailPage() {
                       message: `"${etape.titre}" sera marquée comme annulée.`,
                       onConfirm: async () => {
                         setModalConfig({ ...modalConfig, isOpen: false });
-                        await loadData();
+                        window.location.reload();
                       }
                     });
                   }}
@@ -488,7 +488,7 @@ export default function TravailDetailPage() {
                     message: `"${etape.titre}" repassera à l'état "à venir".`,
                     onConfirm: async () => {
                       setModalConfig({ ...modalConfig, isOpen: false });
-                      await loadData();
+                      window.location.reload();
                     }
                   });
                 }}
