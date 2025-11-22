@@ -314,7 +314,7 @@ export default function TravailDetailPage() {
                     });
                   }}
                 >
-                  ▶️ Démarrer
+                  🚀 Démarrer
                 </button>
                 <button 
                   className="main-btn"
