@@ -244,7 +244,7 @@ export default function TravauxPage() {
               )}
 
               {/* Bouton AJUSTER pour EN COURS avec progression > 0% */}
-              {travail.statut === 'en_cours' && travail.progression > 0 && (
+              {travail.statut === 'en_cours' && (
                 <button 
                   className="main-btn"
                   style={{
