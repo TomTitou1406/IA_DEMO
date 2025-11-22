@@ -227,3 +227,17 @@ export async function countEtapes(travailId: string): Promise<number> {
 
   return count || 0;
 }
+
+// Démarrrer un lot de travaux
+export async function commencerTravail(travailId: string) {
+  const { data, error } = await supabase
+    .from('travaux')
+    .update({ statut: 'en_cours', progression: 0 })
+    .eq('id', travailId)
+    .select()
+    .single();
+  if (error) throw error;
+  return data;
+}
+
+
