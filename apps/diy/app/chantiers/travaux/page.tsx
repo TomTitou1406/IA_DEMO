@@ -624,8 +624,11 @@ export default function TravauxPage() {
         </span>
         <span>{icon} {title}</span>
         <span style={{ 
-          background: color,
-          color: '#000',
+          // background: color,
+          // color: '#000',
+          background: `${color}33`,  // 33 = 20% opacité
+          color: color,              // Texte de la couleur du statut
+          border: `2px solid ${color}`,
           minWidth: '28px',
           height: '28px',
           display: 'inline-flex',
