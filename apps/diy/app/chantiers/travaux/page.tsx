@@ -737,7 +737,8 @@ export default function TravauxPage() {
             <span style={{ 
               color: 'var(--gray-light)', 
               fontSize: '1.1rem', 
-              fontWeight: '700' 
+              fontWeight: '700',
+              marginLeft: '0.5rem'
             }}>
               {stats?.progressionMoyenne || 0}% complété
             </span>
@@ -775,7 +776,7 @@ export default function TravauxPage() {
               <span style={{ fontSize: '1.1rem' }}>✅ Lots :</span>
               <span>
                 <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                   {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
+                  {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
                 </span>
                 <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
                   | {stats?.enCours || 0} En cours
