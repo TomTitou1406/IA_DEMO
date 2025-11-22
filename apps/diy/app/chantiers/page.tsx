@@ -14,9 +14,9 @@ interface Chantier {
   budget_initial: number;
   budget_reel?: number;
   statut: string;
-  date_creation: string;
-  date_debut?: string;
-  date_fin?: string;
+  created_at: string;          
+  date_debut_reelle?: string;  
+  date_fin_reelle?: string;    
   nombre_travaux?: number;
   travaux_termines?: number;
 }
@@ -403,7 +403,7 @@ export default function ChantiersPage() {
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1rem' }}>📅</span>
               <span style={{ color: 'var(--gray-light)' }}>
-                Créé le {new Date(chantier.date_creation).toLocaleDateString('fr-FR')}
+                Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}
               </span>
             </div>
           )}
