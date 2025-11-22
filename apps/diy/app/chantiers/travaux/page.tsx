@@ -653,20 +653,19 @@ export default function TravauxPage() {
       {/* BREADCRUMB FIXED */}
       <div style={{ 
         position: 'fixed',
-        top: '110px',  // Ajuster selon la hauteur du header
+        top: '100px',  // Ajuster selon la hauteur du header
         left: 0,
         right: 0,
         zIndex: 100,
-        background: 'var(--breadcrumb-bg)',
-        backdropFilter: 'blur(10px)',
+        background: 'rgba(10, 10, 10, 0.85)',  // Noir avec 95% opacité
+        backdropFilter: 'blur(10px)',          // Effet flou moderne
         borderBottom: '1px solid rgba(255,255,255,0.08)',
-        paddingTop: '0.75rem',
         paddingBottom: '1rem'
       }}>
         <div style={{ 
           maxWidth: '1100px', 
           margin: '0 auto', 
-          padding: '0 1rem',
+          padding: '0.75rem 1rem',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
