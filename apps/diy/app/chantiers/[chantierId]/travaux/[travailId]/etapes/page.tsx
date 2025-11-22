@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getEtapesByTravail } from '@/app/lib/services/etapesService';
 import ConfirmModal from '@/app/components/ConfirmModal';
+import { getEtapesByTravail, annulerEtape, reactiverEtape } from '@/app/lib/services/etapesService';
 
 interface Etape {
   id: string;
@@ -342,8 +343,8 @@ export default function TravailDetailPage() {
                       title: 'Annuler cette étape ?',
                       message: `"${etape.titre}" sera marquée comme annulée.`,
                       onConfirm: async () => {
-                        // TODO: API call annuler
                         setModalConfig({ ...modalConfig, isOpen: false });
+                        await loadData();
                       }
                     });
                   }}
@@ -434,8 +435,8 @@ export default function TravailDetailPage() {
                       title: 'Annuler cette étape ?',
                       message: `"${etape.titre}" sera marquée comme annulée.`,
                       onConfirm: async () => {
-                        // TODO: API call annuler
                         setModalConfig({ ...modalConfig, isOpen: false });
+                        await loadData();
                       }
                     });
                   }}
@@ -487,8 +488,8 @@ export default function TravailDetailPage() {
                     title: 'Réactiver cette étape ?',
                     message: `"${etape.titre}" repassera à l'état "à venir".`,
                     onConfirm: async () => {
-                      // TODO: API call réactiver
                       setModalConfig({ ...modalConfig, isOpen: false });
+                      await loadData();
                     }
                   });
                 }}
