@@ -3,8 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getEtapesByTravail } from '../../../lib/services/travauxService';
-import ConfirmModal from '../../../components/ConfirmModal';
+import { getEtapesByTravail } from '../../../../../lib/services/travauxService';
+import ConfirmModal from '../../../../../components/ConfirmModal';
 
 interface Etape {
   id: string;
