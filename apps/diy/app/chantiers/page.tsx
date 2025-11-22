@@ -315,8 +315,8 @@ export default function ChantiersPage() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '0.35rem',
-                    background: 'rgba(37, 99, 235, 0.15)',
-                    color: 'var(--blue)',
+                    background: 'var(--blue)',  
+                    color: 'white',
                     padding: '0.5rem 0.85rem',
                     borderRadius: '12px',
                     fontSize: '0.75rem',
@@ -325,14 +325,6 @@ export default function ChantiersPage() {
                     border: '1px solid rgba(37, 99, 235, 0.3)',
                     transition: 'all 0.2s',
                     whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--blue)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-                    e.currentTarget.style.color = 'var(--blue)';
                   }}
                 >
                   📋 Voir lots
