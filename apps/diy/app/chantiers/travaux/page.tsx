@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierDemo, getChantierStats } from '../../lib/services/chantierService';
-import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail } from '../../lib/services/travauxService';
+import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail } from '../../lib/services/travauxService';
 import ConfirmModal from '../../components/ConfirmModal';
 
 interface Chantier {
@@ -204,6 +204,7 @@ export default function TravauxPage() {
               flexShrink: 0,
               alignItems: 'flex-start'
             }}>
+              {/* Bouton AJUSTER pour EN COURS */}
               {travail.statut === 'en_cours' && (
                 <button 
                   className="main-btn"
@@ -234,6 +235,7 @@ export default function TravauxPage() {
                 </button>
               )}
 
+              {/* Bouton DÉBLOQUER pour BLOQUÉS */}
               {travail.statut === 'bloqué' && (
                 <button 
                   className="main-btn"
@@ -260,6 +262,46 @@ export default function TravauxPage() {
                 </button>
               )}
 
+              {/* Bouton COMMENCER pour À VENIR */}
+              {travail.statut === 'à_venir' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: 'var(--green)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.color = 'var(--green)';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Démarrer cette tâche ?',
+                      message: `"${travail.titre}" passera en cours et vous pourrez suivre sa progression.`,
+                      onConfirm: async () => {
+                        await commencerTravail(travail.id);
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                >
+                  ▶️ Commencer
+                </button>
+              )}
+
+              {/* Bouton X ÉTAPES (pour tous sauf annulés) */}
               {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
                 <Link 
                   href={`/chantiers/travaux/${travail.id}`}
@@ -289,7 +331,8 @@ export default function TravauxPage() {
                 </Link>
               )}
 
-              {travail.statut !== 'à_venir' && (
+              {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
+              {travail.statut !== 'terminé' && (
                 <button 
                   className="main-btn"
                   style={{
