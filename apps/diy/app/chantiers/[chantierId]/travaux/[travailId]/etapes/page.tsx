@@ -40,6 +40,7 @@ interface Travail {
 
 export default function TravailDetailPage() {
   const params = useParams();
+  const chantierId = params.chantierId as string;
   const travailId = params.travailId as string;
   const [travail, setTravail] = useState<Travail | null>(null);
   const [etapes, setEtapes] = useState<Etape[]>([]);
