@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierDemo, getChantierStats } from '../../lib/services/chantierService';
-import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail } from '../../lib/services/travauxService';
+import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '../../lib/services/travauxService';
 import ConfirmModal from '../../components/ConfirmModal';
 
 interface Chantier {
@@ -204,8 +204,47 @@ export default function TravauxPage() {
               flexShrink: 0,
               alignItems: 'flex-start'
             }}>
-              {/* Bouton AJUSTER pour EN COURS */}
-              {travail.statut === 'en_cours' && (
+              {/* Bouton REPORTER pour EN COURS à 0% */}
+              {travail.statut === 'en_cours' && travail.progression === 0 && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(107, 114, 128, 0.15)',
+                    color: 'var(--gray)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(107, 114, 128, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--gray)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
+                    e.currentTarget.style.color = 'var(--gray)';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Reporter cette tâche ?',
+                      message: `"${travail.titre}" reviendra dans "À venir". Vous pourrez la redémarrer plus tard.`,
+                      onConfirm: async () => {
+                        await reporterTravail(travail.id);
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                >
+                  📅 Reporter
+                </button>
+              )}
+
+              {/* Bouton AJUSTER pour EN COURS avec progression > 0% */}
+              {travail.statut === 'en_cours' && travail.progression > 0 && (
                 <button 
                   className="main-btn"
                   style={{
