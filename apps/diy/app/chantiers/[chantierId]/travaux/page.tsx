@@ -285,19 +285,11 @@ export default function TravauxPage() {
                     fontSize: '0.75rem',
                     padding: '0.45rem 0.75rem',
                     minHeight: 'auto',
-                    background: 'rgba(255, 107, 53, 0.15)',
-                    color: 'var(--orange)',
+                    background: 'var(--orange)',
+                    color: 'white'
                     fontWeight: '600',
                     border: '1px solid rgba(255, 107, 53, 0.3)',
                     whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--orange)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 107, 53, 0.15)';
-                    e.currentTarget.style.color = 'var(--orange)';
                   }}
                 >
                   🔓 Débloquer
@@ -312,19 +304,11 @@ export default function TravauxPage() {
                     fontSize: '0.75rem',
                     padding: '0.45rem 0.75rem',
                     minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
+                    background: 'var(--blue)',  
+                    color: 'white',
                     fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    border: 'none',
                     whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
                   }}
                   onClick={() => {
                     setModalConfig({
@@ -351,8 +335,8 @@ export default function TravauxPage() {
                     display: 'inline-flex',
                     alignItems: 'center',
                     gap: '0.3rem',
-                    background: 'rgba(255,255,255,0.08)',
-                    color: 'var(--gray-light)',
+                    background: 'var(--blue)',  
+                    color: 'white',
                     padding: '0.45rem 0.75rem',
                     borderRadius: '12px',
                     fontSize: '0.75rem',
@@ -361,12 +345,6 @@ export default function TravauxPage() {
                     border: '1px solid rgba(255,255,255,0.1)',
                     transition: 'all 0.2s',
                     whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
                   }}
                 >
                   🎯 {travail.etapes?.etapes?.length || 0} étapes
@@ -422,22 +400,14 @@ export default function TravauxPage() {
                 fontSize: '0.75rem',
                 padding: '0.45rem 0.75rem',
                 minHeight: 'auto',
-                background: 'rgba(37, 99, 235, 0.15)',
-                color: 'var(--blue)',
+                background: 'var(--gray)',  // ← GRIS PLEIN
+                color: 'white',
                 fontWeight: '600',
                 border: '1px solid rgba(37, 99, 235, 0.3)',
                 whiteSpace: 'nowrap',
                 flexShrink: 0
               }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'var(--blue)';
-                e.currentTarget.style.color = 'white';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-                e.currentTarget.style.color = 'var(--blue)';
-              }}
-              onClick={() => {
+             onClick={() => {
                 setModalConfig({
                   isOpen: true,
                   title: 'Réactiver cette tâche ?',
