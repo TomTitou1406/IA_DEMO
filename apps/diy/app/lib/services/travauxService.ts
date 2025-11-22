@@ -240,4 +240,23 @@ export async function commencerTravail(travailId: string) {
   return data;
 }
 
+// Replacer en statut à venir un lot non démarré
+export async function reporterTravail(travailId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('travaux')
+      .update({ 
+        statut: 'à_venir',
+        progression: 0
+      })
+      .eq('id', travailId)
+      .select()
+      .single();
 
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error reporting travail:', error);
+    throw error;
+  }
+}
