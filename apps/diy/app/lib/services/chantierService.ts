@@ -95,3 +95,142 @@ export async function getChantierStats(chantierId: string) {
     return null;
   }
 }
+
+/** Récupère tous les chantiers de l'utilisateur
+ * Avec statistiques des travaux associés
+ */
+export async function getAllChantiers() {
+  try {
+    const { data: chantiers, error } = await supabase
+      .from('chantiers')
+      .select(`
+        *,
+        travaux (
+          id,
+          statut
+        )
+      `)
+      .order('date_creation', { ascending: false });
+
+    if (error) throw error;
+
+    // Enrichir avec les statistiques
+    return chantiers.map((chantier: any) => ({
+      ...chantier,
+      nombre_travaux: chantier.travaux?.length || 0,
+      travaux_termines: chantier.travaux?.filter((t: any) => t.statut === 'terminé').length || 0
+    }));
+  } catch (error) {
+    console.error('Error fetching all chantiers:', error);
+    throw error;
+  }
+}
+
+/**
+ * Démarre un chantier (passe de "nouveau" à "en_cours")
+ */
+export async function demarrerChantier(chantierId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .update({ 
+        statut: 'en_cours',
+        date_debut: new Date().toISOString()
+      })
+      .eq('id', chantierId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error starting chantier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Suspend un chantier (passe en statut "suspendu")
+ */
+export async function suspendreChantier(chantierId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .update({ 
+        statut: 'suspendu'
+      })
+      .eq('id', chantierId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error suspending chantier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Termine un chantier
+ */
+export async function terminerChantier(chantierId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .update({ 
+        statut: 'terminé',
+        date_fin: new Date().toISOString(),
+        progression: 100
+      })
+      .eq('id', chantierId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error completing chantier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Archive un chantier terminé
+ */
+export async function archiverChantier(chantierId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .update({ 
+        statut: 'archivé'
+      })
+      .eq('id', chantierId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error archiving chantier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Supprime un chantier (uniquement si statut "nouveau")
+ */
+export async function supprimerChantier(chantierId: string) {
+  try {
+    const { error } = await supabase
+      .from('chantiers')
+      .delete()
+      .eq('id', chantierId)
+      .eq('statut', 'nouveau'); // Sécurité : seulement les nouveaux
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error deleting chantier:', error);
+    throw error;
+  }
+}
