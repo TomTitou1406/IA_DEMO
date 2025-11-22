@@ -496,35 +496,6 @@ export default function TravauxPage() {
             )}
           </>
         )}
-
-        {/* Progress bar pour bloqués */}
-        {travail.statut === 'bloqué' && (
-          <div style={{ marginBottom: '0.5rem' }}>
-            <div style={{
-              width: '100%',
-              height: '6px',
-              background: 'rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              marginBottom: '0.4rem'
-            }}>
-              <div style={{
-                width: `${travail.progression}%`,
-                height: '100%',
-                background: 'var(--orange)',
-                transition: 'width 0.5s ease'
-              }}></div>
-            </div>
-            <p style={{ 
-              fontSize: '0.85rem', 
-              fontWeight: '600',
-              color: 'var(--gray-light)',
-              margin: 0
-            }}>
-              {travail.progression}%
-            </p>
-          </div>
-        )}
       </div>
     );
   };
