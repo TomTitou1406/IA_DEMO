@@ -691,8 +691,13 @@ export default function TravauxPage() {
         </div>
       </div>
 
-      {/* CONTENU PRINCIPAL */}
-      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0.75rem 1rem' }}>
+      {/* CONTENU PRINCIPAL avec padding-top pour breadcrumb */}
+        <div style={{ 
+          maxWidth: '1100px', 
+          margin: '0 auto', 
+          padding: '0.75rem 1rem',
+          paddingTop: '160px'  // Padding pour éviter chevauchement avec breadcrumb
+        }}>
         {/* État d'avancement du chantier - PLUS VISIBLE */}
         <div style={{
           marginBottom: '2rem',
