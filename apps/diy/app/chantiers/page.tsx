@@ -641,7 +641,7 @@ export default function ChantiersPage() {
               title="En cours" 
               count={enCours.length} 
               color="var(--blue)" 
-              icon="🔨"
+              icon="🏗️"
               isExpanded={showEnCours}
               onToggle={() => setShowEnCours(!showEnCours)}
             />
