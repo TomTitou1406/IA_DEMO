@@ -652,12 +652,11 @@ export default function TravauxPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0.75rem 1rem' }}>
-        {/* Breadcrumb AÉRÉ + PLUS VISIBLE + STICKY */}
+        {/* Breadcrumb AÉRÉ + STICKY */}
         <div style={{ 
           position: 'sticky',
           top: 0,
           zIndex: 100,
-          background: '#0a0a0a',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
@@ -665,8 +664,7 @@ export default function TravauxPage() {
           paddingTop: '0.75rem',
           paddingBottom: '1rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
-          fontSize: '1rem',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
+          fontSize: '1rem'
         }}>
         <Link href="/chantiers" style={{ 
           color: 'var(--gray)', 
@@ -730,7 +728,7 @@ export default function TravauxPage() {
             {stats?.progressionMoyenne || 0}% complété
           </span>
 
-          {/* Heures */}
+          {/* Heures - SANS COULEUR BLEUE */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '1.1rem' }}>⏱️</span>
             <span>
@@ -738,13 +736,13 @@ export default function TravauxPage() {
                 {stats?.heuresEffectuees || 0}h
               </strong>
               <span style={{ opacity: 0.6 }}> / {stats?.heuresEstimees || 0}h</span>
-              <span style={{ color: 'var(--blue)', marginLeft: '0.5rem', fontWeight: '700' }}>
+              <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
                 {stats?.progressionHeures || 0}%
               </span>
             </span>
           </div>
-
-          {/* Budget */}
+          
+          {/* Budget - SANS COULEUR VERTE */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <span style={{ fontSize: '1.1rem' }}>💰</span>
             <span>
@@ -752,7 +750,7 @@ export default function TravauxPage() {
                 {stats?.budgetReel?.toLocaleString() || 0}€
               </strong>
               <span style={{ opacity: 0.6 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
-              <span style={{ color: 'var(--green)', marginLeft: '0.5rem', fontWeight: '700' }}>
+              <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
                 {stats?.progressionBudget || 0}%
               </span>
             </span>
@@ -766,6 +764,9 @@ export default function TravauxPage() {
                 {stats?.termines || 0}
               </strong>
               <span style={{ opacity: 0.6 }}> / {stats?.total || 0}</span>
+              <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                • {stats?.termines || 0} terminé{stats?.termines > 1 ? 's' : ''}
+              </span>
               <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
                 • {stats?.enCours || 0} en cours
               </span>
