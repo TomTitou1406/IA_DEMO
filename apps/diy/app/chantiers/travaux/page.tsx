@@ -650,14 +650,15 @@ export default function TravauxPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED - SANS FOND */}
+      {/* BREADCRUMB FIXED */}
       <div style={{ 
         position: 'fixed',
         top: '110px',  // Ajuster selon la hauteur du header
         left: 0,
         right: 0,
         zIndex: 100,
-        background: 'var(--black)',
+        background: 'var(--breadcrumb-bg)',
+        backdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         paddingTop: '0.75rem',
         paddingBottom: '1rem'
@@ -697,7 +698,7 @@ export default function TravauxPage() {
           maxWidth: '1100px', 
           margin: '0 auto', 
           padding: '0.75rem 1rem',
-          paddingTop: '60px'  // Padding pour éviter chevauchement avec breadcrumb
+          paddingTop: '80px'  // Padding pour éviter chevauchement avec breadcrumb
         }}>
         {/* État d'avancement du chantier - PLUS VISIBLE */}
         <div style={{
