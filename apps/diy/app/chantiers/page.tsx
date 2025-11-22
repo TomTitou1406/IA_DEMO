@@ -587,14 +587,14 @@ export default function ChantiersPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '50px'
+        paddingTop: '85px'
       }}>
     
         {/* BOUTON NOUVEAU CHANTIER - AU DESSUS DES SECTIONS */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'flex-end', 
-          marginBottom: '1.5rem',
+          marginBottom: '1rem',
         }}>
           <button 
             className="main-btn"
