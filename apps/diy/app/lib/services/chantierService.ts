@@ -96,7 +96,8 @@ export async function getChantierStats(chantierId: string) {
   }
 }
 
-/** Récupère tous les chantiers de l'utilisateur
+/**
+ * Récupère tous les chantiers de l'utilisateur
  * Avec statistiques des travaux associés
  */
 export async function getAllChantiers() {
@@ -110,7 +111,7 @@ export async function getAllChantiers() {
           statut
         )
       `)
-      .order('date_creation', { ascending: false });
+      .order('created_at', { ascending: false });
 
     if (error) throw error;
 
