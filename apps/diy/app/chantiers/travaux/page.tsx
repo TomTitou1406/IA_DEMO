@@ -626,8 +626,7 @@ export default function TravauxPage() {
         <span style={{ 
           // background: color,
           // color: '#000',
-          // background: `${color}33`,  // 33 = 20% opacité
-          background: 'white',
+          background: `${color}88`,  // 88 = 53% bien visible, 66 = 40%, 33 = 20%
           color: color,              // Texte de la couleur du statut
           border: `2px solid ${color}`,
           minWidth: '28px',
@@ -653,16 +652,22 @@ export default function TravauxPage() {
 
   return (
     <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0.75rem 1rem' }}>
-      {/* Breadcrumb AÉRÉ + PLUS VISIBLE */}
-      <div style={{ 
-        display: 'flex', 
-        alignItems: 'center',
-        gap: '0.5rem',
-        marginBottom: '1.5rem',
-        paddingBottom: '1rem',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        fontSize: '1rem'
-      }}>
+        {/* Breadcrumb AÉRÉ + PLUS VISIBLE + STICKY */}
+        <div style={{ 
+          position: 'sticky',
+          top: 0,
+          zIndex: 100,
+          background: '#0a0a0a',
+          display: 'flex', 
+          alignItems: 'center',
+          gap: '0.5rem',
+          marginBottom: '1.5rem',
+          paddingTop: '0.75rem',
+          paddingBottom: '1rem',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          fontSize: '1rem',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.5)'
+        }}>
         <Link href="/chantiers" style={{ 
           color: 'var(--gray)', 
           transition: 'color 0.2s',
@@ -761,8 +766,11 @@ export default function TravauxPage() {
                 {stats?.termines || 0}
               </strong>
               <span style={{ opacity: 0.6 }}> / {stats?.total || 0}</span>
-              <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+              <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
                 • {stats?.enCours || 0} en cours
+              </span>
+              <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                • {stats?.bloques || 0} bloqué{stats?.bloques > 1 ? 's' : ''}
               </span>
             </span>
           </div>
