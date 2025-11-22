@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAllChantiers } from '../lib/services/chantierService';
+import { getAllChantiers, getChantierStats } from '../lib/services/chantierService';
 
 interface Chantier {
   id: string;
@@ -12,13 +12,27 @@ interface Chantier {
   duree_estimee_heures: number;
   duree_reelle_heures?: number;
   budget_initial: number;
-  budget_reel?: number;
+  budget_consomme?: number;
   statut: string;
-  created_at: string;          
-  date_debut_reelle?: string;  
-  date_fin_reelle?: string;    
+  created_at: string;
+  date_debut_reelle?: string;
+  date_fin_reelle?: string;
   nombre_travaux?: number;
   travaux_termines?: number;
+  stats?: {
+    progressionMoyenne: number;
+    heuresEffectuees: number;
+    heuresEstimees: number;
+    progressionHeures: number;
+    budgetReel: number;
+    budgetEstime: number;
+    progressionBudget: number;
+    total: number;
+    termines: number;
+    enCours: number;
+    bloques: number;
+    aVenir: number;
+  };
 }
 
 export default function ChantiersPage() {
@@ -32,7 +46,21 @@ export default function ChantiersPage() {
     async function loadData() {
       try {
         const chantiersData = await getAllChantiers();
-        setChantiers(chantiersData);
+        
+        // Charger les stats pour chaque chantier
+        const chantiersWithStats = await Promise.all(
+          chantiersData.map(async (chantier: any) => {
+            try {
+              const stats = await getChantierStats(chantier.id);
+              return { ...chantier, stats };
+            } catch (error) {
+              console.error(`Error loading stats for chantier ${chantier.id}:`, error);
+              return chantier;
+            }
+          })
+        );
+        
+        setChantiers(chantiersWithStats);
       } catch (error) {
         console.error('Error loading chantiers:', error);
       } finally {
@@ -62,14 +90,15 @@ export default function ChantiersPage() {
   );
   const termines = chantiers.filter(c => c.statut === 'terminé');
 
+  // COULEURS COHÉRENTES AVEC PAGE TRAVAUX
   const getStatusColor = (statut: string) => {
     switch (statut) {
-      case 'nouveau': return 'var(--blue)';
+      case 'nouveau': return 'var(--gray)';      // Gris pour nouveau
       case 'en_cours':
       case 'actif': 
       case null:
-        return 'var(--orange)';
-      case 'terminé': return 'var(--green)';
+        return 'var(--blue)';                    // BLEU pour en cours
+      case 'terminé': return 'var(--green)';     // VERT pour terminé
       default: return 'var(--gray)';
     }
   };
@@ -88,6 +117,7 @@ export default function ChantiersPage() {
 
   const ChantierCard = ({ chantier }: { chantier: Chantier }) => {
     const statusColor = getStatusColor(chantier.statut);
+    const stats = chantier.stats;
     
     return (
       <div style={{
@@ -102,7 +132,8 @@ export default function ChantiersPage() {
       onMouseEnter={(e) => {
         const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
-                     'rgba(16, 185, 129, 0.25)';
+                     statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
+                     'rgba(107, 114, 128, 0.25)';
         e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
       onMouseLeave={(e) => {
@@ -250,7 +281,7 @@ export default function ChantiersPage() {
                     e.currentTarget.style.color = 'var(--blue)';
                   }}
                 >
-                  📋 Voir lots ({chantier.nombre_travaux || 0})
+                  📋 Voir lots ({stats?.total || 0})
                 </Link>
                 <button 
                   className="main-btn"
@@ -335,65 +366,80 @@ export default function ChantiersPage() {
           </div>
         </div>
 
-        {/* Stats inline */}
+        {/* Stats inline - COMPLÈTES COMME PAGE TRAVAUX */}
         <div style={{ 
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
-          gap: '1.5rem',
+          gap: '2rem',
           fontSize: '0.85rem',
           color: 'var(--gray)',
           paddingTop: '0.75rem',
           borderTop: '1px solid rgba(255,255,255,0.08)'
         }}>
           {/* Progression */}
-          {chantier.statut !== 'nouveau' && (
+          {chantier.statut !== 'nouveau' && stats && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1rem' }}>📊</span>
               <span>
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {chantier.progression || 0}%
+                  {stats.progressionMoyenne || 0}%
                 </strong>
                 <span style={{ opacity: 0.6, marginLeft: '0.3rem' }}>complété</span>
               </span>
             </div>
           )}
 
-          {/* Travaux */}
-          {chantier.nombre_travaux !== undefined && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1rem' }}>📋</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {chantier.travaux_termines || 0}
-                </strong>
-                <span style={{ opacity: 0.6 }}> / {chantier.nombre_travaux} lots</span>
-              </span>
-            </div>
-          )}
-
           {/* Heures */}
-          {chantier.statut !== 'nouveau' && (
+          {chantier.statut !== 'nouveau' && stats && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1rem' }}>⏱️</span>
               <span>
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {chantier.duree_reelle_heures || 0}h
+                  {stats.heuresEffectuees || 0}h
                 </strong>
-                <span style={{ opacity: 0.6 }}> / {chantier.duree_estimee_heures}h</span>
+                <span style={{ opacity: 0.6 }}> / {stats.heuresEstimees || 0}h</span>
+                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
+                  {stats.progressionHeures || 0}%
+                </span>
               </span>
             </div>
           )}
 
           {/* Budget */}
-          {chantier.statut !== 'nouveau' && (
+          {chantier.statut !== 'nouveau' && stats && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1rem' }}>💰</span>
               <span>
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {chantier.budget_reel?.toLocaleString() || 0}€
+                  {stats.budgetReel?.toLocaleString() || 0}€
                 </strong>
-                <span style={{ opacity: 0.6 }}> / {chantier.budget_initial?.toLocaleString()}€</span>
+                <span style={{ opacity: 0.6 }}> / {stats.budgetEstime?.toLocaleString() || 0}€</span>
+                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
+                  {stats.progressionBudget || 0}%
+                </span>
+              </span>
+            </div>
+          )}
+
+          {/* Tâches avec détails */}
+          {chantier.statut !== 'nouveau' && stats && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1rem' }}>✅</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {stats.termines || 0}
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {stats.total || 0}</span>
+                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {stats.termines || 0} terminé{stats.termines > 1 ? 's' : ''}
+                </span>
+                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {stats.enCours || 0} en cours
+                </span>
+                <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {stats.bloques || 0} bloqué{stats.bloques > 1 ? 's' : ''}
+                </span>
               </span>
             </div>
           )}
@@ -480,7 +526,7 @@ export default function ChantiersPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED - SANS BOUTON */}
+      {/* BREADCRUMB FIXED - PADDING COHÉRENT */}
       <div style={{ 
         position: 'fixed',
         top: '100px',
@@ -489,13 +535,12 @@ export default function ChantiersPage() {
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.98)',
         backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        paddingBottom: '1rem'
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
       }}>
         <div style={{ 
           maxWidth: '1100px', 
           margin: '0 auto', 
-          padding: '0.75rem 1rem',
+          padding: '0.75rem 1rem 1rem 1rem',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
@@ -525,13 +570,43 @@ export default function ChantiersPage() {
         padding: '0.75rem 1rem',
         paddingTop: '100px'
       }}>
+        {/* BOUTON NOUVEAU CHANTIER - AU DESSUS DES SECTIONS */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end', 
+          marginBottom: '1.5rem',
+          paddingTop: '0.5rem'
+        }}>
+          <button 
+            className="main-btn"
+            style={{
+              fontSize: '0.85rem',
+              padding: '0.6rem 1.2rem',
+              minHeight: 'auto',
+              background: 'var(--orange)',
+              color: 'white',
+              fontWeight: '700',
+              border: 'none',
+              whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+            }}
+          >
+            ✨ Nouveau chantier
+          </button>
+        </div>
+
         {/* Section NOUVEAUX */}
         {nouveaux.length > 0 && (
           <section style={{ marginBottom: '2rem' }}>
             <SectionHeader 
               title="Nouveaux" 
               count={nouveaux.length} 
-              color="var(--blue)" 
+              color="var(--gray)" 
               icon="✨"
               isExpanded={showNouveaux}
               onToggle={() => setShowNouveaux(!showNouveaux)}
@@ -540,13 +615,13 @@ export default function ChantiersPage() {
           </section>
         )}
 
-        {/* Section EN COURS */}
+        {/* Section EN COURS - BLEU */}
         {enCours.length > 0 && (
           <section style={{ marginBottom: '2rem' }}>
             <SectionHeader 
               title="En cours" 
               count={enCours.length} 
-              color="var(--orange)" 
+              color="var(--blue)" 
               icon="🔨"
               isExpanded={showEnCours}
               onToggle={() => setShowEnCours(!showEnCours)}
