@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getEtapesByTravail } from '@/app/lib/services/travauxService';
+import { getEtapesByTravail } from '@/app/lib/services/etapesService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 
 interface Etape {
