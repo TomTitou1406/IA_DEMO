@@ -1,0 +1,819 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
+import Link from 'next/link';
+import { getTachesByEtape, demarrerTache, terminerTache, updateEtapeProgressionManuelle } from '@/app/lib/services/tachesService';
+import ConfirmModal from '@/app/components/ConfirmModal';
+
+interface Tache {
+  id: string;
+  numero: number;
+  titre: string;
+  description?: string;
+  statut: string;
+  duree_estimee_minutes?: number;
+  duree_reelle_minutes?: number;
+  ordre?: number;
+  est_critique: boolean;
+  notes?: string;
+  outils_necessaires?: string[];
+  conseils_pro?: string;
+}
+
+interface Etape {
+  id: string;
+  titre: string;
+  description?: string;
+  statut: string;
+  progression: number;
+  duree_estimee_minutes?: number;
+  duree_reelle_minutes?: number;
+}
+
+export default function TachesPage() {
+  const params = useParams();
+  const chantierId = params.chantierId as string;
+  const travailId = params.travailId as string;
+  const etapeId = params.etapeId as string;
+  
+  const [etape, setEtape] = useState<Etape | null>(null);
+  const [taches, setTaches] = useState<Tache[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showEnCours, setShowEnCours] = useState(true);
+  const [showTerminees, setShowTerminees] = useState(false);
+  const [showAFaire, setShowAFaire] = useState(true);
+  const [progression, setProgression] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
+
+  useEffect(() => {
+    loadData();
+  }, [etapeId]);
+
+  async function loadData() {
+    try {
+      const data = await getTachesByEtape(etapeId);
+      if (data) {
+        setEtape(data.etape);
+        setTaches(data.taches);
+        setProgression(data.etape.progression || 0);
+      }
+    } catch (error) {
+      console.error('Error loading taches:', error);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleProgressionChange(newValue: number) {
+    try {
+      await updateEtapeProgressionManuelle(etapeId, newValue);
+      setProgression(newValue);
+      // Recharger pour mettre à jour le statut de l'étape
+      await loadData();
+    } catch (error) {
+      console.error('Error updating progression:', error);
+    }
+  }
+
+  if (loading) {
+    return (
+      <div style={{ 
+        maxWidth: '1100px', 
+        margin: '0 auto', 
+        padding: '4rem 1rem',
+        textAlign: 'center' 
+      }}>
+        <div className="spinner"></div>
+        <p style={{ marginTop: '1rem', color: 'var(--gray)' }}>Chargement...</p>
+      </div>
+    );
+  }
+
+  if (!etape) {
+    return (
+      <div style={{ 
+        maxWidth: '1100px', 
+        margin: '0 auto', 
+        padding: '4rem 1rem',
+        textAlign: 'center' 
+      }}>
+        <h2>❌ Étape introuvable</h2>
+        <Link 
+          href={`/chantiers/${chantierId}/travaux/${travailId}/etapes`}
+          className="main-btn btn-blue" 
+          style={{ marginTop: '2rem' }}
+        >
+          ← Retour aux étapes
+        </Link>
+      </div>
+    );
+  }
+
+  // Grouper par statut
+  const terminees = taches.filter(t => t.statut === 'terminée');
+  const enCours = taches.filter(t => t.statut === 'en_cours');
+  const aFaire = taches.filter(t => t.statut === 'à_faire' || !t.statut);
+
+  // Calculer les stats
+  const totalTaches = taches.length;
+  const progressionAuto = totalTaches > 0 
+    ? Math.round((terminees.length / totalTaches) * 100)
+    : 0;
+  const dureeEstimeeMinutes = taches.reduce((sum, t) => sum + (t.duree_estimee_minutes || 0), 0);
+  const dureeReelleMinutes = taches.reduce((sum, t) => sum + (t.duree_reelle_minutes || 0), 0);
+
+  const getStatusColor = (statut: string) => {
+    switch (statut) {
+      case 'terminée': return 'var(--green)';
+      case 'en_cours': return 'var(--blue)';
+      default: return 'var(--gray)';
+    }
+  };
+
+  const TacheCard = ({ tache }: { tache: Tache }) => {
+    const statusColor = getStatusColor(tache.statut);
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    return (
+      <div style={{
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '0.75rem',
+        borderLeft: `4px solid ${statusColor}`,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        transition: 'all 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
+                     statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
+                     'rgba(107, 114, 128, 0.25)';
+        e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+      }}>
+        {/* Header cliquable */}
+        <div 
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-start',
+            marginBottom: isExpanded ? '1rem' : '0.5rem',
+            gap: '1rem',
+            cursor: 'pointer'
+          }}>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
+              <span style={{
+                background: statusColor,
+                color: 'white',
+                minWidth: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '0.9rem'
+              }}>
+                {tache.numero}
+              </span>
+              <h3 style={{ 
+                fontSize: '1.05rem', 
+                margin: 0,
+                color: 'var(--gray-light)',
+                fontWeight: '700',
+                lineHeight: '1.2',
+                flex: 1
+              }}>
+                {tache.titre}
+              </h3>
+              {tache.est_critique && (
+                <span style={{
+                  background: 'rgba(239, 68, 68, 0.15)',
+                  color: '#ef4444',
+                  padding: '0.25rem 0.6rem',
+                  borderRadius: '6px',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  whiteSpace: 'nowrap'
+                }}>
+                  🔥 Critique
+                </span>
+              )}
+              <span style={{ 
+                fontSize: '1.2rem',
+                color: 'var(--gray)',
+                transition: 'transform 0.2s',
+                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+              }}>
+                ▼
+              </span>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              gap: '1.5rem', 
+              fontSize: '0.85rem', 
+              color: 'var(--gray)',
+              marginLeft: '40px'
+            }}>
+              {tache.duree_estimee_minutes && (
+                <span>⏱️ {tache.duree_estimee_minutes} min</span>
+              )}
+              {tache.duree_reelle_minutes && (
+                <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
+                  ✓ {tache.duree_reelle_minutes} min réel
+                </span>
+              )}
+              {tache.outils_necessaires?.length > 0 && (
+                <span>🔧 {tache.outils_necessaires.length} outil{tache.outils_necessaires.length > 1 ? 's' : ''}</span>
+              )}
+            </div>
+          </div>
+
+          {/* Boutons selon statut */}
+          {tache.statut !== 'terminée' && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{ 
+                display: 'flex', 
+                gap: '0.5rem', 
+                flexShrink: 0,
+                alignItems: 'flex-start'
+              }}>
+              {tache.statut === 'à_faire' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: 'var(--green)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.color = 'var(--green)';
+                  }}
+                  onClick={async () => {
+                    try {
+                      await demarrerTache(tache.id);
+                      await loadData();
+                    } catch (error) {
+                      console.error('Error starting tache:', error);
+                    }
+                  }}
+                >
+                  ▶️ Démarrer
+                </button>
+              )}
+
+              {tache.statut === 'en_cours' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: 'var(--green)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.color = 'var(--green)';
+                  }}
+                  onClick={async () => {
+                    try {
+                      await terminerTache(tache.id);
+                      await loadData();
+                    } catch (error) {
+                      console.error('Error completing tache:', error);
+                    }
+                  }}
+                >
+                  ✓ Terminer
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Contenu détaillé - expandable */}
+        {isExpanded && (
+          <div style={{
+            paddingTop: '1rem',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            marginLeft: '40px'
+          }}>
+            {tache.description && (
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--gray-light)'
+                }}>
+                  📝 Description
+                </h4>
+                <p style={{ 
+                  color: 'var(--gray)', 
+                  lineHeight: '1.6', 
+                  margin: 0,
+                  fontSize: '0.9rem'
+                }}>
+                  {tache.description}
+                </p>
+              </div>
+            )}
+
+            {tache.outils_necessaires?.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--gray-light)'
+                }}>
+                  🔧 Outils nécessaires
+                </h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {tache.outils_necessaires.map((outil, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        color: 'var(--gray-light)',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                      }}
+                    >
+                      {outil}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {tache.conseils_pro && (
+              <div style={{
+                background: 'rgba(251, 191, 36, 0.1)',
+                border: '1px solid rgba(251, 191, 36, 0.3)',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem',
+                marginBottom: '1rem'
+              }}>
+                <h4 style={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem', 
+                  color: '#fbbf24',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  💡 Conseil pro
+                </h4>
+                <p style={{ 
+                  color: 'var(--gray-light)', 
+                  fontSize: '0.9rem', 
+                  margin: 0, 
+                  lineHeight: '1.5' 
+                }}>
+                  {tache.conseils_pro}
+                </p>
+              </div>
+            )}
+
+            {tache.notes && (
+              <div style={{
+                background: 'rgba(255,255,255,0.05)',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem'
+              }}>
+                <h4 style={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--gray-light)'
+                }}>
+                  📌 Notes
+                </h4>
+                <p style={{ 
+                  color: 'var(--gray)', 
+                  fontSize: '0.9rem', 
+                  margin: 0, 
+                  lineHeight: '1.5',
+                  fontStyle: 'italic'
+                }}>
+                  {tache.notes}
+                </p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const SectionHeader = ({ 
+    title, 
+    count, 
+    color, 
+    icon, 
+    isExpanded, 
+    onToggle 
+  }: { 
+    title: string; 
+    count: number; 
+    color: string; 
+    icon: string;
+    isExpanded: boolean;
+    onToggle: () => void;
+  }) => (
+    <div style={{ marginBottom: '1.5rem' }}>
+      <div 
+        onClick={onToggle}
+        style={{ 
+          fontSize: '1.15rem', 
+          marginBottom: '0.75rem',
+          color: color,
+          fontWeight: '700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          cursor: 'pointer',
+          padding: '0.5rem 0',
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.8';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+      >
+        <span style={{ fontSize: '0.9rem' }}>
+          {isExpanded ? '▽' : '▶'}
+        </span>
+        <span>{icon} {title}</span>
+        <span style={{ 
+          background: `${color}88`,
+          color: color,
+          border: `2px solid ${color}`,
+          minWidth: '28px',
+          height: '28px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          fontSize: '0.9rem',
+          fontWeight: '700',
+          padding: '0 0.35rem'
+        }}>
+          {count}
+        </span>
+      </div>
+      <div style={{
+        height: '2px',
+        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        marginBottom: '0.75rem'
+      }}></div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* BREADCRUMB FIXED */}
+      <div style={{ 
+        position: 'fixed',
+        top: '100px',
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: 'rgba(0, 0, 0, 0.98)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        <div style={{ 
+          maxWidth: '1100px', 
+          margin: '0 auto', 
+          padding: '1rem',
+          display: 'flex', 
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '1rem'
+        }}>
+          <Link href="/chantiers" style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            ← Chantiers
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <Link href={`/chantiers/${chantierId}/travaux`} style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            🏗️ Chantier
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <Link href={`/chantiers/${chantierId}/travaux`} style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            Lots
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <Link href={`/chantiers/${chantierId}/travaux/${travailId}/etapes`} style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            Étapes
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
+            Tâches ({taches.length})
+          </span>
+        </div>
+      </div>
+
+      {/* CONTENU PRINCIPAL */}
+      <div style={{ 
+        maxWidth: '1100px', 
+        margin: '0 auto', 
+        padding: '0.75rem 1rem',
+        paddingTop: '85px'
+      }}>
+        {/* ÉTAT DES LIEUX DE L'ÉTAPE */}
+        <div style={{
+          marginBottom: '2rem',
+          paddingBottom: '1.5rem',
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
+        }}>
+          <h1 style={{ 
+            fontSize: '1.5rem', 
+            marginBottom: '0.75rem',
+            color: 'var(--gray-light)',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            🎯 {etape.titre}
+          </h1>
+          {etape.description && (
+            <p style={{ 
+              fontSize: '0.95rem', 
+              color: 'var(--gray)', 
+              marginBottom: '1rem',
+              lineHeight: '1.4'
+            }}>
+              {etape.description}
+            </p>
+          )}
+
+          {/* Barre progression 16px */}
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{
+              width: '100%',
+              height: '16px',
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${progression}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+          </div>
+
+          {/* Stats inline */}
+          <div style={{ 
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '2rem',
+            fontSize: '0.95rem',
+            color: 'var(--gray)',
+            marginBottom: '1rem'
+          }}>
+            <span style={{ 
+              color: 'var(--gray-light)', 
+              fontSize: '1.1rem', 
+              fontWeight: '700' 
+            }}>
+              {progression}% complété
+            </span>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {dureeReelleMinutes}min
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {dureeEstimeeMinutes}min</span>
+              </span>
+            </div>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>✅</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {terminees.length}
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {totalTaches}</span>
+                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
+                </span>
+                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {enCours.length} en cours
+                </span>
+              </span>
+            </div>
+          </div>
+
+          {/* Slider progression manuelle */}
+          <div style={{ 
+            background: 'rgba(255,255,255,0.05)',
+            borderRadius: '12px',
+            padding: '1rem',
+            border: '1px solid rgba(255,255,255,0.08)'
+          }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between', 
+              alignItems: 'center',
+              marginBottom: '0.75rem'
+            }}>
+              <span style={{ 
+                fontSize: '0.9rem', 
+                color: 'var(--gray-light)',
+                fontWeight: '600'
+              }}>
+                📊 Ajuster la progression manuellement
+              </span>
+              <span style={{ 
+                fontSize: '1.1rem', 
+                color: 'var(--blue)',
+                fontWeight: '700'
+              }}>
+                {progression}%
+              </span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={progression}
+              onChange={(e) => setProgression(parseInt(e.target.value))}
+              onMouseDown={() => setIsDragging(true)}
+              onMouseUp={() => {
+                setIsDragging(false);
+                handleProgressionChange(progression);
+              }}
+              onTouchStart={() => setIsDragging(true)}
+              onTouchEnd={() => {
+                setIsDragging(false);
+                handleProgressionChange(progression);
+              }}
+              style={{
+                width: '100%',
+                height: '8px',
+                borderRadius: '4px',
+                background: `linear-gradient(to right, 
+                  var(--blue) 0%, 
+                  var(--green) ${progression}%, 
+                  rgba(255,255,255,0.1) ${progression}%, 
+                  rgba(255,255,255,0.1) 100%)`,
+                outline: 'none',
+                cursor: 'pointer',
+                WebkitAppearance: 'none',
+                appearance: 'none'
+              }}
+            />
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              marginTop: '0.5rem',
+              fontSize: '0.8rem',
+              color: 'var(--gray)'
+            }}>
+              <span>0%</span>
+              <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
+                Auto: {progressionAuto}%
+              </span>
+              <span>100%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Section EN COURS */}
+        {enCours.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="En cours" 
+              count={enCours.length} 
+              color="var(--blue)" 
+              icon="⚡"
+              isExpanded={showEnCours}
+              onToggle={() => setShowEnCours(!showEnCours)}
+            />
+            {showEnCours && enCours.map(tache => <TacheCard key={tache.id} tache={tache} />)}
+          </section>
+        )}
+
+        {/* Section À FAIRE */}
+        {aFaire.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="À faire" 
+              count={aFaire.length} 
+              color="var(--gray)" 
+              icon="📋"
+              isExpanded={showAFaire}
+              onToggle={() => setShowAFaire(!showAFaire)}
+            />
+            {showAFaire && aFaire.map(tache => <TacheCard key={tache.id} tache={tache} />)}
+          </section>
+        )}
+
+        {/* Section TERMINÉES */}
+        {terminees.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Terminées" 
+              count={terminees.length} 
+              color="var(--green)" 
+              icon="✅"
+              isExpanded={showTerminees}
+              onToggle={() => setShowTerminees(!showTerminees)}
+            />
+            {showTerminees && terminees.map(tache => <TacheCard key={tache.id} tache={tache} />)}
+          </section>
+        )}
+
+        {/* Modal de confirmation */}
+        <ConfirmModal
+          isOpen={modalConfig.isOpen}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          confirmText="Confirmer"
+          cancelText="Annuler"
+          onConfirm={modalConfig.onConfirm}
+          onCancel={() => setModalConfig({ ...modalConfig, isOpen: false })}
+          type="warning"
+        />
+      </div>
+    </>
+  );
+}
