@@ -43,6 +43,8 @@ export default function TravauxPage() {
   const [stats, setStats] = useState<any>(null);
   const [travaux, setTravaux] = useState<Travail[]>([]);
   const [loading, setLoading] = useState(true);
+  const [showEnCours, setShowEnCours] = useState(true);
+  const [showBloques, setShowBloques] = useState(true);
   const [showTermines, setShowTermines] = useState(false);
   const [showAVenir, setShowAVenir] = useState(false);
   const [editingTravailId, setEditingTravailId] = useState<string | null>(null);
@@ -144,57 +146,233 @@ export default function TravauxPage() {
         e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
         e.currentTarget.style.transform = 'translateY(0)';
       }}>
-        {/* Titre + Badge progression */}
-        <div style={{ marginBottom: '0.75rem' }}>
-          <h3 style={{ 
-            fontSize: '1.05rem', 
-            margin: 0, 
-            marginBottom: '0.35rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: 'var(--gray-light)',
-            fontWeight: '700',
-            lineHeight: '1.2'
-          }}>
-            <span>{getStatusIcon(travail.statut)} {travail.titre}</span>
-            {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
-              <span style={{
-                background: getStatusColor(travail.statut) + '22',
-                color: getStatusColor(travail.statut),
-                padding: '0.2rem 0.5rem',
-                borderRadius: '6px',
-                fontSize: '0.8rem',
-                fontWeight: '600'
+        {/* Header : Titre + Boutons à droite */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between', 
+          alignItems: 'flex-start',
+          marginBottom: '0.75rem',
+          gap: '1rem'
+        }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{ 
+              fontSize: '1.05rem', 
+              margin: 0, 
+              marginBottom: '0.35rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'var(--gray-light)',
+              fontWeight: '700',
+              lineHeight: '1.2'
+            }}>
+              <span>{getStatusIcon(travail.statut)} {travail.titre}</span>
+              {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
+                <span style={{
+                  background: getStatusColor(travail.statut) + '22',
+                  color: getStatusColor(travail.statut),
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '6px',
+                  fontSize: '0.8rem',
+                  fontWeight: '600'
+                }}>
+                  {travail.progression}%
+                </span>
+              )}
+            </h3>
+            {travail.description && (
+              <p style={{ 
+                fontSize: '0.85rem', 
+                color: 'var(--gray)', 
+                margin: 0,
+                lineHeight: '1.4'
               }}>
-                {travail.progression}%
-              </span>
+                {travail.description}
+              </p>
             )}
-          </h3>
-          {travail.description && (
-            <p style={{ 
-              fontSize: '0.85rem', 
-              color: 'var(--gray)', 
-              margin: 0,
-              lineHeight: '1.4'
-            }}>
-              {travail.description}
-            </p>
+            {travail.blocage_raison && (
+              <p style={{ 
+                fontSize: '0.85rem', 
+                color: 'var(--orange)', 
+                margin: 0,
+                marginTop: '0.5rem',
+                fontStyle: 'italic',
+                padding: '0.5rem',
+                background: 'rgba(255, 107, 53, 0.1)',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 107, 53, 0.2)'
+              }}>
+                💬 {travail.blocage_raison}
+              </p>
+            )}
+          </div>
+
+          {/* BOUTONS EN HAUT À DROITE */}
+          {travail.statut !== 'terminé' && travail.statut !== 'annulé' && editingTravailId !== travail.id && (
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              {travail.statut === 'en_cours' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: 'var(--green)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.color = 'var(--green)';
+                  }}
+                  onClick={() => {
+                    setTempProgression(travail.progression);
+                    setEditingTravailId(travail.id);
+                  }}
+                >
+                  📊 Ajuster
+                </button>
+              )}
+
+              {travail.statut === 'bloqué' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(255, 107, 53, 0.15)',
+                    color: 'var(--orange)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(255, 107, 53, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--orange)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 107, 53, 0.15)';
+                    e.currentTarget.style.color = 'var(--orange)';
+                  }}
+                >
+                  🔓 Débloquer
+                </button>
+              )}
+
+              {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
+                <Link 
+                  href={`/chantiers/travaux/${travail.id}`}
+                  style={{
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.3rem',
+                    background: 'rgba(255,255,255,0.08)',
+                    color: 'var(--gray-light)',
+                    padding: '0.45rem 0.75rem',
+                    borderRadius: '12px',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
+                    textDecoration: 'none',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    transition: 'all 0.2s',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                  }}
+                >
+                  🎯 {travail.etapes?.etapes?.length || 0} étapes
+                </Link>
+              )}
+
+              {travail.statut !== 'à_venir' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(239, 68, 68, 0.15)',
+                    color: '#ef4444',
+                    fontWeight: '600',
+                    border: '1px solid rgba(239, 68, 68, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ef4444';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+                    e.currentTarget.style.color = '#ef4444';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Annuler cette tâche ?',
+                      message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
+                      onConfirm: async () => {
+                        await annulerTravail(travail.id);
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                >
+                  🗑️ Annuler
+                </button>
+              )}
+            </div>
           )}
-          {travail.blocage_raison && (
-            <p style={{ 
-              fontSize: '0.85rem', 
-              color: 'var(--orange)', 
-              margin: 0,
-              marginTop: '0.5rem',
-              fontStyle: 'italic',
-              padding: '0.5rem',
-              background: 'rgba(255, 107, 53, 0.1)',
-              borderRadius: '6px',
-              border: '1px solid rgba(255, 107, 53, 0.2)'
-            }}>
-              💬 {travail.blocage_raison}
-            </p>
+
+          {/* Bouton Réactiver pour annulées */}
+          {travail.statut === 'annulé' && (
+            <button 
+              className="main-btn"
+              style={{
+                fontSize: '0.75rem',
+                padding: '0.45rem 0.75rem',
+                minHeight: 'auto',
+                background: 'rgba(37, 99, 235, 0.15)',
+                color: 'var(--blue)',
+                fontWeight: '600',
+                border: '1px solid rgba(37, 99, 235, 0.3)',
+                whiteSpace: 'nowrap',
+                flexShrink: 0
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--blue)';
+                e.currentTarget.style.color = 'white';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
+                e.currentTarget.style.color = 'var(--blue)';
+              }}
+              onClick={() => {
+                setModalConfig({
+                  isOpen: true,
+                  title: 'Réactiver cette tâche ?',
+                  message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
+                  onConfirm: async () => {
+                    await reactiverTravail(travail.id);
+                    setModalConfig({ ...modalConfig, isOpen: false });
+                    window.location.reload();
+                  }
+                });
+              }}
+            >
+              🔄 Réactiver
+            </button>
           )}
         </div>
 
@@ -296,7 +474,7 @@ export default function TravauxPage() {
               </div>
             ) : (
               // MODE NORMAL : Barre de progression
-              <div style={{ marginBottom: '1rem' }}>
+              <div style={{ marginBottom: '0.5rem' }}>
                 <div style={{
                   width: '100%',
                   height: '6px',
@@ -327,7 +505,7 @@ export default function TravauxPage() {
 
         {/* Progress bar pour bloqués */}
         {travail.statut === 'bloqué' && (
-          <div style={{ marginBottom: '1rem' }}>
+          <div style={{ marginBottom: '0.5rem' }}>
             <div style={{
               width: '100%',
               height: '6px',
@@ -353,173 +531,6 @@ export default function TravauxPage() {
             </p>
           </div>
         )}
-
-        {/* Actions (boutons EN BAS avec texte) */}
-        {travail.statut !== 'terminé' && travail.statut !== 'annulé' && editingTravailId !== travail.id && (
-          <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-            {travail.statut === 'en_cours' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.8rem',
-                  padding: '0.5rem 0.85rem',
-                  minHeight: 'auto',
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  color: 'var(--green)',
-                  fontWeight: '600',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--green)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                  e.currentTarget.style.color = 'var(--green)';
-                }}
-                onClick={() => {
-                  setTempProgression(travail.progression);
-                  setEditingTravailId(travail.id);
-                }}
-              >
-                📊 Ajuster
-              </button>
-            )}
-
-            {travail.statut === 'bloqué' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.8rem',
-                  padding: '0.5rem 0.85rem',
-                  minHeight: 'auto',
-                  background: 'rgba(255, 107, 53, 0.15)',
-                  color: 'var(--orange)',
-                  fontWeight: '600',
-                  border: '1px solid rgba(255, 107, 53, 0.3)',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--orange)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255, 107, 53, 0.15)';
-                  e.currentTarget.style.color = 'var(--orange)';
-                }}
-              >
-                🔓 Débloquer
-              </button>
-            )}
-
-            {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
-              <Link 
-                href={`/chantiers/travaux/${travail.id}`}
-                style={{
-                  display: 'inline-flex',
-                  alignItems: 'center',
-                  gap: '0.35rem',
-                  background: 'rgba(255,255,255,0.08)',
-                  color: 'var(--gray-light)',
-                  padding: '0.5rem 0.85rem',
-                  borderRadius: '12px',
-                  fontSize: '0.8rem',
-                  fontWeight: '600',
-                  textDecoration: 'none',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  transition: 'all 0.2s',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                }}
-              >
-                🎯 {travail.etapes?.etapes?.length || 0} étapes
-              </Link>
-            )}
-
-            {travail.statut !== 'à_venir' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.8rem',
-                  padding: '0.5rem 0.85rem',
-                  minHeight: 'auto',
-                  background: 'rgba(239, 68, 68, 0.15)',
-                  color: '#ef4444',
-                  fontWeight: '600',
-                  border: '1px solid rgba(239, 68, 68, 0.3)',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#ef4444';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                  e.currentTarget.style.color = '#ef4444';
-                }}
-                onClick={() => {
-                  setModalConfig({
-                    isOpen: true,
-                    title: 'Annuler cette tâche ?',
-                    message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
-                    onConfirm: async () => {
-                      await annulerTravail(travail.id);
-                      setModalConfig({ ...modalConfig, isOpen: false });
-                      window.location.reload();
-                    }
-                  });
-                }}
-              >
-                🗑️ Annuler
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Bouton Réactiver pour annulées */}
-        {travail.statut === 'annulé' && (
-          <button 
-            className="main-btn"
-            style={{
-              fontSize: '0.8rem',
-              padding: '0.5rem 1rem',
-              minHeight: 'auto',
-              background: 'rgba(37, 99, 235, 0.15)',
-              color: 'var(--blue)',
-              fontWeight: '600',
-              border: '1px solid rgba(37, 99, 235, 0.3)',
-              whiteSpace: 'nowrap'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--blue)';
-              e.currentTarget.style.color = 'white';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-              e.currentTarget.style.color = 'var(--blue)';
-            }}
-            onClick={() => {
-              setModalConfig({
-                isOpen: true,
-                title: 'Réactiver cette tâche ?',
-                message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
-                onConfirm: async () => {
-                  await reactiverTravail(travail.id);
-                  setModalConfig({ ...modalConfig, isOpen: false });
-                  window.location.reload();
-                }
-              });
-            }}
-          >
-            🔄 Réactiver
-          </button>
-        )}
       </div>
     );
   };
@@ -529,55 +540,57 @@ export default function TravauxPage() {
     count, 
     color, 
     icon, 
-    isCollapsible = false, 
-    isExpanded = false, 
+    isExpanded, 
     onToggle 
   }: { 
     title: string; 
     count: number; 
     color: string; 
     icon: string;
-    isCollapsible?: boolean;
-    isExpanded?: boolean;
-    onToggle?: () => void;
+    isExpanded: boolean;
+    onToggle: () => void;
   }) => (
-    <div 
-      onClick={isCollapsible ? onToggle : undefined}
-      style={{ 
-        fontSize: '1.05rem', 
-        marginBottom: '0.75rem',
-        color: 'var(--gray-light)',
-        fontWeight: '600',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        cursor: isCollapsible ? 'pointer' : 'default',
-        padding: '0.35rem 0'
-      }}
-    >
-      {isCollapsible && (
-        <span style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
+    <div style={{ marginBottom: '1.5rem' }}>
+      <div 
+        onClick={onToggle}
+        style={{ 
+          fontSize: '1.15rem', 
+          marginBottom: '0.75rem',
+          color: color,
+          fontWeight: '700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          cursor: 'pointer',
+          padding: '0.5rem 0',
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.8';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+      >
+        <span style={{ fontSize: '0.9rem' }}>
           {isExpanded ? '▽' : '▶'}
         </span>
-      )}
-      <span style={{ 
-        background: `${color}33`, 
-        padding: '0.2rem 0.5rem', 
-        borderRadius: '6px',
-        fontSize: '0.9rem',
-        color: color
-      }}>
-        {icon} {title}
-      </span>
-      <span style={{ 
-        background: 'rgba(255,255,255,0.08)', 
-        padding: '0.2rem 0.5rem', 
-        borderRadius: '6px',
-        fontSize: '0.85rem',
-        fontWeight: '600'
-      }}>
-        {count}
-      </span>
+        <span>{icon} {title}</span>
+        <span style={{ 
+          background: `${color}22`, 
+          padding: '0.25rem 0.6rem', 
+          borderRadius: '8px',
+          fontSize: '0.9rem',
+          fontWeight: '700'
+        }}>
+          {count}
+        </span>
+      </div>
+      <div style={{
+        height: '2px',
+        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        marginBottom: '0.75rem'
+      }}></div>
     </div>
   );
 
@@ -612,7 +625,7 @@ export default function TravauxPage() {
         </span>
       </div>
 
-      {/* État d'avancement du chantier */}
+      {/* État d'avancement du chantier - TOUT EN LIGNE */}
       <div style={{
         marginBottom: '1.5rem',
         paddingBottom: '1rem',
@@ -634,24 +647,27 @@ export default function TravauxPage() {
               transition: 'width 0.5s ease'
             }}></div>
           </div>
-          <p style={{ 
-            marginTop: '0.4rem', 
+        </div>
+
+        {/* Stats TOUT EN LIGNE (desktop) */}
+        <div style={{ 
+          display: 'flex',
+          flexWrap: 'wrap',
+          alignItems: 'center',
+          gap: '1.5rem',
+          fontSize: '0.85rem',
+          color: 'var(--gray)'
+        }}>
+          {/* % complété */}
+          <span style={{ 
             color: 'var(--gray-light)', 
             fontSize: '0.95rem', 
             fontWeight: '600' 
           }}>
             {stats?.progressionMoyenne || 0}% complété
-          </p>
-        </div>
+          </span>
 
-        {/* Stats inline ultra compact */}
-        <div style={{ 
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '1.5rem',
-          fontSize: '0.85rem',
-          color: 'var(--gray)'
-        }}>
+          {/* Heures */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span>⏱️</span>
             <span>
@@ -665,6 +681,7 @@ export default function TravauxPage() {
             </span>
           </div>
 
+          {/* Budget */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span>💰</span>
             <span>
@@ -678,6 +695,7 @@ export default function TravauxPage() {
             </span>
           </div>
 
+          {/* Tâches */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
             <span>✅</span>
             <span>
@@ -693,19 +711,33 @@ export default function TravauxPage() {
         </div>
       </div>
 
-      {/* Section EN COURS */}
+      {/* Section EN COURS (collapsible) */}
       {enCours.length > 0 && (
         <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader title="En cours" count={enCours.length} color="var(--blue)" icon="⚡" />
-          {enCours.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          <SectionHeader 
+            title="En cours" 
+            count={enCours.length} 
+            color="var(--blue)" 
+            icon="⚡"
+            isExpanded={showEnCours}
+            onToggle={() => setShowEnCours(!showEnCours)}
+          />
+          {showEnCours && enCours.map(travail => <TravailCard key={travail.id} travail={travail} />)}
         </section>
       )}
 
-      {/* Section BLOQUÉS */}
+      {/* Section BLOQUÉS (collapsible) */}
       {bloques.length > 0 && (
         <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader title="Bloqués" count={bloques.length} color="var(--orange)" icon="⚠️" />
-          {bloques.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          <SectionHeader 
+            title="Bloqués" 
+            count={bloques.length} 
+            color="var(--orange)" 
+            icon="⚠️"
+            isExpanded={showBloques}
+            onToggle={() => setShowBloques(!showBloques)}
+          />
+          {showBloques && bloques.map(travail => <TravailCard key={travail.id} travail={travail} />)}
         </section>
       )}
 
@@ -717,7 +749,6 @@ export default function TravauxPage() {
             count={aVenir.length} 
             color="var(--gray)" 
             icon="📅"
-            isCollapsible
             isExpanded={showAVenir}
             onToggle={() => setShowAVenir(!showAVenir)}
           />
@@ -733,7 +764,6 @@ export default function TravauxPage() {
             count={termines.length} 
             color="var(--green)" 
             icon="✅"
-            isCollapsible
             isExpanded={showTermines}
             onToggle={() => setShowTermines(!showTermines)}
           />
@@ -749,7 +779,6 @@ export default function TravauxPage() {
             count={annulees.length} 
             color="var(--gray)" 
             icon="🗑️"
-            isCollapsible
             isExpanded={showAnnulees}
             onToggle={() => setShowAnnulees(!showAnnulees)}
           />
