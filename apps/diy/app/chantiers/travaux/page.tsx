@@ -772,16 +772,16 @@ export default function TravauxPage() {
 
             {/* Tâches */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>✅</span>
+              <span style={{ fontSize: '1.1rem' }}>✅ Lots :</span>
               <span>
                 <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
+                   {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
                 </span>
                 <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats?.enCours || 0} En cours
+                  | {stats?.enCours || 0} En cours
                 </span>
                 <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats?.bloques || 0} Bloqué{stats?.bloques > 1 ? 's' : ''}
+                  | {stats?.bloques || 0} Bloqué{stats?.bloques > 1 ? 's' : ''}
                 </span>
               </span>
             </div>
