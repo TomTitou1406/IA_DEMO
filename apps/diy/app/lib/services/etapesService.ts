@@ -151,6 +151,52 @@ export async function debloquerEtape(etapeId: string) {
 }
 
 /**
+ * Annule une étape
+ */
+export async function annulerEtape(etapeId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('etapes')
+      .update({
+        statut: 'annulé',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', etapeId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error canceling etape:', error);
+    throw error;
+  }
+}
+
+/**
+ * Réactive une étape annulée (annulé → à_venir)
+ */
+export async function reactiverEtape(etapeId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('etapes')
+      .update({
+        statut: 'à_venir',
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', etapeId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error reactivating etape:', error);
+    throw error;
+  }
+}
+
+/**
  * Met à jour la progression d'une étape
  */
 export async function updateEtapeProgression(etapeId: string, progression: number) {
