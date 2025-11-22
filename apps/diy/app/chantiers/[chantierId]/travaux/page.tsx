@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { getChantierDemo, getChantierStats } from '@/app/lib/services/chantierService';
 import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '@/app/lib/services/travauxService';
 import ConfirmModal from '@/app/components/ConfirmModal';
+import { useParams } from 'next/navigation';
 
 interface Chantier {
   id: string;
@@ -39,6 +40,8 @@ interface Travail {
 }
 
 export default function TravauxPage() {
+  const params = useParams();
+  const chantierId = params.chantierId as string;
   const [chantier, setChantier] = useState<Chantier | null>(null);
   const [stats, setStats] = useState<any>(null);
   const [travaux, setTravaux] = useState<Travail[]>([]);
@@ -343,7 +346,7 @@ export default function TravauxPage() {
               {/* Bouton X ÉTAPES (pour tous sauf annulés) */}
               {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
                 <Link 
-                  href={`/chantiers/travaux/${travail.id}`}
+                  href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
