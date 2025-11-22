@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getChantierDemo, getChantierStats } from '../../lib/services/chantierService';
-import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '../../lib/services/travauxService';
-import ConfirmModal from '../../components/ConfirmModal';
+import { getChantierDemo, getChantierStats } from '../../../lib/services/chantierService';
+import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '../../../lib/services/travauxService';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 interface Chantier {
   id: string;
