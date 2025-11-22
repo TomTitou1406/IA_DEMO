@@ -653,7 +653,7 @@ export default function TravauxPage() {
       {/* BREADCRUMB FIXED - SANS FOND */}
       <div style={{ 
         position: 'fixed',
-        top: '100px',  // Ajuster selon la hauteur de ton header
+        top: '110px',  // Ajuster selon la hauteur de ton header
         left: 0,
         right: 0,
         zIndex: 100,
