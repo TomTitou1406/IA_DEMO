@@ -365,6 +365,26 @@ export default function ChantiersPage() {
           </div>
         </div>
 
+        {/* BARRE DE PROGRESSION (si en cours ou terminé) */}
+        {chantier.statut !== 'nouveau' && stats && (
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{
+              width: '100%',
+              height: '16px',
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${stats.progressionMoyenne || 0}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+          </div>
+        )}
+
         {/* Stats inline - COMPLÈTES COMME PAGE TRAVAUX */}
         <div style={{ 
           display: 'flex',
@@ -569,12 +589,12 @@ export default function ChantiersPage() {
         padding: '0.75rem 1rem',
         paddingTop: '100px'
       }}>
+    
         {/* BOUTON NOUVEAU CHANTIER - AU DESSUS DES SECTIONS */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'flex-end', 
-          marginBottom: '1.5rem',
-          paddingTop: '0.5rem'
+          marginBottom: '2rem',
         }}>
           <button 
             className="main-btn"
