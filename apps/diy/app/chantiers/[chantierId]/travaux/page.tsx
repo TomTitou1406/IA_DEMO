@@ -286,9 +286,9 @@ export default function TravauxPage() {
                     padding: '0.45rem 0.75rem',
                     minHeight: 'auto',
                     background: 'var(--orange)',
-                    color: 'white'
+                    color: 'white',
                     fontWeight: '600',
-                    border: '1px solid rgba(255, 107, 53, 0.3)',
+                    border: 'none',
                     whiteSpace: 'nowrap'
                   }}
                 >
