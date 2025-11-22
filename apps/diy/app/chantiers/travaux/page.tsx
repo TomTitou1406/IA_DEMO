@@ -2,9 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getChantierDemo } from '../../lib/services/chantierService';
+import { getChantierDemo, getChantierStats } from '../../lib/services/chantierService';
 import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail } from '../../lib/services/travauxService';
 import ConfirmModal from '../../components/ConfirmModal';
+
+interface Chantier {
+  id: string;
+  titre: string;
+  progression: number;
+  duree_estimee_heures: number;
+  budget_initial: number;
+  statut: string;
+}
 
 interface Travail {
   id: string;
@@ -29,13 +38,9 @@ interface Travail {
   };
 }
 
-interface Chantier {
-  id: string;
-  titre: string;
-}
-
 export default function TravauxPage() {
   const [chantier, setChantier] = useState<Chantier | null>(null);
+  const [stats, setStats] = useState<any>(null);
   const [travaux, setTravaux] = useState<Travail[]>([]);
   const [loading, setLoading] = useState(true);
   const [showTermines, setShowTermines] = useState(false);
@@ -61,7 +66,11 @@ export default function TravauxPage() {
         const chantierData = await getChantierDemo();
         if (chantierData) {
           setChantier(chantierData);
-          const allTravaux = await getTravauxByChantier(chantierData.id);
+          const [statsData, allTravaux] = await Promise.all([
+            getChantierStats(chantierData.id),
+            getTravauxByChantier(chantierData.id)
+          ]);
+          setStats(statsData);
           setTravaux(allTravaux);
         }
       } catch (error) {
@@ -138,7 +147,7 @@ export default function TravauxPage() {
         {/* Titre + Badge progression */}
         <div style={{ marginBottom: '0.75rem' }}>
           <h3 style={{ 
-            fontSize: '1.1rem', 
+            fontSize: '1.05rem', 
             margin: 0, 
             marginBottom: '0.35rem',
             display: 'flex',
@@ -221,7 +230,7 @@ export default function TravauxPage() {
                       border: '1px solid rgba(255,255,255,0.2)',
                       borderRadius: '6px',
                       padding: '0.3rem 0.6rem',
-                      fontSize: '0.75rem',
+                      fontSize: '0.7rem',
                       cursor: 'pointer',
                       fontWeight: '600',
                       color: 'var(--gray-light)',
@@ -238,9 +247,9 @@ export default function TravauxPage() {
                   </button>
                   <span style={{ 
                     fontWeight: '700', 
-                    minWidth: '50px', 
+                    minWidth: '45px', 
                     textAlign: 'right',
-                    fontSize: '1rem',
+                    fontSize: '0.95rem',
                     color: 'var(--blue)'
                   }}>
                     {tempProgression}%
@@ -591,7 +600,7 @@ export default function TravauxPage() {
         onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
         onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
         >
-          ← Dashboard
+          ← Chantiers
         </Link>
         <span style={{ color: 'var(--gray)' }}>/</span>
         <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
@@ -601,6 +610,87 @@ export default function TravauxPage() {
         <span style={{ color: 'var(--gray-light)' }}>
           Lots ({travaux.length})
         </span>
+      </div>
+
+      {/* État d'avancement du chantier */}
+      <div style={{
+        marginBottom: '1.5rem',
+        paddingBottom: '1rem',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        {/* Progress bar */}
+        <div style={{ marginBottom: '0.75rem' }}>
+          <div style={{
+            width: '100%',
+            height: '6px',
+            background: 'rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${stats?.progressionMoyenne || 0}%`,
+              height: '100%',
+              background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+              transition: 'width 0.5s ease'
+            }}></div>
+          </div>
+          <p style={{ 
+            marginTop: '0.4rem', 
+            color: 'var(--gray-light)', 
+            fontSize: '0.95rem', 
+            fontWeight: '600' 
+          }}>
+            {stats?.progressionMoyenne || 0}% complété
+          </p>
+        </div>
+
+        {/* Stats inline ultra compact */}
+        <div style={{ 
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '1.5rem',
+          fontSize: '0.85rem',
+          color: 'var(--gray)'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>⏱️</span>
+            <span>
+              <strong style={{ color: 'var(--gray-light)' }}>
+                {stats?.heuresEffectuees || 0}h
+              </strong>
+              <span style={{ opacity: 0.5 }}> / {stats?.heuresEstimees || 0}h</span>
+              <span style={{ color: 'var(--blue)', marginLeft: '0.4rem', fontWeight: '600' }}>
+                {stats?.progressionHeures || 0}%
+              </span>
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>💰</span>
+            <span>
+              <strong style={{ color: 'var(--gray-light)' }}>
+                {stats?.budgetReel?.toLocaleString() || 0}€
+              </strong>
+              <span style={{ opacity: 0.5 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
+              <span style={{ color: 'var(--green)', marginLeft: '0.4rem', fontWeight: '600' }}>
+                {stats?.progressionBudget || 0}%
+              </span>
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <span>✅</span>
+            <span>
+              <strong style={{ color: 'var(--gray-light)' }}>
+                {stats?.termines || 0}
+              </strong>
+              <span style={{ opacity: 0.5 }}> / {stats?.total || 0}</span>
+              <span style={{ color: 'var(--orange)', marginLeft: '0.5rem', fontWeight: '600' }}>
+                • {stats?.enCours || 0} en cours
+              </span>
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Section EN COURS */}
