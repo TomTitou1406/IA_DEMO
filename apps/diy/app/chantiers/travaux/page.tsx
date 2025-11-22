@@ -626,7 +626,8 @@ export default function TravauxPage() {
         <span style={{ 
           // background: color,
           // color: '#000',
-          background: `${color}33`,  // 33 = 20% opacité
+          // background: `${color}33`,  // 33 = 20% opacité
+          background: 'white',
           color: color,              // Texte de la couleur du statut
           border: `2px solid ${color}`,
           minWidth: '28px',
@@ -692,7 +693,7 @@ export default function TravauxPage() {
         <div style={{ marginBottom: '1rem' }}>
           <div style={{
             width: '100%',
-            height: '8px',
+            height: '16px',
             background: 'rgba(255,255,255,0.08)',
             borderRadius: '10px',
             overflow: 'hidden'
