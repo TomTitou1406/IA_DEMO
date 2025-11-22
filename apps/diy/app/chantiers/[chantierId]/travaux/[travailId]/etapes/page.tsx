@@ -871,6 +871,21 @@ export default function TravailDetailPage() {
           </section>
         )}
 
+        {/* Section ANNULÉES */}
+        {annulees.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Annulées" 
+              count={annulees.length} 
+              color="var(--gray)" 
+              icon="🗑️"
+              isExpanded={showAnnulees}
+              onToggle={() => setShowAnnulees(!showAnnulees)}
+            />
+            {showAnnulees && annulees.map(etape => <EtapeCard key={etape.id} etape={etape} />)}
+          </section>
+        )}
+
         {/* Section TERMINÉES */}
         {terminees.length > 0 && (
           <section style={{ marginBottom: '1.5rem' }}>
