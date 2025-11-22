@@ -4,15 +4,22 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getEtapesByTravail } from '../../../lib/services/travauxService';
+import ConfirmModal from '../../../components/ConfirmModal';
 
 interface Etape {
+  id: string;
   numero: number;
   titre: string;
   description: string;
-  duree_minutes: number;
-  outils: string[];
+  statut: string;
+  progression: number;
+  duree_estimee_minutes: number;
+  duree_reelle_minutes?: number;
   difficulte: string;
-  conseils?: string;
+  outils_necessaires: string[];
+  materiaux_necessaires?: any[];
+  conseils_pro?: string;
+  blocage_raison?: string;
 }
 
 interface Travail {
@@ -21,6 +28,10 @@ interface Travail {
   description: string;
   statut: string;
   progression: number;
+  duree_estimee_heures: number;
+  duree_reelle_heures?: number;
+  budget_estime?: number;
+  budget_reel?: number;
   expertise?: {
     nom: string;
     code: string;
@@ -34,7 +45,21 @@ export default function TravailDetailPage() {
   const [travail, setTravail] = useState<Travail | null>(null);
   const [etapes, setEtapes] = useState<Etape[]>([]);
   const [loading, setLoading] = useState(true);
-  const [expandedEtape, setExpandedEtape] = useState<number | null>(null);
+  const [showEnCours, setShowEnCours] = useState(true);
+  const [showBloques, setShowBloques] = useState(true);
+  const [showTerminees, setShowTerminees] = useState(false);
+  const [showAVenir, setShowAVenir] = useState(false);
+  const [modalConfig, setModalConfig] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    onConfirm: () => void;
+  }>({
+    isOpen: false,
+    title: '',
+    message: '',
+    onConfirm: () => {}
+  });
 
   useEffect(() => {
     async function loadData() {
@@ -66,18 +91,53 @@ export default function TravailDetailPage() {
   if (!travail) {
     return (
       <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
-        <h2>❌ Travail introuvable</h2>
+        <h2>❌ Lot introuvable</h2>
         <Link href="/chantiers/travaux" className="main-btn btn-blue" style={{ marginTop: '2rem' }}>
-          ← Retour aux lots (travaux)
+          ← Retour aux lots
         </Link>
       </div>
     );
   }
 
+  // Grouper par statut
+  const terminees = etapes.filter(e => e.statut === 'terminé');
+  const enCours = etapes.filter(e => e.statut === 'en_cours');
+  const bloquees = etapes.filter(e => e.statut === 'bloqué');
+  const aVenir = etapes.filter(e => e.statut === 'à_venir' || !e.statut);
+
+  // Calculer les stats
+  const totalEtapes = etapes.length;
+  const progressionMoyenne = totalEtapes > 0 
+    ? Math.round(etapes.reduce((sum, e) => sum + (e.progression || 0), 0) / totalEtapes)
+    : 0;
+  const dureeReelleMinutes = etapes.reduce((sum, e) => sum + (e.duree_reelle_minutes || 0), 0);
+  const dureeEstimeeMinutes = etapes.reduce((sum, e) => sum + (e.duree_estimee_minutes || 0), 0);
+  const progressionHeures = dureeEstimeeMinutes > 0
+    ? Math.round((dureeReelleMinutes / dureeEstimeeMinutes) * 100)
+    : 0;
+
+  const getStatusColor = (statut: string) => {
+    switch (statut) {
+      case 'terminé': return 'var(--green)';
+      case 'en_cours': return 'var(--blue)';
+      case 'bloqué': return 'var(--orange)';
+      default: return 'var(--gray)';
+    }
+  };
+
+  const getStatusIcon = (statut: string) => {
+    switch (statut) {
+      case 'terminé': return '✓';
+      case 'en_cours': return '⚡';
+      case 'bloqué': return '🚫';
+      default: return '📅';
+    }
+  };
+
   const getDifficultyColor = (difficulte: string) => {
     switch (difficulte) {
-      case 'facile': return '#10b981';
-      case 'moyen': return '#f59e0b';
+      case 'facile': return 'var(--green)';
+      case 'moyen': return 'var(--orange)';
       case 'difficile': return '#ef4444';
       default: return 'var(--gray)';
     }
@@ -88,270 +148,642 @@ export default function TravailDetailPage() {
       case 'facile': return '✓';
       case 'moyen': return '⚡';
       case 'difficile': return '🔥';
-      default: return '●';
+      default: return '○';
     }
   };
 
-  return (
-    <div className="container">
-      {/* Header */}
-      <div style={{ marginBottom: '1.5rem' }}>
-        <Link href="/chantiers/travaux" style={{ color: 'var(--gray)', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
-          ← Tous les lots (travaux)
-        </Link>
-      </div>
-
-      {/* Travail Header */}
+  const EtapeCard = ({ etape }: { etape: Etape }) => {
+    const statusColor = getStatusColor(etape.statut);
+    const [isExpanded, setIsExpanded] = useState(false);
+    
+    return (
       <div style={{
-        background: 'rgba(255,255,255,0.95)',
-        backdropFilter: 'blur(5px)',
-        borderRadius: 'var(--card-radius)',
-        padding: '1.5rem',
-        marginBottom: '2rem',
-        boxShadow: '0 4px 14px rgba(0,0,0,0.1)',
-        borderLeft: '4px solid var(--blue)'
-      }} className="fade-in">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
+        background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
+        borderRadius: '12px',
+        padding: '1rem',
+        marginBottom: '0.75rem',
+        borderLeft: `4px solid ${statusColor}`,
+        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+        transition: 'all 0.2s'
+      }}
+      onMouseEnter={(e) => {
+        const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
+                     statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
+                     statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
+                     'rgba(107, 114, 128, 0.25)';
+        e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+      }}>
+        {/* Header cliquable */}
+        <div 
+          onClick={() => setIsExpanded(!isExpanded)}
+          style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'flex-start',
+            marginBottom: isExpanded ? '1rem' : '0.5rem',
+            gap: '1rem',
+            cursor: 'pointer'
+          }}>
           <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              ⚡ {travail.titre}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
               <span style={{
-                background: 'var(--blue-light)',
-                color: 'var(--blue)',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '8px',
-                fontSize: '0.9rem',
-                fontWeight: '600'
+                background: statusColor,
+                color: 'white',
+                minWidth: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '0.9rem'
               }}>
-                {travail.progression}%
+                {etape.numero}
               </span>
-            </h1>
-            <p style={{ color: 'var(--gray)', marginBottom: '1rem' }}>
-              {travail.description}
-            </p>
-            {travail.expertise && (
-              <div style={{
+              <h3 style={{ 
+                fontSize: '1.05rem', 
+                margin: 0,
+                color: 'var(--gray-light)',
+                fontWeight: '700',
+                lineHeight: '1.2',
+                flex: 1
+              }}>
+                {getStatusIcon(etape.statut)} {etape.titre}
+              </h3>
+              <span style={{
+                background: `${getDifficultyColor(etape.difficulte)}15`,
+                color: getDifficultyColor(etape.difficulte),
+                padding: '0.25rem 0.6rem',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                fontWeight: '600',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.5rem',
-                background: '#f59e0b15',
-                color: '#f59e0b',
-                padding: '0.5rem 1rem',
-                borderRadius: '8px',
-                fontSize: '0.9rem',
-                fontWeight: '600'
+                gap: '0.25rem',
+                whiteSpace: 'nowrap'
               }}>
-                🛠️ Expertise : {travail.expertise.nom}
+                {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
+              </span>
+              <span style={{ 
+                fontSize: '1.2rem',
+                color: 'var(--gray)',
+                transition: 'transform 0.2s',
+                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
+              }}>
+                ▼
+              </span>
+            </div>
+            
+            <div style={{ 
+              display: 'flex', 
+              gap: '1.5rem', 
+              fontSize: '0.85rem', 
+              color: 'var(--gray)',
+              marginLeft: '40px'
+            }}>
+              <span>⏱️ {etape.duree_estimee_minutes} min</span>
+              {etape.outils_necessaires?.length > 0 && (
+                <span>🔧 {etape.outils_necessaires.length} outil{etape.outils_necessaires.length > 1 ? 's' : ''}</span>
+              )}
+              {etape.statut === 'en_cours' && (
+                <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
+                  {etape.progression || 0}%
+                </span>
+              )}
+            </div>
+
+            {etape.blocage_raison && (
+              <p style={{ 
+                fontSize: '0.85rem', 
+                color: 'var(--orange)', 
+                margin: 0,
+                marginTop: '0.5rem',
+                marginLeft: '40px',
+                fontStyle: 'italic',
+                padding: '0.5rem',
+                background: 'rgba(255, 107, 53, 0.1)',
+                borderRadius: '6px',
+                border: '1px solid rgba(255, 107, 53, 0.2)'
+              }}>
+                💬 {etape.blocage_raison}
+              </p>
+            )}
+          </div>
+
+          {/* Boutons selon statut - NON CLIQUABLES pour éviter conflit */}
+          {etape.statut !== 'terminé' && (
+            <div 
+              onClick={(e) => e.stopPropagation()}
+              style={{ 
+                display: 'flex', 
+                gap: '0.5rem', 
+                flexShrink: 0,
+                alignItems: 'flex-start'
+              }}>
+              {etape.statut === 'à_venir' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: 'var(--green)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.color = 'var(--green)';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Démarrer cette étape ?',
+                      message: `"${etape.titre}" passera en cours.`,
+                      onConfirm: async () => {
+                        // TODO: API call
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                      }
+                    });
+                  }}
+                >
+                  ▶️ Démarrer
+                </button>
+              )}
+
+              {etape.statut === 'en_cours' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    color: 'var(--green)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.color = 'var(--green)';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Terminer cette étape ?',
+                      message: `"${etape.titre}" sera marquée comme terminée.`,
+                      onConfirm: async () => {
+                        // TODO: API call
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                      }
+                    });
+                  }}
+                >
+                  ✓ Terminer
+                </button>
+              )}
+
+              {etape.statut === 'bloqué' && (
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(255, 107, 53, 0.15)',
+                    color: 'var(--orange)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(255, 107, 53, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--orange)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255, 107, 53, 0.15)';
+                    e.currentTarget.style.color = 'var(--orange)';
+                  }}
+                >
+                  🔓 Débloquer
+                </button>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* Contenu détaillé - expandable */}
+        {isExpanded && (
+          <div style={{
+            paddingTop: '1rem',
+            borderTop: '1px solid rgba(255,255,255,0.08)',
+            marginLeft: '40px'
+          }}>
+            <div style={{ marginBottom: '1rem' }}>
+              <h4 style={{ 
+                fontSize: '0.9rem', 
+                fontWeight: '600', 
+                marginBottom: '0.5rem', 
+                color: 'var(--gray-light)'
+              }}>
+                📝 Description
+              </h4>
+              <p style={{ 
+                color: 'var(--gray)', 
+                lineHeight: '1.6', 
+                margin: 0,
+                fontSize: '0.9rem'
+              }}>
+                {etape.description}
+              </p>
+            </div>
+
+            {etape.outils_necessaires?.length > 0 && (
+              <div style={{ marginBottom: '1rem' }}>
+                <h4 style={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem', 
+                  color: 'var(--gray-light)'
+                }}>
+                  🔧 Outils nécessaires
+                </h4>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                  {etape.outils_necessaires.map((outil, idx) => (
+                    <span
+                      key={idx}
+                      style={{
+                        background: 'rgba(255,255,255,0.08)',
+                        padding: '0.4rem 0.8rem',
+                        borderRadius: '6px',
+                        fontSize: '0.85rem',
+                        color: 'var(--gray-light)',
+                        border: '1px solid rgba(255,255,255,0.1)'
+                      }}
+                    >
+                      {outil}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {etape.conseils_pro && (
+              <div style={{
+                background: 'rgba(251, 191, 36, 0.1)',
+                border: '1px solid rgba(251, 191, 36, 0.3)',
+                borderRadius: '8px',
+                padding: '0.75rem 1rem'
+              }}>
+                <h4 style={{ 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600', 
+                  marginBottom: '0.5rem', 
+                  color: '#fbbf24',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  💡 Conseil pro
+                </h4>
+                <p style={{ 
+                  color: 'var(--gray-light)', 
+                  fontSize: '0.9rem', 
+                  margin: 0, 
+                  lineHeight: '1.5' 
+                }}>
+                  {etape.conseils_pro}
+                </p>
               </div>
             )}
           </div>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{
-          width: '100%',
-          height: '8px',
-          background: '#DBEAFE',
-          borderRadius: '10px',
-          overflow: 'hidden'
-        }}>
-          <div style={{
-            width: `${travail.progression}%`,
-            height: '100%',
-            background: 'var(--blue)',
-            transition: 'width 0.3s'
-          }}></div>
-        </div>
-      </div>
-
-      {/* Étapes */}
-      <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.3rem', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          🎯 Étapes à suivre ({etapes.length})
-        </h2>
-
-        {etapes.length === 0 ? (
-          <div style={{
-            background: 'rgba(255,255,255,0.95)',
-            borderRadius: 'var(--card-radius)',
-            padding: '2rem',
-            textAlign: 'center',
-            color: 'var(--gray)'
-          }}>
-            <p>Aucune étape définie pour ce travail.</p>
-          </div>
-        ) : (
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {etapes.map((etape) => (
-              <div
-                key={etape.numero}
-                style={{
-                  background: 'rgba(255,255,255,0.95)',
-                  backdropFilter: 'blur(5px)',
-                  borderRadius: 'var(--card-radius)',
-                  overflow: 'hidden',
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-                  transition: 'all 0.2s',
-                  borderLeft: `4px solid ${getDifficultyColor(etape.difficulte)}`
-                }}
-                className="fade-in"
-              >
-                {/* Header étape - cliquable */}
-                <div
-                  onClick={() => setExpandedEtape(expandedEtape === etape.numero ? null : etape.numero)}
-                  style={{
-                    padding: '1rem 1.25rem',
-                    cursor: 'pointer',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    background: expandedEtape === etape.numero ? '#f8f9fa' : 'transparent',
-                    transition: 'background 0.2s'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (expandedEtape !== etape.numero) {
-                      e.currentTarget.style.background = '#fafafa';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (expandedEtape !== etape.numero) {
-                      e.currentTarget.style.background = 'transparent';
-                    }
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-                      <span style={{
-                        background: getDifficultyColor(etape.difficulte),
-                        color: 'white',
-                        width: '32px',
-                        height: '32px',
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontWeight: '700',
-                        fontSize: '0.9rem'
-                      }}>
-                        {etape.numero}
-                      </span>
-                      <h3 style={{ fontSize: '1.05rem', margin: 0, fontWeight: '600' }}>
-                        {etape.titre}
-                      </h3>
-                      <span style={{
-                        background: `${getDifficultyColor(etape.difficulte)}15`,
-                        color: getDifficultyColor(etape.difficulte),
-                        padding: '0.25rem 0.6rem',
-                        borderRadius: '6px',
-                        fontSize: '0.8rem',
-                        fontWeight: '600',
-                        display: 'inline-flex',
-                        alignItems: 'center',
-                        gap: '0.25rem'
-                      }}>
-                        {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
-                      </span>
-                    </div>
-                    <div style={{ display: 'flex', gap: '1rem', fontSize: '0.85rem', color: 'var(--gray)', marginLeft: '40px' }}>
-                      <span>⏱️ {etape.duree_minutes} min</span>
-                      {etape.outils.length > 0 && (
-                        <span>🔧 {etape.outils.length} outil{etape.outils.length > 1 ? 's' : ''}</span>
-                      )}
-                    </div>
-                  </div>
-                  <div style={{
-                    fontSize: '1.5rem',
-                    color: 'var(--gray)',
-                    transition: 'transform 0.2s',
-                    transform: expandedEtape === etape.numero ? 'rotate(180deg)' : 'rotate(0deg)'
-                  }}>
-                    ▼
-                  </div>
-                </div>
-
-                {/* Contenu étape - expandable */}
-                {expandedEtape === etape.numero && (
-                  <div style={{
-                    padding: '0 1.25rem 1.25rem 1.25rem',
-                    borderTop: '1px solid var(--gray-light)',
-                    background: '#f8f9fa'
-                  }}>
-                    <div style={{ marginTop: '1rem' }}>
-                      <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--gray-dark)' }}>
-                        📝 Description
-                      </h4>
-                      <p style={{ color: 'var(--gray-dark)', lineHeight: '1.6', marginBottom: '1rem' }}>
-                        {etape.description}
-                      </p>
-
-                      {etape.outils.length > 0 && (
-                        <div style={{ marginBottom: '1rem' }}>
-                          <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--gray-dark)' }}>
-                            🔧 Outils nécessaires
-                          </h4>
-                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                            {etape.outils.map((outil, idx) => (
-                              <span
-                                key={idx}
-                                style={{
-                                  background: 'white',
-                                  padding: '0.4rem 0.8rem',
-                                  borderRadius: '6px',
-                                  fontSize: '0.85rem',
-                                  color: 'var(--gray-dark)',
-                                  border: '1px solid var(--gray-light)'
-                                }}
-                              >
-                                {outil}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-
-                      {etape.conseils && (
-                        <div style={{
-                          background: '#fef3c7',
-                          border: '1px solid #fbbf24',
-                          borderRadius: '8px',
-                          padding: '0.75rem 1rem',
-                          marginTop: '1rem'
-                        }}>
-                          <h4 style={{ fontSize: '0.9rem', fontWeight: '600', marginBottom: '0.5rem', color: '#92400e', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            💡 Conseil pro
-                          </h4>
-                          <p style={{ color: '#78350f', fontSize: '0.9rem', margin: 0, lineHeight: '1.5' }}>
-                            {etape.conseils}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))}
-          </div>
         )}
       </div>
+    );
+  };
 
-      {/* Info contextuelle */}
+  const SectionHeader = ({ 
+    title, 
+    count, 
+    color, 
+    icon, 
+    isExpanded, 
+    onToggle 
+  }: { 
+    title: string; 
+    count: number; 
+    color: string; 
+    icon: string;
+    isExpanded: boolean;
+    onToggle: () => void;
+  }) => (
+    <div style={{ marginBottom: '1.5rem' }}>
+      <div 
+        onClick={onToggle}
+        style={{ 
+          fontSize: '1.15rem', 
+          marginBottom: '0.75rem',
+          color: color,
+          fontWeight: '700',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          cursor: 'pointer',
+          padding: '0.5rem 0',
+          transition: 'all 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.opacity = '0.8';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.opacity = '1';
+        }}
+      >
+        <span style={{ fontSize: '0.9rem' }}>
+          {isExpanded ? '▽' : '▶'}
+        </span>
+        <span>{icon} {title}</span>
+        <span style={{ 
+          background: `${color}88`,
+          color: color,
+          border: `2px solid ${color}`,
+          minWidth: '28px',
+          height: '28px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          fontSize: '0.9rem',
+          fontWeight: '700',
+          padding: '0 0.35rem'
+        }}>
+          {count}
+        </span>
+      </div>
       <div style={{
-        background: '#10b98115',
-        border: '1px solid #10b98140',
-        borderRadius: 'var(--card-radius)',
-        padding: '1rem',
-        display: 'flex',
-        alignItems: 'center',
-        gap: '1rem',
-        color: '#065f46'
+        height: '2px',
+        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        marginBottom: '0.75rem'
+      }}></div>
+    </div>
+  );
+
+  return (
+    <>
+      {/* BREADCRUMB FIXED */}
+      <div style={{ 
+        position: 'fixed',
+        top: '100px',
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: 'rgba(0, 0, 0, 0.98)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
       }}>
-        <div style={{ fontSize: '2rem' }}>💡</div>
-        <div>
-          <p style={{ margin: 0, fontSize: '0.95rem', fontWeight: '500' }}>
-            <strong>Astuce :</strong> Utilisez l'assistant IA en bas à droite pour obtenir de l'aide en temps réel sur chaque étape !
-          </p>
+        <div style={{ 
+          maxWidth: '1100px', 
+          margin: '0 auto', 
+          padding: '1rem',
+          display: 'flex', 
+          alignItems: 'center',
+          gap: '0.5rem',
+          fontSize: '1rem'
+        }}>
+          <Link href="/chantiers" style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            ← Chantiers
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <Link href="/chantiers/travaux" style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            🏗️ Création nouvelle chambre
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
+            Lots
+          </span>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <span style={{ color: 'var(--gray-light)', fontWeight: '500' }}>
+            Étapes ({etapes.length})
+          </span>
         </div>
       </div>
-    </div>
+
+      {/* CONTENU PRINCIPAL */}
+      <div style={{ 
+        maxWidth: '1100px', 
+        margin: '0 auto', 
+        padding: '0.75rem 1rem',
+        paddingTop: '85px'
+      }}>
+        {/* ÉTAT DES LIEUX DU LOT */}
+        <div style={{
+          marginBottom: '2rem',
+          paddingBottom: '1.5rem',
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
+        }}>
+          <h1 style={{ 
+            fontSize: '1.5rem', 
+            marginBottom: '0.75rem',
+            color: 'var(--gray-light)',
+            fontWeight: '700',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            🔨 {travail.titre}
+          </h1>
+          {travail.description && (
+            <p style={{ 
+              fontSize: '0.95rem', 
+              color: 'var(--gray)', 
+              marginBottom: '1rem',
+              lineHeight: '1.4'
+            }}>
+              {travail.description}
+            </p>
+          )}
+
+          {/* Barre progression 16px */}
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{
+              width: '100%',
+              height: '16px',
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${progressionMoyenne}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+          </div>
+
+          {/* Stats inline */}
+          <div style={{ 
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '2rem',
+            fontSize: '0.95rem',
+            color: 'var(--gray)'
+          }}>
+            <span style={{ 
+              color: 'var(--gray-light)', 
+              fontSize: '1.1rem', 
+              fontWeight: '700' 
+            }}>
+              {progressionMoyenne}% complété
+            </span>
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {Math.round(dureeReelleMinutes / 60)}h
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {Math.round(dureeEstimeeMinutes / 60)}h</span>
+                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
+                  {progressionHeures}%
+                </span>
+              </span>
+            </div>
+
+            {travail.budget_estime && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>💰</span>
+                <span>
+                  <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                    {(travail.budget_reel || 0).toLocaleString()}€
+                  </strong>
+                  <span style={{ opacity: 0.6 }}> / {travail.budget_estime.toLocaleString()}€</span>
+                </span>
+              </div>
+            )}
+
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>✅</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {terminees.length}
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {totalEtapes}</span>
+                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
+                </span>
+                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {enCours.length} en cours
+                </span>
+                <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {bloquees.length} bloquée{bloquees.length > 1 ? 's' : ''}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Section EN COURS */}
+        {enCours.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="En cours" 
+              count={enCours.length} 
+              color="var(--blue)" 
+              icon="⚡"
+              isExpanded={showEnCours}
+              onToggle={() => setShowEnCours(!showEnCours)}
+            />
+            {showEnCours && enCours.map(etape => <EtapeCard key={etape.id} etape={etape} />)}
+          </section>
+        )}
+
+        {/* Section BLOQUÉES */}
+        {bloquees.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Bloquées" 
+              count={bloquees.length} 
+              color="var(--orange)" 
+              icon="⚠️"
+              isExpanded={showBloques}
+              onToggle={() => setShowBloques(!showBloques)}
+            />
+            {showBloques && bloquees.map(etape => <EtapeCard key={etape.id} etape={etape} />)}
+          </section>
+        )}
+
+        {/* Section À VENIR */}
+        {aVenir.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="À venir" 
+              count={aVenir.length} 
+              color="var(--gray)" 
+              icon="📅"
+              isExpanded={showAVenir}
+              onToggle={() => setShowAVenir(!showAVenir)}
+            />
+            {showAVenir && aVenir.map(etape => <EtapeCard key={etape.id} etape={etape} />)}
+          </section>
+        )}
+
+        {/* Section TERMINÉES */}
+        {terminees.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Terminées" 
+              count={terminees.length} 
+              color="var(--green)" 
+              icon="✅"
+              isExpanded={showTerminees}
+              onToggle={() => setShowTerminees(!showTerminees)}
+            />
+            {showTerminees && terminees.map(etape => <EtapeCard key={etape.id} etape={etape} />)}
+          </section>
+        )}
+
+        {/* Modal de confirmation */}
+        <ConfirmModal
+          isOpen={modalConfig.isOpen}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          confirmText="Confirmer"
+          cancelText="Annuler"
+          onConfirm={modalConfig.onConfirm}
+          onCancel={() => setModalConfig({ ...modalConfig, isOpen: false })}
+          type="warning"
+        />
+      </div>
+    </>
   );
 }
