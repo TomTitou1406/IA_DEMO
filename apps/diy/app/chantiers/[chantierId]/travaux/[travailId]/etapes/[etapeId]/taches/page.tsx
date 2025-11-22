@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
-import { getTachesByEtape, demarrerTache, terminerTache, updateEtapeProgressionManuelle } from '@/app/lib/services/tachesService';
+import { getTachesByEtape, demarrerTache, terminerTache } from '@/app/lib/services/tachesService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 
 interface Tache {
@@ -40,11 +40,8 @@ export default function TachesPage() {
   const [etape, setEtape] = useState<Etape | null>(null);
   const [taches, setTaches] = useState<Tache[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showEnCours, setShowEnCours] = useState(true);
   const [showTerminees, setShowTerminees] = useState(false);
   const [showAFaire, setShowAFaire] = useState(true);
-  const [progression, setProgression] = useState(0);
-  const [isDragging, setIsDragging] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -67,23 +64,11 @@ export default function TachesPage() {
       if (data) {
         setEtape(data.etape);
         setTaches(data.taches);
-        setProgression(data.etape.progression || 0);
       }
     } catch (error) {
       console.error('Error loading taches:', error);
     } finally {
       setLoading(false);
-    }
-  }
-
-  async function handleProgressionChange(newValue: number) {
-    try {
-      await updateEtapeProgressionManuelle(etapeId, newValue);
-      setProgression(newValue);
-      // Recharger pour mettre à jour le statut de l'étape
-      await loadData();
-    } catch (error) {
-      console.error('Error updating progression:', error);
     }
   }
 
@@ -123,7 +108,6 @@ export default function TachesPage() {
 
   // Grouper par statut
   const terminees = taches.filter(t => t.statut === 'terminée');
-  const enCours = taches.filter(t => t.statut === 'en_cours');
   const aFaire = taches.filter(t => t.statut === 'à_faire' || !t.statut);
 
   // Calculer les stats
@@ -137,8 +121,7 @@ export default function TachesPage() {
   const getStatusColor = (statut: string) => {
     switch (statut) {
       case 'terminée': return 'var(--green)';
-      case 'en_cours': return 'var(--blue)';
-      default: return 'var(--gray)';
+      default: return 'var(--blue)'; // à_faire en bleu
     }
   };
 
@@ -240,91 +223,89 @@ export default function TachesPage() {
                   ✓ {tache.duree_reelle_minutes} min réel
                 </span>
               )}
-              {tache.outils_necessaires && tache.outils_necessaires.length > 0 && (
+              {tache.outils_necessaires?.length > 0 && (
                 <span>🔧 {tache.outils_necessaires.length} outil{tache.outils_necessaires.length > 1 ? 's' : ''}</span>
               )}
             </div>
           </div>
 
           {/* Boutons selon statut */}
-          {tache.statut !== 'terminée' && (
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              style={{ 
-                display: 'flex', 
-                gap: '0.5rem', 
-                flexShrink: 0,
-                alignItems: 'flex-start'
-              }}>
-              {tache.statut === 'à_faire' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
-                  }}
-                  onClick={async () => {
-                    try {
-                      await demarrerTache(tache.id);
-                      await loadData();
-                    } catch (error) {
-                      console.error('Error starting tache:', error);
-                    }
-                  }}
-                >
-                  ▶️ Démarrer
-                </button>
-              )}
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{ 
+              display: 'flex', 
+              gap: '0.5rem', 
+              flexShrink: 0,
+              alignItems: 'flex-start'
+            }}>
+            {tache.statut === 'à_faire' && (
+              <button 
+                className="main-btn"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.45rem 0.75rem',
+                  minHeight: 'auto',
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  color: 'var(--green)',
+                  fontWeight: '600',
+                  border: '1px solid rgba(16, 185, 129, 0.3)',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--green)';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                  e.currentTarget.style.color = 'var(--green)';
+                }}
+                onClick={async () => {
+                  try {
+                    await terminerTache(tache.id);
+                    await loadData();
+                  } catch (error) {
+                    console.error('Error completing tache:', error);
+                  }
+                }}
+              >
+                ✓ Valider
+              </button>
+            )}
 
-              {tache.statut === 'en_cours' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
-                  }}
-                  onClick={async () => {
-                    try {
-                      await terminerTache(tache.id);
-                      await loadData();
-                    } catch (error) {
-                      console.error('Error completing tache:', error);
-                    }
-                  }}
-                >
-                  ✓ Terminer
-                </button>
-              )}
-            </div>
-          )}
+            {tache.statut === 'terminée' && (
+              <button 
+                className="main-btn"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.45rem 0.75rem',
+                  minHeight: 'auto',
+                  background: 'rgba(37, 99, 235, 0.15)',
+                  color: 'var(--blue)',
+                  fontWeight: '600',
+                  border: '1px solid rgba(37, 99, 235, 0.3)',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--blue)';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
+                  e.currentTarget.style.color = 'var(--blue)';
+                }}
+                onClick={async () => {
+                  try {
+                    await demarrerTache(tache.id);
+                    await loadData();
+                  } catch (error) {
+                    console.error('Error restarting tache:', error);
+                  }
+                }}
+              >
+                ↻ Refaire
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Contenu détaillé - expandable */}
@@ -355,7 +336,7 @@ export default function TachesPage() {
               </div>
             )}
 
-            {tache.outils_necessaires && tache.outils_necessaires.length > 0 && (
+            {tache.outils_necessaires?.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
                 <h4 style={{ 
                   fontSize: '0.9rem', 
@@ -629,7 +610,7 @@ export default function TachesPage() {
               overflow: 'hidden'
             }}>
               <div style={{
-                width: `${progression}%`,
+                width: `${progressionAuto}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
                 transition: 'width 0.5s ease'
@@ -652,7 +633,7 @@ export default function TachesPage() {
               fontSize: '1.1rem', 
               fontWeight: '700' 
             }}>
-              {progression}% complété
+              {progressionAuto}% complété
             </span>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -676,101 +657,14 @@ export default function TachesPage() {
                   • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
                 </span>
                 <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {enCours.length} en cours
+                  • {aFaire.length} à faire
                 </span>
               </span>
             </div>
           </div>
 
-          {/* Slider progression manuelle */}
-          <div style={{ 
-            background: 'rgba(255,255,255,0.05)',
-            borderRadius: '12px',
-            padding: '1rem',
-            border: '1px solid rgba(255,255,255,0.08)'
-          }}>
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between', 
-              alignItems: 'center',
-              marginBottom: '0.75rem'
-            }}>
-              <span style={{ 
-                fontSize: '0.9rem', 
-                color: 'var(--gray-light)',
-                fontWeight: '600'
-              }}>
-                📊 Ajuster la progression manuellement
-              </span>
-              <span style={{ 
-                fontSize: '1.1rem', 
-                color: 'var(--blue)',
-                fontWeight: '700'
-              }}>
-                {progression}%
-              </span>
-            </div>
-            <input
-              type="range"
-              min="0"
-              max="100"
-              value={progression}
-              onChange={(e) => setProgression(parseInt(e.target.value))}
-              onMouseDown={() => setIsDragging(true)}
-              onMouseUp={() => {
-                setIsDragging(false);
-                handleProgressionChange(progression);
-              }}
-              onTouchStart={() => setIsDragging(true)}
-              onTouchEnd={() => {
-                setIsDragging(false);
-                handleProgressionChange(progression);
-              }}
-              style={{
-                width: '100%',
-                height: '8px',
-                borderRadius: '4px',
-                background: `linear-gradient(to right, 
-                  var(--blue) 0%, 
-                  var(--green) ${progression}%, 
-                  rgba(255,255,255,0.1) ${progression}%, 
-                  rgba(255,255,255,0.1) 100%)`,
-                outline: 'none',
-                cursor: 'pointer',
-                WebkitAppearance: 'none',
-                appearance: 'none'
-              }}
-            />
-            <div style={{ 
-              display: 'flex', 
-              justifyContent: 'space-between',
-              marginTop: '0.5rem',
-              fontSize: '0.8rem',
-              color: 'var(--gray)'
-            }}>
-              <span>0%</span>
-              <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-                Auto: {progressionAuto}%
-              </span>
-              <span>100%</span>
-            </div>
-          </div>
-        </div>
 
-        {/* Section EN COURS */}
-        {enCours.length > 0 && (
-          <section style={{ marginBottom: '1.5rem' }}>
-            <SectionHeader 
-              title="En cours" 
-              count={enCours.length} 
-              color="var(--blue)" 
-              icon="⚡"
-              isExpanded={showEnCours}
-              onToggle={() => setShowEnCours(!showEnCours)}
-            />
-            {showEnCours && enCours.map(tache => <TacheCard key={tache.id} tache={tache} />)}
-          </section>
-        )}
+        </div>
 
         {/* Section À FAIRE */}
         {aFaire.length > 0 && (
@@ -778,7 +672,7 @@ export default function TachesPage() {
             <SectionHeader 
               title="À faire" 
               count={aFaire.length} 
-              color="var(--gray)" 
+              color="var(--blue)" 
               icon="📋"
               isExpanded={showAFaire}
               onToggle={() => setShowAFaire(!showAFaire)}
