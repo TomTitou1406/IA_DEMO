@@ -624,11 +624,17 @@ export default function TravauxPage() {
         </span>
         <span>{icon} {title}</span>
         <span style={{ 
-          background: `${color}22`, 
-          padding: '0.25rem 0.6rem', 
-          borderRadius: '8px',
-          fontSize: '1.15rem',
-          fontWeight: '700'
+          background: color,
+          color: '#000',
+          minWidth: '28px',
+          height: '28px',
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          fontSize: '0.9rem',
+          fontWeight: '700',
+          padding: '0 0.35rem'
         }}>
           {count}
         </span>
