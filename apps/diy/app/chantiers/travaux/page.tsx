@@ -627,7 +627,7 @@ export default function TravauxPage() {
           background: `${color}22`, 
           padding: '0.25rem 0.6rem', 
           borderRadius: '8px',
-          fontSize: '0.9rem',
+          fontSize: '1.15rem',
           fontWeight: '700'
         }}>
           {count}
