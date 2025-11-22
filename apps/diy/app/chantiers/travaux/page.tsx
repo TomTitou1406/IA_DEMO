@@ -650,19 +650,21 @@ export default function TravauxPage() {
 
   return (
     <>
-      {/* BREADCRUMB STICKY - EN DEHORS DU CONTENEUR PRINCIPAL */}
+      {/* BREADCRUMB FIXED - SANS FOND */}
       <div style={{ 
-        position: 'sticky',
-        top: 0,
+        position: 'fixed',
+        top: '100px',  // Ajuster selon la hauteur de ton header
+        left: 0,
+        right: 0,
         zIndex: 100,
-        background: 'rgba(10, 10, 10, 0.95)',
-        backdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)'
+        borderBottom: '1px solid rgba(255,255,255,0.08)',
+        paddingTop: '0.75rem',
+        paddingBottom: '1rem'
       }}>
         <div style={{ 
           maxWidth: '1100px', 
           margin: '0 auto', 
-          padding: '0.75rem 1rem 1rem 1rem',
+          padding: '0 1rem',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
