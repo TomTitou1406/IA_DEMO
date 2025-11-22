@@ -243,7 +243,7 @@ export default function TravauxPage() {
                 </button>
               )}
 
-              {/* Bouton AJUSTER pour EN COURS avec progression > 0% */}
+              {/* Bouton AJUSTER pour EN COURS */}
               {travail.statut === 'en_cours' && (
                 <button 
                   className="main-btn"
@@ -411,7 +411,7 @@ export default function TravauxPage() {
             </div>
           )}
 
-          {/* Bouton Réactiver pour annulées */}
+          {/* Bouton Réactiver pour annulés */}
           {travail.statut === 'annulé' && (
             <button 
               className="main-btn"
@@ -624,10 +624,8 @@ export default function TravauxPage() {
         </span>
         <span>{icon} {title}</span>
         <span style={{ 
-          // background: color,
-          // color: '#000',
-          background: `${color}88`,  // 88 = 53% bien visible, 66 = 40%, 33 = 20%
-          color: color,              // Texte de la couleur du statut
+          background: `${color}88`,
+          color: color,
           border: `2px solid ${color}`,
           minWidth: '28px',
           height: '28px',
@@ -651,219 +649,227 @@ export default function TravauxPage() {
   );
 
   return (
-    <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0.75rem 1rem' }}>
-        {/* Breadcrumb AÉRÉ + STICKY */}
+    <>
+      {/* BREADCRUMB STICKY - EN DEHORS DU CONTENEUR PRINCIPAL */}
+      <div style={{ 
+        position: 'sticky',
+        top: 0,
+        zIndex: 100,
+        background: 'rgba(10, 10, 10, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
+      }}>
         <div style={{ 
-          position: 'sticky',
-          top: 0,
-          zIndex: 100,
+          maxWidth: '1100px', 
+          margin: '0 auto', 
+          padding: '0.75rem 1rem 1rem 1rem',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
-          marginBottom: '1.5rem',
-          paddingTop: '0.75rem',
-          paddingBottom: '1rem',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
           fontSize: '1rem'
         }}>
-        <Link href="/chantiers" style={{ 
-          color: 'var(--gray)', 
-          transition: 'color 0.2s',
-          fontWeight: '500'
-        }}
-        onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-        onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-        >
-          ← Chantiers
-        </Link>
-        <span style={{ color: 'var(--gray)' }}>/</span>
-        <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-          🏗️ {chantier?.titre || 'Chantier'}
-        </span>
-        <span style={{ color: 'var(--gray)' }}>/</span>
-        <span style={{ color: 'var(--gray-light)', fontWeight: '500' }}>
-          Lots ({travaux.length})
-        </span>
-      </div>
-
-      {/* État d'avancement du chantier - PLUS VISIBLE */}
-      <div style={{
-        marginBottom: '2rem',
-        paddingBottom: '1.5rem',
-        borderBottom: '1px solid rgba(255,255,255,0.08)'
-      }}>
-        {/* Progress bar */}
-        <div style={{ marginBottom: '1rem' }}>
-          <div style={{
-            width: '100%',
-            height: '16px',
-            background: 'rgba(255,255,255,0.08)',
-            borderRadius: '10px',
-            overflow: 'hidden'
-          }}>
-            <div style={{
-              width: `${stats?.progressionMoyenne || 0}%`,
-              height: '100%',
-              background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
-              transition: 'width 0.5s ease'
-            }}></div>
-          </div>
-        </div>
-
-        {/* Stats TOUT EN LIGNE - PLUS VISIBLE */}
-        <div style={{ 
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '2rem',
-          fontSize: '0.95rem',
-          color: 'var(--gray)'
-        }}>
-          {/* % complété */}
-          <span style={{ 
-            color: 'var(--gray-light)', 
-            fontSize: '1.1rem', 
-            fontWeight: '700' 
-          }}>
-            {stats?.progressionMoyenne || 0}% complété
+          <Link href="/chantiers" style={{ 
+            color: 'var(--gray)', 
+            transition: 'color 0.2s',
+            fontWeight: '500'
+          }}
+          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
+          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
+          >
+            ← Chantiers
+          </Link>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
+            🏗️ {chantier?.titre || 'Chantier'}
           </span>
-
-          {/* Heures - SANS COULEUR BLEUE */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>⏱️</span>
-            <span>
-              <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                {stats?.heuresEffectuees || 0}h
-              </strong>
-              <span style={{ opacity: 0.6 }}> / {stats?.heuresEstimees || 0}h</span>
-              <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                {stats?.progressionHeures || 0}%
-              </span>
-            </span>
-          </div>
-          
-          {/* Budget - SANS COULEUR VERTE */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>💰</span>
-            <span>
-              <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                {stats?.budgetReel?.toLocaleString() || 0}€
-              </strong>
-              <span style={{ opacity: 0.6 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
-              <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                {stats?.progressionBudget || 0}%
-              </span>
-            </span>
-          </div>
-
-          {/* Tâches */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <span style={{ fontSize: '1.1rem' }}>✅</span>
-            <span>
-              <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                {stats?.termines || 0}
-              </strong>
-              <span style={{ opacity: 0.6 }}> / {stats?.total || 0}</span>
-              <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                • {stats?.termines || 0} terminé{stats?.termines > 1 ? 's' : ''}
-              </span>
-              <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                • {stats?.enCours || 0} en cours
-              </span>
-              <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                • {stats?.bloques || 0} bloqué{stats?.bloques > 1 ? 's' : ''}
-              </span>
-            </span>
-          </div>
+          <span style={{ color: 'var(--gray)' }}>/</span>
+          <span style={{ color: 'var(--gray-light)', fontWeight: '500' }}>
+            Lots ({travaux.length})
+          </span>
         </div>
       </div>
 
-      {/* Section EN COURS (collapsible) */}
-      {enCours.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader 
-            title="En cours" 
-            count={enCours.length} 
-            color="var(--blue)" 
-            icon="⚡"
-            isExpanded={showEnCours}
-            onToggle={() => setShowEnCours(!showEnCours)}
-          />
-          {showEnCours && enCours.map(travail => <TravailCard key={travail.id} travail={travail} />)}
-        </section>
-      )}
+      {/* CONTENU PRINCIPAL */}
+      <div style={{ maxWidth: '1100px', margin: '0 auto', padding: '0.75rem 1rem' }}>
+        {/* État d'avancement du chantier - PLUS VISIBLE */}
+        <div style={{
+          marginBottom: '2rem',
+          paddingBottom: '1.5rem',
+          borderBottom: '1px solid rgba(255,255,255,0.08)'
+        }}>
+          {/* Progress bar */}
+          <div style={{ marginBottom: '1rem' }}>
+            <div style={{
+              width: '100%',
+              height: '16px',
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${stats?.progressionMoyenne || 0}%`,
+                height: '100%',
+                background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+          </div>
 
-      {/* Section BLOQUÉS (collapsible) */}
-      {bloques.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader 
-            title="Bloqués" 
-            count={bloques.length} 
-            color="var(--orange)" 
-            icon="⚠️"
-            isExpanded={showBloques}
-            onToggle={() => setShowBloques(!showBloques)}
-          />
-          {showBloques && bloques.map(travail => <TravailCard key={travail.id} travail={travail} />)}
-        </section>
-      )}
+          {/* Stats TOUT EN LIGNE - PLUS VISIBLE */}
+          <div style={{ 
+            display: 'flex',
+            flexWrap: 'wrap',
+            alignItems: 'center',
+            gap: '2rem',
+            fontSize: '0.95rem',
+            color: 'var(--gray)'
+          }}>
+            {/* % complété */}
+            <span style={{ 
+              color: 'var(--gray-light)', 
+              fontSize: '1.1rem', 
+              fontWeight: '700' 
+            }}>
+              {stats?.progressionMoyenne || 0}% complété
+            </span>
 
-      {/* Section À VENIR (collapsible) */}
-      {aVenir.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader 
-            title="À venir" 
-            count={aVenir.length} 
-            color="var(--gray)" 
-            icon="📅"
-            isExpanded={showAVenir}
-            onToggle={() => setShowAVenir(!showAVenir)}
-          />
-          {showAVenir && aVenir.map(travail => <TravailCard key={travail.id} travail={travail} />)}
-        </section>
-      )}
+            {/* Heures - SANS COULEUR BLEUE */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {stats?.heuresEffectuees || 0}h
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {stats?.heuresEstimees || 0}h</span>
+                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
+                  {stats?.progressionHeures || 0}%
+                </span>
+              </span>
+            </div>
+            
+            {/* Budget - SANS COULEUR VERTE */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>💰</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {stats?.budgetReel?.toLocaleString() || 0}€
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
+                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
+                  {stats?.progressionBudget || 0}%
+                </span>
+              </span>
+            </div>
 
-      {/* Section TERMINÉS (collapsible) */}
-      {termines.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader 
-            title="Terminés" 
-            count={termines.length} 
-            color="var(--green)" 
-            icon="✅"
-            isExpanded={showTermines}
-            onToggle={() => setShowTermines(!showTermines)}
-          />
-          {showTermines && termines.map(travail => <TravailCard key={travail.id} travail={travail} />)}
-        </section>
-      )}
+            {/* Tâches */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1.1rem' }}>✅</span>
+              <span>
+                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                  {stats?.termines || 0}
+                </strong>
+                <span style={{ opacity: 0.6 }}> / {stats?.total || 0}</span>
+                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {stats?.termines || 0} terminé{stats?.termines > 1 ? 's' : ''}
+                </span>
+                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {stats?.enCours || 0} en cours
+                </span>
+                <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                  • {stats?.bloques || 0} bloqué{stats?.bloques > 1 ? 's' : ''}
+                </span>
+              </span>
+            </div>
+          </div>
+        </div>
 
-      {/* Section ANNULÉES (collapsible) */}
-      {annulees.length > 0 && (
-        <section style={{ marginBottom: '1.5rem' }}>
-          <SectionHeader 
-            title="Annulées" 
-            count={annulees.length} 
-            color="var(--gray)" 
-            icon="🗑️"
-            isExpanded={showAnnulees}
-            onToggle={() => setShowAnnulees(!showAnnulees)}
-          />
-          {showAnnulees && annulees.map(travail => <TravailCard key={travail.id} travail={travail} />)}
-        </section>
-      )}
-      
-      {/* Modal de confirmation */}
-      <ConfirmModal
-        isOpen={modalConfig.isOpen}
-        title={modalConfig.title}
-        message={modalConfig.message}
-        confirmText="Confirmer"
-        cancelText="Annuler"
-        onConfirm={modalConfig.onConfirm}
-        onCancel={() => setModalConfig({ ...modalConfig, isOpen: false })}
-        type="warning"
-      />
-    </div>
+        {/* Section EN COURS (collapsible) */}
+        {enCours.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="En cours" 
+              count={enCours.length} 
+              color="var(--blue)" 
+              icon="⚡"
+              isExpanded={showEnCours}
+              onToggle={() => setShowEnCours(!showEnCours)}
+            />
+            {showEnCours && enCours.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          </section>
+        )}
+
+        {/* Section BLOQUÉS (collapsible) */}
+        {bloques.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Bloqués" 
+              count={bloques.length} 
+              color="var(--orange)" 
+              icon="⚠️"
+              isExpanded={showBloques}
+              onToggle={() => setShowBloques(!showBloques)}
+            />
+            {showBloques && bloques.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          </section>
+        )}
+
+        {/* Section À VENIR (collapsible) */}
+        {aVenir.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="À venir" 
+              count={aVenir.length} 
+              color="var(--gray)" 
+              icon="📅"
+              isExpanded={showAVenir}
+              onToggle={() => setShowAVenir(!showAVenir)}
+            />
+            {showAVenir && aVenir.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          </section>
+        )}
+
+        {/* Section TERMINÉS (collapsible) */}
+        {termines.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Terminés" 
+              count={termines.length} 
+              color="var(--green)" 
+              icon="✅"
+              isExpanded={showTermines}
+              onToggle={() => setShowTermines(!showTermines)}
+            />
+            {showTermines && termines.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          </section>
+        )}
+
+        {/* Section ANNULÉES (collapsible) */}
+        {annulees.length > 0 && (
+          <section style={{ marginBottom: '1.5rem' }}>
+            <SectionHeader 
+              title="Annulées" 
+              count={annulees.length} 
+              color="var(--gray)" 
+              icon="🗑️"
+              isExpanded={showAnnulees}
+              onToggle={() => setShowAnnulees(!showAnnulees)}
+            />
+            {showAnnulees && annulees.map(travail => <TravailCard key={travail.id} travail={travail} />)}
+          </section>
+        )}
+        
+        {/* Modal de confirmation */}
+        <ConfirmModal
+          isOpen={modalConfig.isOpen}
+          title={modalConfig.title}
+          message={modalConfig.message}
+          confirmText="Confirmer"
+          cancelText="Annuler"
+          onConfirm={modalConfig.onConfirm}
+          onCancel={() => setModalConfig({ ...modalConfig, isOpen: false })}
+          type="warning"
+        />
+      </div>
+    </>
   );
 }
