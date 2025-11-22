@@ -657,7 +657,7 @@ export default function TravauxPage() {
         left: 0,
         right: 0,
         zIndex: 100,
-        background: 'rgba(0, 0, 0, 0.95)',    // Noir avec 95% opacité
+        background: 'rgba(0, 0, 0, 0.85)',    // Noir avec 85% opacité
         backdropFilter: 'blur(10px)',         // Effet flou moderne
         borderBottom: '1px solid rgba(255,255,255,0.08)',
         paddingTop: '1rem',
