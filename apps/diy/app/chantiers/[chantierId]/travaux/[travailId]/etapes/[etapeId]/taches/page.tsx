@@ -240,7 +240,7 @@ export default function TachesPage() {
                   ✓ {tache.duree_reelle_minutes} min réel
                 </span>
               )}
-              {tache.outils_necessaires?.length > 0 && (
+              {tache.outils_necessaires && tache.outils_necessaires.length > 0 && (
                 <span>🔧 {tache.outils_necessaires.length} outil{tache.outils_necessaires.length > 1 ? 's' : ''}</span>
               )}
             </div>
@@ -355,7 +355,7 @@ export default function TachesPage() {
               </div>
             )}
 
-            {tache.outils_necessaires?.length > 0 && (
+            {tache.outils_necessaires && tache.outils_necessaires.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
                 <h4 style={{ 
                   fontSize: '0.9rem', 
