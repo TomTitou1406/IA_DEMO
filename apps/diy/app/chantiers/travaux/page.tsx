@@ -770,13 +770,13 @@ export default function TravauxPage() {
                 </strong>
                 <span style={{ opacity: 0.6 }}> / {stats?.total || 0}</span>
                 <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats?.termines || 0} terminé{stats?.termines > 1 ? 's' : ''}
+                  • {stats?.termines || 0} Terminés{stats?.termines > 1 ? 's' : ''}
                 </span>
                 <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats?.enCours || 0} en cours
+                  • {stats?.enCours || 0} En cours
                 </span>
                 <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats?.bloques || 0} bloqué{stats?.bloques > 1 ? 's' : ''}
+                  • {stats?.bloques || 0} Bloqués{stats?.bloques > 1 ? 's' : ''}
                 </span>
               </span>
             </div>
