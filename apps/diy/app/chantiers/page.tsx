@@ -310,7 +310,7 @@ export default function ChantiersPage() {
             {chantier.statut === 'terminé' && (
               <>
                 <Link 
-                  href={`/chantiers/travaux`}
+                  href={`/chantiers/${chantier.id}/travaux`}
                   style={{
                     display: 'inline-flex',
                     alignItems: 'center',
