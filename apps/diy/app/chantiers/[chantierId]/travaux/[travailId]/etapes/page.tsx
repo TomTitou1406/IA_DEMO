@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ConfirmModal from '@/app/components/ConfirmModal';
-import { getEtapesByTravail, annulerEtape, reactiverEtape } from '@/app/lib/services/etapesService';
+import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape } from '@/app/lib/services/etapesService';
 
 interface Etape {
   id: string;
@@ -308,13 +308,32 @@ export default function TravailDetailPage() {
                       title: 'Démarrer cette étape ?',
                       message: `"${etape.titre}" passera en cours.`,
                       onConfirm: async () => {
-                        // TODO: API call
+                        await demarrerEtape(etape.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
                       }
                     });
                   }}
                 >
                   🚀 Démarrer
+                </button>
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'var(--blue)',
+                    color: 'white',
+                    fontWeight: '600',
+                    border: 'none',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onClick={() => {
+                    window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                  }}
+                >
+                  📋 Tâches
                 </button>
                 <button 
                   className="main-btn"
