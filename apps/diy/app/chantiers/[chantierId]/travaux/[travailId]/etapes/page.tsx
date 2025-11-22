@@ -279,34 +279,28 @@ export default function TravailDetailPage() {
 
           {/* Boutons selon statut - NON CLIQUABLES pour éviter conflit */}
           {etape.statut !== 'terminé' && (
-            <div 
-              onClick={(e) => e.stopPropagation()}
-              style={{ 
-                display: 'flex', 
-                gap: '0.5rem', 
-                flexShrink: 0,
-                alignItems: 'flex-start'
-              }}>
-              {etape.statut === 'à_venir' && (
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{ 
+              display: 'flex', 
+              gap: '0.5rem', 
+              flexShrink: 0,
+              alignItems: 'flex-start'
+            }}>
+            {/* Bouton Démarrer (à_venir) - BLEU PLEIN */}
+            {etape.statut === 'à_venir' && (
+              <>
                 <button 
                   className="main-btn"
                   style={{
                     fontSize: '0.75rem',
                     padding: '0.45rem 0.75rem',
                     minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
+                    background: 'var(--blue)',
+                    color: 'white',
                     fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
+                    border: 'none',
                     whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
                   }}
                   onClick={() => {
                     setModalConfig({
@@ -322,9 +316,64 @@ export default function TravailDetailPage() {
                 >
                   ▶️ Démarrer
                 </button>
-              )}
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'rgba(107, 114, 128, 0.15)',
+                    color: 'var(--gray)',
+                    fontWeight: '600',
+                    border: '1px solid rgba(107, 114, 128, 0.3)',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--gray)';
+                    e.currentTarget.style.color = 'white';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
+                    e.currentTarget.style.color = 'var(--gray)';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Annuler cette étape ?',
+                      message: `"${etape.titre}" sera marquée comme annulée.`,
+                      onConfirm: async () => {
+                        // TODO: API call annuler
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                      }
+                    });
+                  }}
+                >
+                  🗑️ Annuler
+                </button>
+              </>
+            )}
 
-              {etape.statut === 'en_cours' && (
+            {/* Boutons en_cours - BLEU PLEIN pour Tâches */}
+            {etape.statut === 'en_cours' && (
+              <>
+                <button 
+                  className="main-btn"
+                  style={{
+                    fontSize: '0.75rem',
+                    padding: '0.45rem 0.75rem',
+                    minHeight: 'auto',
+                    background: 'var(--blue)',
+                    color: 'white',
+                    fontWeight: '600',
+                    border: 'none',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onClick={() => {
+                    window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                  }}
+                >
+                  📋 Tâches
+                </button>
                 <button 
                   className="main-btn"
                   style={{
@@ -359,54 +408,95 @@ export default function TravailDetailPage() {
                 >
                   ✓ Terminer
                 </button>
-              )}
-
-              {/* Bouton voir tâches - toujours visible */}
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.45rem 0.75rem',
-                  minHeight: 'auto',
-                  background: 'rgba(37, 99, 235, 0.15)',
-                  color: 'var(--blue)',
-                  fontWeight: '600',
-                  border: '1px solid rgba(37, 99, 235, 0.3)',
-                  whiteSpace: 'nowrap'
-                }}
-                onClick={() => {
-                  window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
-                }}
-              >
-                📋 Tâches
-              </button>
-
-              {etape.statut === 'bloqué' && (
                 <button 
                   className="main-btn"
                   style={{
                     fontSize: '0.75rem',
                     padding: '0.45rem 0.75rem',
                     minHeight: 'auto',
-                    background: 'rgba(255, 107, 53, 0.15)',
-                    color: 'var(--orange)',
+                    background: 'rgba(107, 114, 128, 0.15)',
+                    color: 'var(--gray)',
                     fontWeight: '600',
-                    border: '1px solid rgba(255, 107, 53, 0.3)',
+                    border: '1px solid rgba(107, 114, 128, 0.3)',
                     whiteSpace: 'nowrap'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--orange)';
+                    e.currentTarget.style.background = 'var(--gray)';
                     e.currentTarget.style.color = 'white';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255, 107, 53, 0.15)';
-                    e.currentTarget.style.color = 'var(--orange)';
+                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
+                    e.currentTarget.style.color = 'var(--gray)';
+                  }}
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Annuler cette étape ?',
+                      message: `"${etape.titre}" sera marquée comme annulée.`,
+                      onConfirm: async () => {
+                        // TODO: API call annuler
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                      }
+                    });
                   }}
                 >
-                  🔓 Débloquer
+                  🗑️ Annuler
                 </button>
-              )}
-            </div>
+              </>
+            )}
+
+            {/* Bouton Débloquer (bloqué) - ORANGE PLEIN */}
+            {etape.statut === 'bloqué' && (
+              <button 
+                className="main-btn"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.45rem 0.75rem',
+                  minHeight: 'auto',
+                  background: 'var(--orange)',
+                  color: 'white',
+                  fontWeight: '600',
+                  border: 'none',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => {
+                  // TODO: API call débloquer
+                }}
+              >
+                🔓 Débloquer
+              </button>
+            )}
+
+            {/* Bouton Réactiver (annulé) - GRIS PLEIN */}
+            {etape.statut === 'annulé' && (
+              <button 
+                className="main-btn"
+                style={{
+                  fontSize: '0.75rem',
+                  padding: '0.45rem 0.75rem',
+                  minHeight: 'auto',
+                  background: 'var(--gray)',
+                  color: 'white',
+                  fontWeight: '600',
+                  border: 'none',
+                  whiteSpace: 'nowrap'
+                }}
+                onClick={() => {
+                  setModalConfig({
+                    isOpen: true,
+                    title: 'Réactiver cette étape ?',
+                    message: `"${etape.titre}" repassera à l'état "à venir".`,
+                    onConfirm: async () => {
+                      // TODO: API call réactiver
+                      setModalConfig({ ...modalConfig, isOpen: false });
+                    }
+                  });
+                }}
+              >
+                ↻ Réactiver
+              </button>
+            )}
+          </div>
           )}
         </div>
 
