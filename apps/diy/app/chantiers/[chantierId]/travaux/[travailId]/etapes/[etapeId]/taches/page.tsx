@@ -122,7 +122,7 @@ export default function TachesPage() {
   const getStatusColor = (statut: string) => {
     switch (statut) {
       case 'terminée': return 'var(--green)';
-      default: return 'var(--blue)'; // à_faire en bleu
+      default: return 'var(--blue)'; // à_faire correspond à bleu (comme en_cours)
     }
   };
 
@@ -241,8 +241,8 @@ export default function TachesPage() {
             }}>
             {tache.statut === 'à_faire' && (
               <CardButton
-                variant="secondary"
-                color="var(--green)"
+                variant="primary"
+                color="var(--blue)"
                 icon="✓"
                 label="Valider"
                 onClick={async () => {
@@ -258,8 +258,8 @@ export default function TachesPage() {
 
             {tache.statut === 'terminée' && (
               <CardButton
-                variant="secondary"
-                color="var(--blue)"
+                variant="primary"
+                color="var(--green)"
                 icon="↻"
                 label="Refaire"
                 onClick={async () => {
