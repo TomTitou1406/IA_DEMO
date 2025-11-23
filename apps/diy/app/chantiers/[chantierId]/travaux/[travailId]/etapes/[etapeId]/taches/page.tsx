@@ -454,7 +454,7 @@ export default function TachesPage() {
       </div>
       <div style={{
         height: '2px',
-        background: `linear-gradient(90deg, transparent 0%, ${color} 100%)`,
+        background: `linear-gradient(90deg, transparent 10%, ${color} 100%)`,
         marginBottom: '0.75rem'
       }}></div>
     </div>
