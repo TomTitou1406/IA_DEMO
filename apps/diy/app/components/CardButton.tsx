@@ -42,7 +42,7 @@ export default function CardButton({
         return {
           background: `${bgColor}40`,
           // color: color || 'var(--blue)',
-          color: "white',
+          color: 'white',
           border: `1.5px solid ${bgColor}`,
           fontWeight: '700' as const
         };
@@ -80,8 +80,9 @@ export default function CardButton({
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
   if (!disabled && variant === 'primary') {
-    e.currentTarget.style.filter = 'brightness(1.15)';
-    e.currentTarget.style.transform = 'translateY(-1px)';
+    e.currentTarget.style.filter = 'brightness(1.2)';  // Plus marqué
+    e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';  // Lift + léger zoom
+    e.currentTarget.style.boxShadow = `0 6px 20px ${color ? `${color}60` : 'rgba(37, 99, 235, 0.4)'}`;  // Glow
   } else if (!disabled && variant === 'secondary') {
     // Hover plein comme danger
     e.currentTarget.style.background = color || 'var(--blue)';  // ← Plein
@@ -98,7 +99,8 @@ export default function CardButton({
 const handleMouseLeave = (e: React.MouseEvent<HTMLElement>) => {
   if (!disabled && variant === 'primary') {
     e.currentTarget.style.filter = 'brightness(1)';
-    e.currentTarget.style.transform = 'translateY(0)';
+    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+    e.currentTarget.style.boxShadow = 'none';
   } else if (!disabled && variant === 'secondary') {
     const bgColor = color || 'var(--blue)';
     e.currentTarget.style.background = `${bgColor}40`;  // ← Retour à 40%
