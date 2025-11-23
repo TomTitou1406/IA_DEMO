@@ -132,7 +132,7 @@ export default function TachesPage() {
     
     return (
       <div style={{
-        background: background: `linear-gradient(135deg, #1a1a1a 0%, ${statusColor}15 100%)`,
+        background: `linear-gradient(135deg, #1a1a1a 0%, ${statusColor}15 100%)`,
         borderRadius: '12px',
         padding: '1rem',
         marginBottom: '0.75rem',
