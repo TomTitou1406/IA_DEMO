@@ -320,7 +320,7 @@ export default function TachesPage() {
                       style={{
                         background: `color-mix(in srgb, ${statusColor} 20%, transparent)`,  // ← color-mix
                         color: 'var(--gray-light)',
-                        border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`  // ← color-mix
+                        border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`,  // ← color-mix
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
