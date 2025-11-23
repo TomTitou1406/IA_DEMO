@@ -110,7 +110,7 @@ export default function TravauxPage() {
       case 'terminé': return 'var(--green)';
       case 'en_cours': return 'var(--blue)';
       case 'bloqué': return 'var(--orange)';
-      case 'annulé': return 'var(--gray)';
+      case 'annulé': return 'var(--red)';
       case 'à_venir': return 'var(--purple)';
       default: return 'var(--gray)';
     }
@@ -147,6 +147,7 @@ export default function TravauxPage() {
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
                      statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
                      statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
+                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :  // ← AJOUTE
                      'rgba(107, 114, 128, 0.25)';
         e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
@@ -319,7 +320,7 @@ export default function TravauxPage() {
           {travail.statut === 'annulé' && (
             <CardButton
               variant="primary"
-              color="var(--gray)"
+              color="var(--red)"
               icon="🔄"
               label="Réactiver"
               onClick={() => {
@@ -741,7 +742,7 @@ export default function TravauxPage() {
             <SectionHeader 
               title="Annulés" 
               count={annulees.length} 
-              color="var(--orange)" 
+              color="var(--red)" 
               icon="🗑️"
               isExpanded={showAnnulees}
               onToggle={() => setShowAnnulees(!showAnnulees)}
