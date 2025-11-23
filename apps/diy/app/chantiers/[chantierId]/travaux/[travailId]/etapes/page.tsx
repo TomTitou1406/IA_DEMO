@@ -144,18 +144,18 @@ export default function TravailDetailPage() {
   const getDifficultyColor = (difficulte: string) => {
     switch (difficulte) {
       case 'facile': return 'var(--green)';
-      case 'moyen': return 'var(--orange)';
-      case 'difficile': return '#ef4444';
+      case 'moyen': return 'var(--yellow)';
+      case 'difficile': return 'var(--red)';
       default: return 'var(--gray)';
     }
   };
 
   const getDifficultyIcon = (difficulte: string) => {
     switch (difficulte) {
-      case 'facile': return '✓';
-      case 'moyen': return '⚡';
-      case 'difficile': return '🔥';
-      default: return '○';
+      case 'facile': return '●○○';     // 1/3
+      case 'moyen': return '●●○';      // 2/3
+      case 'difficile': return '●●●';  // 3/3
+      default: return '○○○';
     }
   };
 
@@ -470,12 +470,12 @@ export default function TravailDetailPage() {
                     <span
                       key={idx}
                       style={{
-                        background: 'rgba(255,255,255,0.08)',
+                        background: `${statusColor}20`,  // 20% du statut (plus opaque)
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
-                        color: 'var(--gray-light)',
-                        border: '1px solid rgba(255,255,255,0.1)'
+                        color: `${statusColor}40`,
+                        border: `1px solid ${statusColor}50`  // Bordure 50% du statut
                       }}
                     >
                       {outil}
@@ -487,8 +487,8 @@ export default function TravailDetailPage() {
 
             {etape.conseils_pro && (
               <div style={{
-                background: 'rgba(251, 191, 36, 0.1)',
-                border: '1px solid rgba(251, 191, 36, 0.3)',
+                background: `${statusColor}15`,  // 15% du statut
+                border: `1px solid ${statusColor}`,
                 borderRadius: '8px',
                 padding: '0.75rem 1rem'
               }}>
@@ -496,7 +496,7 @@ export default function TravailDetailPage() {
                   fontSize: '0.9rem', 
                   fontWeight: '600', 
                   marginBottom: '0.5rem', 
-                  color: '#fbbf24',
+                  color: statusColor,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem'
