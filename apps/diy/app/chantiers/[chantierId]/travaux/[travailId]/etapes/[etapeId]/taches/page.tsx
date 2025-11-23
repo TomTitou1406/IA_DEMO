@@ -318,12 +318,12 @@ export default function TachesPage() {
                     <span
                       key={idx}
                       style={{
-                        background: `${statusColor}20`,  // 20% du statut (plus opaque)
+                        background: `color-mix(in srgb, ${statusColor} 20%, transparent)`,  // ← color-mix
+                        color: 'var(--gray-light)',
+                        border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`  // ← color-mix
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
-                        color: 'var(--white)',
-                        border: `1px solid ${statusColor}50`  // Bordure 50% du statut
                       }}
                     >
                       {outil}
@@ -335,7 +335,7 @@ export default function TachesPage() {
 
             {tache.conseils_pro && (
               <div style={{
-                background: `${statusColor}15`,  // 15% du statut
+                background: `color-mix(in srgb, ${statusColor} 15%, transparent)`,  // ← color-mix
                 border: `1px solid ${statusColor}`,
                 borderRadius: '8px',
                 padding: '0.75rem 1rem',
