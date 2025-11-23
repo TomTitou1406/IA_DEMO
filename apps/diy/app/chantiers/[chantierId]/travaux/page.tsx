@@ -208,11 +208,12 @@ export default function TravauxPage() {
               flexShrink: 0,
               alignItems: 'flex-start'
             }}>
+              
               {/* Bouton REPORTER pour EN COURS à 0% */}
               {travail.statut === 'en_cours' && travail.progression === 0 && (
                 <CardButton
                   variant="secondary"
-                  color="var(--gray)"
+                  color="var(--blue)"
                   icon="📅"
                   label="Reporter"
                   onClick={() => {
@@ -233,7 +234,7 @@ export default function TravauxPage() {
               {/* Bouton AJUSTER pour EN COURS */}
               {travail.statut === 'en_cours' && (
                 <CardButton
-                  variant="primary"
+                  variant="secondary"
                   color="var(--blue)"
                   icon="📊"
                   label="Ajuster"
