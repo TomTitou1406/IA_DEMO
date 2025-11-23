@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getTachesByEtape, demarrerTache, terminerTache } from '@/app/lib/services/tachesService';
 import ConfirmModal from '@/app/components/ConfirmModal';
+import CardButton from '../components/CardButton';
 
 interface Tache {
   id: string;
@@ -239,26 +240,11 @@ export default function TachesPage() {
               alignItems: 'flex-start'
             }}>
             {tache.statut === 'à_faire' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.45rem 0.75rem',
-                  minHeight: 'auto',
-                  background: 'rgba(16, 185, 129, 0.15)',
-                  color: 'var(--green)',
-                  fontWeight: '600',
-                  border: '1px solid rgba(16, 185, 129, 0.3)',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--green)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                  e.currentTarget.style.color = 'var(--green)';
-                }}
+              <CardButton
+                variant="secondary"
+                color="var(--green)"
+                icon="✓"
+                label="Valider"
                 onClick={async () => {
                   try {
                     await terminerTache(tache.id);
@@ -267,32 +253,15 @@ export default function TachesPage() {
                     console.error('Error completing tache:', error);
                   }
                 }}
-              >
-                ✓ Valider
-              </button>
+              />
             )}
 
             {tache.statut === 'terminée' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.45rem 0.75rem',
-                  minHeight: 'auto',
-                  background: 'rgba(37, 99, 235, 0.15)',
-                  color: 'var(--blue)',
-                  fontWeight: '600',
-                  border: '1px solid rgba(37, 99, 235, 0.3)',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'var(--blue)';
-                  e.currentTarget.style.color = 'white';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-                  e.currentTarget.style.color = 'var(--blue)';
-                }}
+              <CardButton
+                variant="secondary"
+                color="var(--blue)"
+                icon="↻"
+                label="Refaire"
                 onClick={async () => {
                   try {
                     await demarrerTache(tache.id);
@@ -301,9 +270,7 @@ export default function TachesPage() {
                     console.error('Error restarting tache:', error);
                   }
                 }}
-              >
-                ↻ Refaire
-              </button>
+              />
             )}
           </div>
         </div>
