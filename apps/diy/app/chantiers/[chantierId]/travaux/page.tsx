@@ -104,6 +104,9 @@ export default function TravauxPage() {
   const bloques = travaux.filter(t => t.statut === 'bloqué');
   const aVenir = travaux.filter(t => t.statut === 'à_venir');
   const annulees = travaux.filter(t => t.statut === 'annulé');
+  const progressionChantier = travaux.length > 0
+    ? Math.round((termines.length / travaux.length) * 100)
+    : 0;
 
   const getStatusColor = (statut: string) => {
     switch (statut) {
@@ -603,7 +606,7 @@ export default function TravauxPage() {
               overflow: 'hidden'
             }}>
               <div style={{
-                width: `${stats?.progressionMoyenne || 0}%`,
+                width: `${progressionChantier}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
                 transition: 'width 0.5s ease'
@@ -627,7 +630,7 @@ export default function TravauxPage() {
               fontWeight: '700',
               marginLeft: '0.5rem'
             }}>
-              {stats?.progressionMoyenne || 0}% complété
+              {progressionChantier}% complété
             </span>
 
             {/* Heures - SANS COULEUR BLEUE */}
