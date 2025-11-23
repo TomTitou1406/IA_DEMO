@@ -12,7 +12,7 @@ interface Etape {
   numero: number;
   titre: string;
   description: string;
-  statut: string;
+  statut: 'à_venir' | 'en_cours' | 'bloqué' | 'terminé' | 'annulé';
   progression: number;
   duree_estimee_minutes: number;
   duree_reelle_minutes?: number;
