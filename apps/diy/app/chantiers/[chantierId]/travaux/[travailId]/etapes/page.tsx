@@ -177,6 +177,7 @@ export default function TravailDetailPage() {
         const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
                      statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
+                     statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
                      'rgba(107, 114, 128, 0.25)';
         e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
