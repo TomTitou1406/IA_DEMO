@@ -6,6 +6,7 @@ import { getChantierDemo, getChantierStats } from '@/app/lib/services/chantierSe
 import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '@/app/lib/services/travauxService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useParams } from 'next/navigation';
+import CardButton from '../components/CardButton';
 
 interface Chantier {
   id: string;
@@ -209,26 +210,11 @@ export default function TravauxPage() {
             }}>
               {/* Bouton REPORTER pour EN COURS à 0% */}
               {travail.statut === 'en_cours' && travail.progression === 0 && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    color: 'var(--gray)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(107, 114, 128, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--gray)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
-                    e.currentTarget.style.color = 'var(--gray)';
-                  }}
+                <CardButton
+                  variant="secondary"
+                  color="var(--gray)"
+                  icon="📅"
+                  label="Reporter"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -241,75 +227,44 @@ export default function TravauxPage() {
                       }
                     });
                   }}
-                >
-                  📅 Reporter
-                </button>
+                />
               )}
 
               {/* Bouton AJUSTER pour EN COURS */}
               {travail.statut === 'en_cours' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
-                  }}
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="📊"
+                  label="Ajuster"
                   onClick={() => {
                     setTempProgression(travail.progression);
                     setEditingTravailId(travail.id);
                   }}
-                >
-                  📊 Ajuster
-                </button>
+                />
               )}
 
               {/* Bouton DÉBLOQUER pour BLOQUÉS */}
               {travail.statut === 'bloqué' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'var(--orange)',
-                    color: 'white',
-                    fontWeight: '600',
-                    border: 'none',
-                    whiteSpace: 'nowrap'
+                <CardButton
+                  variant="primary"
+                  color="var(--orange)"
+                  icon="🔓"
+                  label="Débloquer"
+                  onClick={() => {
+                    // TODO: Implémenter debloquerTravail()
+                    console.log('Débloquer travail:', travail.id);
                   }}
-                >
-                  🔓 Débloquer
-                </button>
+                />
               )}
 
               {/* Bouton COMMENCER pour À VENIR */}
               {travail.statut === 'à_venir' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'var(--blue)',  
-                    color: 'white',
-                    fontWeight: '600',
-                    border: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="▶️"
+                  label="Commencer"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -322,57 +277,26 @@ export default function TravauxPage() {
                       }
                     });
                   }}
-                >
-                  ▶️ Commencer
-                </button>
+                />
               )}
 
               {/* Bouton X ÉTAPES (pour tous sauf annulés) */}
               {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
-                <Link 
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="🎯"
+                  label="étapes"
+                  count={travail.etapes?.etapes?.length || 0}
                   href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.3rem',
-                    background: 'var(--blue)',  
-                    color: 'white',
-                    padding: '0.45rem 0.75rem',
-                    borderRadius: '12px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  🎯 {travail.etapes?.etapes?.length || 0} étapes
-                </Link>
-              )}
+                />
 
               {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
               {travail.statut !== 'terminé' && (
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(239, 68, 68, 0.15)',
-                    color: '#ef4444',
-                    fontWeight: '600',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#ef4444';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                    e.currentTarget.style.color = '#ef4444';
-                  }}
+                <CardButton
+                  variant="danger"
+                  icon="🗑️"
+                  label="Annuler"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -385,43 +309,30 @@ export default function TravauxPage() {
                       }
                     });
                   }}
-                >
-                  🗑️ Annuler
-                </button>
+                />
               )}
             </div>
           )}
 
           {/* Bouton Réactiver pour annulés */}
           {travail.statut === 'annulé' && (
-            <button 
-              className="main-btn"
-              style={{
-                fontSize: '0.75rem',
-                padding: '0.45rem 0.75rem',
-                minHeight: 'auto',
-                background: 'var(--gray)',  // ← GRIS PLEIN
-                color: 'white',
-                fontWeight: '600',
-                border: '1px solid rgba(37, 99, 235, 0.3)',
-                whiteSpace: 'nowrap',
-                flexShrink: 0
-              }}
-             onClick={() => {
+            <CardButton
+              variant="danger"
+              icon="🗑️"
+              label="Annuler"
+              onClick={() => {
                 setModalConfig({
                   isOpen: true,
-                  title: 'Réactiver cette tâche ?',
-                  message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
+                  title: 'Annuler cette tâche ?',
+                  message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
                   onConfirm: async () => {
-                    await reactiverTravail(travail.id);
+                    await annulerTravail(travail.id);
                     setModalConfig({ ...modalConfig, isOpen: false });
                     window.location.reload();
                   }
                 });
               }}
-            >
-              🔄 Réactiver
-            </button>
+            />
           )}
         </div>
 
