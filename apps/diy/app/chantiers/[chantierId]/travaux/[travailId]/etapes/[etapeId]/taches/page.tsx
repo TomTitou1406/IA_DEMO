@@ -5,7 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import { getTachesByEtape, demarrerTache, terminerTache } from '@/app/lib/services/tachesService';
 import ConfirmModal from '@/app/components/ConfirmModal';
-import CardButton from '../components/CardButton';
+import CardButton from '@/app/components/CardButton';
 
 interface Tache {
   id: string;
