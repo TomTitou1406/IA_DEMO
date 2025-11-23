@@ -5,6 +5,7 @@ import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape } from '@/app/lib/services/etapesService';
+import CardButton from '@/app/components/CardButton';
 
 interface Etape {
   id: string;
@@ -290,18 +291,11 @@ export default function TravailDetailPage() {
             {/* Bouton Démarrer (à_venir) - BLEU PLEIN */}
             {etape.statut === 'à_venir' && (
               <>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'var(--blue)',
-                    color: 'white',
-                    fontWeight: '600',
-                    border: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
+                <CardButton
+                  variant="primary"
+                  color="var(--purple)"
+                  icon="🚀"
+                  label="Démarrer"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -314,206 +308,120 @@ export default function TravailDetailPage() {
                       }
                     });
                   }}
-                >
-                  🚀 Démarrer
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'var(--blue)',
-                    color: 'white',
-                    fontWeight: '600',
-                    border: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
+                />
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="📋"
+                  label="Tâches"
                   onClick={() => {
                     window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
                   }}
-                >
-                  📋 Tâches
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    color: 'var(--gray)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(107, 114, 128, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--gray)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
-                    e.currentTarget.style.color = 'var(--gray)';
-                  }}
+                />
+                <CardButton
+                  variant="danger"
+                  icon="🗑️"
+                  label="Annuler"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
                       title: 'Annuler cette étape ?',
                       message: `"${etape.titre}" sera marquée comme annulée.`,
                       onConfirm: async () => {
+                        await annulerEtape(etape.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
                         window.location.reload();
                       }
                     });
                   }}
-                >
-                  🗑️ Annuler
-                </button>
+                />
               </>
             )}
 
             {/* Boutons en_cours - BLEU PLEIN pour Tâches */}
             {etape.statut === 'en_cours' && (
               <>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'var(--blue)',
-                    color: 'white',
-                    fontWeight: '600',
-                    border: 'none',
-                    whiteSpace: 'nowrap'
-                  }}
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="📋"
+                  label="Tâches"
                   onClick={() => {
                     window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
                   }}
-                >
-                  📋 Tâches
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
-                  }}
+                />
+                <CardButton
+                  variant="secondary"
+                  color="var(--green)"
+                  icon="✓"
+                  label="Terminer"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
                       title: 'Terminer cette étape ?',
                       message: `"${etape.titre}" sera marquée comme terminée.`,
                       onConfirm: async () => {
-                        // TODO: API call
+                        // TODO: API call terminerEtape
                         setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
                       }
                     });
                   }}
-                >
-                  ✓ Terminer
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.45rem 0.75rem',
-                    minHeight: 'auto',
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    color: 'var(--gray)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(107, 114, 128, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--gray)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
-                    e.currentTarget.style.color = 'var(--gray)';
-                  }}
+                />
+                <CardButton
+                  variant="danger"
+                  icon="🗑️"
+                  label="Annuler"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
                       title: 'Annuler cette étape ?',
                       message: `"${etape.titre}" sera marquée comme annulée.`,
                       onConfirm: async () => {
+                        await annulerEtape(etape.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
                         window.location.reload();
                       }
                     });
                   }}
-                >
-                  🗑️ Annuler
-                </button>
+                />
               </>
             )}
 
             {/* Bouton Débloquer (bloqué) - ORANGE PLEIN */}
             {etape.statut === 'bloqué' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.45rem 0.75rem',
-                  minHeight: 'auto',
-                  background: 'var(--orange)',
-                  color: 'white',
-                  fontWeight: '600',
-                  border: 'none',
-                  whiteSpace: 'nowrap'
-                }}
+              <CardButton
+                variant="primary"
+                color="var(--orange)"
+                icon="🔓"
+                label="Débloquer"
                 onClick={() => {
-                  // TODO: API call débloquer
+                  // TODO: Implémenter debloquerEtape()
+                  console.log('Débloquer étape:', etape.id);
                 }}
-              >
-                🔓 Débloquer
-              </button>
+              />
             )}
 
             {/* Bouton Réactiver (annulé) - GRIS PLEIN */}
             {etape.statut === 'annulé' && (
-              <button 
-                className="main-btn"
-                style={{
-                  fontSize: '0.75rem',
-                  padding: '0.45rem 0.75rem',
-                  minHeight: 'auto',
-                  background: 'var(--gray)',
-                  color: 'white',
-                  fontWeight: '600',
-                  border: 'none',
-                  whiteSpace: 'nowrap'
-                }}
+              <CardButton
+                variant="primary"
+                color="var(--gray)"
+                icon="↻"
+                label="Réactiver"
                 onClick={() => {
                   setModalConfig({
                     isOpen: true,
                     title: 'Réactiver cette étape ?',
                     message: `"${etape.titre}" repassera à l'état "à venir".`,
                     onConfirm: async () => {
+                      await reactiverEtape(etape.id);
                       setModalConfig({ ...modalConfig, isOpen: false });
                       window.location.reload();
                     }
                   });
                 }}
-              >
-                ↻ Réactiver
-              </button>
+              />
             )}
           </div>
           )}
