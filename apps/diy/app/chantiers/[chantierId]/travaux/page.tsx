@@ -407,7 +407,7 @@ export default function TravauxPage() {
                       padding: '0.5rem 1rem',
                       minHeight: 'auto',
                       flex: 1,
-                      background: 'var(--green)',
+                      background: 'var(--blue)',
                       color: 'white',
                       fontWeight: '700',
                       border: 'none'
@@ -427,9 +427,9 @@ export default function TravauxPage() {
                       padding: '0.5rem 1rem',
                       minHeight: 'auto',
                       flex: 1,
-                      background: 'rgba(255,255,255,0.1)',
-                      color: 'var(--gray-light)',
-                      border: '1px solid rgba(255,255,255,0.2)'
+                      background: `color-mix(in srgb, var(--blue) 40%, transparent)`,  // ← BLEU
+                      color: 'white',
+                      border: `1.5px solid var(--blue)`  // ← Bordure bleue
                     }}
                     onClick={() => setEditingTravailId(null)}
                   >
