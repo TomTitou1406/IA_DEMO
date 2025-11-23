@@ -6,7 +6,7 @@ import { getChantierDemo, getChantierStats } from '@/app/lib/services/chantierSe
 import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '@/app/lib/services/travauxService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useParams } from 'next/navigation';
-import CardButton from '../components/CardButton';
+import CardButton from '@/app/components/CardButton';
 
 interface Chantier {
   id: string;
