@@ -110,8 +110,8 @@ export default function TravailDetailPage() {
 
   // Calculer les stats
   const totalEtapes = etapes.length;
-  const progressionMoyenne = totalEtapes > 0 
-    ? Math.round(etapes.reduce((sum, e) => sum + (e.progression || 0), 0) / totalEtapes)
+  const progressionAuto = totalEtapes > 0 
+    ? Math.round((terminees.length / totalEtapes) * 100)
     : 0;
   const dureeReelleMinutes = etapes.reduce((sum, e) => sum + (e.duree_reelle_minutes || 0), 0);
   const dureeEstimeeMinutes = etapes.reduce((sum, e) => sum + (e.duree_estimee_minutes || 0), 0);
@@ -686,7 +686,7 @@ export default function TravailDetailPage() {
               overflow: 'hidden'
             }}>
               <div style={{
-                width: `${progressionMoyenne}%`,
+                width: `${progressionAuto}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
                 transition: 'width 0.5s ease'
@@ -708,7 +708,7 @@ export default function TravailDetailPage() {
               fontSize: '1.1rem', 
               fontWeight: '700' 
             }}>
-              {progressionMoyenne}% complété
+              {progressionAuto}% complété
             </span>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
