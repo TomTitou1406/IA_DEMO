@@ -110,6 +110,7 @@ export default function TravauxPage() {
       case 'terminé': return 'var(--green)';
       case 'en_cours': return 'var(--blue)';
       case 'bloqué': return 'var(--orange)';
+      case 'annulé': return 'var(--gray)';
       case 'à_venir': return 'var(--purple)';
       default: return 'var(--gray)';
     }
@@ -531,7 +532,7 @@ export default function TravauxPage() {
       </div>
       <div style={{
         height: '2px',
-        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, ${color} 80%)`,
         marginBottom: '0.75rem'
       }}></div>
     </div>
