@@ -110,6 +110,7 @@ export default function TravauxPage() {
       case 'terminé': return 'var(--green)';
       case 'en_cours': return 'var(--blue)';
       case 'bloqué': return 'var(--orange)';
+      case 'à_venir': return 'var(--purple)';
       default: return 'var(--gray)';
     }
   };
