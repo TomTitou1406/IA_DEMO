@@ -143,14 +143,12 @@ export default function TravauxPage() {
         opacity: isAnnulee ? 0.6 : 1
       }}
      onMouseEnter={(e) => {
-        if (!isAnnulee) {
-          const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
-                       statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
-                       statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
-                       statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :  // ← Ajoute
-                       'rgba(107, 114, 128, 0.25)';
-          e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
-        }
+        const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
+                     statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
+                     statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
+                     statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
+                     'rgba(107, 114, 128, 0.25)';
+        e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
@@ -743,7 +741,7 @@ export default function TravauxPage() {
             <SectionHeader 
               title="Annulés" 
               count={annulees.length} 
-              color="var(--gray)" 
+              color="var(--orange)" 
               icon="🗑️"
               isExpanded={showAnnulees}
               onToggle={() => setShowAnnulees(!showAnnulees)}
