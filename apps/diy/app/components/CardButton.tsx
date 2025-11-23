@@ -41,19 +41,20 @@ export default function CardButton({
         // Bouton transparent avec bordure
         const bgColor = color || 'var(--blue)';
         return {
-          background: `${bgColor}15`,  // 15% opacity
+          background: `${bgColor}25`,  // 25% opacity
           color: color || 'var(--blue)',
-          border: `1px solid ${bgColor}30`,
-          fontWeight: '600' as const
+          border: `1.5px solid ${bgColor}`,
+          fontWeight: '700' as const
         };
       
       case 'danger':
         // Bouton danger (rouge)
+        const bgColor = color || 'var(--red)';
         return {
-          background: 'rgba(239, 68, 68, 0.15)',
-          color: '#ef4444',
-          border: '1px solid rgba(239, 68, 68, 0.3)',
-          fontWeight: '600' as const
+          background: `${bgColor}30`,  // 30% opacity
+          color: 'var(--red)',
+          border: `1.5px solid ${bgColor}`,
+          fontWeight: '700' as const
         };
     }
   };
@@ -81,10 +82,14 @@ export default function CardButton({
       e.currentTarget.style.filter = 'brightness(1.15)';
       e.currentTarget.style.transform = 'translateY(-1px)';
     } else if (!disabled && variant === 'secondary') {
-      e.currentTarget.style.background = color ? `${color}25` : 'rgba(37, 99, 235, 0.25)';
+      // Hover plus marqué pour secondary
+      e.currentTarget.style.background = color ? `${color}40` : 'rgba(37, 99, 235, 0.4)';  // 40% au lieu de 25%
+      e.currentTarget.style.borderColor = color || 'var(--blue)';
+      e.currentTarget.style.transform = 'translateY(-1px)';  // Ajoute lift
     } else if (!disabled && variant === 'danger') {
       e.currentTarget.style.background = '#ef4444';
       e.currentTarget.style.color = 'white';
+      e.currentTarget.style.transform = 'translateY(-1px)';  // Ajoute lift
     }
   };
 
@@ -94,10 +99,13 @@ export default function CardButton({
       e.currentTarget.style.transform = 'translateY(0)';
     } else if (!disabled && variant === 'secondary') {
       const bgColor = color || 'var(--blue)';
-      e.currentTarget.style.background = `${bgColor}15`;
+      e.currentTarget.style.background = `${bgColor}25`;
+      e.currentTarget.style.borderColor = bgColor;
+      e.currentTarget.style.transform = 'translateY(0)';
     } else if (!disabled && variant === 'danger') {
-      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
+      e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
       e.currentTarget.style.color = '#ef4444';
+      e.currentTarget.style.transform = 'translateY(0)';
     }
   };
 
