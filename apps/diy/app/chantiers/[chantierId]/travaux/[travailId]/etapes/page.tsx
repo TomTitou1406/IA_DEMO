@@ -125,6 +125,7 @@ export default function TravailDetailPage() {
       case 'en_cours': return 'var(--blue)';
       case 'bloqué': return 'var(--orange)';
       case 'annulé': return 'var(--gray)';
+      case 'à_venir': return 'var(--purple)';
       default: return 'var(--gray)';
     }
   };
@@ -310,7 +311,7 @@ export default function TravailDetailPage() {
                   }}
                 />
                 <CardButton
-                  variant="primary"
+                  variant="secondary"
                   color="var(--blue)"
                   icon="📋"
                   label="Tâches"
@@ -352,7 +353,7 @@ export default function TravailDetailPage() {
                 />
                 <CardButton
                   variant="secondary"
-                  color="var(--green)"
+                  color="var(--blue)"
                   icon="✓"
                   label="Terminer"
                   onClick={() => {
@@ -406,7 +407,7 @@ export default function TravailDetailPage() {
             {etape.statut === 'annulé' && (
               <CardButton
                 variant="primary"
-                color="var(--gray)"
+                color="var(--white)"
                 icon="↻"
                 label="Réactiver"
                 onClick={() => {
@@ -789,7 +790,7 @@ export default function TravailDetailPage() {
             <SectionHeader 
               title="À venir" 
               count={aVenir.length} 
-              color="var(--gray)" 
+              color="var(--purple)" 
               icon="📅"
               isExpanded={showAVenir}
               onToggle={() => setShowAVenir(!showAVenir)}
