@@ -121,7 +121,8 @@ export default function TravauxPage() {
       case 'en_cours': return '🔨';
       case 'bloqué': return '🚫';
       case 'annulé': return '🗑️';
-      default: return '📅';
+      case 'à_venir': return '📅';
+      default: return '✅';
     }
   };
 
@@ -276,7 +277,7 @@ export default function TravauxPage() {
               {travail.statut === 'à_venir' && (
                 <CardButton
                   variant="primary"
-                  color="var(--blue)"
+                  color="var(--purple)"
                   icon="▶️"
                   label="Commencer"
                   onClick={() => {
