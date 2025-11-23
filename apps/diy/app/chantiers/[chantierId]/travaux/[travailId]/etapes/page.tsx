@@ -136,7 +136,8 @@ export default function TravailDetailPage() {
       case 'en_cours': return '🔨';
       case 'bloqué': return '🚫';
       case 'annulé': return '🗑️';
-      default: return '📅';
+      case 'à_venir': return '📅';
+      default: return '✅';
     }
   };
 
