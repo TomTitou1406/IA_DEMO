@@ -143,8 +143,7 @@ export default function TravauxPage() {
         borderLeft: `4px solid ${statusColor}`,
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         transition: 'all 0.2s',
-        opacity: isAnnulee ? 0.6 : 1
-      }}
+     }}
      onMouseEnter={(e) => {
         const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
