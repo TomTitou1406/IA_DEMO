@@ -290,7 +290,8 @@ export default function TravauxPage() {
                   count={travail.etapes?.etapes?.length || 0}
                   href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
                 />
-
+              )}
+              
               {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
               {travail.statut !== 'terminé' && (
                 <CardButton
@@ -317,16 +318,17 @@ export default function TravauxPage() {
           {/* Bouton Réactiver pour annulés */}
           {travail.statut === 'annulé' && (
             <CardButton
-              variant="danger"
-              icon="🗑️"
-              label="Annuler"
+              variant="primary"
+              color="var(--gray)"
+              icon="🔄"
+              label="Réactiver"
               onClick={() => {
                 setModalConfig({
                   isOpen: true,
-                  title: 'Annuler cette tâche ?',
-                  message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
+                  title: 'Réactiver cette tâche ?',
+                  message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
                   onConfirm: async () => {
-                    await annulerTravail(travail.id);
+                    await reactiverTravail(travail.id);
                     setModalConfig({ ...modalConfig, isOpen: false });
                     window.location.reload();
                   }
