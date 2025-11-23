@@ -12,7 +12,7 @@ interface Etape {
   numero: number;
   titre: string;
   description: string;
-  statut: 'à_venir' | 'en_cours' | 'bloqué' | 'terminé' | 'annulé';
+  statut: string;
   progression: number;
   duree_estimee_minutes: number;
   duree_reelle_minutes?: number;
@@ -185,7 +185,7 @@ export default function TravailDetailPage() {
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
                      statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
                      statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
-                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :  // ← AJOUTE
+                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :
                      'rgba(107, 114, 128, 0.25)';
         e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
@@ -266,11 +266,11 @@ export default function TravailDetailPage() {
               )}
               {etape.statut === 'en_cours' && (
                 <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
-                  {etape.progression || 0}%
+                  {progressionAuto}%
                 </span>
               )}
             </div>
-
+  
             {etape.blocage_raison && (
               <p style={{ 
                 fontSize: '0.85rem', 
@@ -288,8 +288,8 @@ export default function TravailDetailPage() {
               </p>
             )}
           </div>
-
-          {/* Boutons selon statut - NON CLIQUABLES pour éviter conflit */}
+  
+          {/* Boutons selon statut */}
           {etape.statut !== 'terminé' && (
           <div 
             onClick={(e) => e.stopPropagation()}
@@ -299,7 +299,7 @@ export default function TravailDetailPage() {
               flexShrink: 0,
               alignItems: 'flex-start'
             }}>
-            {/* Bouton Démarrer (à_venir) - BLEU PLEIN */}
+            {/* Boutons à_venir */}
             {etape.statut === 'à_venir' && (
               <>
                 <CardButton
@@ -329,21 +329,6 @@ export default function TravailDetailPage() {
                     window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
                   }}
                 />
-
-                {/* Bouton AJUSTER pour EN COURS */}
-                {etape.statut === 'en_cours' && editingEtapeId !== etape.id && (
-                  <CardButton
-                    variant="secondary"
-                    color="var(--blue)"
-                    icon="📊"
-                    label="Ajuster"
-                    onClick={() => {
-                      setTempProgression(progressionAuto);
-                      setEditingEtapeId(etape.id);
-                    }}
-                  />
-                )}
-                
                 <CardButton
                   variant="danger"
                   icon="🗑️"
@@ -363,11 +348,11 @@ export default function TravailDetailPage() {
                 />
               </>
             )}
-
+  
             {/* Boutons en_cours */}
             {etape.statut === 'en_cours' && editingEtapeId !== etape.id && (
               <>
-                {/* Bouton TÂCHES - avec count si nombre_taches existe */}
+                {/* Bouton TÂCHES */}
                 {etape.nombre_taches && etape.nombre_taches > 0 && (
                   <CardButton
                     variant="primary"
@@ -381,7 +366,7 @@ export default function TravailDetailPage() {
                   />
                 )}
                 
-                {/* Bouton AJUSTER - NOUVEAU */}
+                {/* Bouton AJUSTER */}
                 <CardButton
                   variant="secondary"
                   color="var(--blue)"
@@ -433,8 +418,8 @@ export default function TravailDetailPage() {
                 />
               </>
             )}
-
-            {/* Bouton Débloquer (bloqué) - ORANGE PLEIN */}
+  
+            {/* Bouton Débloquer (bloqué) */}
             {etape.statut === 'bloqué' && (
               <CardButton
                 variant="primary"
@@ -447,7 +432,7 @@ export default function TravailDetailPage() {
                 }}
               />
             )}
-
+  
             {/* Bouton Réactiver (annulé) */}
             {etape.statut === 'annulé' && (
               <CardButton
@@ -472,7 +457,135 @@ export default function TravailDetailPage() {
           </div>
           )}
         </div>
-
+  
+        {/* Progress bar OU Slider inline - POUR EN_COURS */}
+        {etape.statut === 'en_cours' && (
+          <>
+            {editingEtapeId === etape.id ? (
+              // MODE ÉDITION : Slider inline
+              <div style={{ marginBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    step="5"
+                    value={tempProgression}
+                    onChange={(e) => setTempProgression(parseInt(e.target.value))}
+                    style={{
+                      flex: 1,
+                      height: '8px',
+                      borderRadius: '10px',
+                      outline: 'none',
+                      background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, rgba(255,255,255,0.1) ${tempProgression}%, rgba(255,255,255,0.1) 100%)`,
+                      cursor: 'pointer',
+                      WebkitAppearance: 'none',
+                      appearance: 'none'
+                    }}
+                  />
+                  <button
+                    onClick={() => setTempProgression(100)}
+                    style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      border: '1px solid rgba(255,255,255,0.2)',
+                      borderRadius: '6px',
+                      padding: '0.3rem 0.6rem',
+                      fontSize: '0.7rem',
+                      cursor: 'pointer',
+                      fontWeight: '600',
+                      color: 'var(--gray-light)',
+                      transition: 'all 0.2s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+                    }}
+                  >
+                    100%
+                  </button>
+                  <span style={{ 
+                    fontWeight: '700', 
+                    minWidth: '45px', 
+                    textAlign: 'right',
+                    fontSize: '0.95rem',
+                    color: 'var(--blue)'
+                  }}>
+                    {tempProgression}%
+                  </span>
+                </div>
+  
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button 
+                    className="main-btn"
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '0.5rem 1rem',
+                      minHeight: 'auto',
+                      flex: 1,
+                      background: 'var(--blue)',
+                      color: 'white',
+                      fontWeight: '700',
+                      border: 'none'
+                    }}
+                    onClick={async () => {
+                      // TODO: Implémenter updateEtapeProgression
+                      console.log('Update progression:', etape.id, tempProgression);
+                      setEditingEtapeId(null);
+                      // window.location.reload();
+                    }}
+                  >
+                    ✓ Valider
+                  </button>
+                  <button 
+                    className="main-btn"
+                    style={{
+                      fontSize: '0.8rem',
+                      padding: '0.5rem 1rem',
+                      minHeight: 'auto',
+                      flex: 1,
+                      background: `color-mix(in srgb, var(--blue) 40%, transparent)`,
+                      color: 'white',
+                      border: `1.5px solid var(--blue)`
+                    }}
+                    onClick={() => setEditingEtapeId(null)}
+                  >
+                    ✕ Annuler
+                  </button>
+                </div>
+              </div>
+            ) : (
+              // MODE NORMAL : Barre de progression
+              <div style={{ marginBottom: '0.5rem' }}>
+                <div style={{
+                  width: '100%',
+                  height: '6px',
+                  background: 'rgba(255,255,255,0.08)',
+                  borderRadius: '10px',
+                  overflow: 'hidden',
+                  marginBottom: '0.4rem'
+                }}>
+                  <div style={{
+                    width: `${progressionAuto}%`,
+                    height: '100%',
+                    background: 'var(--blue)',
+                    transition: 'width 0.5s ease'
+                  }}></div>
+                </div>
+                <p style={{ 
+                  fontSize: '0.85rem', 
+                  fontWeight: '600',
+                  color: 'var(--gray-light)',
+                  margin: 0
+                }}>
+                  {progressionAuto}%
+                </p>
+              </div>
+            )}
+          </>
+        )}
+  
         {/* Contenu détaillé - expandable */}
         {isExpanded && (
           <div style={{
@@ -498,7 +611,7 @@ export default function TravailDetailPage() {
                 {etape.description}
               </p>
             </div>
-
+  
             {etape.outils_necessaires?.length > 0 && (
               <div style={{ marginBottom: '1rem' }}>
                 <h4 style={{ 
@@ -518,7 +631,7 @@ export default function TravailDetailPage() {
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
-                        color: `${statusColor}40`,
+                        color: 'var(--gray-light)',
                         border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`
                       }}
                     >
@@ -528,7 +641,7 @@ export default function TravailDetailPage() {
                 </div>
               </div>
             )}
-
+  
             {etape.conseils_pro && (
               <div style={{
                 background: `color-mix(in srgb, ${statusColor} 15%, transparent)`,
