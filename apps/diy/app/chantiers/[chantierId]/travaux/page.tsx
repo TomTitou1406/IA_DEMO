@@ -208,6 +208,18 @@ export default function TravauxPage() {
               flexShrink: 0,
               alignItems: 'flex-start'
             }}>
+
+              {/* Bouton X ÉTAPES (pour tous sauf annulés) */}
+              {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="🎯"
+                  label="Voir les étapes"
+                  count={travail.etapes?.etapes?.length || 0}
+                  href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
+                />
+              )}
               
               {/* Bouton REPORTER pour EN COURS à 0% */}
               {travail.statut === 'en_cours' && travail.progression === 0 && (
@@ -280,18 +292,6 @@ export default function TravauxPage() {
                   }}
                 />
               )}
-
-              {/* Bouton X ÉTAPES (pour tous sauf annulés) */}
-              {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
-                <CardButton
-                  variant="primary"
-                  color="var(--blue)"
-                  icon="🎯"
-                  label="étapes"
-                  count={travail.etapes?.etapes?.length || 0}
-                  href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
-                />
-              )}
               
               {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
               {travail.statut !== 'terminé' && (
@@ -320,7 +320,7 @@ export default function TravauxPage() {
           {travail.statut === 'annulé' && (
             <CardButton
               variant="primary"
-              color="var(--gray)"
+              color="var(--white)"
               icon="🔄"
               label="Réactiver"
               onClick={() => {
