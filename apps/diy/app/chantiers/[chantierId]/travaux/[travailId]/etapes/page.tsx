@@ -165,7 +165,7 @@ export default function TravailDetailPage() {
     
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
+        background: `linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, ${statusColor} 50%, #1a1a1a) 100%)`,
         borderRadius: '12px',
         padding: '1rem',
         marginBottom: '0.75rem',
@@ -470,12 +470,12 @@ export default function TravailDetailPage() {
                     <span
                       key={idx}
                       style={{
-                        background: `${statusColor}20`,  // 20% du statut (plus opaque)
+                        background: `color-mix(in srgb, ${statusColor} 20%, transparent)`,
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
                         color: `${statusColor}40`,
-                        border: `1px solid ${statusColor}50`  // Bordure 50% du statut
+                        border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`
                       }}
                     >
                       {outil}
@@ -487,7 +487,7 @@ export default function TravailDetailPage() {
 
             {etape.conseils_pro && (
               <div style={{
-                background: `${statusColor}15`,  // 15% du statut
+                background: `color-mix(in srgb, ${statusColor} 15%, transparent)`,
                 border: `1px solid ${statusColor}`,
                 borderRadius: '8px',
                 padding: '0.75rem 1rem'
@@ -579,7 +579,7 @@ export default function TravailDetailPage() {
       </div>
       <div style={{
         height: '2px',
-        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, ${color} 80%)`,
         marginBottom: '0.75rem'
       }}></div>
     </div>
