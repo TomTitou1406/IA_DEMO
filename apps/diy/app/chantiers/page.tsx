@@ -117,6 +117,9 @@ export default function ChantiersPage() {
   const ChantierCard = ({ chantier }: { chantier: Chantier }) => {
     const statusColor = getStatusColor(chantier.statut);
     const stats = chantier.stats;
+    const progressionChantier = stats?.total && stats.total > 0
+      ? Math.round((stats.termines / stats.total) * 100)
+      : 0;
     
     return (
       <div style={{
@@ -255,7 +258,7 @@ export default function ChantiersPage() {
               overflow: 'hidden'
             }}>
               <div style={{
-                width: `${stats.progressionMoyenne || 0}%`,
+                width: `${progressionChantier}%`,
                 height: '100%',
                 background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
                 transition: 'width 0.5s ease'
@@ -281,7 +284,7 @@ export default function ChantiersPage() {
               <span style={{ fontSize: '1rem' }}>📊</span>
               <span>
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats.progressionMoyenne || 0}%
+                  {progressionChantier}%
                 </strong>
                 <span style={{ opacity: 0.8, marginLeft: '0.3rem' }}>complété</span>
               </span>
