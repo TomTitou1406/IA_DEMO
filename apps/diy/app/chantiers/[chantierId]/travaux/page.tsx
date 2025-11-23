@@ -321,7 +321,7 @@ export default function TravauxPage() {
           {travail.statut === 'annulé' && (
             <CardButton
               variant="primary"
-              color="var(--white)"
+              color="var(--gray)"
               icon="🔄"
               label="Réactiver"
               onClick={() => {
@@ -737,11 +737,11 @@ export default function TravauxPage() {
           </section>
         )}
 
-        {/* Section ANNULÉES (collapsible) */}
+        {/* Section ANNULÉS (collapsible) */}
         {annulees.length > 0 && (
           <section style={{ marginBottom: '1.5rem' }}>
             <SectionHeader 
-              title="Annulées" 
+              title="Annulés" 
               count={annulees.length} 
               color="var(--gray)" 
               icon="🗑️"
