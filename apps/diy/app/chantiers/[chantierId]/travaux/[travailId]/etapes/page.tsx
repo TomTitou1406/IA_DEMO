@@ -124,7 +124,7 @@ export default function TravailDetailPage() {
       case 'terminé': return 'var(--green)';
       case 'en_cours': return 'var(--blue)';
       case 'bloqué': return 'var(--orange)';
-      case 'annulé': return 'var(--gray)';
+      case 'annulé': return 'var(--red)';
       case 'à_venir': return 'var(--purple)';
       default: return 'var(--gray)';
     }
