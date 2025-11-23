@@ -316,27 +316,27 @@ export default function TravauxPage() {
             </div>
           )}
 
-          {/* Bouton Réactiver (annulé) */}
-            {etape.statut === 'annulé' && (
-              <CardButton
-                variant="primary"
-                color="var(--red)"
-                icon="↻"
-                label="Réactiver"
-                onClick={() => {
-                  setModalConfig({
-                    isOpen: true,
-                    title: 'Réactiver cette étape ?',
-                    message: `"${etape.titre}" repassera à l'état "à venir".`,
-                    onConfirm: async () => {
-                      await reactiverEtape(etape.id);
-                      setModalConfig({ ...modalConfig, isOpen: false });
-                      window.location.reload();
-                    }
-                  });
-                }}
-              />
-            )}
+          {/* Bouton Réactiver pour annulés */}
+          {travail.statut === 'annulé' && (
+            <CardButton
+              variant="primary"
+              color="var(--red)"
+              icon="↻"
+              label="Réactiver"
+              onClick={() => {
+                setModalConfig({
+                  isOpen: true,
+                  title: 'Réactiver cette tâche ?',
+                  message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
+                  onConfirm: async () => {
+                    await reactiverTravail(travail.id);
+                    setModalConfig({ ...modalConfig, isOpen: false });
+                    window.location.reload();
+                  }
+                });
+              }}
+            />
+          )}
         </div>
 
         {/* Progress bar OU Slider inline */}
