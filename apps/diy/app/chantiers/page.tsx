@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAllChantiers, getChantierStats } from '../lib/services/chantierService';
+import CardButton from '../components/CardButton';
 
 interface Chantier {
   id: string;
@@ -179,183 +180,69 @@ export default function ChantiersPage() {
             {/* NOUVEAU */}
             {chantier.statut === 'nouveau' && (
               <>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
-                  }}
-                >
-                  🚀 Démarrer
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(37, 99, 235, 0.15)',
-                    color: 'var(--blue)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(37, 99, 235, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--blue)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-                    e.currentTarget.style.color = 'var(--blue)';
-                  }}
-                >
-                  📝 Configurer
-                </button>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(239, 68, 68, 0.15)',
-                    color: '#ef4444',
-                    fontWeight: '600',
-                    border: '1px solid rgba(239, 68, 68, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#ef4444';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.15)';
-                    e.currentTarget.style.color = '#ef4444';
-                  }}
-                >
-                  🗑️ Supprimer
-                </button>
+                <CardButton
+                  variant="secondary"
+                  color="var(--green)"
+                  icon="🚀"
+                  label="Démarrer"
+                  onClick={() => console.log('Démarrer chantier')}
+                />
+                <CardButton
+                  variant="secondary"
+                  color="var(--blue)"
+                  icon="📝"
+                  label="Configurer"
+                  onClick={() => console.log('Configurer chantier')}
+                />
+                <CardButton
+                  variant="danger"
+                  icon="🗑️"
+                  label="Supprimer"
+                  onClick={() => console.log('Supprimer chantier')}
+                />
               </>
             )}
 
             {/* EN COURS (ou ACTIF ou NULL - anciens statuts) */}
             {(chantier.statut === 'en_cours' || chantier.statut === 'actif' || !chantier.statut) && (
               <>
-                <Link 
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="📋"
+                  label="Voir lots"
+                  count={stats?.total || 0}
                   href={`/chantiers/${chantier.id}/travaux`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    background: 'rgba(37, 99, 235, 0.15)',
-                    color: 'var(--blue)',
-                    padding: '0.5rem 0.85rem',
-                    borderRadius: '12px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    border: '1px solid rgba(37, 99, 235, 0.3)',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--blue)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(37, 99, 235, 0.15)';
-                    e.currentTarget.style.color = 'var(--blue)';
-                  }}
-                >
-                  📋 Voir lots ({stats?.total || 0})
-                </Link>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(255,255,255,0.08)',
-                    color: 'var(--gray-light)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(255,255,255,0.1)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
-                  }}
-                >
-                  ✏️ Modifier
-                </button>
+                />
+                <CardButton
+                  variant="secondary"
+                  color="var(--gray-light)"
+                  icon="✏️"
+                  label="Modifier"
+                  onClick={() => console.log('Modifier chantier')}
+                />
               </>
             )}
 
             {/* TERMINÉ */}
             {chantier.statut === 'terminé' && (
               <>
-                <Link 
+                <CardButton
+                  variant="primary"
+                  color="var(--blue)"
+                  icon="📋"
+                  label="Voir lots"
                   href={`/chantiers/${chantier.id}/travaux`}
-                  style={{
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '0.35rem',
-                    background: 'var(--blue)',  
-                    color: 'white',
-                    padding: '0.5rem 0.85rem',
-                    borderRadius: '12px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600',
-                    textDecoration: 'none',
-                    border: '1px solid rgba(37, 99, 235, 0.3)',
-                    transition: 'all 0.2s',
-                    whiteSpace: 'nowrap'
-                  }}
-                >
-                  📋 Voir lots
-                </Link>
-                <button 
-                  className="main-btn"
-                  style={{
-                    fontSize: '0.75rem',
-                    padding: '0.5rem 0.85rem',
-                    minHeight: 'auto',
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    color: 'var(--green)',
-                    fontWeight: '600',
-                    border: '1px solid rgba(16, 185, 129, 0.3)',
-                    whiteSpace: 'nowrap'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'var(--green)';
-                    e.currentTarget.style.color = 'white';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.color = 'var(--green)';
-                  }}
-                >
-                  📊 Rapport
-                </button>
+                />
+                <CardButton
+                  variant="secondary"
+                  color="var(--green)"
+                  icon="📊"
+                  label="Rapport"
+                  onClick={() => console.log('Voir rapport')}
+                />
               </>
             )}
-          </div>
-        </div>
 
         {/* BARRE DE PROGRESSION (si en cours ou terminé) */}
         {chantier.statut !== 'nouveau' && stats && (
@@ -588,27 +475,16 @@ export default function ChantiersPage() {
           justifyContent: 'flex-end', 
           marginBottom: '1rem',
         }}>
-          <button 
-            className="main-btn"
-            style={{
-              fontSize: '0.85rem',
-              padding: '0.6rem 1rem',
-              minHeight: 'auto',
-              background: 'var(--orange)',
-              color: 'white',
-              fontWeight: '700',
-              border: 'none',
-              whiteSpace: 'nowrap'
+          <CardButton
+            variant="primary"
+            color="var(--orange)"
+            icon="✨"
+            label="Nouveau chantier"
+            onClick={() => {
+              // TODO: Implémenter plus tard
+              console.log('Créer nouveau chantier');
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.transform = 'scale(1.05)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.transform = 'scale(1)';
-            }}
-          >
-            ✨ Nouveau chantier
-          </button>
+          />
         </div>
 
         {/* Section NOUVEAUX */}
