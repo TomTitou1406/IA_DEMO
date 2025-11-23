@@ -178,6 +178,7 @@ export default function TravailDetailPage() {
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
                      statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
                      statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
+                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :  // ← AJOUTE
                      'rgba(107, 114, 128, 0.25)';
         e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
@@ -807,7 +808,7 @@ export default function TravailDetailPage() {
             <SectionHeader 
               title="Annulées" 
               count={annulees.length} 
-              color="var(--gray)" 
+              color="var(--red)" 
               icon="🗑️"
               isExpanded={showAnnulees}
               onToggle={() => setShowAnnulees(!showAnnulees)}
