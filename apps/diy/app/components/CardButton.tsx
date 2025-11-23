@@ -37,25 +37,25 @@ export default function CardButton({
           fontWeight: '700' as const
         };
       
-      case 'secondary':
-        // Bouton transparent avec bordure
+      case 'secondary': {
         const bgColor = color || 'var(--blue)';
         return {
-          background: `${bgColor}25`,  // 25% opacity
+          background: `${bgColor}25`,
           color: color || 'var(--blue)',
           border: `1.5px solid ${bgColor}`,
           fontWeight: '700' as const
         };
+      }
       
-      case 'danger':
-        // Bouton danger (rouge)
+      case 'danger': {
         const bgColor = color || 'var(--red)';
         return {
-          background: `${bgColor}30`,  // 30% opacity
+          background: `${bgColor}30`,
           color: 'var(--red)',
           border: `1.5px solid ${bgColor}`,
           fontWeight: '700' as const
         };
+      }
     }
   };
 
