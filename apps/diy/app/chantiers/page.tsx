@@ -216,7 +216,7 @@ export default function ChantiersPage() {
                 />
                 <CardButton
                   variant="secondary"
-                  color="var(--gray-light)"
+                  color="var(--blue)"
                   icon="✏️"
                   label="Modifier"
                   onClick={() => console.log('Modifier chantier')}
