@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAllChantiers, getChantierStats } from '../lib/services/chantierService';
-import CardButton from '../components/CardButton';
+import CardButton from '@/app/components/CardButton';
 
 interface Chantier {
   id: string;
