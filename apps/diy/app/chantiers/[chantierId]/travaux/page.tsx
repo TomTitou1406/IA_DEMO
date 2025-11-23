@@ -133,9 +133,7 @@ export default function TravauxPage() {
     
     return (
       <div style={{
-        background: isAnnulee 
-          ? 'linear-gradient(135deg, #0d0d0d 0%, #1a1a1a 100%)'
-          : 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
+        background: `linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, ${statusColor} 50%, #1a1a1a) 100%)`,
         borderRadius: '12px',
         padding: '1rem',
         marginBottom: '0.75rem',
@@ -144,12 +142,12 @@ export default function TravauxPage() {
         transition: 'all 0.2s',
         opacity: isAnnulee ? 0.6 : 1
       }}
-      onMouseEnter={(e) => {
+     onMouseEnter={(e) => {
         if (!isAnnulee) {
-          // EFFET HALO - Juste la shadow, pas de transform
           const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
                        statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
                        statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
+                       statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :  // ← Ajoute
                        'rgba(107, 114, 128, 0.25)';
           e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
         }
@@ -715,7 +713,7 @@ export default function TravauxPage() {
             <SectionHeader 
               title="À venir" 
               count={aVenir.length} 
-              color="var(--gray)" 
+              color="var(--purple)" 
               icon="📅"
               isExpanded={showAVenir}
               onToggle={() => setShowAVenir(!showAVenir)}
