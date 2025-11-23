@@ -243,6 +243,8 @@ export default function ChantiersPage() {
                 />
               </>
             )}
+          </div>
+        </div>
 
         {/* BARRE DE PROGRESSION (si en cours ou terminé) */}
         {chantier.statut !== 'nouveau' && stats && (
