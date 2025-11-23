@@ -97,23 +97,10 @@ export default function ChantiersPage() {
       case 'en_cours': return 'var(--blue)';    // Actif/démarré (bleu)
       case 'terminé': return 'var(--green)';    // Fini (vert)
       case 'annulé': return 'var(--gray)';      // Abandonné (gris)
-      case null: return 'var(--blue)';          // Chantiers sans statut = actif
+      case null: return 'var(--blue)';          
       default: return 'var(--gray)';
     }
   };
-
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'terminé': return 'var(--green)';
-      case 'en_cours': return 'var(--blue)';
-      case 'bloqué': return 'var(--orange)';
-      case 'annulé': return 'var(--gray)';
-      case 'à_venir': return 'var(--purple)';
-      default: return 'var(--gray)';
-    }
-  };
-
-  
 
   const getStatusIcon = (statut: string) => {
     switch (statut) {
