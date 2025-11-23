@@ -406,7 +406,7 @@ export default function TravailDetailPage() {
               />
             )}
 
-            {/* Bouton Réactiver (annulé) - GRIS PLEIN */}
+            {/* Bouton Réactiver (annulé) */}
             {etape.statut === 'annulé' && (
               <CardButton
                 variant="primary"
