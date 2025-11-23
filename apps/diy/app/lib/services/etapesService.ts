@@ -25,9 +25,33 @@ export async function getEtapesByTravail(travailId: string) {
 
     if (etapesError) throw etapesError;
 
+    // ← AJOUTE ICI : Enrichir avec comptage des tâches
+    const etapesWithStats = await Promise.all(
+      (etapes || []).map(async (etape) => {
+        // Compter le total de tâches
+        const { count: totalTaches } = await supabase
+          .from('taches')
+          .select('*', { count: 'exact', head: true })
+          .eq('etape_id', etape.id);
+        
+        // Compter les tâches terminées
+        const { count: tachesTerminees } = await supabase
+          .from('taches')
+          .select('*', { count: 'exact', head: true })
+          .eq('etape_id', etape.id)
+          .eq('statut', 'terminée');
+        
+        return {
+          ...etape,
+          nombre_taches: totalTaches || 0,
+          taches_terminees: tachesTerminees || 0
+        };
+      })
+    );
+
     return {
       travail,
-      etapes: etapes || []
+      etapes: etapesWithStats
     };
   } catch (error) {
     console.error('Error fetching etapes:', error);
