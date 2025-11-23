@@ -132,7 +132,7 @@ export default function TachesPage() {
     
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
+        background: background: `linear-gradient(135deg, #1a1a1a 0%, ${statusColor}15 100%)`,
         borderRadius: '12px',
         padding: '1rem',
         marginBottom: '0.75rem',
@@ -318,12 +318,12 @@ export default function TachesPage() {
                     <span
                       key={idx}
                       style={{
-                        background: 'rgba(255,255,255,0.08)',
+                        background: `${statusColor}20`,  // 20% du statut (plus opaque)
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
-                        color: 'var(--gray-light)',
-                        border: '1px solid rgba(255,255,255,0.1)'
+                        color: 'var(--white)',
+                        border: `1px solid ${statusColor}50`  // Bordure 50% du statut
                       }}
                     >
                       {outil}
@@ -335,8 +335,8 @@ export default function TachesPage() {
 
             {tache.conseils_pro && (
               <div style={{
-                background: 'rgba(251, 191, 36, 0.1)',
-                border: '1px solid rgba(251, 191, 36, 0.3)',
+                background: `${statusColor}15`,  // 15% du statut
+                border: `1px solid ${statusColor}`,
                 borderRadius: '8px',
                 padding: '0.75rem 1rem',
                 marginBottom: '1rem'
@@ -345,7 +345,7 @@ export default function TachesPage() {
                   fontSize: '0.9rem', 
                   fontWeight: '600', 
                   marginBottom: '0.5rem', 
-                  color: '#fbbf24',
+                  color: statusColor,
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.5rem'
@@ -454,7 +454,7 @@ export default function TachesPage() {
       </div>
       <div style={{
         height: '2px',
-        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, ${color} 100%)`,
         marginBottom: '0.75rem'
       }}></div>
     </div>
