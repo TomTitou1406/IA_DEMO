@@ -18,6 +18,14 @@
   --header-bg: #0A0A0A;
   --header-border: #232323;
   --body-bg: #000000;
+  --purple: #8B5CF6;        /* Violet moderne, punchy */
+  --purple-light: #F3E8FF;  
+  --red: #EF4444;           /* Rouge pour alertes/danger */
+  --red-light: #FEE2E2;     
+  --cyan: #06B6D4;          /* Cyan-turquoise vif */
+  --cyan-light: #CFFAFE;    
+  --pink: #EC4899;          /* Rose éclatant */
+  --pink-light: #FCE7F3;    
   --card-radius: 20px;
   --spacing: 1rem;
   --touch-size: 48px;
