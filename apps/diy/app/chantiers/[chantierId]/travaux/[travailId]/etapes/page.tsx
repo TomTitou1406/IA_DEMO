@@ -21,6 +21,8 @@ interface Etape {
   materiaux_necessaires?: any[];
   conseils_pro?: string;
   blocage_raison?: string;
+  nombre_taches?: number;        
+  taches_terminees?: number;     
 }
 
 interface Travail {
@@ -163,8 +165,8 @@ export default function TravailDetailPage() {
 
   const EtapeCard = ({ etape }: { etape: Etape }) => {
     const statusColor = getStatusColor(etape.statut);
-    const progressionAuto = etape.taches && etape.taches.length > 0
-      ? Math.round((etape.taches.filter(t => t.statut === 'terminée').length / etape.taches.length) * 100)
+    const progressionAuto = etape.nombre_taches && etape.nombre_taches > 0
+      ? Math.round(((etape.taches_terminees || 0) / etape.nombre_taches) * 100)
       : 0;
     const [isExpanded, setIsExpanded] = useState(false);
     
@@ -362,18 +364,36 @@ export default function TravailDetailPage() {
               </>
             )}
 
-            {/* Boutons en_cours - BLEU PLEIN pour Tâches */}
-            {etape.statut === 'en_cours' && (
+            {/* Boutons en_cours */}
+            {etape.statut === 'en_cours' && editingEtapeId !== etape.id && (
               <>
+                {/* Bouton TÂCHES - avec count si nombre_taches existe */}
+                {etape.nombre_taches && etape.nombre_taches > 0 && (
+                  <CardButton
+                    variant="primary"
+                    color="var(--blue)"
+                    icon="📋"
+                    label="Tâches"
+                    count={etape.nombre_taches}
+                    onClick={() => {
+                      window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                    }}
+                  />
+                )}
+                
+                {/* Bouton AJUSTER - NOUVEAU */}
                 <CardButton
-                  variant="primary"
+                  variant="secondary"
                   color="var(--blue)"
-                  icon="📋"
-                  label="Tâches"
+                  icon="📊"
+                  label="Ajuster"
                   onClick={() => {
-                    window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                    setTempProgression(progressionAuto);
+                    setEditingEtapeId(etape.id);
                   }}
                 />
+                
+                {/* Bouton TERMINER */}
                 <CardButton
                   variant="secondary"
                   color="var(--blue)"
@@ -392,6 +412,8 @@ export default function TravailDetailPage() {
                     });
                   }}
                 />
+                
+                {/* Bouton ANNULER */}
                 <CardButton
                   variant="danger"
                   icon="🗑️"
