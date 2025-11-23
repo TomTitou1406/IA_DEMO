@@ -91,18 +91,29 @@ export default function ChantiersPage() {
   );
   const termines = chantiers.filter(c => c.statut === 'terminé');
 
-  // COULEURS COHÉRENTES AVEC PAGE TRAVAUX
   const getStatusColor = (statut: string) => {
     switch (statut) {
-      case 'nouveau': return 'var(--gray)';      // Gris pour nouveau
-      case 'en_cours':
-      case 'actif': 
-      case null:
-        return 'var(--blue)';                    // BLEU pour en cours
-      case 'terminé': return 'var(--green)';     // VERT pour terminé
+      case 'nouveau': return 'var(--purple)';   // En paramétrage (violet)
+      case 'en_cours': return 'var(--blue)';    // Actif/démarré (bleu)
+      case 'terminé': return 'var(--green)';    // Fini (vert)
+      case 'annulé': return 'var(--gray)';      // Abandonné (gris)
+      case null: return 'var(--blue)';          // Chantiers sans statut = actif
       default: return 'var(--gray)';
     }
   };
+
+  const getStatusColor = (statut: string) => {
+    switch (statut) {
+      case 'terminé': return 'var(--green)';
+      case 'en_cours': return 'var(--blue)';
+      case 'bloqué': return 'var(--orange)';
+      case 'annulé': return 'var(--gray)';
+      case 'à_venir': return 'var(--purple)';
+      default: return 'var(--gray)';
+    }
+  };
+
+  
 
   const getStatusIcon = (statut: string) => {
     switch (statut) {
@@ -122,7 +133,7 @@ export default function ChantiersPage() {
     
     return (
       <div style={{
-        background: 'linear-gradient(135deg, #1a1a1a 0%, #242424 100%)',
+        background: `linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, ${statusColor} 50%, #1a1a1a) 100%)`,
         borderRadius: '12px',
         padding: '1.25rem',
         marginBottom: '1rem',
@@ -418,7 +429,7 @@ export default function ChantiersPage() {
       </div>
       <div style={{
         height: '2px',
-        background: `linear-gradient(90deg, ${color} 0%, transparent 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, ${color} 80%)`,
         marginBottom: '0.75rem'
       }}></div>
     </div>
