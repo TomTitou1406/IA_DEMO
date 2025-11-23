@@ -80,15 +80,30 @@ export default function CardButton({
 
   const handleMouseEnter = (e: React.MouseEvent<HTMLElement>) => {
   if (!disabled && variant === 'primary') {
-    e.currentTarget.style.filter = 'brightness(1.2)';  // Plus marqué
-    e.currentTarget.style.transform = 'translateY(-2px) scale(1.02)';  // Lift + léger zoom
-    e.currentTarget.style.boxShadow = `0 6px 20px ${color ? `${color}60` : 'rgba(37, 99, 235, 0.4)'}`;  // Glow
+    // Primary se VIDE au hover (inverse de secondary)
+    const hoverColor = color || 'var(--blue)';
+    e.currentTarget.style.background = `${hoverColor}40`;  // Devient transparent
+    e.currentTarget.style.color = 'white';  // Texte reste blanc
+    e.currentTarget.style.border = `1.5px solid ${hoverColor}`;  // Ajoute bordure
+    e.currentTarget.style.transform = 'translateY(-2px)';
+    
+    // Glow adapté
+    const glowColor = color === 'var(--blue)' ? 'rgba(37, 99, 235, 0.4)' :
+                      color === 'var(--orange)' ? 'rgba(255, 107, 53, 0.4)' :
+                      color === 'var(--green)' ? 'rgba(16, 185, 129, 0.4)' :
+                      color === 'var(--gray)' ? 'rgba(107, 114, 128, 0.4)' :
+                      color === 'var(--purple)' ? 'rgba(168, 85, 247, 0.4)' :
+                      color === 'var(--red)' ? 'rgba(239, 68, 68, 0.4)' :
+                      'rgba(37, 99, 235, 0.4)';
+    e.currentTarget.style.boxShadow = `0 6px 20px ${glowColor}`;
+    
   } else if (!disabled && variant === 'secondary') {
-    // Hover plein comme danger
-    e.currentTarget.style.background = color || 'var(--blue)';  // ← Plein
-    e.currentTarget.style.color = 'white';  // ← Reste blanc
+    // Secondary se REMPLIT au hover (déjà fait)
+    e.currentTarget.style.background = color || 'var(--blue)';
+    e.currentTarget.style.color = 'white';
     e.currentTarget.style.borderColor = color || 'var(--blue)';
     e.currentTarget.style.transform = 'translateY(-1px)';
+    
   } else if (!disabled && variant === 'danger') {
     e.currentTarget.style.background = 'var(--red)';
     e.currentTarget.style.color = 'white';
@@ -98,15 +113,21 @@ export default function CardButton({
 
 const handleMouseLeave = (e: React.MouseEvent<HTMLElement>) => {
   if (!disabled && variant === 'primary') {
-    e.currentTarget.style.filter = 'brightness(1)';
-    e.currentTarget.style.transform = 'translateY(0) scale(1)';
+    // Primary retourne à plein
+    e.currentTarget.style.background = color || 'var(--blue)';
+    e.currentTarget.style.color = 'white';
+    e.currentTarget.style.border = 'none';
+    e.currentTarget.style.transform = 'translateY(0)';
     e.currentTarget.style.boxShadow = 'none';
+    
   } else if (!disabled && variant === 'secondary') {
+    // Secondary retourne à transparent
     const bgColor = color || 'var(--blue)';
-    e.currentTarget.style.background = `${bgColor}40`;  // ← Retour à 40%
-    e.currentTarget.style.color = 'white';  // ← Reste blanc
+    e.currentTarget.style.background = `${bgColor}40`;
+    e.currentTarget.style.color = 'white';
     e.currentTarget.style.borderColor = bgColor;
     e.currentTarget.style.transform = 'translateY(0)';
+    
   } else if (!disabled && variant === 'danger') {
     const bgColor = color || 'var(--red)';
     e.currentTarget.style.background = `${bgColor}30`;
