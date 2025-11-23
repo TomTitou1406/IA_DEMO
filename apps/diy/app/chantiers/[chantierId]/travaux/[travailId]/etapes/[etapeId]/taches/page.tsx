@@ -132,7 +132,8 @@ export default function TachesPage() {
     
     return (
       <div style={{
-        background: `linear-gradient(135deg, #1a1a1a 0%, color-mix(in srgb, ${statusColor} 15%, #1a1a1a) 100%)`,
+        // background: `linear-gradient(90deg, #1a1a1a 0%, color-mix(in srgb, ${statusColor} 15%, #1a1a1a) 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, ${color} 80%)`,
         borderRadius: '12px',
         padding: '1rem',
         marginBottom: '0.75rem',
@@ -454,7 +455,7 @@ export default function TachesPage() {
       </div>
       <div style={{
         height: '2px',
-        background: `linear-gradient(90deg, transparent 20%, ${color} 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, ${color} 80%)`,
         marginBottom: '0.75rem'
       }}></div>
     </div>
