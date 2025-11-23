@@ -640,7 +640,7 @@ export default function TachesPage() {
               title="À faire" 
               count={aFaire.length} 
               color="var(--blue)" 
-              icon="📋"
+              icon="🔨"
               isExpanded={showAFaire}
               onToggle={() => setShowAFaire(!showAFaire)}
             />
