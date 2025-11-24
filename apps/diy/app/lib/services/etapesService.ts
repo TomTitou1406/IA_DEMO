@@ -374,8 +374,7 @@ export async function terminerToutesLesEtapes(travailId: string) {
       await supabase
         .from('taches')
         .update({ 
-          statut: 'terminée',
-          date_fin_reelle: new Date().toISOString()
+          statut: 'terminée'
         })
         .eq('etape_id', etape.id)
         .neq('statut', 'terminée');
