@@ -6,6 +6,7 @@ import Link from 'next/link';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape } from '@/app/lib/services/etapesService';
 import CardButton from '@/app/components/CardButton';
+import { terminerToutesLesTaches } from '@/app/lib/services/tachesService';
 
 interface Etape {
   id: string;
@@ -53,8 +54,6 @@ export default function TravailDetailPage() {
   const [showAnnulees, setShowAnnulees] = useState(false);
   const [showTerminees, setShowTerminees] = useState(false);
   const [showAVenir, setShowAVenir] = useState(true);
-  const [editingEtapeId, setEditingEtapeId] = useState<string | null>(null);
-  const [tempProgression, setTempProgression] = useState<number>(0);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -350,7 +349,7 @@ export default function TravailDetailPage() {
             )}
   
             {/* Boutons en_cours */}
-            {etape.statut === 'en_cours' && editingEtapeId !== etape.id && (
+            {etape.statut === 'en_cours' && (
               <>
                 {/* Bouton TÂCHES */}
                 {etape.nombre_taches && etape.nombre_taches > 0 && (
@@ -366,31 +365,24 @@ export default function TravailDetailPage() {
                   />
                 )}
                 
-                {/* Bouton AJUSTER */}
+                {/* Bouton TOUT TERMINER - NOUVEAU */}
                 <CardButton
                   variant="secondary"
-                  color="var(--blue)"
-                  icon="📊"
-                  label="Ajuster"
-                  onClick={() => {
-                    setTempProgression(progressionAuto);
-                    setEditingEtapeId(etape.id);
-                  }}
-                />
-                
-                {/* Bouton TERMINER */}
-                <CardButton
-                  variant="secondary"
-                  color="var(--blue)"
-                  icon="✓"
-                  label="Terminer"
+                  color="var(--green)"
+                  icon="✓✓"
+                  label="Tout terminer"
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
-                      title: 'Terminer cette étape ?',
-                      message: `"${etape.titre}" sera marquée comme terminée.`,
+                      title: 'Tout terminer ?',
+                      message: `Toutes les tâches de "${etape.titre}" seront marquées comme terminées, ainsi que l'étape elle-même.`,
                       onConfirm: async () => {
-                        // TODO: API call terminerEtape
+                        // 1. Terminer toutes les tâches
+                        if (etape.nombre_taches && etape.nombre_taches > 0) {
+                          await terminerToutesLesTaches(etape.id);
+                        }
+                        // 2. Terminer l'étape
+                        await terminerEtape(etape.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
                         window.location.reload();
                       }
@@ -458,132 +450,33 @@ export default function TravailDetailPage() {
           )}
         </div>
   
-        {/* Progress bar OU Slider inline - POUR EN_COURS */}
-        {etape.statut === 'en_cours' && (
-          <>
-            {editingEtapeId === etape.id ? (
-              // MODE ÉDITION : Slider inline
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={tempProgression}
-                    onChange={(e) => setTempProgression(parseInt(e.target.value))}
-                    style={{
-                      flex: 1,
-                      height: '8px',
-                      borderRadius: '10px',
-                      outline: 'none',
-                      background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, rgba(255,255,255,0.1) ${tempProgression}%, rgba(255,255,255,0.1) 100%)`,
-                      cursor: 'pointer',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  />
-                  <button
-                    onClick={() => setTempProgression(100)}
-                    style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      borderRadius: '6px',
-                      padding: '0.3rem 0.6rem',
-                      fontSize: '0.7rem',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      color: 'var(--gray-light)',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                    }}
-                  >
-                    100%
-                  </button>
-                  <span style={{ 
-                    fontWeight: '700', 
-                    minWidth: '45px', 
-                    textAlign: 'right',
-                    fontSize: '0.95rem',
-                    color: 'var(--blue)'
-                  }}>
-                    {tempProgression}%
-                  </span>
-                </div>
-  
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    className="main-btn"
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.5rem 1rem',
-                      minHeight: 'auto',
-                      flex: 1,
-                      background: 'var(--blue)',
-                      color: 'white',
-                      fontWeight: '700',
-                      border: 'none'
-                    }}
-                    onClick={async () => {
-                      // TODO: Implémenter updateEtapeProgression
-                      console.log('Update progression:', etape.id, tempProgression);
-                      setEditingEtapeId(null);
-                      // window.location.reload();
-                    }}
-                  >
-                    ✓ Valider
-                  </button>
-                  <button 
-                    className="main-btn"
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.5rem 1rem',
-                      minHeight: 'auto',
-                      flex: 1,
-                      background: `color-mix(in srgb, var(--blue) 40%, transparent)`,
-                      color: 'white',
-                      border: `1.5px solid var(--blue)`
-                    }}
-                    onClick={() => setEditingEtapeId(null)}
-                  >
-                    ✕ Annuler
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // MODE NORMAL : Barre de progression
-              <div style={{ marginBottom: '0.5rem' }}>
-                <div style={{
-                  width: '100%',
-                  height: '6px',
-                  background: 'rgba(255,255,255,0.08)',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  marginBottom: '0.4rem'
-                }}>
-                  <div style={{
-                    width: `${progressionAuto}%`,
-                    height: '100%',
-                    background: 'var(--blue)',
-                    transition: 'width 0.5s ease'
-                  }}></div>
-                </div>
-                <p style={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: '600',
-                  color: 'var(--gray-light)',
-                  margin: 0
-                }}>
-                  {progressionAuto}%
-                </p>
-              </div>
-            )}
-          </>
+        {/* Barre de progression AUTO (basée sur tâches terminées) */}
+        {etape.statut === 'en_cours' && etape.nombre_taches && etape.nombre_taches > 0 && (
+          <div style={{ marginBottom: '0.5rem' }}>
+            <div style={{
+              width: '100%',
+              height: '6px',
+              background: 'rgba(255,255,255,0.08)',
+              borderRadius: '10px',
+              overflow: 'hidden',
+              marginBottom: '0.4rem'
+            }}>
+              <div style={{
+                width: `${progressionAuto}%`,
+                height: '100%',
+                background: 'var(--blue)',
+                transition: 'width 0.5s ease'
+              }}></div>
+            </div>
+            <p style={{ 
+              fontSize: '0.85rem', 
+              fontWeight: '600',
+              color: 'var(--gray-light)',
+              margin: 0
+            }}>
+              {progressionAuto}% ({etape.taches_terminees || 0}/{etape.nombre_taches} tâches)
+            </p>
+          </div>
         )}
   
         {/* Contenu détaillé - expandable */}
