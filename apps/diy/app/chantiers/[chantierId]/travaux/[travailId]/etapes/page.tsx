@@ -228,20 +228,6 @@ export default function TravailDetailPage() {
               }}>
                 {getStatusIcon(etape.statut)} {etape.titre}
               </h3>
-              <span style={{
-                background: `${getDifficultyColor(etape.difficulte)}15`,
-                color: getDifficultyColor(etape.difficulte),
-                padding: '0.25rem 0.6rem',
-                borderRadius: '6px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                whiteSpace: 'nowrap'
-              }}>
-                {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
-              </span>
               <span style={{ 
                 fontSize: '1.2rem',
                 color: 'var(--gray)',
@@ -268,6 +254,19 @@ export default function TravailDetailPage() {
                   {progressionAuto}%
                 </span>
               )}
+              <span style={{
+                background: `${getDifficultyColor(etape.difficulte)}15`,
+                color: getDifficultyColor(etape.difficulte),
+                padding: '0.2rem 0.5rem',
+                borderRadius: '6px',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}>
+                {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
+              </span>
             </div>
   
             {etape.blocage_raison && (
