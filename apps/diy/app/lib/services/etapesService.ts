@@ -356,3 +356,64 @@ export async function deleteEtape(etapeId: string) {
     throw error;
   }
 }
+
+// Terminer une étape
+export async function terminerEtape(etapeId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('etapes')
+      .update({ 
+        statut: 'terminé',
+        progression: 100
+      })
+      .eq('id', etapeId);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error terminating etape:', error);
+    throw error;
+  }
+}
+
+// Terminer toutes les étapes d'un travail (et leurs tâches)
+export async function terminerToutesLesEtapes(travailId: string) {
+  try {
+    // 1. Récupérer toutes les étapes du travail
+    const { data: etapes, error: fetchError } = await supabase
+      .from('etapes')
+      .select('id')
+      .eq('travail_id', travailId)
+      .neq('statut', 'terminé');
+
+    if (fetchError) throw fetchError;
+
+    // 2. Pour chaque étape, terminer toutes les tâches
+    for (const etape of etapes || []) {
+      await supabase
+        .from('taches')
+        .update({ 
+          statut: 'terminée',
+          date_fin_reelle: new Date().toISOString()
+        })
+        .eq('etape_id', etape.id)
+        .neq('statut', 'terminée');
+    }
+
+    // 3. Terminer toutes les étapes
+    const { data, error } = await supabase
+      .from('etapes')
+      .update({ 
+        statut: 'terminé',
+        progression: 100
+      })
+      .eq('travail_id', travailId)
+      .neq('statut', 'terminé');
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error terminating all etapes:', error);
+    throw error;
+  }
+}
