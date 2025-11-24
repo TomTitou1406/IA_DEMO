@@ -168,14 +168,14 @@ export default function TravauxPage() {
               background: statusColor,
               color: 'white',
               minWidth: '32px',
-              width: '32px'
+              width: '32px',
               height: '32px',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: '700',
-              fontSize: '0.9rem'
+              fontSize: '0.9rem',
               flexShrink: 0
             }}>
               {travail.ordre}
