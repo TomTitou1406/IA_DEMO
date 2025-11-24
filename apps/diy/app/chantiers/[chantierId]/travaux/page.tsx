@@ -407,20 +407,48 @@ export default function TravauxPage() {
               </div>
             )}
 
-            {/* Stats en ligne */}
+            {/* Stats en ligne - TOUJOURS VISIBLE */}
             <div style={{ 
-              display: 'flex', 
-              gap: '1.5rem', 
-              fontSize: '0.85rem', 
-              color: 'var(--gray)',
+              display: 'flex',
+              flexWrap: 'wrap',
               alignItems: 'center',
-              flexWrap: 'wrap'
+              gap: '1.5rem',
+              fontSize: '0.85rem',
+              color: 'var(--gray)'
             }}>
+              {/* % complété */}
+              <span style={{ 
+                color: 'var(--gray-light)', 
+                fontWeight: '700'
+              }}>
+                {travail.progression}% complété
+              </span>
+            
+              {/* Durée estimée */}
               {travail.duree_estimee_heures && (
                 <span>⏱️ {travail.duree_estimee_heures}h estimées</span>
               )}
+            
+              {/* Étapes avec détail */}
               {travail.nombre_etapes && travail.nombre_etapes > 0 && (
-                <span>🎯 {travail.etapes_terminees || 0}/{travail.nombre_etapes} étape{travail.nombre_etapes > 1 ? 's' : ''}</span>
+                <span>
+                  ✅ {travail.etapes_terminees || 0}/{travail.nombre_etapes}
+                  {(travail.etapes_terminees || 0) > 0 && (
+                    <span style={{ color: 'var(--green)', marginLeft: '0.5rem', fontWeight: '600' }}>
+                      • {travail.etapes_terminees} terminée{(travail.etapes_terminees || 0) > 1 ? 's' : ''}
+                    </span>
+                  )}
+                  {(travail.etapes_en_cours || 0) > 0 && (
+                    <span style={{ color: 'var(--blue)', marginLeft: '0.5rem', fontWeight: '600' }}>
+                      • {travail.etapes_en_cours} en cours
+                    </span>
+                  )}
+                  {(travail.etapes_bloquees || 0) > 0 && (
+                    <span style={{ color: 'var(--orange)', marginLeft: '0.5rem', fontWeight: '600' }}>
+                      • {travail.etapes_bloquees} bloquée{(travail.etapes_bloquees || 0) > 1 ? 's' : ''}
+                    </span>
+                  )}
+                </span>
               )}
             </div>
           </>
