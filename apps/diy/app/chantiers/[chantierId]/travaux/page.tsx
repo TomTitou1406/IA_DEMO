@@ -7,6 +7,7 @@ import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiv
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useParams } from 'next/navigation';
 import CardButton from '@/app/components/CardButton';
+import { terminerToutesLesEtapes } from '@/app/lib/services/etapesService';
 
 interface Chantier {
   id: string;
@@ -51,8 +52,6 @@ export default function TravauxPage() {
   const [showBloques, setShowBloques] = useState(true);
   const [showTermines, setShowTermines] = useState(false);
   const [showAVenir, setShowAVenir] = useState(false);
-  const [editingTravailId, setEditingTravailId] = useState<string | null>(null);
-  const [tempProgression, setTempProgression] = useState<number>(0);
   const [showAnnulees, setShowAnnulees] = useState(false);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
@@ -244,6 +243,31 @@ export default function TravauxPage() {
                   }}
                 />
               )}
+              
+              {/* Bouton TOUT TERMINER pour EN COURS - REMPLACE AJUSTER */}
+              {travail.statut === 'en_cours' && (
+                <CardButton
+                  variant="secondary"
+                  color="var(--green)"
+                  icon="✓✓"
+                  label="Tout terminer"
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Tout terminer ?',
+                      message: `Toutes les étapes et tâches de "${travail.titre}" seront marquées comme terminées.`,
+                      onConfirm: async () => {
+                        // 1. Terminer toutes les étapes (et leurs tâches)
+                        await terminerToutesLesEtapes(travail.id);
+                        // 2. Terminer le travail
+                        await terminerTravail(travail.id);
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                />
+              )}
 
               {/* Bouton AJUSTER pour EN COURS */}
               {travail.statut === 'en_cours' && (
@@ -344,101 +368,8 @@ export default function TravauxPage() {
         {/* Progress bar OU Slider inline */}
         {travail.statut === 'en_cours' && (
           <>
-            {editingTravailId === travail.id ? (
-              // MODE ÉDITION : Slider inline
-              <div style={{ marginBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
-                  <input
-                    type="range"
-                    min="0"
-                    max="100"
-                    step="5"
-                    value={tempProgression}
-                    onChange={(e) => setTempProgression(parseInt(e.target.value))}
-                    style={{
-                      flex: 1,
-                      height: '8px',
-                      borderRadius: '10px',
-                      outline: 'none',
-                      background: `linear-gradient(to right, var(--blue) 0%, var(--blue) ${tempProgression}%, rgba(255,255,255,0.1) ${tempProgression}%, rgba(255,255,255,0.1) 100%)`,
-                      cursor: 'pointer',
-                      WebkitAppearance: 'none',
-                      appearance: 'none'
-                    }}
-                  />
-                  <button
-                    onClick={() => setTempProgression(100)}
-                    style={{
-                      background: 'rgba(255,255,255,0.1)',
-                      border: '1px solid rgba(255,255,255,0.2)',
-                      borderRadius: '6px',
-                      padding: '0.3rem 0.6rem',
-                      fontSize: '0.7rem',
-                      cursor: 'pointer',
-                      fontWeight: '600',
-                      color: 'var(--gray-light)',
-                      transition: 'all 0.2s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.2)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-                    }}
-                  >
-                    100%
-                  </button>
-                  <span style={{ 
-                    fontWeight: '700', 
-                    minWidth: '45px', 
-                    textAlign: 'right',
-                    fontSize: '0.95rem',
-                    color: 'var(--blue)'
-                  }}>
-                    {tempProgression}%
-                  </span>
-                </div>
-
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button 
-                    className="main-btn"
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.5rem 1rem',
-                      minHeight: 'auto',
-                      flex: 1,
-                      background: 'var(--blue)',
-                      color: 'white',
-                      fontWeight: '700',
-                      border: 'none'
-                    }}
-                    onClick={async () => {
-                      await updateTravailProgression(travail.id, tempProgression);
-                      setEditingTravailId(null);
-                      window.location.reload();
-                    }}
-                  >
-                    ✓ Valider
-                  </button>
-                  <button 
-                    className="main-btn"
-                    style={{
-                      fontSize: '0.8rem',
-                      padding: '0.5rem 1rem',
-                      minHeight: 'auto',
-                      flex: 1,
-                      background: `color-mix(in srgb, var(--blue) 40%, transparent)`,  // ← BLEU
-                      color: 'white',
-                      border: `1.5px solid var(--blue)`  // ← Bordure bleue
-                    }}
-                    onClick={() => setEditingTravailId(null)}
-                  >
-                    ✕ Annuler
-                  </button>
-                </div>
-              </div>
-            ) : (
-              // MODE NORMAL : Barre de progression
+            {/* Barre de progression AUTO */}
+            {travail.statut === 'en_cours' && (
               <div style={{ marginBottom: '0.5rem' }}>
                 <div style={{
                   width: '100%',
