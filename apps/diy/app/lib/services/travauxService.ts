@@ -5,27 +5,48 @@ import { supabase } from '../supabaseClient';
  */
 export async function getTravauxByChantier(chantierId: string) {
   try {
-    const { data, error } = await supabase
+    const { data: travaux, error } = await supabase
       .from('travaux')
-      .select(`
-        *,
-        expertises (
-          nom,
-          code
-        )
-      `)
+      .select('*')
       .eq('chantier_id', chantierId)
       .order('ordre', { ascending: true });
 
-    if (error) {
-      console.error('Error fetching travaux:', error);
-      return [];
-    }
+    if (error) throw error;
 
-    return data || [];
-  } catch (err) {
-    console.error('Error in getTravauxByChantier:', err);
-    return [];
+    // Enrichir avec comptage des étapes
+    const travauxWithStats = await Promise.all(
+      (travaux || []).map(async (travail) => {
+        // Compter le total d'étapes
+        const { count: totalEtapes } = await supabase
+          .from('etapes')
+          .select('*', { count: 'exact', head: true })
+          .eq('travail_id', travail.id);
+
+        // Compter les étapes terminées
+        const { count: etapesTerminees } = await supabase
+          .from('etapes')
+          .select('*', { count: 'exact', head: true })
+          .eq('travail_id', travail.id)
+          .eq('statut', 'terminé');
+
+        // Calculer la progression auto
+        const progressionAuto = totalEtapes && totalEtapes > 0
+          ? Math.round(((etapesTerminees || 0) / totalEtapes) * 100)
+          : 0;
+
+        return {
+          ...travail,
+          nombre_etapes: totalEtapes || 0,
+          etapes_terminees: etapesTerminees || 0,
+          progression: progressionAuto
+        };
+      })
+    );
+
+    return travauxWithStats;
+  } catch (error) {
+    console.error('Error fetching travaux:', error);
+    throw error;
   }
 }
 
