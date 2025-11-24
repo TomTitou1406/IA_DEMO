@@ -319,9 +319,10 @@ export default function TravailDetailPage() {
                     });
                   }}
                 />
+                {/* Bouton Tâches - TOUJOURS VISIBLE sans count */}
                 <CardButton
                   variant="secondary"
-                  color="var(--blue)"
+                  color="var(--purple)"
                   icon="📋"
                   label="Tâches"
                   onClick={() => {
