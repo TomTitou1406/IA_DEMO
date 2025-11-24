@@ -164,6 +164,20 @@ export default function TravauxPage() {
           gap: '1rem'
         }}>
           <div style={{ flex: 1 }}>
+            <span style={{
+              background: statusColor,
+              color: 'white',
+              minWidth: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: '700',
+              fontSize: '0.9rem'
+            }}>
+              {travail.ordre}
+            </span>
             <h3 style={{ 
               fontSize: '1.05rem', 
               margin: 0, 
