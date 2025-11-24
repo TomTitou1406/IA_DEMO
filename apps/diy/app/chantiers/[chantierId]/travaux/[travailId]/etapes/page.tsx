@@ -243,7 +243,9 @@ export default function TravailDetailPage() {
               gap: '1.5rem', 
               fontSize: '0.85rem', 
               color: 'var(--gray)',
-              marginLeft: '40px'
+              marginLeft: '40px',
+              alignItems: 'center',    // ← AJOUTE pour aligner verticalement
+              flexWrap: 'wrap'         // ← AJOUTE pour passer à la ligne si nécessaire
             }}>
               <span>⏱️ {etape.duree_estimee_minutes} min</span>
               {etape.outils_necessaires?.length > 0 && (
@@ -254,16 +256,18 @@ export default function TravailDetailPage() {
                   {progressionAuto}%
                 </span>
               )}
+              {/* Badge difficulté - style corrigé */}
               <span style={{
-                background: `${getDifficultyColor(etape.difficulte)}15`,
+                background: `${getDifficultyColor(etape.difficulte)}20`,  // ← 20 au lieu de 15
                 color: getDifficultyColor(etape.difficulte),
                 padding: '0.2rem 0.5rem',
                 borderRadius: '6px',
-                fontSize: '0.8rem',
+                fontSize: '0.75rem',      // ← Plus petit
                 fontWeight: '600',
                 display: 'inline-flex',
                 alignItems: 'center',
-                gap: '0.25rem'
+                gap: '0.25rem',
+                lineHeight: '1'           // ← AJOUTE pour éviter décalage
               }}>
                 {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
               </span>
