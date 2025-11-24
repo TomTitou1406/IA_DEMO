@@ -305,11 +305,10 @@ export async function terminerToutesLesTaches(etapeId: string) {
     const { data, error } = await supabase
       .from('taches')
       .update({ 
-        statut: 'terminée',
-        date_fin_reelle: new Date().toISOString()
+        statut: 'terminée'
       })
       .eq('etape_id', etapeId)
-      .neq('statut', 'terminée');  // Ne pas re-terminer celles déjà terminées
+      .neq('statut', 'terminée');
 
     if (error) throw error;
     return data;
