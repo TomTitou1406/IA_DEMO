@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'next/navigation';
 import Link from 'next/link';
 import ConfirmModal from '@/app/components/ConfirmModal';
-import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape } from '@/app/lib/services/etapesService';
+import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape, terminerEtape } from '@/app/lib/services/etapesService';
 import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesTaches } from '@/app/lib/services/tachesService';
 
