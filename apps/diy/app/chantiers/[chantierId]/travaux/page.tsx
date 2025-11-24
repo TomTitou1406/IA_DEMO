@@ -221,30 +221,6 @@ export default function TravauxPage() {
             )}
           </div>
           
-          {/* STATS EN LIGNE */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '1.5rem', 
-            fontSize: '0.85rem', 
-            color: 'var(--gray)',
-            marginLeft: '40px',
-            marginTop: '0.5rem',
-            alignItems: 'center',
-            flexWrap: 'wrap'
-          }}>
-            {travail.duree_estimee_heures && (
-              <span>⏱️ {travail.duree_estimee_heures}h estimées</span>
-            )}
-            {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
-              <span>🎯 {travail.etapes.etapes.length} étape{travail.etapes.etapes.length > 1 ? 's' : ''}</span>
-            )}
-            {travail.statut === 'en_cours' && (
-              <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
-                {travail.progression}%
-              </span>
-            )}
-          </div>
-
           {/* BOUTONS EN LIGNE (horizontal) À DROITE */}
           {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
             <div style={{ 
@@ -426,6 +402,23 @@ export default function TravauxPage() {
                 </p>
               </div>
             )}
+
+            {/* Stats en ligne */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '1.5rem', 
+              fontSize: '0.85rem', 
+              color: 'var(--gray)',
+              alignItems: 'center',
+              flexWrap: 'wrap'
+            }}>
+              {travail.duree_estimee_heures && (
+                <span>⏱️ {travail.duree_estimee_heures}h estimées</span>
+              )}
+              {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
+                <span>🎯 {travail.etapes.etapes.length} étape{travail.etapes.etapes.length > 1 ? 's' : ''}</span>
+              )}
+            </div>
           </>
         )}
       </div>
