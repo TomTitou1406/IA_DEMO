@@ -202,7 +202,7 @@ export default function TravauxPage() {
           </div>
 
           {/* BOUTONS EN LIGNE (horizontal) À DROITE */}
-          {travail.statut !== 'terminé' && travail.statut !== 'annulé' && editingTravailId !== travail.id && (
+          {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
             <div style={{ 
               display: 'flex', 
               gap: '0.5rem', 
@@ -265,20 +265,6 @@ export default function TravauxPage() {
                         window.location.reload();
                       }
                     });
-                  }}
-                />
-              )}
-
-              {/* Bouton AJUSTER pour EN COURS */}
-              {travail.statut === 'en_cours' && (
-                <CardButton
-                  variant="secondary"
-                  color="var(--blue)"
-                  icon="📊"
-                  label="Ajuster"
-                  onClick={() => {
-                    setTempProgression(travail.progression);
-                    setEditingTravailId(travail.id);
                   }}
                 />
               )}
