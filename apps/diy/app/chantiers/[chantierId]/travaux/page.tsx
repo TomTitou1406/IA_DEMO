@@ -168,6 +168,7 @@ export default function TravauxPage() {
               background: statusColor,
               color: 'white',
               minWidth: '32px',
+              width: '32px'
               height: '32px',
               borderRadius: '50%',
               display: 'flex',
@@ -175,6 +176,7 @@ export default function TravauxPage() {
               justifyContent: 'center',
               fontWeight: '700',
               fontSize: '0.9rem'
+              flexShrink: 0
             }}>
               {travail.ordre}
             </span>
