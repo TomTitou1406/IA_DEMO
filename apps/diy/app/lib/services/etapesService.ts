@@ -357,25 +357,6 @@ export async function deleteEtape(etapeId: string) {
   }
 }
 
-// Terminer une étape
-export async function terminerEtape(etapeId: string) {
-  try {
-    const { data, error } = await supabase
-      .from('etapes')
-      .update({ 
-        statut: 'terminé',
-        progression: 100
-      })
-      .eq('id', etapeId);
-
-    if (error) throw error;
-    return data;
-  } catch (error) {
-    console.error('Error terminating etape:', error);
-    throw error;
-  }
-}
-
 // Terminer toutes les étapes d'un travail (et leurs tâches)
 export async function terminerToutesLesEtapes(travailId: string) {
   try {
