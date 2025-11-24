@@ -28,6 +28,8 @@ interface Travail {
   ordre: number;
   blocage_raison?: string;
   duree_estimee_heures?: number;
+  nombre_etapes?: number;        
+  etapes_terminees?: number;     
   etapes?: {
     etapes: Array<{
       numero: number;
@@ -415,8 +417,8 @@ export default function TravauxPage() {
               {travail.duree_estimee_heures && (
                 <span>⏱️ {travail.duree_estimee_heures}h estimées</span>
               )}
-              {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
-                <span>🎯 {travail.etapes.etapes.length} étape{travail.etapes.etapes.length > 1 ? 's' : ''}</span>
+              {travail.nombre_etapes && travail.nombre_etapes > 0 && (
+                <span>🎯 {travail.etapes_terminees || 0}/{travail.nombre_etapes} étape{travail.nombre_etapes > 1 ? 's' : ''}</span>
               )}
             </div>
           </>
