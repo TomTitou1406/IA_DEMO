@@ -260,3 +260,22 @@ export async function reporterTravail(travailId: string) {
     throw error;
   }
 }
+
+// Terminer un travail (lot)
+export async function terminerTravail(travailId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('travaux')
+      .update({ 
+        statut: 'terminé',
+        progression: 100
+      })
+      .eq('id', travailId);
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error terminating travail:', error);
+    throw error;
+  }
+}
