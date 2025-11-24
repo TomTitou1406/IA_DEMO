@@ -164,37 +164,40 @@ export default function TravauxPage() {
           gap: '1rem'
         }}>
           <div style={{ flex: 1 }}>
-            <span style={{
-              background: statusColor,
-              color: 'white',
-              minWidth: '32px',
-              width: '32px',
-              height: '32px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontWeight: '700',
-              fontSize: '0.9rem',
-              flexShrink: 0
-            }}>
-              {travail.ordre}
-            </span>
-            <h3 style={{ 
-              fontSize: '1.05rem', 
-              margin: 0, 
-              marginBottom: '0.35rem',
-              color: 'var(--gray-light)',
-              fontWeight: '700',
-              lineHeight: '1.2'
-            }}>
-              {getStatusIcon(travail.statut)} {travail.titre}
-            </h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
+              <span style={{
+                background: statusColor,
+                color: 'white',
+                minWidth: '32px',
+                width: '32px',
+                height: '32px',
+                borderRadius: '50%',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                fontWeight: '700',
+                fontSize: '0.9rem',
+                flexShrink: 0
+              }}>
+                {travail.ordre}
+              </span>
+              <h3 style={{ 
+                fontSize: '1.05rem', 
+                margin: 0,
+                color: 'var(--gray-light)',
+                fontWeight: '700',
+                lineHeight: '1.2'
+              }}>
+                {getStatusIcon(travail.statut)} {travail.titre}
+              </h3>
+            </div>
+            {/* Description en dessous */}
             {travail.description && (
               <p style={{ 
                 fontSize: '0.85rem', 
                 color: 'var(--gray)', 
                 margin: 0,
+                marginLeft: '40px',
                 lineHeight: '1.4'
               }}>
                 {travail.description}
@@ -206,6 +209,7 @@ export default function TravauxPage() {
                 color: 'var(--orange)', 
                 margin: 0,
                 marginTop: '0.5rem',
+                marginLeft: '40px',
                 fontStyle: 'italic',
                 padding: '0.5rem',
                 background: 'rgba(255, 107, 53, 0.1)',
