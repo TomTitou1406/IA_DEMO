@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierDemo, getChantierStats } from '@/app/lib/services/chantierService';
-import { getTravauxByChantier, updateTravailProgression, annulerTravail, reactiverTravail, commencerTravail, reporterTravail } from '@/app/lib/services/travauxService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useParams } from 'next/navigation';
 import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesEtapes } from '@/app/lib/services/etapesService';
+import { getTravauxByChantier, annulerTravail, reactiverTravail, commencerTravail, reporterTravail, terminerTravail } from '@/app/lib/services/travauxService';
 
 interface Chantier {
   id: string;
