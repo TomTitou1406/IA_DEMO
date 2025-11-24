@@ -298,3 +298,23 @@ export async function deleteTache(tacheId: string) {
     throw error;
   }
 }
+
+// Terminer toutes les tâches d'une étape
+export async function terminerToutesLesTaches(etapeId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('taches')
+      .update({ 
+        statut: 'terminée',
+        date_fin_reelle: new Date().toISOString()
+      })
+      .eq('etape_id', etapeId)
+      .neq('statut', 'terminée');  // Ne pas re-terminer celles déjà terminées
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error terminating all taches:', error);
+    throw error;
+  }
+}
