@@ -30,6 +30,8 @@ interface Travail {
   duree_estimee_heures?: number;
   nombre_etapes?: number;        
   etapes_terminees?: number;     
+  etapes_en_cours?: number;       
+  etapes_bloquees?: number;       
   etapes?: {
     etapes: Array<{
       numero: number;
