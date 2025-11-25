@@ -16,7 +16,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { sendChat, type ChatResponse, type PromptContext } from '../lib/services/openaiService';
 import { transcribeAudio, textToSpeech, playAudio } from '../lib/services/audioService';
-import { useConversation, getUserId } from '../hooks/useConversation';
+import { useConversation } from '../hooks/useConversation';
+import { getUserId } from '../lib/services/conversationService';
 import { useExpertiseDetection } from '../hooks/useExpertiseDetection';
 import ExpertiseBanner, { ExpertiseTransitionMessage } from './ExpertiseBanner';
 import type { Message, ConversationType } from '../lib/types/conversation';
