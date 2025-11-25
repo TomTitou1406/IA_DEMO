@@ -595,7 +595,7 @@ export default function ChatInterface({
             <div style={{
               padding: '0.75rem',
               borderRadius: '16px',
-              bacbackground: contextColor,
+              background: contextColor,
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
             }}>
               <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
@@ -702,7 +702,7 @@ export default function ChatInterface({
             {isRecording && (
               <div style={{
                 fontSize: compact ? '0.85rem' : '0.9rem',
-                color: color: 'var(--red)',
+                color: 'var(--red)',
                 fontWeight: '700'
               }}>
                 🔴 {formatTime(recordingTime)}
@@ -717,7 +717,7 @@ export default function ChatInterface({
                   padding: compact ? '0.75rem 1.5rem' : '0.875rem 2rem',
                   borderRadius: '12px',
                   border: 'none',
-                  backgrbackground: isRecording ? 'var(--blue)' : 'var(--green)',
+                  background: isRecording ? 'var(--blue)' : 'var(--green)',
                   color: 'white',
                   fontSize: compact ? '0.9rem' : '1rem',
                   fontWeight: '700',
@@ -736,7 +736,7 @@ export default function ChatInterface({
                     padding: compact ? '0.75rem 1.25rem' : '0.875rem 1.5rem',
                     borderRadius: '12px',
                     border: 'none',
-                    backgrbackground: 'var(--red)',
+                    background: 'var(--red)',
                     color: 'white',
                     fontSize: compact ? '0.9rem' : '1rem',
                     fontWeight: '700',
