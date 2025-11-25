@@ -1,24 +1,67 @@
+/**
+ * ChatInterface.tsx
+ * 
+ * Interface de chat principale avec :
+ * - Persistance des conversations (useConversation)
+ * - Détection automatique d'expertise (useExpertiseDetection)
+ * - Support mode vocal et texte
+ * - Intégration complète du système d'expertise
+ * 
+ * @version 2.0
+ * @date 25 novembre 2025
+ */
+
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
-import { sendChatMessage } from '../lib/services/openaiService';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { sendChat, type ChatResponse, type PromptContext } from '../lib/services/openaiService';
 import { transcribeAudio, textToSpeech, playAudio } from '../lib/services/audioService';
+import { useConversation, getUserId } from '../hooks/useConversation';
+import { useExpertiseDetection } from '../hooks/useExpertiseDetection';
+import ExpertiseBanner, { ExpertiseTransitionMessage } from './ExpertiseBanner';
+import type { Message, ConversationType } from '../lib/types/conversation';
 
-export interface Message {
-  role: 'user' | 'assistant';
-  content: string;
-  timestamp: Date;
-}
+// ==================== TYPES ====================
 
 export interface ChatInterfaceProps {
+  /** Contexte de la page (home, chantiers, travaux...) */
   pageContext: string;
+  
+  /** Couleur du thème */
   contextColor?: string;
+  
+  /** Placeholder du champ de saisie */
   placeholder?: string;
+  
+  /** Message de bienvenue */
   welcomeMessage?: string;
+  
+  /** Contexte additionnel (texte libre) */
   additionalContext?: string;
+  
+  /** Contexte structuré pour le prompt */
+  promptContext?: PromptContext;
+  
+  /** Callback changement d'état (idle, thinking, speaking) */
   onStateChange?: (state: 'idle' | 'thinking' | 'speaking') => void;
-  compact?: boolean; // Pour modal vs full page
+  
+  /** Mode compact (pour modal) */
+  compact?: boolean;
+  
+  /** Désactiver la persistance */
+  disablePersistence?: boolean;
+  
+  /** Désactiver la détection d'expertise */
+  disableExpertiseDetection?: boolean;
+  
+  /** ID du chantier (pour contexte) */
+  chantierId?: string;
+  
+  /** ID du travail (pour contexte) */
+  travailId?: string;
 }
+
+// ==================== COMPOSANT ====================
 
 export default function ChatInterface({
   pageContext,
@@ -26,10 +69,17 @@ export default function ChatInterface({
   placeholder = 'Ta question...',
   welcomeMessage = 'Comment puis-je t\'aider ?',
   additionalContext,
+  promptContext,
   onStateChange,
-  compact = false
+  compact = false,
+  disablePersistence = false,
+  disableExpertiseDetection = false,
+  chantierId,
+  travailId
 }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  
+  // ==================== ÉTAT LOCAL ====================
+  
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [voiceMode, setVoiceMode] = useState(true);
@@ -38,6 +88,10 @@ export default function ChatInterface({
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [showTransition, setShowTransition] = useState(false);
+  const [transitionExpertise, setTransitionExpertise] = useState<string | null>(null);
+  
+  // ==================== REFS ====================
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -45,7 +99,94 @@ export default function ChatInterface({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
 
-  // Notifier le parent du changement d'état
+  // ==================== HOOKS PERSONNALISÉS ====================
+  
+  // Déterminer le type de conversation
+  const getConversationType = (): ConversationType => {
+    if (chantierId) return 'chantier';
+    if (travailId) return 'travail';
+    if (pageContext === 'aide' || pageContext === 'home') return 'aide_ponctuelle';
+    if (pageContext === 'profil') return 'profil';
+    return 'general';
+  };
+
+  // Hook persistance (conditionnel)
+  const {
+    conversation,
+    messages: persistedMessages,
+    loading: conversationLoading,
+    currentExpertise,
+    addMessage: persistMessage,
+    updateExpertise: updateConversationExpertise,
+    addDecision
+  } = disablePersistence 
+    ? {
+        conversation: null,
+        messages: [],
+        loading: false,
+        currentExpertise: null,
+        addMessage: async () => {},
+        updateExpertise: async () => {},
+        addDecision: async () => {}
+      }
+    : useConversation({
+        userId: getUserId(),
+        type: getConversationType(),
+        contextId: chantierId || travailId,
+        autoCreate: true,
+        autoSave: true
+      });
+
+  // Messages locaux (si pas de persistance)
+  const [localMessages, setLocalMessages] = useState<Message[]>([]);
+  
+  // Messages à afficher
+  const displayMessages = disablePersistence ? localMessages : persistedMessages;
+
+  // Hook détection expertise
+  const {
+    detectedExpertise,
+    confidence,
+    matchedKeywords,
+    isDetecting,
+    suggestionShown,
+    confirmExpertise,
+    dismissSuggestion
+  } = disableExpertiseDetection
+    ? {
+        detectedExpertise: null,
+        confidence: 0,
+        matchedKeywords: [],
+        isDetecting: false,
+        suggestionShown: false,
+        confirmExpertise: async () => null,
+        dismissSuggestion: () => {}
+      }
+    : useExpertiseDetection(displayMessages, {
+        minMessages: 3,
+        autoDetect: true,
+        currentExpertiseCode: currentExpertise?.code,
+        displayThreshold: 65,
+        debounceDelay: 1500
+      });
+
+  // Expertise active (conversation ou détectée confirmée)
+  const [activeExpertise, setActiveExpertise] = useState<{
+    id?: string;
+    code?: string;
+    nom?: string;
+  } | null>(null);
+
+  // Sync expertise depuis conversation
+  useEffect(() => {
+    if (currentExpertise?.code) {
+      setActiveExpertise(currentExpertise);
+    }
+  }, [currentExpertise]);
+
+  // ==================== EFFETS ====================
+
+  // Notifier parent du changement d'état
   useEffect(() => {
     if (onStateChange) {
       if (isGeneratingAudio || loading) {
@@ -61,7 +202,7 @@ export default function ChatInterface({
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+  }, [displayMessages, showTransition]);
 
   // Écouter événements audio
   useEffect(() => {
@@ -83,6 +224,8 @@ export default function ChatInterface({
     };
   }, []);
 
+  // ==================== HELPERS ====================
+
   // Stop audio
   const stopAudio = () => {
     if (audioElementRef.current) {
@@ -95,56 +238,177 @@ export default function ChatInterface({
     setIsGeneratingAudio(false);
   };
 
-  // Envoyer message texte
-  const handleSend = async () => {
-    if (!input.trim() || loading) return;
+  // Format temps enregistrement
+  const formatTime = (seconds: number): string => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
 
+  // ==================== GESTION EXPERTISE ====================
+
+  /**
+   * Confirme l'expertise détectée et l'active
+   */
+  const handleConfirmExpertise = useCallback(async () => {
+    if (!detectedExpertise) return;
+
+    // Confirmer dans le hook
+    const confirmed = await confirmExpertise();
+    if (!confirmed) return;
+
+    // Afficher la transition
+    setTransitionExpertise(confirmed.nom);
+    setShowTransition(true);
+
+    // Mettre à jour l'expertise active
+    setActiveExpertise({
+      id: confirmed.id,
+      code: confirmed.code,
+      nom: confirmed.nom
+    });
+
+    // Sauvegarder dans la conversation
+    if (!disablePersistence) {
+      await updateConversationExpertise(
+        confirmed.id,
+        confirmed.code,
+        confirmed.nom,
+        'auto'
+      );
+
+      // Enregistrer la décision
+      await addDecision({
+        type: 'expertise_switched',
+        description: `Passage à l'expert ${confirmed.nom}`,
+        data: { expertise_code: confirmed.code },
+        validated_by_user: true
+      });
+    }
+
+    // Masquer la transition après 2s
+    setTimeout(() => {
+      setShowTransition(false);
+    }, 2000);
+
+  }, [detectedExpertise, confirmExpertise, disablePersistence, updateConversationExpertise, addDecision]);
+
+  // ==================== ENVOI MESSAGE ====================
+
+  /**
+   * Envoie un message et récupère la réponse
+   */
+  const sendMessage = useCallback(async (content: string) => {
+    if (!content.trim()) return;
+
+    // Message utilisateur
     const userMessage: Message = {
       role: 'user',
-      content: input,
-      timestamp: new Date()
+      content: content.trim(),
+      timestamp: new Date().toISOString(),
+      expertise_code: activeExpertise?.code
     };
 
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+    // Ajouter à l'affichage
+    if (disablePersistence) {
+      setLocalMessages(prev => [...prev, userMessage]);
+    } else {
+      await persistMessage(userMessage);
+    }
+
     setLoading(true);
 
     try {
-      const apiMessages = messages.map(m => ({
-        role: m.role,
+      // Préparer les messages pour l'API
+      const apiMessages = [...displayMessages, userMessage].map(m => ({
+        role: m.role as 'user' | 'assistant',
         content: m.content
       }));
 
-      // DEBUG TEMPORAIRE
-      console.log('📤 Sending to API with context:', {
-        hasAdditionalContext: !!additionalContext,
-        contextLength: additionalContext?.length || 0
+      // Appel API avec expertise si active
+      const response: ChatResponse = await sendChat({
+        messages: apiMessages,
+        context: additionalContext,
+        isVoiceMode: voiceMode,
+        pageContext,
+        expertiseCode: activeExpertise?.code,
+        promptContext: {
+          ...promptContext,
+          chantierId,
+          travailId
+        }
       });
-      const response = await sendChatMessage(
-        [...apiMessages, { role: 'user', content: input }],
-        additionalContext,
-        voiceMode,
-        pageContext
-      );
 
+      // Message assistant
       const assistantMessage: Message = {
         role: 'assistant',
-        content: response,
-        timestamp: new Date()
+        content: response.message,
+        timestamp: new Date().toISOString(),
+        expertise_code: activeExpertise?.code,
+        expertise_nom: response.expertiseNom || activeExpertise?.nom,
+        metadata: {
+          isVoiceMode: voiceMode,
+          promptSource: response.promptSource
+        }
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      // Ajouter à l'affichage
+      if (disablePersistence) {
+        setLocalMessages(prev => [...prev, assistantMessage]);
+      } else {
+        await persistMessage(assistantMessage);
+      }
 
+      // Lecture audio si mode vocal
       if (voiceMode && autoPlayAudio) {
         setIsGeneratingAudio(true);
-        const audioBlob = await textToSpeech(response);
-        await playAudio(audioBlob, audioElementRef);
+        try {
+          const audioBlob = await textToSpeech(response.message);
+          await playAudio(audioBlob, audioElementRef);
+        } catch (audioError) {
+          console.error('Erreur audio:', audioError);
+          setIsGeneratingAudio(false);
+        }
       }
+
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Erreur envoi message:', error);
+      
+      // Message d'erreur
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: 'Désolé, une erreur est survenue. Peux-tu reformuler ta question ?',
+        timestamp: new Date().toISOString()
+      };
+
+      if (disablePersistence) {
+        setLocalMessages(prev => [...prev, errorMessage]);
+      }
     } finally {
       setLoading(false);
     }
+  }, [
+    displayMessages, 
+    activeExpertise, 
+    additionalContext, 
+    voiceMode, 
+    pageContext, 
+    promptContext,
+    chantierId,
+    travailId,
+    autoPlayAudio, 
+    disablePersistence, 
+    persistMessage
+  ]);
+
+  // ==================== HANDLERS ====================
+
+  // Envoi texte
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
+    const content = input;
+    setInput('');
+    await sendMessage(content);
   };
 
   // Gestion vocal
@@ -187,7 +451,6 @@ export default function ChatInterface({
           }
 
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          
           setIsRecording(false);
 
           if (audioBlob.size < 1000) {
@@ -198,7 +461,6 @@ export default function ChatInterface({
 
           try {
             setLoading(true);
-            
             const text = await transcribeAudio(audioBlob);
             
             if (!text.trim()) {
@@ -208,85 +470,46 @@ export default function ChatInterface({
               return;
             }
 
-            const userMessage: Message = {
-              role: 'user',
-              content: text,
-              timestamp: new Date()
-            };
-            setMessages(prev => [...prev, userMessage]);
             setRecordingTime(0);
-
-            const apiMessages = [...messages, userMessage].map(m => ({
-              role: m.role,
-              content: m.content
-            }));
-
-            const response = await sendChatMessage(
-              apiMessages,
-              additionalContext,
-              voiceMode,
-              pageContext
-            );
-
-            const assistantMessage: Message = {
-              role: 'assistant',
-              content: response,
-              timestamp: new Date()
-            };
-
-            setMessages(prev => [...prev, assistantMessage]);
-
-            if (autoPlayAudio) {
-              setIsGeneratingAudio(true);
-              textToSpeech(response)
-                .then(audioBlob => playAudio(audioBlob, audioElementRef))
-                .catch(err => {
-                  console.error('Audio error:', err);
-                  setIsPlaying(false);
-                  setIsGeneratingAudio(false);
-                  stopAudio();
-                });
-            }
+            await sendMessage(text);
 
           } catch (error) {
-            console.error('Error:', error);
-            alert('Erreur lors du traitement');
-            setRecordingTime(0);
-          } finally {
+            console.error('Erreur transcription:', error);
             setLoading(false);
+            setRecordingTime(0);
           }
         };
 
         mediaRecorder.start();
         setIsRecording(true);
+
       } catch (error) {
-        console.error('Error:', error);
+        console.error('Erreur micro:', error);
         alert('Impossible d\'accéder au microphone');
       }
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
+  // ==================== RENDU ====================
 
   return (
     <div style={{
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      width: '100%'
+      background: 'white'
     }}>
-      {/* Messages */}
+      
+      {/* Zone messages */}
       <div style={{
         flex: 1,
         overflowY: 'auto',
         padding: compact ? '1rem' : '1.5rem',
         background: '#f8f9fa'
       }}>
-        {messages.length === 0 && (
+        
+        {/* Message de bienvenue */}
+        {displayMessages.length === 0 && !conversationLoading && (
           <div style={{ 
             textAlign: 'center', 
             padding: compact ? '2rem 1rem' : '3rem 1rem',
@@ -296,12 +519,39 @@ export default function ChatInterface({
             <p style={{ fontSize: compact ? '0.9rem' : '1rem', fontWeight: '500' }}>
               {welcomeMessage}
             </p>
+            {activeExpertise?.nom && (
+              <p style={{ fontSize: '0.85rem', marginTop: '0.5rem', color: contextColor }}>
+                🔧 Expert {activeExpertise.nom} à votre service
+              </p>
+            )}
           </div>
         )}
 
-        {messages.map((message, index) => (
+        {/* Banner détection expertise */}
+        {suggestionShown && detectedExpertise && !activeExpertise?.code && (
+          <ExpertiseBanner
+            expertise={detectedExpertise}
+            confidence={confidence}
+            matchedKeywords={matchedKeywords}
+            onConfirm={handleConfirmExpertise}
+            onDismiss={dismissSuggestion}
+            themeColor={contextColor}
+            compact={compact}
+          />
+        )}
+
+        {/* Message transition expertise */}
+        {showTransition && transitionExpertise && (
+          <ExpertiseTransitionMessage
+            expertiseNom={transitionExpertise}
+            themeColor={contextColor}
+          />
+        )}
+
+        {/* Messages */}
+        {displayMessages.map((message, index) => (
           <div
-            key={index}
+            key={message.id || index}
             style={{
               display: 'flex',
               justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
@@ -322,11 +572,23 @@ export default function ChatInterface({
                 wordBreak: 'break-word'
               }}
             >
+              {/* Badge expertise si différente */}
+              {message.role === 'assistant' && message.expertise_nom && (
+                <div style={{
+                  fontSize: '0.7rem',
+                  color: contextColor,
+                  marginBottom: '0.3rem',
+                  fontWeight: '600'
+                }}>
+                  🔧 {message.expertise_nom}
+                </div>
+              )}
               {message.content}
             </div>
           </div>
         ))}
 
+        {/* Loader */}
         {loading && !isGeneratingAudio && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.75rem' }}>
             <div style={{
@@ -340,6 +602,7 @@ export default function ChatInterface({
           </div>
         )}
 
+        {/* Génération audio */}
         {isGeneratingAudio && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.75rem' }}>
             <div style={{
@@ -362,13 +625,14 @@ export default function ChatInterface({
         <div ref={messagesEndRef} />
       </div>
 
-      {/* Input */}
+      {/* Zone input */}
       <div style={{
         padding: compact ? '0.75rem' : '1rem',
         borderTop: '1px solid var(--gray-light)',
         background: 'white'
       }}>
-        {/* Toggles */}
+        
+        {/* Toggles mode */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between',
@@ -491,7 +755,10 @@ export default function ChatInterface({
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-              placeholder={placeholder}
+              placeholder={activeExpertise?.nom 
+                ? `Question pour l'expert ${activeExpertise.nom}...`
+                : placeholder
+              }
               disabled={loading}
               style={{
                 flex: 1,
