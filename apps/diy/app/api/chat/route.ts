@@ -1,6 +1,16 @@
+/**
+ * /api/chat/route.ts
+ * 
+ * Route API principale pour le chat IA Papibricole
+ * Supporte les prompts génériques ET les expertises métier
+ * 
+ * @version 2.0
+ * @date 25 novembre 2025
+ */
+
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
-import { getSystemPromptForContext } from '@/app/lib/services/promptService';
+import { getPrompt, type PromptContext } from '@/app/lib/services/promptService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -8,17 +18,34 @@ const openai = new OpenAI({
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, context, isVoiceMode, pageContext } = await request.json();
+    const { 
+      messages, 
+      context,           // Contexte additionnel (texte libre) - rétrocompatibilité
+      isVoiceMode, 
+      pageContext,       // Contexte page (home, chantiers, travaux...)
+      expertiseCode,     // ← NOUVEAU : Code de l'expertise (electricien, plaquiste...)
+      promptContext      // ← NOUVEAU : Contexte structuré (chantier, travail, étape...)
+    } = await request.json();
 
-    // Déterminer le contexte (par défaut: chat)
-    const contextType = pageContext || 'chat';
+    // Construire le contexte structuré pour le prompt
+    const structuredContext: PromptContext = {
+      ...promptContext,
+      additionalContext: context // Intégrer le contexte texte libre
+    };
 
-    // Récupérer le prompt système depuis la DB
-    const promptConfig = await getSystemPromptForContext(contextType, context);
+    // Récupérer le prompt via la fonction unifiée
+    // Priorité : expertiseCode > pageContext > fallback
+    const promptConfig = await getPrompt({
+      expertiseCode,
+      pageContext: pageContext || 'chat',
+      context: structuredContext,
+      additionalContext: context
+    });
 
     let finalPrompt = promptConfig.systemPrompt;
     let maxTokens = 800;
 
+    // Ajustements pour le mode vocal
     if (isVoiceMode) {
       finalPrompt += `
 
@@ -33,7 +60,7 @@ RÈGLES CONVERSATIONNELLES :
 - Reste conversationnel, comme si tu parlais à un ami
 - Le BON SENS prime : si 5 étapes nécessaires, cite les 5
 - Sois clair mais agréable à écouter
-- N'utilise JAMAIS de formatage Markdown (**, __, etc.) car c'est pour l'audio`;  // ← NOUVEAU
+- N'utilise JAMAIS de formatage Markdown (**, __, etc.) car c'est pour l'audio`;
       maxTokens = 200;
     }
 
@@ -42,6 +69,7 @@ RÈGLES CONVERSATIONNELLES :
       content: finalPrompt
     };
 
+    // Appel OpenAI
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [systemMessage, ...messages],
@@ -51,8 +79,13 @@ RÈGLES CONVERSATIONNELLES :
 
     return NextResponse.json({
       message: completion.choices[0].message.content,
-      promptUsed: promptConfig.code // Pour debug
+      // Métadonnées utiles pour le debug et l'UI
+      promptUsed: promptConfig.code,
+      promptSource: promptConfig.source,
+      expertiseNom: promptConfig.expertiseNom || null,
+      usage: completion.usage
     });
+
   } catch (error) {
     console.error('Error in chat API:', error);
     return NextResponse.json(
