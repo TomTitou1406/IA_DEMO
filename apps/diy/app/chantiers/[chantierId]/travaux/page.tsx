@@ -380,34 +380,6 @@ export default function TravauxPage() {
           <>
             {/* Barre de progression AUTO */}
             {travail.statut === 'en_cours' && (
-              <div style={{ marginBottom: '0.5rem' }}>
-                <div style={{
-                  width: '100%',
-                  height: '6px',
-                  background: 'rgba(255,255,255,0.08)',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  marginBottom: '0.4rem'
-                }}>
-                  <div style={{
-                    width: `${travail.progression}%`,
-                    height: '100%',
-                    background: 'var(--blue)',
-                    transition: 'width 0.5s ease'
-                  }}></div>
-                </div>
-                <p style={{ 
-                  fontSize: '0.85rem', 
-                  fontWeight: '600',
-                  color: 'var(--gray-light)',
-                  margin: 0
-                }}>
-                  {travail.progression}%
-                </p>
-              </div>
-            )}
-
-            {/* Stats en ligne - TOUJOURS VISIBLE */}
             <div style={{ 
               display: 'flex',
               flexWrap: 'wrap',
