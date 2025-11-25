@@ -237,42 +237,7 @@ export default function TravailDetailPage() {
                 ▼
               </span>
             </div>
-            
-            <div style={{ 
-              display: 'flex', 
-              gap: '1.5rem', 
-              fontSize: '0.85rem', 
-              color: 'var(--gray)',
-              marginLeft: '40px',
-              alignItems: 'center',    // ← AJOUTE pour aligner verticalement
-              flexWrap: 'wrap'         // ← AJOUTE pour passer à la ligne si nécessaire
-            }}>
-              <span>⏱️ {etape.duree_estimee_minutes} min</span>
-              {etape.outils_necessaires?.length > 0 && (
-                <span>🔧 {etape.outils_necessaires.length} outil{etape.outils_necessaires.length > 1 ? 's' : ''}</span>
-              )}
-              {etape.statut === 'en_cours' && (
-                <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
-                  {progressionAuto}%
-                </span>
-              )}
-              {/* Badge difficulté - style corrigé */}
-              <span style={{
-                background: `${getDifficultyColor(etape.difficulte)}20`,  // ← 20 au lieu de 15
-                color: getDifficultyColor(etape.difficulte),
-                padding: '0.2rem 0.5rem',
-                borderRadius: '6px',
-                fontSize: '0.75rem',      // ← Plus petit
-                fontWeight: '600',
-                display: 'inline-flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-                lineHeight: '1'           // ← AJOUTE pour éviter décalage
-              }}>
-                {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
-              </span>
-            </div>
-  
+              
             {etape.blocage_raison && (
               <p style={{ 
                 fontSize: '0.85rem', 
@@ -454,33 +419,80 @@ export default function TravailDetailPage() {
           )}
         </div>
   
-        {/* Barre de progression AUTO (basée sur tâches terminées) */}
+        {/* Barre de progression + Stats en ligne */}
         {etape.statut === 'en_cours' && etape.nombre_taches && etape.nombre_taches > 0 && (
-          <div style={{ marginBottom: '0.5rem' }}>
-            <div style={{
-              width: '100%',
-              height: '6px',
-              background: 'rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              overflow: 'hidden',
-              marginBottom: '0.4rem'
-            }}>
+          <>
+            {/* Barre de progression */}
+            <div style={{ marginBottom: '0.75rem' }}>
               <div style={{
-                width: `${progressionAuto}%`,
-                height: '100%',
-                background: 'var(--blue)',
-                transition: 'width 0.5s ease'
-              }}></div>
+                width: '100%',
+                height: '6px',
+                background: 'rgba(255,255,255,0.08)',
+                borderRadius: '10px',
+                overflow: 'hidden'
+              }}>
+                <div style={{
+                  width: `${progressionAuto}%`,
+                  height: '100%',
+                  background: 'var(--blue)',
+                  transition: 'width 0.5s ease'
+                }}></div>
+              </div>
             </div>
-            <p style={{ 
-              fontSize: '0.85rem', 
-              fontWeight: '600',
-              color: 'var(--gray-light)',
-              margin: 0
+        
+            {/* Stats en ligne - FORMAT ALIGNÉ PAGE TRAVAUX */}
+            <div style={{ 
+              display: 'flex',
+              flexWrap: 'wrap',
+              alignItems: 'center',
+              gap: '1.5rem',
+              fontSize: '0.85rem',
+              color: 'var(--gray)',
+              marginBottom: '0.5rem'
             }}>
-              {progressionAuto}% ({etape.taches_terminees || 0}/{etape.nombre_taches} tâches)
-            </p>
-          </div>
+              {/* % complété */}
+              <span style={{ 
+                color: 'var(--gray-light)', 
+                fontWeight: '700'
+              }}>
+                {progressionAuto}% complété
+              </span>
+        
+              {/* Durée estimée */}
+              <span>⏱️ {etape.duree_estimee_minutes} min</span>
+        
+              {/* Tâches avec détail */}
+              <span>
+                ✅ {etape.taches_terminees || 0}/{etape.nombre_taches}
+                {(etape.taches_terminees || 0) > 0 && (
+                  <span style={{ color: 'var(--green)', marginLeft: '0.5rem', fontWeight: '600' }}>
+                    • {etape.taches_terminees} terminée{(etape.taches_terminees || 0) > 1 ? 's' : ''}
+                  </span>
+                )}
+              </span>
+        
+              {/* Outils */}
+              {etape.outils_necessaires?.length > 0 && (
+                <span>🔧 {etape.outils_necessaires.length} outil{etape.outils_necessaires.length > 1 ? 's' : ''}</span>
+              )}
+        
+              {/* Badge difficulté */}
+              <span style={{
+                background: `${getDifficultyColor(etape.difficulte)}20`,
+                color: getDifficultyColor(etape.difficulte),
+                padding: '0.2rem 0.5rem',
+                borderRadius: '6px',
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: '0.25rem',
+                lineHeight: '1'
+              }}>
+                {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
+              </span>
+            </div>
+          </>
         )}
   
         {/* Contenu détaillé - expandable */}
