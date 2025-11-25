@@ -564,8 +564,8 @@ export default function ChatInterface({
                 maxWidth: '75%',
                 padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                 borderRadius: compact ? '12px' : '16px',
-                background: message.role === 'user' ? contextColor : 'white',
-                color: message.role === 'user' ? 'white' : 'var(--text)',
+                background: message.role === 'user' ? 'var(--cyan)' : contextColor,
+                color: 'var(--white)',
                 boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                 fontSize: compact ? '0.85rem' : '0.95rem',
                 lineHeight: '1.5',
@@ -595,7 +595,7 @@ export default function ChatInterface({
             <div style={{
               padding: '0.75rem',
               borderRadius: '16px',
-              background: 'white',
+              bacbackground: contextColor,
               boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
             }}>
               <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
@@ -684,7 +684,7 @@ export default function ChatInterface({
                 padding: compact ? '0.4rem 0.6rem' : '0.5rem 0.75rem',
                 borderRadius: '8px',
                 border: 'none',
-                background: autoPlayAudio ? '#10b981' : 'var(--gray-light)',
+                background: autoPlayAudio ? 'var(--green)' : 'var(--gray-light)',
                 color: autoPlayAudio ? 'white' : 'var(--gray)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 cursor: 'pointer',
@@ -702,7 +702,7 @@ export default function ChatInterface({
             {isRecording && (
               <div style={{
                 fontSize: compact ? '0.85rem' : '0.9rem',
-                color: '#ef4444',
+                color: color: 'var(--red)',
                 fontWeight: '700'
               }}>
                 🔴 {formatTime(recordingTime)}
@@ -717,7 +717,7 @@ export default function ChatInterface({
                   padding: compact ? '0.75rem 1.5rem' : '0.875rem 2rem',
                   borderRadius: '12px',
                   border: 'none',
-                  background: isRecording ? '#3b82f6' : '#10b981',
+                  backgrbackground: isRecording ? 'var(--blue)' : 'var(--green)',
                   color: 'white',
                   fontSize: compact ? '0.9rem' : '1rem',
                   fontWeight: '700',
@@ -736,7 +736,7 @@ export default function ChatInterface({
                     padding: compact ? '0.75rem 1.25rem' : '0.875rem 1.5rem',
                     borderRadius: '12px',
                     border: 'none',
-                    background: '#ef4444',
+                    backgrbackground: 'var(--red)',
                     color: 'white',
                     fontSize: compact ? '0.9rem' : '1rem',
                     fontWeight: '700',
@@ -768,7 +768,9 @@ export default function ChatInterface({
                 border: `2px solid ${contextColor}30`,
                 fontSize: compact ? '0.85rem' : '0.95rem',
                 outline: 'none',
-                transition: 'border-color 0.2s'
+                transition: 'border-color 0.2s',
+                color: 'var(--gray-dark)',
+                backgroundColor: 'var(--white)'
               }}
               onFocus={(e) => e.target.style.borderColor = contextColor}
               onBlur={(e) => e.target.style.borderColor = `${contextColor}30`}
