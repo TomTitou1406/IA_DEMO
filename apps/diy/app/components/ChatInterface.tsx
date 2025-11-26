@@ -557,7 +557,7 @@ export default function ChatInterface({
           <div style={{ 
             textAlign: 'center', 
             padding: compact ? '2rem 1rem' : '3rem 1rem',
-            color: 'var(--gray)'
+            color: '#6b7280'
           }}>
             <div style={{ fontSize: compact ? '2rem' : '3rem', marginBottom: '1rem' }}>👋</div>
             <p style={{ fontSize: compact ? '0.9rem' : '1rem', fontWeight: '500' }}>
@@ -616,7 +616,7 @@ export default function ChatInterface({
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
                   background: message.role === 'user' ? contextColor : 'white',
-                  color: message.role === 'user' ? 'white' : 'var(--text)',
+                  color: message.role === 'user' ? 'white' : '#1f2937',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
                   lineHeight: '1.5',
@@ -895,7 +895,8 @@ export default function ChatInterface({
               marginBottom: '0.75rem',
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '0.5rem',
+              color: '#1f2937'
             }}>
               📌 Épingler comme note
             </div>
@@ -913,7 +914,9 @@ export default function ChatInterface({
                 fontSize: '0.9rem',
                 resize: 'vertical',
                 marginBottom: '0.75rem',
-                boxSizing: 'border-box'
+                boxSizing: 'border-box',
+                color: '#1f2937',
+                backgroundColor: 'white'
               }}
             />
             
@@ -942,7 +945,8 @@ export default function ChatInterface({
                   border: '1px solid #e5e7eb',
                   background: 'white',
                   cursor: 'pointer',
-                  fontSize: '0.85rem'
+                  fontSize: '0.85rem',
+                  color: '#374151'
                 }}
               >
                 Annuler
