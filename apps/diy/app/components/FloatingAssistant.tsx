@@ -273,17 +273,17 @@ export default function FloatingAssistant() {
                 </div>
                 
                 {/* Ligne 2 : Arborescence */}
-                {header.breadcrumb && (
-                  <div style={{ 
-                    fontSize: '0.75rem', 
-                    opacity: 0.85,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    lineHeight: '1.2'
-                  }}>
-                    {header.breadcrumb}
-                  </div>
+                <div style={{ 
+                  fontSize: '0.8rem', 
+                  fontWeight: '600',
+                  opacity: 0.9,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: '1.2'
+                }}>
+                  {header.breadcrumb}
+                </div>
                 )}
                 
                 {/* Ligne 3 : Expertise */}
@@ -295,7 +295,7 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  {header.expertiseLine}
+                  ✨Assistant IA : {expertise.nom}
                 </div>
               </div>
             </div>
