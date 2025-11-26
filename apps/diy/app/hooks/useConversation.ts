@@ -1,440 +1,308 @@
 /**
  * useConversation.ts
  * 
- * Hook React pour gérer les conversations avec persistance automatique
- * Utilisé dans ChatInterface pour sauvegarder les échanges en BDD
+ * Hook React pour gérer les conversations avec :
+ * - Persistance par chantier
+ * - Sliding window (20 derniers messages)
+ * - Journal de chantier
+ * - Gestion automatique création/récupération
  * 
- * @version 1.0
- * @date 25 novembre 2025
+ * @version 2.0
+ * @date 26 novembre 2025
  */
 
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import {
-  Conversation,
-  Message,
-  Decision,
-  SuggestedAction,
-  ConversationType,
-  UseConversationOptions,
-  UseConversationReturn,
-  ConversationContext
-} from '@/app/lib/types/conversation';
-import {
   getUserId,
-  createConversation,
-  getActiveConversation,
-  getConversationById,
+  getOrCreateConversation,
+  getConversationByChantier,
   addMessage as addMessageToDB,
-  addMessages as addMessagesToDB,
-  updateActiveExpertise,
-  addDecision as addDecisionToDB,
-  addSuggestedAction as addSuggestedActionToDB,
-  updateActionStatus as updateActionStatusInDB,
+  updateExpertise,
+  addDecisionToJournal,
+  addProblemeResoluToJournal,
+  addPointAttentionToJournal,
+  updatePreferencesBricoleur,
+  updateConversationResume,
   closeConversation,
-  updateContext
-} from '@/app/lib/services/conversationService';
+  startNewConversation,
+  getMessagesForAPI,
+  needsResume,
+  type Conversation,
+  type Message,
+  type ConversationType,
+  type Journal,
+  type Decision,
+  type ProblemeResolu
+} from '../lib/services/conversationService';
 
-// ==================== HOOK PRINCIPAL ====================
+// ==================== TYPES ====================
+
+export interface UseConversationOptions {
+  type: ConversationType;
+  chantierId?: string;
+  travailId?: string;
+  autoLoad?: boolean;
+}
+
+export interface UseConversationReturn {
+  // État
+  conversation: Conversation | null;
+  messages: Message[];
+  messagesForAPI: Message[];
+  journal: Journal | null;
+  isLoading: boolean;
+  error: string | null;
+  
+  // Actions messages
+  addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => Promise<boolean>;
+  
+  // Actions expertise
+  setExpertise: (expertiseId: string | null, code: string, nom: string) => Promise<boolean>;
+  
+  // Actions journal
+  addDecision: (decision: Omit<Decision, 'id' | 'date'>) => Promise<boolean>;
+  addProbleme: (probleme: Omit<ProblemeResolu, 'id' | 'date'>) => Promise<boolean>;
+  addPointAttention: (point: string) => Promise<boolean>;
+  updatePreferences: (prefs: Partial<Journal['preferences_bricoleur']>) => Promise<boolean>;
+  
+  // Actions conversation
+  startNew: () => Promise<boolean>;
+  close: (satisfaction?: number, feedback?: string) => Promise<boolean>;
+  reload: () => Promise<void>;
+}
+
+// ==================== HOOK ====================
 
 export function useConversation(options: UseConversationOptions): UseConversationReturn {
-  const {
-    userId: providedUserId,
-    type,
-    contextId,
-    autoCreate = true,
-    autoSave = true
-  } = options;
-
-  // État
+  const { type, chantierId, travailId, autoLoad = true } = options;
+  
+  // États
   const [conversation, setConversation] = useState<Conversation | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  
+  // Refs pour éviter les doubles appels
+  const loadingRef = useRef(false);
+  const userIdRef = useRef<string | null>(null);
 
-  // Refs pour éviter les problèmes de closure
-  const conversationRef = useRef<Conversation | null>(null);
-  const pendingMessagesRef = useRef<Message[]>([]);
-  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  // ==================== CHARGEMENT ====================
 
-  // User ID (fourni ou généré)
-  const userId = providedUserId || getUserId();
-
-  // ==================== CHARGEMENT INITIAL ====================
-
-  /**
-   * Charge ou crée la conversation
-   */
-  const loadOrCreateConversation = useCallback(async () => {
-    setLoading(true);
+  const loadConversation = useCallback(async () => {
+    if (loadingRef.current) return;
+    loadingRef.current = true;
+    
+    setIsLoading(true);
     setError(null);
 
     try {
-      // Essayer de récupérer une conversation active existante
-      let conv = await getActiveConversation(userId, type, contextId);
+      // Récupérer l'ID utilisateur
+      const userId = getUserId();
+      userIdRef.current = userId;
 
-      // Si pas trouvée et autoCreate activé, en créer une nouvelle
-      if (!conv && autoCreate) {
-        console.log('📝 Création nouvelle conversation:', type, contextId || '');
-        
-        conv = await createConversation({
-          user_id: userId,
-          type,
-          chantier_id: type === 'chantier' ? contextId : undefined,
-          travail_id: ['travail', 'etape', 'tache'].includes(type) ? contextId : undefined,
-          contexte_initial: {
-            page_context: type,
-            chantier_id: type === 'chantier' ? contextId : undefined,
-            travail_id: ['travail', 'etape', 'tache'].includes(type) ? contextId : undefined
-          }
-        });
-      }
+      // Récupérer ou créer la conversation
+      const conv = await getOrCreateConversation({
+        userId,
+        type,
+        chantierId,
+        travailId
+      });
 
       if (conv) {
         setConversation(conv);
-        conversationRef.current = conv;
         setMessages(conv.messages || []);
-        console.log('✅ Conversation chargée:', conv.id, `(${conv.messages?.length || 0} messages)`);
+        console.log('💬 Conversation chargée:', conv.id, `(${conv.messages?.length || 0} messages)`);
       } else {
-        console.log('ℹ️ Pas de conversation active');
+        setError('Impossible de charger la conversation');
       }
-
     } catch (err) {
-      console.error('Error loading conversation:', err);
-      setError('Erreur lors du chargement de la conversation');
+      console.error('Erreur chargement conversation:', err);
+      setError('Erreur lors du chargement');
     } finally {
-      setLoading(false);
+      setIsLoading(false);
+      loadingRef.current = false;
     }
-  }, [userId, type, contextId, autoCreate]);
+  }, [type, chantierId, travailId]);
 
-  // Charger au mount et quand les dépendances changent
+  // Charger au mount si autoLoad
   useEffect(() => {
-    loadOrCreateConversation();
-  }, [loadOrCreateConversation]);
-
-  // ==================== GESTION DES MESSAGES ====================
-
-  /**
-   * Sauvegarde les messages en attente (debounced)
-   */
-  const flushPendingMessages = useCallback(async () => {
-    if (!conversationRef.current || pendingMessagesRef.current.length === 0) {
-      return;
+    if (autoLoad) {
+      loadConversation();
     }
+  }, [autoLoad, loadConversation]);
 
-    const messagesToSave = [...pendingMessagesRef.current];
-    pendingMessagesRef.current = [];
-
-    try {
-      await addMessagesToDB(conversationRef.current.id, messagesToSave);
-      console.log(`💾 ${messagesToSave.length} message(s) sauvegardé(s)`);
-    } catch (err) {
-      console.error('Error saving messages:', err);
-      // Remettre les messages en queue en cas d'erreur
-      pendingMessagesRef.current = [...messagesToSave, ...pendingMessagesRef.current];
+  // Recharger si le chantier change
+  useEffect(() => {
+    if (chantierId && autoLoad) {
+      loadConversation();
     }
-  }, []);
+  }, [chantierId, autoLoad, loadConversation]);
 
-  /**
-   * Ajoute un message à la conversation
-   */
+  // ==================== ACTIONS MESSAGES ====================
+
   const addMessage = useCallback(async (
-    message: Omit<Message, 'timestamp'>
-  ): Promise<void> => {
+    message: Omit<Message, 'id' | 'timestamp'>
+  ): Promise<boolean> => {
+    if (!conversation) {
+      console.error('Pas de conversation active');
+      return false;
+    }
+
     const fullMessage: Message = {
       ...message,
+      id: crypto.randomUUID?.() || `msg_${Date.now()}`,
       timestamp: new Date().toISOString()
     };
 
-    // Mise à jour immédiate de l'UI
+    // Optimistic update
     setMessages(prev => [...prev, fullMessage]);
 
-    // Si pas de conversation ou pas d'autoSave, arrêter là
-    if (!conversationRef.current || !autoSave) {
-      return;
+    // Persister en BDD
+    const success = await addMessageToDB(conversation.id, fullMessage);
+    
+    if (!success) {
+      // Rollback si échec
+      setMessages(prev => prev.filter(m => m.id !== fullMessage.id));
     }
 
-    // Ajouter aux messages en attente
-    pendingMessagesRef.current.push(fullMessage);
+    return success;
+  }, [conversation]);
 
-    // Debounce la sauvegarde (500ms)
-    if (saveTimeoutRef.current) {
-      clearTimeout(saveTimeoutRef.current);
-    }
+  // ==================== ACTIONS EXPERTISE ====================
 
-    saveTimeoutRef.current = setTimeout(() => {
-      flushPendingMessages();
-    }, 500);
+  const setExpertise = useCallback(async (
+    expertiseId: string | null,
+    code: string,
+    nom: string
+  ): Promise<boolean> => {
+    if (!conversation) return false;
 
-  }, [autoSave, flushPendingMessages]);
-
-  // Cleanup du timeout au unmount
-  useEffect(() => {
-    return () => {
-      if (saveTimeoutRef.current) {
-        clearTimeout(saveTimeoutRef.current);
-        // Sauvegarder les messages en attente avant de partir
-        flushPendingMessages();
-      }
-    };
-  }, [flushPendingMessages]);
-
-  // ==================== GESTION DE L'EXPERTISE ====================
-
-  /**
-   * Met à jour l'expertise active
-   */
-  const updateExpertise = useCallback(async (
-    expertiseId: string,
-    expertiseCode: string,
-    expertiseNom: string,
-    trigger: 'auto' | 'manual' = 'manual'
-  ): Promise<void> => {
-    if (!conversationRef.current) {
-      console.warn('No active conversation to update expertise');
-      return;
-    }
-
-    const success = await updateActiveExpertise(
-      conversationRef.current.id,
-      expertiseId,
-      expertiseCode,
-      expertiseNom,
-      trigger
-    );
-
+    const success = await updateExpertise(conversation.id, expertiseId, code, nom, 'auto');
+    
     if (success) {
-      // Mettre à jour l'état local
       setConversation(prev => prev ? {
         ...prev,
-        expertise_actuelle_id: expertiseId,
-        code_expertise_actuelle: expertiseCode
+        expertise_actuelle_id: expertiseId || undefined,
+        code_expertise_actuelle: code
       } : null);
-
-      conversationRef.current = {
-        ...conversationRef.current,
-        expertise_actuelle_id: expertiseId,
-        code_expertise_actuelle: expertiseCode
-      };
     }
-  }, []);
 
-  // ==================== GESTION DES DÉCISIONS ====================
+    return success;
+  }, [conversation]);
 
-  /**
-   * Ajoute une décision
-   */
+  // ==================== ACTIONS JOURNAL ====================
+
   const addDecision = useCallback(async (
-    decision: Omit<Decision, 'id' | 'created_at'>
-  ): Promise<void> => {
-    if (!conversationRef.current) {
-      console.warn('No active conversation to add decision');
-      return;
+    decision: Omit<Decision, 'id' | 'date'>
+  ): Promise<boolean> => {
+    if (!conversation) return false;
+    return await addDecisionToJournal(conversation.id, decision);
+  }, [conversation]);
+
+  const addProbleme = useCallback(async (
+    probleme: Omit<ProblemeResolu, 'id' | 'date'>
+  ): Promise<boolean> => {
+    if (!conversation) return false;
+    return await addProblemeResoluToJournal(conversation.id, probleme);
+  }, [conversation]);
+
+  const addPointAttention = useCallback(async (point: string): Promise<boolean> => {
+    if (!conversation) return false;
+    return await addPointAttentionToJournal(conversation.id, point);
+  }, [conversation]);
+
+  const updatePreferences = useCallback(async (
+    prefs: Partial<Journal['preferences_bricoleur']>
+  ): Promise<boolean> => {
+    if (!conversation) return false;
+    return await updatePreferencesBricoleur(conversation.id, prefs);
+  }, [conversation]);
+
+  // ==================== ACTIONS CONVERSATION ====================
+
+  const startNew = useCallback(async (): Promise<boolean> => {
+    if (!userIdRef.current) return false;
+
+    setIsLoading(true);
+    
+    try {
+      const newConv = await startNewConversation({
+        userId: userIdRef.current,
+        type,
+        chantierId,
+        travailId
+      });
+
+      if (newConv) {
+        setConversation(newConv);
+        setMessages([]);
+        console.log('🆕 Nouvelle conversation démarrée:', newConv.id);
+        return true;
+      }
+      return false;
+    } finally {
+      setIsLoading(false);
     }
+  }, [type, chantierId, travailId]);
 
-    const newDecision = await addDecisionToDB(
-      conversationRef.current.id,
-      decision
-    );
-
-    if (newDecision) {
-      setConversation(prev => prev ? {
-        ...prev,
-        decisions_prises: [...prev.decisions_prises, newDecision]
-      } : null);
-    }
-  }, []);
-
-  // ==================== GESTION DES ACTIONS SUGGÉRÉES ====================
-
-  /**
-   * Ajoute une action suggérée
-   */
-  const addSuggestedAction = useCallback(async (
-    action: Omit<SuggestedAction, 'id' | 'suggested_at' | 'status'>
-  ): Promise<void> => {
-    if (!conversationRef.current) {
-      console.warn('No active conversation to add action');
-      return;
-    }
-
-    const newAction = await addSuggestedActionToDB(
-      conversationRef.current.id,
-      action
-    );
-
-    if (newAction) {
-      setConversation(prev => prev ? {
-        ...prev,
-        actions_suggerees: [...prev.actions_suggerees, newAction]
-      } : null);
-    }
-  }, []);
-
-  /**
-   * Met à jour le statut d'une action
-   */
-  const updateActionStatus = useCallback(async (
-    actionId: string,
-    status: SuggestedAction['status']
-  ): Promise<void> => {
-    if (!conversationRef.current) {
-      return;
-    }
-
-    const success = await updateActionStatusInDB(
-      conversationRef.current.id,
-      actionId,
-      status
-    );
-
-    if (success) {
-      setConversation(prev => prev ? {
-        ...prev,
-        actions_suggerees: prev.actions_suggerees.map(a =>
-          a.id === actionId ? { ...a, status } : a
-        )
-      } : null);
-    }
-  }, []);
-
-  // ==================== CLÔTURE ====================
-
-  /**
-   * Clôture la conversation
-   */
   const close = useCallback(async (
     satisfaction?: number,
     feedback?: string
-  ): Promise<void> => {
-    // D'abord sauvegarder les messages en attente
-    await flushPendingMessages();
+  ): Promise<boolean> => {
+    if (!conversation) return false;
 
-    if (!conversationRef.current) {
-      return;
-    }
-
-    const success = await closeConversation(
-      conversationRef.current.id,
-      satisfaction,
-      feedback
-    );
-
+    const success = await closeConversation(conversation.id, satisfaction, feedback);
+    
     if (success) {
-      setConversation(prev => prev ? {
-        ...prev,
-        statut: 'closed',
-        satisfaction_user: satisfaction,
-        feedback_user: feedback
-      } : null);
-    }
-  }, [flushPendingMessages]);
-
-  // ==================== UTILITAIRES ====================
-
-  /**
-   * Rafraîchit la conversation depuis la BDD
-   */
-  const refresh = useCallback(async (): Promise<void> => {
-    if (!conversationRef.current) {
-      await loadOrCreateConversation();
-      return;
+      setConversation(prev => prev ? { ...prev, statut: 'closed' } : null);
     }
 
-    const refreshed = await getConversationById(conversationRef.current.id);
-    if (refreshed) {
-      setConversation(refreshed);
-      conversationRef.current = refreshed;
-      setMessages(refreshed.messages || []);
-    }
-  }, [loadOrCreateConversation]);
+    return success;
+  }, [conversation]);
 
-  /**
-   * Efface l'erreur
-   */
-  const clearError = useCallback((): void => {
-    setError(null);
-  }, []);
+  const reload = useCallback(async () => {
+    loadingRef.current = false;
+    await loadConversation();
+  }, [loadConversation]);
 
-  // ==================== RETOUR ====================
+  // ==================== COMPUTED VALUES ====================
+
+  // Messages pour l'API (sliding window)
+  const messagesForAPI = getMessagesForAPI(messages);
+
+  // Journal actuel
+  const journal = conversation?.journal || null;
+
+  // ==================== RETURN ====================
 
   return {
     // État
     conversation,
     messages,
-    loading,
+    messagesForAPI,
+    journal,
+    isLoading,
     error,
-
-    // Expertise courante (raccourci)
-    currentExpertise: conversation ? {
-      id: conversation.expertise_actuelle_id,
-      code: conversation.code_expertise_actuelle,
-      nom: conversation.expertise_historique?.find(
-        e => e.expertise_id === conversation.expertise_actuelle_id
-      )?.expertise_nom
-    } : null,
-
-    // Actions
+    
+    // Actions messages
     addMessage,
-    updateExpertise,
+    
+    // Actions expertise
+    setExpertise,
+    
+    // Actions journal
     addDecision,
-    addSuggestedAction,
-    updateActionStatus,
+    addProbleme,
+    addPointAttention,
+    updatePreferences,
+    
+    // Actions conversation
+    startNew,
     close,
-
-    // Utilitaires
-    refresh,
-    clearError
+    reload
   };
-}
-
-// ==================== HOOK SIMPLIFIÉ ====================
-
-/**
- * Hook simplifié pour les cas où on veut juste persister sans contexte
- */
-export function useSimpleConversation(type: ConversationType = 'aide_ponctuelle') {
-  const userId = getUserId();
-  
-  return useConversation({
-    userId,
-    type,
-    autoCreate: true,
-    autoSave: true
-  });
-}
-
-// ==================== HOOK POUR CONTEXTE CHANTIER ====================
-
-/**
- * Hook spécialisé pour les conversations liées à un chantier
- */
-export function useChantierConversation(chantierId: string) {
-  const userId = getUserId();
-  
-  return useConversation({
-    userId,
-    type: 'chantier',
-    contextId: chantierId,
-    autoCreate: true,
-    autoSave: true
-  });
-}
-
-/**
- * Hook spécialisé pour les conversations liées à un travail/lot
- */
-export function useTravailConversation(travailId: string) {
-  const userId = getUserId();
-  
-  return useConversation({
-    userId,
-    type: 'travail',
-    contextId: travailId,
-    autoCreate: true,
-    autoSave: true
-  });
 }
 
 export default useConversation;
