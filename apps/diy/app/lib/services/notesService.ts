@@ -216,7 +216,7 @@ export async function countNotesForChantier(chantierId: string): Promise<number>
     // Compter dans travaux
     const { data: travaux } = await supabase
       .from('travaux')
-      .select('notes')
+      .select('id, notes')
       .eq('chantier_id', chantierId);
 
     travaux?.forEach(t => {
