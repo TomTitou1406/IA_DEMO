@@ -183,7 +183,7 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
     // Formater le contexte compact
     const lotsFormatted = (lots || []).map((lot: any, idx: number) => {
       const statut = getStatutEmoji(lot.statut);
-      const expertise = lot.expertise?.nom || 'Général';
+      const expertise = lot.expertise?.[0]?.nom || 'Général';
       return `${idx + 1}. ${statut} ${lot.titre} (${expertise})`;
     }).join('\n   ');
 
@@ -266,8 +266,8 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       return `${idx + 1}. ${statut} ${etape.titre}${duree ? ` (${duree})` : ''}`;
     }).join('\n   ');
 
-    const expertiseCode = lotCourant?.expertise?.code || 'generaliste';
-    const expertiseNom = lotCourant?.expertise?.nom || 'Généraliste';
+    const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
+    const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
 
     const contextForAI = `
 🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}% avancé)
@@ -381,8 +381,8 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       return line;
     }).join('\n   ');
 
-    const expertiseCode = lotCourant?.expertise?.code || 'generaliste';
-    const expertiseNom = lotCourant?.expertise?.nom || 'Généraliste';
+    const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
+    const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
 
     const contextForAI = `
 🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}%)
