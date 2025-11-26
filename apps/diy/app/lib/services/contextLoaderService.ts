@@ -4,7 +4,7 @@
  * Service de chargement du contexte hiérarchique pour l'assistant IA
  * Stratégie "Zoom progressif" : compact pour les parents, détaillé pour le niveau courant
  * 
- * @version 1.0
+ * @version 1.1
  * @date 26 novembre 2025
  */
 
@@ -23,14 +23,14 @@ export interface NavigationIds {
 export interface ChantierCompact {
   id: string;
   titre: string;
-  avancement: number;
+  progression: number;
   statut: string;
 }
 
 export interface LotCompact {
   id: string;
   titre: string;
-  ordre: number;
+  ordre: number;  // travaux utilise "ordre"
   statut: string;
   expertise_code?: string;
   expertise_nom?: string;
@@ -39,20 +39,20 @@ export interface LotCompact {
 export interface EtapeCompact {
   id: string;
   titre: string;
-  ordre: number;
+  numero: number;  // etapes utilise "numero"
   statut: string;
-  duree_minutes?: number;
+  duree_estimee_minutes?: number;
 }
 
 export interface TacheDetail {
   id: string;
   titre: string;
   description?: string;
-  ordre: number;
+  numero: number;  // taches utilise "numero"
   statut: string;
-  duree_minutes?: number;
-  difficulte?: string;
-  outils?: string[];
+  duree_estimee_minutes?: number;
+  est_critique?: boolean;
+  outils_necessaires?: string[];
   conseils?: string;
 }
 
@@ -168,7 +168,7 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
 
     if (chantierError) throw chantierError;
 
-    // Charger les lots (travaux)
+    // Charger les lots (travaux) - utilise "ordre"
     const { data: lots, error: lotsError } = await supabase
       .from('travaux')
       .select(`
@@ -207,7 +207,7 @@ TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir 
       expertiseIcon: '📋',
       itemCount: lots?.length || 0,
       contextForAI,
-      raw: { chantier, lots }
+      raw: { chantier, lots: lots || undefined }
     };
 
   } catch (error) {
@@ -228,7 +228,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       .eq('id', chantierId)
       .single();
 
-    // Charger tous les lots (compact pour la vue macro)
+    // Charger tous les lots (compact) - utilise "ordre"
     const { data: lots } = await supabase
       .from('travaux')
       .select(`id, titre, ordre, statut, expertise:expertises(code, nom)`)
@@ -245,12 +245,12 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       .eq('id', travailId)
       .single();
 
-    // Charger les étapes du lot
+    // Charger les étapes du lot - utilise "numero"
     const { data: etapes } = await supabase
       .from('etapes')
-      .select('id, titre, description, ordre, statut, duree_minutes, difficulte')
+      .select('id, titre, description, numero, statut, duree_estimee_minutes, difficulte')
       .eq('travail_id', travailId)
-      .order('ordre', { ascending: true });
+      .order('numero', { ascending: true });
 
     // Formater les lots en une ligne compacte
     const lotsCompact = (lots || []).map((lot: any) => {
@@ -260,10 +260,10 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     }).join(' → ');
 
     // Formater les étapes (détaillées)
-    const etapesFormatted = (etapes || []).map((etape: any, idx: number) => {
+    const etapesFormatted = (etapes || []).map((etape: any) => {
       const statut = getStatutEmoji(etape.statut);
-      const duree = formatDuree(etape.duree_minutes);
-      return `${idx + 1}. ${statut} ${etape.titre}${duree ? ` (${duree})` : ''}`;
+      const duree = formatDuree(etape.duree_estimee_minutes);
+      return `${etape.numero}. ${statut} ${etape.titre}${duree ? ` (${duree})` : ''}`;
     }).join('\n   ');
 
     const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
@@ -293,7 +293,12 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, 
       expertiseIcon: getExpertiseIcon(expertiseCode),
       itemCount: etapes?.length || 0,
       contextForAI,
-      raw: { chantier, lots: lots || undefined, lotCourant, etapes: etapes || undefined }
+      raw: { 
+        chantier: chantier || undefined, 
+        lots: lots || undefined, 
+        lotCourant: lotCourant || undefined, 
+        etapes: etapes || undefined 
+      }
     };
 
   } catch (error) {
@@ -314,7 +319,7 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       .eq('id', chantierId)
       .single();
 
-    // Charger tous les lots (compact)
+    // Charger tous les lots (compact) - utilise "ordre"
     const { data: lots } = await supabase
       .from('travaux')
       .select(`id, titre, ordre, statut, expertise:expertises(code, nom)`)
@@ -328,26 +333,26 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       .eq('id', travailId)
       .single();
 
-    // Charger toutes les étapes du lot (compact)
+    // Charger toutes les étapes du lot (compact) - utilise "numero"
     const { data: etapes } = await supabase
       .from('etapes')
-      .select('id, titre, ordre, statut')
+      .select('id, titre, numero, statut')
       .eq('travail_id', travailId)
-      .order('ordre', { ascending: true });
+      .order('numero', { ascending: true });
 
     // Charger l'étape courante (détaillée)
     const { data: etapeCourante } = await supabase
       .from('etapes')
-      .select('id, titre, description, ordre, statut, duree_minutes')
+      .select('id, titre, description, numero, statut, duree_estimee_minutes')
       .eq('id', etapeId)
       .single();
 
-    // Charger les tâches de l'étape (très détaillées)
+    // Charger les tâches de l'étape (très détaillées) - utilise "numero"
     const { data: taches } = await supabase
       .from('taches')
-      .select('id, titre, description, ordre, statut, duree_minutes, difficulte, outils, conseils')
+      .select('id, titre, description, numero, statut, duree_estimee_minutes, est_critique, outils_necessaires, conseils')
       .eq('etape_id', etapeId)
-      .order('ordre', { ascending: true });
+      .order('numero', { ascending: true });
 
     // Formater lots compact (une ligne)
     const lotsCompact = (lots || []).map((lot: any) => {
@@ -364,19 +369,22 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
     }).join(' → ');
 
     // Formater tâches (détaillées)
-    const tachesFormatted = (taches || []).map((tache: any, idx: number) => {
+    const tachesFormatted = (taches || []).map((tache: any) => {
       const statut = getStatutEmoji(tache.statut);
-      const duree = formatDuree(tache.duree_minutes);
-      const difficulte = tache.difficulte || '';
-      let line = `${idx + 1}. ${statut} ${tache.titre}`;
-      if (duree || difficulte) {
-        line += ` (${[duree, difficulte].filter(Boolean).join(', ')})`;
+      const duree = formatDuree(tache.duree_estimee_minutes);
+      const critique = tache.est_critique ? '🔥' : '';
+      let line = `${tache.numero}. ${statut}${critique} ${tache.titre}`;
+      if (duree) {
+        line += ` (${duree})`;
       }
       if (tache.description) {
         line += `\n      → ${tache.description}`;
       }
-      if (tache.outils?.length) {
-        line += `\n      → Outils : ${tache.outils.join(', ')}`;
+      if (tache.outils_necessaires?.length) {
+        const outils = Array.isArray(tache.outils_necessaires) 
+          ? tache.outils_necessaires.join(', ')
+          : tache.outils_necessaires;
+        line += `\n      → Outils : ${outils}`;
       }
       return line;
     }).join('\n   ');
