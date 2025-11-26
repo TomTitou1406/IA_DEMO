@@ -238,27 +238,49 @@ function getExpertiseIcon(code: string): string {
 // ==================== HELPERS ====================
 
 function detectPageContext(pathname: string): PageContext {
-  if (pathname.match(/^\/chantiers\/travaux\/[^\/]+$/)) {
-    return 'travail_detail';
+  // Tâches : /chantiers/[id]/travaux/[id]/etapes/[id]/taches
+  if (pathname.match(/^\/chantiers\/[^\/]+\/travaux\/[^\/]+\/etapes\/[^\/]+\/taches$/)) {
+    return 'tache_detail';
   }
+  
+  // Étapes : /chantiers/[id]/travaux/[id]/etapes
+  if (pathname.match(/^\/chantiers\/[^\/]+\/travaux\/[^\/]+\/etapes$/)) {
+    return 'etape_detail';
+  }
+  
+  // Lot (travail) : /chantiers/[id]/travaux/[id]/etapes mais on est sur la liste des étapes
+  // En fait c'est etape_detail ci-dessus. Travail detail = liste étapes
+  
+  // Lots (travaux) : /chantiers/[id]/travaux
+  if (pathname.match(/^\/chantiers\/[^\/]+\/travaux$/)) {
+    return 'chantier_detail';
+  }
+  
+  // Nouveau chantier
   if (pathname === '/chantiers/nouveau') {
     return 'nouveau_chantier';
   }
-  if (pathname.match(/^\/chantiers\/[^\/]+$/) && !pathname.includes('/travaux')) {
-    return 'chantier_detail';
-  }
-  if (pathname === '/chantiers' || pathname.startsWith('/chantiers')) {
+  
+  // Liste chantiers
+  if (pathname === '/chantiers') {
     return 'chantiers';
   }
+  
+  // Aide
   if (pathname === '/aide' || pathname.startsWith('/aide')) {
     return 'aide';
   }
+  
+  // Profil
   if (pathname.startsWith('/profil')) {
     return 'profil';
   }
+  
+  // Home
   if (pathname === '/') {
     return 'home';
   }
+  
   return 'chat';
 }
 
