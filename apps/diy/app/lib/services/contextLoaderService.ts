@@ -134,7 +134,7 @@ function formatJournalForAI(journal?: Journal): string {
   if (journal.decisions && journal.decisions.length > 0) {
     const decisionsText = journal.decisions
       .slice(-5) // 5 dernières décisions
-      .map(d => `• ${d.description} (${d.categorie})`)
+      .map(d => `• ${d.description}${d.type ? ` (${d.type})` : ''}`)
       .join('\n   ');
     sections.push(`📝 DÉCISIONS PRISES :\n   ${decisionsText}`);
   }
