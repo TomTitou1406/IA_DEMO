@@ -8,6 +8,7 @@ import { useParams } from 'next/navigation';
 import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesEtapes } from '@/app/lib/services/etapesService';
 import { getTravauxByChantier, annulerTravail, reactiverTravail, commencerTravail, reporterTravail, terminerTravail } from '@/app/lib/services/travauxService';
+import NotesButton from '@/app/components/NotesButton';
 
 interface Chantier {
   id: string;
@@ -573,6 +574,30 @@ export default function TravauxPage() {
           paddingBottom: '1.5rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)'
         }}>
+          {/* Header avec titre + bouton notes */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: '1rem',
+            gap: '1rem'
+          }}>
+            <h1 style={{ 
+              fontSize: '1.5rem', 
+              margin: 0,
+              color: 'var(--gray-light)',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              🏗️ {chantier?.titre || 'Chantier'}
+            </h1>
+            
+            {/* Bouton Notes du chantier */}
+            <NotesButton level="chantier" id={chantierId} />
+          </div>
+
           {/* Progress bar */}
           <div style={{ marginBottom: '1rem' }}>
             <div style={{
