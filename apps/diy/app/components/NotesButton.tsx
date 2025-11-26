@@ -1,10 +1,10 @@
 /**
  * NotesButton.tsx
  * 
- * Bouton + modale affichant les notes style Post-It jaune
- * Optimisé mobile-first
+ * Bouton + modale affichant les notes style Post-It
+ * Utilise --yellow (#F59E0B) du global.css
  * 
- * @version 2.0
+ * @version 2.1
  * @date 26 novembre 2025
  */
 
@@ -12,6 +12,15 @@
 
 import { useState, useEffect } from 'react';
 import { getNotes, deleteNote, type NoteLevel, type Note } from '../lib/services/notesService';
+
+// Couleurs Post-It basées sur --yellow: #F59E0B
+const COLORS = {
+  yellow: '#F59E0B',
+  yellowLight: '#FEF3C7',
+  yellowMedium: '#FDE68A',
+  textDark: '#78350F',
+  textMuted: '#92400E'
+};
 
 interface NotesButtonProps {
   level: NoteLevel;
@@ -72,12 +81,12 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
     });
   };
 
-  // Vérifier si texte dépasse la limite
-  const needsTruncation = (text: string) => text.length > 200;
+  // Vérifier si texte nécessite "voir plus"
+  const needsTruncation = (text: string) => text.length > 150;
   
   const truncateText = (text: string) => {
-    if (text.length <= 200) return text;
-    return text.substring(0, 200) + '...';
+    if (text.length <= 150) return text;
+    return text.substring(0, 150) + '...';
   };
 
   // Pas de notes = pas de bouton
@@ -86,30 +95,39 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
 
   return (
     <>
-      {/* Bouton Post-It miniature */}
+      {/* Bouton Post-It */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.3rem',
-          padding: '0.4rem 0.6rem',
+          gap: '0.4rem',
+          padding: '0.4rem 0.65rem',
+          borderRadius: '4px',
           border: 'none',
-          background: '#fef08a',
-          color: '#854d0e',
-          fontSize: '0.8rem',
-          fontWeight: '700',
+          background: COLORS.yellowLight,
+          color: COLORS.textMuted,
+          fontSize: '0.85rem',
+          fontWeight: '600',
           cursor: 'pointer',
-          boxShadow: '2px 2px 6px rgba(0,0,0,0.2)',
-          transform: 'rotate(-2deg)',
-          transition: 'transform 0.15s ease'
+          boxShadow: '2px 2px 4px rgba(0,0,0,0.15)',
+          transition: 'all 0.2s',
+          transform: 'rotate(-1deg)'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'rotate(0deg) scale(1.05)';
+          e.currentTarget.style.boxShadow = '3px 3px 6px rgba(0,0,0,0.2)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'rotate(-1deg)';
+          e.currentTarget.style.boxShadow = '2px 2px 4px rgba(0,0,0,0.15)';
         }}
       >
         <span>📌</span>
-        <span>{notes.length}</span>
+        <span>{notes.length} note{notes.length > 1 ? 's' : ''}</span>
       </button>
 
-      {/* Modale plein écran mobile */}
+      {/* Modale centrée */}
       {isOpen && (
         <div
           style={{
@@ -118,21 +136,22 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0,0,0,0.7)',
+            background: 'rgba(0,0,0,0.6)',
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'center',
-            zIndex: 1000
+            zIndex: 1000,
+            padding: '1rem'
           }}
           onClick={() => setIsOpen(false)}
         >
           <div
             style={{
-              background: '#262626',
-              borderRadius: '16px 16px 0 0',
+              background: '#1f1f1f',
+              borderRadius: '12px',
               width: '100%',
-              maxWidth: '500px',
-              maxHeight: '85vh',
+              maxWidth: '420px',
+              maxHeight: '80vh',
               overflow: 'hidden',
               display: 'flex',
               flexDirection: 'column'
@@ -142,30 +161,30 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
             {/* Header */}
             <div
               style={{
-                padding: '1rem 1rem 0.75rem',
+                padding: '1rem 1.25rem',
+                borderBottom: `2px solid ${COLORS.yellow}`,
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center',
-                borderBottom: '1px solid #404040'
+                alignItems: 'center'
               }}
             >
               <h3 style={{ 
                 margin: 0, 
                 fontSize: '1.1rem', 
                 fontWeight: '700',
-                color: '#fbbf24',
+                color: COLORS.yellow,
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.5rem'
               }}>
                 📌 Pense-bêtes
                 <span style={{
-                  background: '#fbbf24',
-                  color: '#1a1a1a',
-                  fontSize: '0.7rem',
-                  padding: '0.2rem 0.5rem',
+                  background: COLORS.yellow,
+                  color: '#1f1f1f',
+                  fontSize: '0.75rem',
+                  padding: '0.15rem 0.5rem',
                   borderRadius: '10px',
-                  fontWeight: '800'
+                  fontWeight: '700'
                 }}>
                   {notes.length}
                 </span>
@@ -173,14 +192,14 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
               <button
                 onClick={() => setIsOpen(false)}
                 style={{
-                  background: '#404040',
+                  background: 'rgba(255,255,255,0.1)',
                   border: 'none',
                   width: '32px',
                   height: '32px',
                   borderRadius: '50%',
-                  fontSize: '1.2rem',
+                  fontSize: '1.25rem',
                   cursor: 'pointer',
-                  color: '#a3a3a3',
+                  color: '#9ca3af',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -209,96 +228,86 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
                   <div
                     key={note.id}
                     style={{
-                      background: '#fef08a',
+                      background: `linear-gradient(145deg, ${COLORS.yellowMedium} 0%, ${COLORS.yellow} 100%)`,
+                      borderRadius: '2px',
                       padding: '1rem',
-                      boxShadow: '4px 4px 10px rgba(0,0,0,0.3)',
-                      position: 'relative',
-                      minHeight: '120px'
+                      boxShadow: '3px 3px 8px rgba(0,0,0,0.3)',
+                      position: 'relative'
                     }}
                   >
-                    {/* Punaise en haut */}
-                    <div style={{
-                      position: 'absolute',
-                      top: '-8px',
-                      left: '50%',
-                      transform: 'translateX(-50%)',
-                      fontSize: '1.1rem',
-                      filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.3))'
+                    {/* Texte de la note */}
+                    <p style={{
+                      margin: '0 0 0.75rem 0',
+                      fontSize: '0.9rem',
+                      color: COLORS.textDark,
+                      lineHeight: '1.6',
+                      whiteSpace: 'pre-wrap',
+                      wordBreak: 'break-word',
+                      fontWeight: '500'
                     }}>
-                      📌
-                    </div>
+                      {isExpanded ? note.texte : truncateText(note.texte)}
+                    </p>
 
-                    {/* Bouton supprimer */}
-                    <button
-                      onClick={() => handleDelete(note.id)}
-                      style={{
-                        position: 'absolute',
-                        top: '0.5rem',
-                        right: '0.5rem',
-                        background: 'rgba(0,0,0,0.1)',
-                        border: 'none',
-                        width: '28px',
-                        height: '28px',
-                        borderRadius: '50%',
-                        cursor: 'pointer',
-                        fontSize: '0.8rem',
+                    {/* Bouton Voir plus / Voir moins */}
+                    {showToggle && (
+                      <button
+                        onClick={() => toggleExpand(note.id)}
+                        style={{
+                          background: 'rgba(120,53,15,0.15)',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '0.4rem 0.75rem',
+                          fontSize: '0.8rem',
+                          color: COLORS.textDark,
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          marginBottom: '0.75rem',
+                          display: 'block',
+                          width: '100%'
+                        }}
+                      >
+                        {isExpanded ? '▲ Voir moins' : '▼ Voir plus'}
+                      </button>
+                    )}
+
+                    {/* Footer : date + source + supprimer */}
+                    <div style={{
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      paddingTop: '0.5rem',
+                      borderTop: '1px dashed rgba(120,53,15,0.3)'
+                    }}>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: COLORS.textMuted,
                         display: 'flex',
                         alignItems: 'center',
-                        justifyContent: 'center'
-                      }}
-                    >
-                      🗑️
-                    </button>
-
-                    {/* Contenu de la note */}
-                    <div style={{ marginTop: '0.5rem' }}>
-                      <p style={{
-                        margin: 0,
-                        fontSize: '0.9rem',
-                        color: '#1c1917',
-                        lineHeight: '1.6',
-                        whiteSpace: 'pre-wrap',
-                        wordBreak: 'break-word',
-                        fontFamily: 'system-ui, -apple-system, sans-serif'
+                        gap: '0.3rem'
                       }}>
-                        {isExpanded ? note.texte : truncateText(note.texte)}
-                      </p>
-
-                      {/* Bouton voir plus/moins */}
-                      {showToggle && (
-                        <button
-                          onClick={() => toggleExpand(note.id)}
-                          style={{
-                            background: 'rgba(0,0,0,0.12)',
-                            border: 'none',
-                            borderRadius: '4px',
-                            padding: '0.5rem 0.75rem',
-                            fontSize: '0.8rem',
-                            color: '#78716c',
-                            cursor: 'pointer',
-                            fontWeight: '600',
-                            marginTop: '0.75rem',
-                            width: '100%'
-                          }}
-                        >
-                          {isExpanded ? '▲ Voir moins' : '▼ Voir plus'}
-                        </button>
-                      )}
-                    </div>
-
-                    {/* Footer : date + source */}
-                    <div style={{
-                      marginTop: '0.75rem',
-                      paddingTop: '0.5rem',
-                      borderTop: '1px dashed rgba(0,0,0,0.2)',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      fontSize: '0.7rem',
-                      color: '#78716c'
-                    }}>
-                      <span>{note.source === 'assistant_ia' ? '🤖' : '👤'}</span>
-                      <span>{formatDate(note.created_at)}</span>
+                        {note.source === 'assistant_ia' ? '🤖' : '👤'}
+                        {formatDate(note.created_at)}
+                      </span>
+                      
+                      {/* Bouton Supprimer */}
+                      <button
+                        onClick={() => handleDelete(note.id)}
+                        style={{
+                          background: 'rgba(220,38,38,0.15)',
+                          border: 'none',
+                          borderRadius: '4px',
+                          padding: '0.35rem 0.6rem',
+                          fontSize: '0.75rem',
+                          color: '#dc2626',
+                          cursor: 'pointer',
+                          fontWeight: '600',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '0.25rem'
+                        }}
+                      >
+                        🗑️ Supprimer
+                      </button>
                     </div>
                   </div>
                 );
