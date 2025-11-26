@@ -2,11 +2,11 @@
  * FloatingAssistant.tsx
  * 
  * Assistant flottant avec :
- * - Header 2 lignes : contexte + expertise
+ * - Header 3 lignes : Titre / Arborescence / Expertise
  * - Couleur selon le contexte fonctionnel
- * - Chargement du contexte hiérarchique
+ * - Persistence de l'état ouvert/fermé (sessionStorage)
  * 
- * @version 3.0
+ * @version 4.0
  * @date 26 novembre 2025
  */
 
@@ -18,8 +18,17 @@ import ChatInterface from './ChatInterface';
 
 type AssistantState = 'idle' | 'pulse' | 'thinking' | 'speaking';
 
+const STORAGE_KEY = 'papibricole_assistant_open';
+
 export default function FloatingAssistant() {
-  const [isOpen, setIsOpen] = useState(false);
+  // Initialiser depuis sessionStorage
+  const [isOpen, setIsOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem(STORAGE_KEY) === 'true';
+    }
+    return false;
+  });
+  
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
   const [isFullscreen, setIsFullscreen] = useState(false);
   
@@ -29,12 +38,19 @@ export default function FloatingAssistant() {
     welcomeMessage, 
     placeholder, 
     additionalContext,
-    navigation,
+    header,
     expertise,
     isLoading
   } = useAssistantContext();
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Persister l'état isOpen
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem(STORAGE_KEY, isOpen.toString());
+    }
+  }, [isOpen]);
 
   // Détection inactivité pour pulse
   useEffect(() => {
@@ -175,11 +191,11 @@ export default function FloatingAssistant() {
           transition: 'all 0.3s ease'
         }}>
           
-          {/* ==================== HEADER 2 LIGNES ==================== */}
+          {/* ==================== HEADER 3 LIGNES ==================== */}
           <div style={{
             background: contextColor,
             color: 'var(--white)',
-            padding: '0.75rem 1rem',
+            padding: '0.6rem 0.75rem',
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
@@ -189,24 +205,25 @@ export default function FloatingAssistant() {
             {/* Partie gauche : Avatar + Textes */}
             <div style={{ 
               display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.75rem',
+              alignItems: 'flex-start', 
+              gap: '0.6rem',
               flex: 1,
               minWidth: 0
             }}>
               
               {/* Avatar */}
               <div style={{
-                width: '44px',
-                height: '44px',
-                minWidth: '44px',
+                width: '48px',
+                height: '48px',
+                minWidth: '48px',
                 borderRadius: '50%',
                 overflow: 'hidden',
                 background: 'var(--white)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                position: 'relative'
+                position: 'relative',
+                marginTop: '0.1rem'
               }}>
                 <img 
                   src={getAssistantGif()}
@@ -222,11 +239,11 @@ export default function FloatingAssistant() {
                   position: 'absolute',
                   bottom: '-2px',
                   right: '-2px',
-                  fontSize: '0.75rem',
+                  fontSize: '0.7rem',
                   background: 'var(--white)',
                   borderRadius: '50%',
-                  width: '18px',
-                  height: '18px',
+                  width: '16px',
+                  height: '16px',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center'
@@ -235,15 +252,15 @@ export default function FloatingAssistant() {
                 </div>
               </div>
               
-              {/* Textes 2 lignes */}
+              {/* Textes 3 lignes */}
               <div style={{ 
                 flex: 1, 
                 minWidth: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                gap: '0.15rem'
+                gap: '0.1rem'
               }}>
-                {/* Ligne 1 : Contexte (titre + count) */}
+                {/* Ligne 1 : Titre (gras) */}
                 <div style={{ 
                   fontWeight: '700', 
                   fontSize: '0.95rem',
@@ -252,19 +269,33 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  {navigation.title}
+                  {header.title}
                 </div>
                 
-                {/* Ligne 2 : Expertise (icon + nom) */}
+                {/* Ligne 2 : Arborescence */}
+                {header.breadcrumb && (
+                  <div style={{ 
+                    fontSize: '0.75rem', 
+                    opacity: 0.85,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                    lineHeight: '1.2'
+                  }}>
+                    {header.breadcrumb}
+                  </div>
+                )}
+                
+                {/* Ligne 3 : Expertise */}
                 <div style={{ 
-                  fontSize: '0.8rem', 
+                  fontSize: '0.75rem', 
                   opacity: 0.9,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  {expertise.icon} {expertise.nom}
+                  {header.expertiseLine}
                 </div>
               </div>
             </div>
@@ -272,9 +303,9 @@ export default function FloatingAssistant() {
             {/* Partie droite : Actions */}
             <div style={{ 
               display: 'flex', 
-              gap: '0.4rem', 
+              gap: '0.3rem', 
               alignItems: 'center',
-              marginTop: '0.25rem'
+              marginTop: '0.1rem'
             }}>
               {/* Bouton Fullscreen */}
               <button
@@ -284,10 +315,10 @@ export default function FloatingAssistant() {
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
                   color: 'var(--white)',
-                  width: '30px',
-                  height: '30px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
-                  fontSize: '0.9rem',
+                  fontSize: '0.85rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -314,10 +345,10 @@ export default function FloatingAssistant() {
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
                   color: 'var(--white)',
-                  width: '30px',
-                  height: '30px',
+                  width: '28px',
+                  height: '28px',
                   borderRadius: '50%',
-                  fontSize: '1.1rem',
+                  fontSize: '1rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
