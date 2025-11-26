@@ -29,9 +29,10 @@ export interface Message {
 export interface Decision {
   id: string;
   date: string;
+  type: string;  // 'expertise_switched', 'technique', 'materiel', etc.
   description: string;
-  categorie: 'technique' | 'materiel' | 'planning' | 'securite' | 'autre';
-  validee: boolean;
+  data?: Record<string, any>;
+  validated_by_user: boolean;
 }
 
 export interface ProblemeResolu {
