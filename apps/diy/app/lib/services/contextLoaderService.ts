@@ -293,7 +293,7 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, 
       expertiseIcon: getExpertiseIcon(expertiseCode),
       itemCount: etapes?.length || 0,
       contextForAI,
-      raw: { chantier, lots, lotCourant, etapes }
+      raw: { chantier, lots: lots || undefined, lotCourant, etapes: etapes || undefined }
     };
 
   } catch (error) {
@@ -411,7 +411,14 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par t�
       expertiseIcon: getExpertiseIcon(expertiseCode),
       itemCount: taches?.length || 0,
       contextForAI,
-      raw: { chantier, lots, lotCourant, etapes, etapeCourante, taches }
+      raw: { 
+        chantier: chantier || undefined, 
+        lots: lots || undefined, 
+        lotCourant: lotCourant || undefined, 
+        etapes: etapes || undefined, 
+        etapeCourante: etapeCourante || undefined, 
+        taches: taches || undefined 
+      }
     };
 
   } catch (error) {
