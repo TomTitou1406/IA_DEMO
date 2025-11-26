@@ -68,11 +68,6 @@ export interface AssistantContext {
   // État
   isLoading: boolean;
 }
-  level: NavigationLevel;
-  
-  // État
-  isLoading: boolean;
-}
 
 // ==================== CONFIGURATION COULEURS ====================
 
