@@ -40,9 +40,11 @@ import {
 // ==================== TYPES ====================
 
 export interface UseConversationOptions {
+  userId?: string;  // Optionnel, si non fourni on génère
   type: ConversationType;
   chantierId?: string;
   travailId?: string;
+  etapeId?: string;
   autoLoad?: boolean;
 }
 
