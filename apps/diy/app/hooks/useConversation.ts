@@ -53,13 +53,18 @@ export interface UseConversationReturn {
   messagesForAPI: Message[];
   journal: Journal | null;
   isLoading: boolean;
+  loading: boolean; // Alias rétrocompatibilité
   error: string | null;
+  
+  // Expertise (rétrocompatibilité)
+  currentExpertise: { id?: string; code?: string } | null;
   
   // Actions messages
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => Promise<boolean>;
   
   // Actions expertise
   setExpertise: (expertiseId: string | null, code: string, nom: string) => Promise<boolean>;
+  updateExpertise: (expertiseId: string | null, code: string, nom: string) => Promise<boolean>; // Alias
   
   // Actions journal
   addDecision: (decision: Omit<Decision, 'id' | 'date'>) => Promise<boolean>;
@@ -277,6 +282,12 @@ export function useConversation(options: UseConversationOptions): UseConversatio
 
   // ==================== RETURN ====================
 
+  // Expertise courante (pour rétrocompatibilité)
+  const currentExpertise = conversation ? {
+    id: conversation.expertise_actuelle_id,
+    code: conversation.code_expertise_actuelle
+  } : null;
+
   return {
     // État
     conversation,
@@ -284,13 +295,18 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     messagesForAPI,
     journal,
     isLoading,
+    loading: isLoading, // Alias rétrocompatibilité
     error,
+    
+    // Expertise (rétrocompatibilité)
+    currentExpertise,
     
     // Actions messages
     addMessage,
     
     // Actions expertise
     setExpertise,
+    updateExpertise: setExpertise, // Alias rétrocompatibilité
     
     // Actions journal
     addDecision,
