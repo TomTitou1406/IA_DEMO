@@ -3,10 +3,11 @@
  * 
  * Assistant flottant avec :
  * - Header 3 lignes : Titre / Arborescence / Expertise
+ * - Bouton "Nouvelle discussion"
  * - Couleur selon le contexte fonctionnel
  * - Persistence de l'état ouvert/fermé (sessionStorage)
  * 
- * @version 4.0
+ * @version 5.0
  * @date 26 novembre 2025
  */
 
@@ -31,6 +32,7 @@ export default function FloatingAssistant() {
   
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [chatKey, setChatKey] = useState(0); // Pour forcer le reset du chat
   
   const { 
     pageContext, 
@@ -101,6 +103,13 @@ export default function FloatingAssistant() {
   // Gérer les changements d'état du chat
   const handleStateChange = (state: 'idle' | 'thinking' | 'speaking') => {
     setAssistantState(state);
+  };
+
+  // Nouvelle discussion
+  const handleNewChat = () => {
+    if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
+      setChatKey(prev => prev + 1);
+    }
   };
 
   // Indicateur d'état
@@ -276,7 +285,7 @@ export default function FloatingAssistant() {
                 {header.breadcrumb && (
                   <div style={{ 
                     fontSize: '0.8rem', 
-                    fontWeight: '700',
+                    fontWeight: '600',
                     opacity: 0.9,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -289,15 +298,14 @@ export default function FloatingAssistant() {
                 
                 {/* Ligne 3 : Expertise */}
                 <div style={{ 
-                  fontSize: '0.8rem', 
-                  fontWeight: '700',
+                  fontSize: '0.75rem', 
                   opacity: 0.9,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  ✨ IA : {expertise.nom}
+                  ✨ Assistant IA : {expertise.nom}
                 </div>
               </div>
             </div>
@@ -309,6 +317,30 @@ export default function FloatingAssistant() {
               alignItems: 'center',
               marginTop: '0.1rem'
             }}>
+              {/* Bouton Nouvelle discussion */}
+              <button
+                onClick={handleNewChat}
+                title="Nouvelle discussion"
+                style={{
+                  background: 'rgba(255,255,255,0.2)',
+                  border: 'none',
+                  color: 'var(--white)',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  transition: 'background 0.2s'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+              >
+                ➕
+              </button>
+
               {/* Bouton Fullscreen */}
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
@@ -365,9 +397,10 @@ export default function FloatingAssistant() {
             </div>
           </div>
 
-          {/* Chat Interface */}
+          {/* Chat Interface - key force le remount */}
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <ChatInterface
+              key={chatKey}
               pageContext={pageContext}
               contextColor={contextColor}
               placeholder={placeholder}
