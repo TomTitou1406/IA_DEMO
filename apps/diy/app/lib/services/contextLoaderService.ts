@@ -4,7 +4,7 @@
  * Service de chargement du contexte hiérarchique pour l'assistant IA
  * Stratégie "Zoom progressif" : compact pour les parents, détaillé pour le niveau courant
  * 
- * @version 1.1
+ * @version 1.2
  * @date 26 novembre 2025
  */
 
@@ -20,48 +20,24 @@ export interface NavigationIds {
   etapeId?: string;
 }
 
-export interface ChantierCompact {
-  id: string;
-  titre: string;
-  progression: number;
-  statut: string;
-}
-
-export interface LotCompact {
-  id: string;
-  titre: string;
-  ordre: number;  // travaux utilise "ordre"
-  statut: string;
-  expertise_code?: string;
-  expertise_nom?: string;
-}
-
-export interface EtapeCompact {
-  id: string;
-  titre: string;
-  numero: number;  // etapes utilise "numero"
-  statut: string;
-  duree_estimee_minutes?: number;
-}
-
-export interface TacheDetail {
-  id: string;
-  titre: string;
-  description?: string;
-  numero: number;  // taches utilise "numero"
-  statut: string;
-  duree_estimee_minutes?: number;
-  est_critique?: boolean;
-  outils_necessaires?: string[];
-  conseils?: string;
+export interface HeaderInfo {
+  /** Ligne 1 : Titre du niveau actuel (gras) */
+  title: string;
+  
+  /** Ligne 2 : Arborescence (ex: "Chantier/Lot >> 5 étapes") */
+  breadcrumb: string;
+  
+  /** Ligne 3 : Expertise avec icône */
+  expertiseLine: string;
 }
 
 export interface ContextData {
   level: NavigationLevel;
   
-  // Header info
-  headerTitle: string;
-  headerSubtitle: string;
+  // Header info (3 lignes)
+  header: HeaderInfo;
+  
+  // Expertise
   expertiseCode: string;
   expertiseNom: string;
   expertiseIcon: string;
@@ -75,11 +51,11 @@ export interface ContextData {
   // Données brutes (si besoin)
   raw?: {
     chantier?: any;
-    lots?: LotCompact[];
+    lots?: any[];
     lotCourant?: any;
-    etapes?: EtapeCompact[];
+    etapes?: any[];
     etapeCourante?: any;
-    taches?: TacheDetail[];
+    taches?: any[];
   };
 }
 
@@ -144,8 +120,11 @@ function formatDuree(minutes?: number): string {
 async function loadChantiersContext(): Promise<ContextData> {
   return {
     level: 'chantiers',
-    headerTitle: 'Mes projets',
-    headerSubtitle: 'Chef de chantier',
+    header: {
+      title: 'Mes projets',
+      breadcrumb: '',
+      expertiseLine: '📋 Chef de chantier'
+    },
     expertiseCode: 'chef_chantier',
     expertiseNom: 'Chef de chantier',
     expertiseIcon: '📋',
@@ -180,6 +159,8 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
 
     if (lotsError) throw lotsError;
 
+    const nbLots = lots?.length || 0;
+
     // Formater le contexte compact
     const lotsFormatted = (lots || []).map((lot: any, idx: number) => {
       const statut = getStatutEmoji(lot.statut);
@@ -192,7 +173,7 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
    ${chantier.description || 'Pas de description'}
    Avancement : ${chantier.progression || 0}%
 
-📦 LOTS À RÉALISER (${lots?.length || 0}) :
+📦 LOTS À RÉALISER (${nbLots}) :
    ${lotsFormatted || 'Aucun lot défini'}
 
 TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir les priorités, identifier les dépendances entre lots. Tu as la vision globale du projet.
@@ -200,12 +181,15 @@ TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir 
 
     return {
       level: 'lots',
-      headerTitle: `${chantier.titre} • ${lots?.length || 0} lots`,
-      headerSubtitle: 'Chef de chantier',
+      header: {
+        title: chantier.titre,
+        breadcrumb: `Chantier >> ${nbLots} lots`,
+        expertiseLine: '📋 Chef de chantier'
+      },
       expertiseCode: 'chef_chantier',
       expertiseNom: 'Chef de chantier',
       expertiseIcon: '📋',
-      itemCount: lots?.length || 0,
+      itemCount: nbLots,
       contextForAI,
       raw: { chantier, lots: lots || undefined }
     };
@@ -252,6 +236,8 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       .eq('travail_id', travailId)
       .order('numero', { ascending: true });
 
+    const nbEtapes = etapes?.length || 0;
+
     // Formater les lots en une ligne compacte
     const lotsCompact = (lots || []).map((lot: any) => {
       const isCurrent = lot.id === travailId;
@@ -268,6 +254,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
 
     const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
     const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
+    const expertiseIcon = getExpertiseIcon(expertiseCode);
 
     const contextForAI = `
 🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}% avancé)
@@ -278,7 +265,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
    ${lotCourant?.description || ''}
    Expertise : ${expertiseNom} | Avancement : ${lotCourant?.progression || 0}%
 
-📋 ÉTAPES À RÉALISER (${etapes?.length || 0}) :
+📋 ÉTAPES À RÉALISER (${nbEtapes}) :
    ${etapesFormatted || 'Aucune étape définie'}
 
 TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, étape par étape. Tu connais les dépendances avec les autres lots du chantier.
@@ -286,12 +273,15 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, 
 
     return {
       level: 'etapes',
-      headerTitle: `${lotCourant?.titre || 'Lot'} • ${etapes?.length || 0} étapes`,
-      headerSubtitle: `${expertiseNom}`,
+      header: {
+        title: lotCourant?.titre || 'Lot',
+        breadcrumb: `Chantier/Lot >> ${nbEtapes} étapes`,
+        expertiseLine: `${expertiseIcon} ${expertiseNom}`
+      },
       expertiseCode,
       expertiseNom,
-      expertiseIcon: getExpertiseIcon(expertiseCode),
-      itemCount: etapes?.length || 0,
+      expertiseIcon,
+      itemCount: nbEtapes,
       contextForAI,
       raw: { 
         chantier: chantier || undefined, 
@@ -354,6 +344,8 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       .eq('etape_id', etapeId)
       .order('numero', { ascending: true });
 
+    const nbTaches = taches?.length || 0;
+
     // Formater lots compact (une ligne)
     const lotsCompact = (lots || []).map((lot: any) => {
       const isCurrent = lot.id === travailId;
@@ -391,6 +383,7 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
 
     const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
     const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
+    const expertiseIcon = getExpertiseIcon(expertiseCode);
 
     const contextForAI = `
 🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}%)
@@ -404,7 +397,7 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
 📍 ÉTAPE ACTUELLE : ${etapeCourante?.titre || 'Étape'}
    ${etapeCourante?.description || ''}
 
-✅ TÂCHES À RÉALISER (${taches?.length || 0}) :
+✅ TÂCHES À RÉALISER (${nbTaches}) :
    ${tachesFormatted || 'Aucune tâche définie'}
 
 TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par tâche. Tu donnes des conseils pratiques, techniques de sécurité, et tu connais le contexte global du chantier.
@@ -412,12 +405,15 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par t�
 
     return {
       level: 'taches',
-      headerTitle: `${etapeCourante?.titre || 'Étape'} • ${taches?.length || 0} tâches`,
-      headerSubtitle: `${expertiseNom}`,
+      header: {
+        title: etapeCourante?.titre || 'Étape',
+        breadcrumb: `Chantier/Lot/Étape >> ${nbTaches} tâches`,
+        expertiseLine: `${expertiseIcon} ${expertiseNom}`
+      },
       expertiseCode,
       expertiseNom,
-      expertiseIcon: getExpertiseIcon(expertiseCode),
-      itemCount: taches?.length || 0,
+      expertiseIcon,
+      itemCount: nbTaches,
       contextForAI,
       raw: { 
         chantier: chantier || undefined, 
@@ -513,8 +509,11 @@ export async function loadContextForPath(pathname: string): Promise<ContextData>
   // Fallback : Home
   return {
     level: 'home',
-    headerTitle: 'Accueil',
-    headerSubtitle: 'Assistant Papibricole',
+    header: {
+      title: 'Accueil',
+      breadcrumb: '',
+      expertiseLine: '🏠 Assistant Papibricole'
+    },
     expertiseCode: 'generaliste',
     expertiseNom: 'Assistant Papibricole',
     expertiseIcon: '🏠',
