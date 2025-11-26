@@ -1,3 +1,15 @@
+/**
+ * FloatingAssistant.tsx
+ * 
+ * Assistant flottant avec :
+ * - Header 2 lignes : navigation + expertise
+ * - Couleur selon le contexte fonctionnel
+ * - Modes : bouton flottant, modal, plein écran
+ * 
+ * @version 2.0
+ * @date 26 novembre 2025
+ */
+
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
@@ -10,9 +22,17 @@ export default function FloatingAssistant() {
   const [isOpen, setIsOpen] = useState(false);
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const { pageContext, contextColor, welcomeMessage, placeholder, additionalContext } = useAssistantContext();
-  // DEBUG TEMPORAIRE
-  console.log('🔍 Assistant Context:', { pageContext, hasAdditionalContext: !!useAssistantContext().additionalContext });
+  
+  const { 
+    pageContext, 
+    contextColor, 
+    welcomeMessage, 
+    placeholder, 
+    additionalContext,
+    navigation,
+    expertise
+  } = useAssistantContext();
+  
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Détection inactivité pour pulse
@@ -22,17 +42,14 @@ export default function FloatingAssistant() {
         clearTimeout(inactivityTimerRef.current);
       }
       
-      // Pulse après 30s d'inactivité (si pas ouvert)
       if (!isOpen) {
         inactivityTimerRef.current = setTimeout(() => {
           setAssistantState('pulse');
-          // Retour idle après 5s
           setTimeout(() => setAssistantState('idle'), 5000);
         }, 30000);
       }
     };
 
-    // Reset sur interaction
     window.addEventListener('mousemove', resetInactivityTimer);
     window.addEventListener('keydown', resetInactivityTimer);
     window.addEventListener('click', resetInactivityTimer);
@@ -55,12 +72,12 @@ export default function FloatingAssistant() {
       case 'thinking':
         return '/gif/papibricole_loop_attente_1.gif';
       case 'speaking':
-        return '/gif/papibricole_loop_attente_1.gif'; // À remplacer
+        return '/gif/papibricole_loop_attente_1.gif';
       case 'pulse':
-        return '/gif/papibricole_loop_attente_1.gif'; // À remplacer
+        return '/gif/papibricole_loop_attente_1.gif';
       case 'idle':
       default:
-        return '/gif/papibricole_loop_attente_1.gif'; // À remplacer
+        return '/gif/papibricole_loop_attente_1.gif';
     }
   };
 
@@ -69,9 +86,34 @@ export default function FloatingAssistant() {
     setAssistantState(state);
   };
 
+  // Construire le titre ligne 1 (navigation)
+  const getHeaderLine1 = () => {
+    if (navigation.breadcrumb) {
+      return `${navigation.breadcrumb} • ${navigation.title}`;
+    }
+    return navigation.title;
+  };
+
+  // Construire le titre ligne 2 (expertise)
+  const getHeaderLine2 = () => {
+    return `${expertise.icon} ${expertise.nom}`;
+  };
+
+  // Indicateur d'état court
+  const getStatusIndicator = () => {
+    switch (assistantState) {
+      case 'thinking':
+        return '🤔';
+      case 'speaking':
+        return '🗣️';
+      default:
+        return '✅';
+    }
+  };
+
   return (
     <>
-      {/* Floating Button - Caché si ouvert */}
+      {/* Floating Button */}
       {!isOpen && (
         <button
           onClick={() => {
@@ -86,10 +128,10 @@ export default function FloatingAssistant() {
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            background: 'white',
+            background: 'var(--white)',
             border: `3px solid ${contextColor}`,
             cursor: 'pointer',
-            boxShadow: `0 4px 20px ${contextColor}40`,
+            boxShadow: `0 4px 20px rgba(0,0,0,0.15)`,
             zIndex: 1000,
             transition: 'all 0.3s ease',
             display: 'flex',
@@ -112,24 +154,22 @@ export default function FloatingAssistant() {
         </button>
       )}
 
-      {/* Modal Chat - Responsive modal/fullscreen */}
+      {/* Modal Chat */}
       {isOpen && (
         <div style={{
           ...(isFullscreen ? {
-            // MODE PLEIN ÉCRAN - Limité et centré
             position: 'fixed',
-            top: window.innerWidth < 768 ? 0 : '2rem',
-            left: window.innerWidth < 768 ? 0 : '50%',
-            right: window.innerWidth < 768 ? 0 : 'auto',
-            bottom: window.innerWidth < 768 ? 0 : 'auto',
-            transform: window.innerWidth < 768 ? 'none' : 'translateX(-50%)',
-            width: window.innerWidth < 768 ? '100vw' : 'min(95vw, 1200px)',
-            height: window.innerWidth < 768 ? '100vh' : 'calc(100vh - 4rem)',
-            maxHeight: window.innerWidth < 768 ? 'none' : '900px',
-            borderRadius: window.innerWidth < 768 ? 0 : '16px',
-            boxShadow: window.innerWidth < 768 ? 'none' : '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+            top: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '2rem',
+            left: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '50%',
+            right: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 'auto',
+            bottom: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 'auto',
+            transform: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : 'translateX(-50%)',
+            width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100vw' : 'min(95vw, 1200px)',
+            height: typeof window !== 'undefined' && window.innerWidth < 768 ? '100vh' : 'calc(100vh - 4rem)',
+            maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : '900px',
+            borderRadius: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '16px',
+            boxShadow: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
           } : {
-            // MODE STANDARD - Comme avant, ne touche à rien !
             position: 'fixed',
             bottom: '2rem',
             right: '2rem',
@@ -138,33 +178,46 @@ export default function FloatingAssistant() {
             borderRadius: '20px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           }),
-          background: 'white',
+          background: 'var(--white)',
           zIndex: 1000,
           display: 'flex',
           flexDirection: 'column',
           overflow: 'hidden',
           transition: 'all 0.3s ease'
         }}>
-          {/* Header */}
+          
+          {/* ==================== HEADER 2 LIGNES ==================== */}
           <div style={{
-            padding: '1.25rem',
-            borderBottom: '1px solid var(--gray-light)',
+            background: contextColor,
+            color: 'var(--white)',
+            padding: '0.75rem 1rem',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'center',
-            background: contextColor,
-            color: 'white'
+            alignItems: 'flex-start',
+            gap: '0.5rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            
+            {/* Partie gauche : Avatar + Textes */}
+            <div style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.75rem',
+              flex: 1,
+              minWidth: 0 // Permet le truncate
+            }}>
+              
+              {/* Avatar */}
               <div style={{
-                width: '40px',
-                height: '40px',
+                width: '44px',
+                height: '44px',
+                minWidth: '44px',
                 borderRadius: '50%',
                 overflow: 'hidden',
-                background: 'white',
+                background: 'var(--white)',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center'
+                justifyContent: 'center',
+                position: 'relative'
               }}>
                 <img 
                   src={getAssistantGif()}
@@ -175,31 +228,77 @@ export default function FloatingAssistant() {
                     objectFit: 'cover'
                   }}
                 />
+                {/* Badge état */}
+                <div style={{
+                  position: 'absolute',
+                  bottom: '-2px',
+                  right: '-2px',
+                  fontSize: '0.75rem',
+                  background: 'var(--white)',
+                  borderRadius: '50%',
+                  width: '18px',
+                  height: '18px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}>
+                  {getStatusIndicator()}
+                </div>
               </div>
-              <div>
-                <div style={{ fontWeight: '700', fontSize: '1.1rem' }}>PapiBricole</div>
-                <div style={{ fontSize: '0.75rem', opacity: 0.9 }}>
-                  {assistantState === 'thinking' && '🤔 Réflexion...'}
-                  {assistantState === 'speaking' && '🗣️ En train de parler...'}
-                  {assistantState === 'idle' && '✅ En ligne'}
+              
+              {/* Textes 2 lignes */}
+              <div style={{ 
+                flex: 1, 
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '0.15rem'
+              }}>
+                {/* Ligne 1 : Navigation */}
+                <div style={{ 
+                  fontWeight: '700', 
+                  fontSize: '0.95rem',
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: '1.2'
+                }}>
+                  {getHeaderLine1()}
+                </div>
+                
+                {/* Ligne 2 : Expertise */}
+                <div style={{ 
+                  fontSize: '0.8rem', 
+                  opacity: 0.9,
+                  whiteSpace: 'nowrap',
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  lineHeight: '1.2'
+                }}>
+                  {getHeaderLine2()}
                 </div>
               </div>
             </div>
 
-            {/* Actions header */}
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              {/* Bouton Toggle Fullscreen */}
+            {/* Partie droite : Actions */}
+            <div style={{ 
+              display: 'flex', 
+              gap: '0.4rem', 
+              alignItems: 'center',
+              marginTop: '0.25rem'
+            }}>
+              {/* Bouton Fullscreen */}
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                title={isFullscreen ? 'Réduire' : 'Passer en plein écran'}
+                title={isFullscreen ? 'Réduire' : 'Agrandir'}
                 style={{
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
-                  color: 'white',
-                  width: '32px',
-                  height: '32px',
+                  color: 'var(--white)',
+                  width: '30px',
+                  height: '30px',
                   borderRadius: '50%',
-                  fontSize: '1rem',
+                  fontSize: '0.9rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -216,20 +315,20 @@ export default function FloatingAssistant() {
               <button
                 onClick={() => {
                   if (isFullscreen) {
-                    setIsFullscreen(false); // Retour modal
+                    setIsFullscreen(false);
                   } else {
-                    setIsOpen(false); // Fermer complètement
+                    setIsOpen(false);
                   }
                 }}
-                title={isFullscreen ? 'Réduire en fenêtre' : 'Fermer'}
+                title={isFullscreen ? 'Réduire' : 'Fermer'}
                 style={{
                   background: 'rgba(255,255,255,0.2)',
                   border: 'none',
-                  color: 'white',
-                  width: '32px',
-                  height: '32px',
+                  color: 'var(--white)',
+                  width: '30px',
+                  height: '30px',
                   borderRadius: '50%',
-                  fontSize: '1.25rem',
+                  fontSize: '1.1rem',
                   cursor: 'pointer',
                   display: 'flex',
                   alignItems: 'center',
@@ -251,7 +350,7 @@ export default function FloatingAssistant() {
               contextColor={contextColor}
               placeholder={placeholder}
               welcomeMessage={welcomeMessage}
-              additionalContext={additionalContext}  // ← AJOUTE CETTE LIGNE
+              additionalContext={additionalContext}
               onStateChange={handleStateChange}
               compact={true}
             />
@@ -264,11 +363,11 @@ export default function FloatingAssistant() {
         @keyframes fabPulse {
           0%, 100% {
             transform: scale(1);
-            box-shadow: 0 4px 20px ${contextColor}40;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
           }
           50% {
             transform: scale(1.1);
-            box-shadow: 0 6px 30px ${contextColor}60;
+            box-shadow: 0 6px 30px rgba(0,0,0,0.25);
           }
         }
 
