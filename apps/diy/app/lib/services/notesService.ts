@@ -20,7 +20,7 @@ export interface Note {
   created_at: string;
 }
 
-export type NoteLevel = 'travail' | 'etape' | 'tache';
+export type NoteLevel = 'chantier' | 'travail' | 'etape' | 'tache';
 
 // ==================== HELPERS ====================
 
@@ -34,6 +34,8 @@ function generateUUID(): string {
 
 function getTableName(level: NoteLevel): string {
   switch (level) {
+    case 'chantier':
+      return 'chantiers';
     case 'travail':
       return 'travaux';
     case 'etape':
@@ -212,6 +214,17 @@ export async function updateNote(
 export async function countNotesForChantier(chantierId: string): Promise<number> {
   try {
     let total = 0;
+
+    // Compter les notes du chantier lui-même
+    const { data: chantier } = await supabase
+      .from('chantiers')
+      .select('notes')
+      .eq('id', chantierId)
+      .single();
+    
+    if (chantier?.notes) {
+      total += (chantier.notes as Note[]).length;
+    }
 
     // Compter dans travaux
     const { data: travaux } = await supabase
