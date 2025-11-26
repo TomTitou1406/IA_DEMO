@@ -121,6 +121,7 @@ export default function FloatingAssistant() {
   const getNoteContext = (): { level: NoteLevel; id: string } | undefined => {
     if (etapeId) return { level: 'etape', id: etapeId };
     if (travailId) return { level: 'travail', id: travailId };
+    if (chantierId) return { level: 'chantier', id: chantierId };
     return undefined;
   };
 
