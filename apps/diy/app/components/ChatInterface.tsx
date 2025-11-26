@@ -212,11 +212,7 @@ export default function ChatInterface({
   
   const handlePinClick = (message: Message) => {
     setSelectedMessageForNote(message);
-    const extrait = message.content.length > 100 
-      ? message.content.substring(0, 100) + '...'
-      : message.content;
-    setNoteText(extrait);
-    setShowNoteModal(true);
+    setNoteText(message.content);
   };
 
   // Sync expertise depuis conversation
