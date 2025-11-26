@@ -340,8 +340,8 @@ export function useAssistantContext(): AssistantContext {
             titre: travail.titre,
             expertiseRequise: travail.expertise?.code || travail.expertise?.nom,
             expertiseNom: travail.expertise?.nom || 'Généraliste',
-            numero: travail.ordre || 1,
-            total: travail.total_lots || 1
+            numero: (travail as any).ordre || 1,
+            total: (travail as any).total_lots || 1
           });
           
           // Construire contexte enrichi pour le prompt
