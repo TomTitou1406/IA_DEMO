@@ -83,7 +83,7 @@ export interface UseConversationReturn {
 // ==================== HOOK ====================
 
 export function useConversation(options: UseConversationOptions): UseConversationReturn {
-  const { type, chantierId, travailId, autoLoad = true } = options;
+  const { userId: providedUserId, type, chantierId, travailId, etapeId, autoLoad = true } = options;
   
   // États
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -105,8 +105,8 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     setError(null);
 
     try {
-      // Récupérer l'ID utilisateur
-      const userId = getUserId();
+      // Récupérer l'ID utilisateur (fourni ou généré)
+      const userId = providedUserId || getUserId();
       userIdRef.current = userId;
 
       // Récupérer ou créer la conversation
@@ -131,7 +131,7 @@ export function useConversation(options: UseConversationOptions): UseConversatio
       setIsLoading(false);
       loadingRef.current = false;
     }
-  }, [type, chantierId, travailId]);
+  }, [providedUserId, type, chantierId, travailId]);
 
   // Charger au mount si autoLoad
   useEffect(() => {
@@ -230,13 +230,14 @@ export function useConversation(options: UseConversationOptions): UseConversatio
   // ==================== ACTIONS CONVERSATION ====================
 
   const startNew = useCallback(async (): Promise<boolean> => {
-    if (!userIdRef.current) return false;
+    const userId = userIdRef.current || providedUserId || getUserId();
+    if (!userId) return false;
 
     setIsLoading(true);
     
     try {
       const newConv = await startNewConversation({
-        userId: userIdRef.current,
+        userId,
         type,
         chantierId,
         travailId
@@ -252,7 +253,7 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     } finally {
       setIsLoading(false);
     }
-  }, [type, chantierId, travailId]);
+  }, [providedUserId, type, chantierId, travailId]);
 
   const close = useCallback(async (
     satisfaction?: number,
