@@ -4,7 +4,7 @@
  * Hook React pour fournir le contexte complet à l'assistant
  * Utilise contextLoaderService pour charger le contexte hiérarchique
  * 
- * @version 4.0
+ * @version 5.0
  * @date 26 novembre 2025
  */
 
@@ -26,11 +26,15 @@ export type PageContext =
   | 'profil'
   | 'chat';
 
-export interface NavigationInfo {
-  level: NavigationLevel;
+export interface HeaderInfo {
+  /** Ligne 1 : Titre du niveau actuel (gras) */
   title: string;
-  subtitle: string;
-  itemCount: number;
+  
+  /** Ligne 2 : Arborescence (ex: "Chantier/Lot >> 5 étapes") */
+  breadcrumb: string;
+  
+  /** Ligne 3 : Expertise avec icône */
+  expertiseLine: string;
 }
 
 export interface ExpertiseInfo {
@@ -47,11 +51,14 @@ export interface AssistantContext {
   placeholder: string;
   additionalContext?: string;
   
-  // Navigation
-  navigation: NavigationInfo;
+  // Header 3 lignes
+  header: HeaderInfo;
   
   // Expertise
   expertise: ExpertiseInfo;
+  
+  // Niveau de navigation
+  level: NavigationLevel;
   
   // État
   isLoading: boolean;
@@ -173,6 +180,13 @@ export function useAssistantContext(): AssistantContext {
     const level = contextData?.level || 'home';
     const pageContext = mapLevelToPageContext(level, pathname);
     
+    // Header par défaut
+    const defaultHeader: HeaderInfo = {
+      title: 'Assistant',
+      breadcrumb: '',
+      expertiseLine: '🏠 Assistant Papibricole'
+    };
+    
     return {
       // Rétrocompatibilité
       pageContext,
@@ -181,13 +195,8 @@ export function useAssistantContext(): AssistantContext {
       placeholder: getPlaceholder(level),
       additionalContext: contextData?.contextForAI,
       
-      // Navigation
-      navigation: {
-        level,
-        title: contextData?.headerTitle || 'Assistant',
-        subtitle: contextData?.headerSubtitle || 'Papibricole',
-        itemCount: contextData?.itemCount || 0
-      },
+      // Header 3 lignes
+      header: contextData?.header || defaultHeader,
       
       // Expertise
       expertise: {
@@ -195,6 +204,9 @@ export function useAssistantContext(): AssistantContext {
         nom: contextData?.expertiseNom || 'Assistant Papibricole',
         icon: contextData?.expertiseIcon || '🏠'
       },
+      
+      // Niveau
+      level,
       
       // État
       isLoading
