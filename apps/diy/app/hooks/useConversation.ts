@@ -67,7 +67,7 @@ export interface UseConversationReturn {
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => Promise<boolean>;
   
   // Actions expertise
-  updateExpertise: (expertiseId: string | null, code: string, nom?: string) => Promise<boolean>;
+  updateExpertise: (expertiseId: string | null, code: string, nom?: string, source?: 'auto' | 'manual') => Promise<boolean>;
   
   // Actions journal
   addDecision: (decision: Omit<Decision, 'id' | 'date'>) => Promise<boolean>;
@@ -178,7 +178,8 @@ export function useConversation(options: UseConversationOptions): UseConversatio
   const updateExpertise = useCallback(async (
     expertiseId: string | null,
     code: string,
-    nom?: string
+    nom?: string,
+    source: 'auto' | 'manual' = 'auto'
   ): Promise<boolean> => {
     if (!conversation) return false;
 
@@ -187,7 +188,7 @@ export function useConversation(options: UseConversationOptions): UseConversatio
       expertiseId, 
       code, 
       nom || code, 
-      'auto'
+      source
     );
     
     if (success) {
