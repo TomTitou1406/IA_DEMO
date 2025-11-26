@@ -60,6 +60,16 @@ export interface AssistantContext {
   // Niveau de navigation
   level: NavigationLevel;
   
+  // IDs du contexte actuel (pour les notes)
+  chantierId?: string;
+  travailId?: string;
+  etapeId?: string;
+  
+  // État
+  isLoading: boolean;
+}
+  level: NavigationLevel;
+  
   // État
   isLoading: boolean;
 }
@@ -207,6 +217,11 @@ export function useAssistantContext(): AssistantContext {
       
       // Niveau
       level,
+      
+      // IDs du contexte actuel
+      chantierId: contextData?.chantierId,
+      travailId: contextData?.travailId,
+      etapeId: contextData?.etapeId,
       
       // État
       isLoading
