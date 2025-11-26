@@ -64,7 +64,18 @@ export async function getNotes(level: NoteLevel, id: string): Promise<Note[]> {
 
     if (error) throw error;
 
-    return (data?.notes || []) as Note[];
+    // Parser les notes (peut être string ou array)
+    if (!data?.notes) return [];
+    
+    if (typeof data.notes === 'string') {
+      try {
+        return JSON.parse(data.notes);
+      } catch {
+        return [];
+      }
+    }
+    
+    return data.notes as Note[];
   } catch (error) {
     console.error('Erreur récupération notes:', error);
     return [];
@@ -93,7 +104,19 @@ export async function addNote(
 
     if (fetchError) throw fetchError;
 
-    const existingNotes: Note[] = data?.notes || [];
+    // Parser les notes existantes (peut être string ou array)
+    let existingNotes: Note[] = [];
+    if (data?.notes) {
+      if (typeof data.notes === 'string') {
+        try {
+          existingNotes = JSON.parse(data.notes);
+        } catch {
+          existingNotes = [];
+        }
+      } else if (Array.isArray(data.notes)) {
+        existingNotes = data.notes;
+      }
+    }
 
     // Créer la nouvelle note
     const newNote: Note = {
@@ -107,10 +130,10 @@ export async function addNote(
     // Ajouter à la liste
     const updatedNotes = [...existingNotes, newNote];
 
-    // Sauvegarder
+    // Sauvegarder (stringify si colonne text)
     const { error: updateError } = await supabase
       .from(tableName)
-      .update({ notes: updatedNotes })
+      .update({ notes: JSON.stringify(updatedNotes) })
       .eq('id', id);
 
     if (updateError) throw updateError;
