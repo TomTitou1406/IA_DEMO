@@ -76,11 +76,16 @@ export interface Conversation {
 }
 
 export type ConversationType = 
-  | 'chantier'      // Conversation liée à un chantier complet
-  | 'travail'       // Conversation liée à un lot spécifique
+  | 'chantier'        // Conversation liée à un chantier complet
+  | 'travail'         // Conversation liée à un lot spécifique
+  | 'lot'             // Alias pour travail
+  | 'etape'           // Conversation liée à une étape
+  | 'tache'           // Conversation liée à une tâche
   | 'aide_ponctuelle' // Question rapide sans contexte
-  | 'profil'        // Discussion sur le profil/niveau
-  | 'general';      // Autre
+  | 'aide'            // Alias pour aide_ponctuelle
+  | 'profil'          // Discussion sur le profil/niveau
+  | 'home'            // Page d'accueil
+  | 'general';        // Autre
 
 // ==================== CONSTANTES ====================
 
