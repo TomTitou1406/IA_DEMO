@@ -1,99 +1,237 @@
 /**
  * conversationService.ts
  * 
- * Service de gestion des conversations pour Papibricole DIY
- * CRUD complet avec persistance Supabase
+ * Service de gestion des conversations avec :
+ * - Génération UUID valide pour user anonyme
+ * - Persistance par chantier
+ * - Journal de chantier (décisions, problèmes, points attention)
+ * - Sliding window (20 derniers messages)
+ * - Résumé automatique si > 25 messages
  * 
- * @version 1.0
- * @date 25 novembre 2025
+ * @version 2.0
+ * @date 26 novembre 2025
  */
 
 import { supabase } from '@/app/lib/supabaseClient';
-import {
-  Conversation,
-  CreateConversationData,
-  UpdateConversationData,
-  Message,
-  Decision,
-  SuggestedAction,
-  ExpertiseHistoryEntry,
-  ConversationType,
-  generateMessageId,
-  generateDecisionId,
-  generateActionId,
-  toISOTimestamp
-} from '@/app/lib/types/conversation';
 
-// ==================== USER ID (MVP) ====================
+// ==================== TYPES ====================
 
-const USER_ID_KEY = 'papi_user_id';
+export interface Message {
+  id?: string;
+  role: 'user' | 'assistant';
+  content: string;
+  timestamp: string;
+  expertise_code?: string;
+  expertise_nom?: string;
+  metadata?: Record<string, any>;
+}
+
+export interface Decision {
+  id: string;
+  date: string;
+  description: string;
+  categorie: 'technique' | 'materiel' | 'planning' | 'securite' | 'autre';
+  validee: boolean;
+}
+
+export interface ProblemeResolu {
+  id: string;
+  date: string;
+  probleme: string;
+  solution: string;
+  expertise_code?: string;
+}
+
+export interface Journal {
+  decisions: Decision[];
+  problemes_resolus: ProblemeResolu[];
+  points_attention: string[];
+  preferences_bricoleur: {
+    niveau?: 'debutant' | 'intermediaire' | 'expert';
+    disponibilites?: string;
+    outillage?: string[];
+    notes?: string;
+  };
+  resume_conversation?: string;
+  derniere_mise_a_jour?: string;
+}
+
+export interface Conversation {
+  id: string;
+  user_id: string;
+  chantier_id?: string;
+  travail_id?: string;
+  type: ConversationType;
+  titre?: string;
+  expertise_actuelle_id?: string;
+  code_expertise_actuelle?: string;
+  messages: Message[];
+  nombre_messages: number;
+  journal: Journal;
+  decisions_prises?: any[];
+  statut: 'active' | 'closed' | 'archived';
+  derniere_activite: string;
+  created_at: string;
+  updated_at: string;
+}
+
+export type ConversationType = 
+  | 'chantier'      // Conversation liée à un chantier complet
+  | 'travail'       // Conversation liée à un lot spécifique
+  | 'aide_ponctuelle' // Question rapide sans contexte
+  | 'profil'        // Discussion sur le profil/niveau
+  | 'general';      // Autre
+
+// ==================== CONSTANTES ====================
+
+const STORAGE_KEY_USER_ID = 'papibricole_user_id';
+const MAX_MESSAGES_DISPLAY = 20;  // Sliding window
+const RESUME_THRESHOLD = 25;       // Seuil pour générer un résumé
+
+// ==================== HELPERS ====================
 
 /**
- * Génère un ID utilisateur temporaire
+ * Génère un UUID v4 valide
  */
-function generateTempUserId(): string {
-  return `temp_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+function generateUUID(): string {
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0;
+    const v = c === 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
 }
 
 /**
- * Récupère ou crée l'ID utilisateur (localStorage)
+ * Récupère ou crée un ID utilisateur persistant (UUID valide)
  */
 export function getUserId(): string {
   if (typeof window === 'undefined') {
-    return 'server-side';
+    return generateUUID();
   }
   
-  let userId = localStorage.getItem(USER_ID_KEY);
+  let userId = localStorage.getItem(STORAGE_KEY_USER_ID);
   
-  if (!userId) {
-    userId = generateTempUserId();
-    localStorage.setItem(USER_ID_KEY, userId);
-    console.log('🆔 Nouvel utilisateur temporaire créé:', userId);
+  // Si pas d'ID ou format invalide (ancien format temp_xxx), en créer un nouveau
+  if (!userId || !userId.match(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i)) {
+    userId = generateUUID();
+    localStorage.setItem(STORAGE_KEY_USER_ID, userId);
+    console.log('🆔 Nouvel ID utilisateur généré:', userId);
   }
   
   return userId;
 }
 
 /**
- * Réinitialise l'ID utilisateur (pour tests)
+ * Journal par défaut
  */
-export function resetUserId(): string {
-  const newId = generateTempUserId();
-  localStorage.setItem(USER_ID_KEY, newId);
-  return newId;
+function getDefaultJournal(): Journal {
+  return {
+    decisions: [],
+    problemes_resolus: [],
+    points_attention: [],
+    preferences_bricoleur: {},
+    derniere_mise_a_jour: new Date().toISOString()
+  };
 }
 
-// ==================== CRÉATION ====================
+// ==================== FONCTIONS PRINCIPALES ====================
+
+/**
+ * Récupère une conversation active par chantier
+ */
+export async function getConversationByChantier(
+  userId: string, 
+  chantierId: string
+): Promise<Conversation | null> {
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('chantier_id', chantierId)
+      .eq('statut', 'active')
+      .order('derniere_activite', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        // Pas de conversation trouvée
+        return null;
+      }
+      throw error;
+    }
+
+    return data as Conversation;
+  } catch (error) {
+    console.error('Erreur récupération conversation:', error);
+    return null;
+  }
+}
+
+/**
+ * Récupère une conversation active générale (sans chantier)
+ */
+export async function getActiveConversation(
+  userId: string,
+  type: ConversationType = 'general'
+): Promise<Conversation | null> {
+  try {
+    const { data, error } = await supabase
+      .from('conversations')
+      .select('*')
+      .eq('user_id', userId)
+      .eq('type', type)
+      .is('chantier_id', null)
+      .eq('statut', 'active')
+      .order('derniere_activite', { ascending: false })
+      .limit(1)
+      .single();
+
+    if (error) {
+      if (error.code === 'PGRST116') {
+        return null;
+      }
+      throw error;
+    }
+
+    return data as Conversation;
+  } catch (error) {
+    console.error('Erreur récupération conversation active:', error);
+    return null;
+  }
+}
 
 /**
  * Crée une nouvelle conversation
  */
-export async function createConversation(
-  data: CreateConversationData
-): Promise<Conversation | null> {
+export async function createConversation(params: {
+  userId: string;
+  type: ConversationType;
+  chantierId?: string;
+  travailId?: string;
+  titre?: string;
+  expertiseCode?: string;
+  expertiseId?: string;
+}): Promise<Conversation | null> {
   try {
-    const now = toISOTimestamp();
+    const now = new Date().toISOString();
     
-    const conversationData = {
-      user_id: data.user_id,
-      type: data.type,
-      chantier_id: data.chantier_id || null,
-      travail_id: data.travail_id || null,
-      titre: data.titre || generateDefaultTitle(data.type),
-      expertise_actuelle_id: data.expertise_id || null,
-      code_expertise_actuelle: data.expertise_code || null,
-      expertise_historique: data.expertise_id ? [{
-        expertise_id: data.expertise_id,
-        expertise_code: data.expertise_code || '',
-        expertise_nom: '',
-        activated_at: now,
-        trigger: 'manual'
-      }] : [],
-      contexte_initial: data.contexte_initial || {},
-      contexte_actuel: data.contexte_initial || {},
+    const newConversation = {
+      user_id: params.userId,
+      type: params.type,
+      chantier_id: params.chantierId || null,
+      travail_id: params.travailId || null,
+      titre: params.titre || `Conversation ${params.type}`,
+      expertise_actuelle_id: params.expertiseId || null,
+      code_expertise_actuelle: params.expertiseCode || null,
       messages: [],
       nombre_messages: 0,
+      journal: getDefaultJournal(),
       decisions_prises: [],
+      expertise_historique: [],
+      contexte_initial: {},
+      contexte_actuel: {},
       actions_suggerees: [],
       statut: 'active',
       derniere_activite: now,
@@ -101,495 +239,347 @@ export async function createConversation(
       updated_at: now
     };
 
-    const { data: created, error } = await supabase
+    const { data, error } = await supabase
       .from('conversations')
-      .insert(conversationData)
+      .insert(newConversation)
       .select()
       .single();
 
     if (error) throw error;
 
-    console.log('✅ Conversation créée:', created.id);
-    return parseConversation(created);
-
+    console.log('✅ Conversation créée:', data.id);
+    return data as Conversation;
   } catch (error) {
-    console.error('Error creating conversation:', error);
+    console.error('Erreur création conversation:', error);
     return null;
   }
 }
 
 /**
- * Génère un titre par défaut selon le type
+ * Ajoute un message à la conversation
  */
-function generateDefaultTitle(type: ConversationType): string {
-  const titles: Record<ConversationType, string> = {
-    aide_ponctuelle: 'Aide ponctuelle',
-    chantier: 'Discussion chantier',
-    travail: 'Discussion lot',
-    etape: 'Aide étape',
-    tache: 'Aide tâche',
-    profil: 'Évaluation compétences',
-    general: 'Conversation'
-  };
-  
-  const date = new Date().toLocaleDateString('fr-FR', { 
-    day: 'numeric', 
-    month: 'short',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-  
-  return `${titles[type]} - ${date}`;
-}
-
-// ==================== LECTURE ====================
-
-/**
- * Récupère une conversation par son ID
- */
-export async function getConversationById(id: string): Promise<Conversation | null> {
-  try {
-    const { data, error } = await supabase
-      .from('conversations')
-      .select('*')
-      .eq('id', id)
-      .single();
-
-    if (error) {
-      if (error.code === 'PGRST116') return null; // Not found
-      throw error;
-    }
-
-    return parseConversation(data);
-
-  } catch (error) {
-    console.error('Error getting conversation:', error);
-    return null;
-  }
-}
-
-/**
- * Récupère la conversation active pour un contexte donné
- */
-export async function getActiveConversation(
-  userId: string,
-  type: ConversationType,
-  contextId?: string // chantierId ou travailId
-): Promise<Conversation | null> {
-  try {
-    let query = supabase
-      .from('conversations')
-      .select('*')
-      .eq('user_id', userId)
-      .eq('type', type)
-      .eq('statut', 'active')
-      .order('derniere_activite', { ascending: false })
-      .limit(1);
-
-    // Filtrer par contexte si fourni
-    if (contextId) {
-      if (type === 'chantier') {
-        query = query.eq('chantier_id', contextId);
-      } else if (type === 'travail' || type === 'etape' || type === 'tache') {
-        query = query.eq('travail_id', contextId);
-      }
-    }
-
-    const { data, error } = await query.single();
-
-    if (error) {
-      if (error.code === 'PGRST116') return null; // Not found
-      throw error;
-    }
-
-    return parseConversation(data);
-
-  } catch (error) {
-    console.error('Error getting active conversation:', error);
-    return null;
-  }
-}
-
-/**
- * Récupère toutes les conversations d'un utilisateur
- */
-export async function getUserConversations(
-  userId: string,
-  options?: {
-    type?: ConversationType;
-    statut?: 'active' | 'closed' | 'archived';
-    limit?: number;
-  }
-): Promise<Conversation[]> {
-  try {
-    let query = supabase
-      .from('conversations')
-      .select('*')
-      .eq('user_id', userId)
-      .order('derniere_activite', { ascending: false });
-
-    if (options?.type) {
-      query = query.eq('type', options.type);
-    }
-
-    if (options?.statut) {
-      query = query.eq('statut', options.statut);
-    }
-
-    if (options?.limit) {
-      query = query.limit(options.limit);
-    }
-
-    const { data, error } = await query;
-
-    if (error) throw error;
-
-    return (data || []).map(parseConversation);
-
-  } catch (error) {
-    console.error('Error getting user conversations:', error);
-    return [];
-  }
-}
-
-// ==================== MISE À JOUR ====================
-
-/**
- * Met à jour une conversation
- */
-export async function updateConversation(
-  id: string,
-  data: UpdateConversationData
+export async function addMessage(
+  conversationId: string,
+  message: Message
 ): Promise<boolean> {
   try {
-    const updateData = {
-      ...data,
-      updated_at: toISOTimestamp(),
-      derniere_activite: toISOTimestamp()
-    };
-
-    const { error } = await supabase
+    // Récupérer la conversation actuelle
+    const { data: conv, error: fetchError } = await supabase
       .from('conversations')
-      .update(updateData)
-      .eq('id', id);
+      .select('messages, nombre_messages')
+      .eq('id', conversationId)
+      .single();
 
-    if (error) throw error;
+    if (fetchError) throw fetchError;
+
+    // Ajouter le nouveau message
+    const messages = [...(conv.messages || []), {
+      ...message,
+      id: message.id || generateUUID(),
+      timestamp: message.timestamp || new Date().toISOString()
+    }];
+
+    // Mettre à jour
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({
+        messages,
+        nombre_messages: messages.length,
+        derniere_activite: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (updateError) throw updateError;
 
     return true;
-
   } catch (error) {
-    console.error('Error updating conversation:', error);
+    console.error('Erreur ajout message:', error);
     return false;
   }
 }
 
 /**
- * Ajoute un message à une conversation
+ * Met à jour l'expertise active
  */
-export async function addMessage(
+export async function updateExpertise(
   conversationId: string,
-  message: Omit<Message, 'id' | 'timestamp'>
-): Promise<Message | null> {
-  try {
-    // Récupérer la conversation actuelle
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
-
-    // Créer le message complet
-    const newMessage: Message = {
-      id: generateMessageId(),
-      ...message,
-      timestamp: toISOTimestamp()
-    };
-
-    // Ajouter au tableau de messages
-    const updatedMessages = [...conversation.messages, newMessage];
-
-    // Mettre à jour en BDD
-    const { error } = await supabase
-      .from('conversations')
-      .update({
-        messages: updatedMessages,
-        nombre_messages: updatedMessages.length,
-        derniere_activite: toISOTimestamp(),
-        updated_at: toISOTimestamp()
-      })
-      .eq('id', conversationId);
-
-    if (error) throw error;
-
-    return newMessage;
-
-  } catch (error) {
-    console.error('Error adding message:', error);
-    return null;
-  }
-}
-
-/**
- * Ajoute plusieurs messages d'un coup (optimisation)
- */
-export async function addMessages(
-  conversationId: string,
-  messages: Array<Omit<Message, 'id' | 'timestamp'>>
-): Promise<Message[] | null> {
-  try {
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
-
-    const now = toISOTimestamp();
-    const newMessages: Message[] = messages.map((msg, index) => ({
-      id: generateMessageId(),
-      ...msg,
-      timestamp: new Date(Date.now() + index).toISOString() // Légère différence pour l'ordre
-    }));
-
-    const updatedMessages = [...conversation.messages, ...newMessages];
-
-    const { error } = await supabase
-      .from('conversations')
-      .update({
-        messages: updatedMessages,
-        nombre_messages: updatedMessages.length,
-        derniere_activite: now,
-        updated_at: now
-      })
-      .eq('id', conversationId);
-
-    if (error) throw error;
-
-    return newMessages;
-
-  } catch (error) {
-    console.error('Error adding messages:', error);
-    return null;
-  }
-}
-
-/**
- * Met à jour l'expertise active d'une conversation
- */
-export async function updateActiveExpertise(
-  conversationId: string,
-  expertiseId: string,
+  expertiseId: string | null,
   expertiseCode: string,
   expertiseNom: string,
-  trigger: 'auto' | 'manual' = 'manual'
+  source: 'auto' | 'manual' = 'auto'
 ): Promise<boolean> {
   try {
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
+    // Récupérer l'historique actuel
+    const { data: conv, error: fetchError } = await supabase
+      .from('conversations')
+      .select('expertise_historique')
+      .eq('id', conversationId)
+      .single();
 
-    const now = toISOTimestamp();
+    if (fetchError) throw fetchError;
 
-    // Clôturer l'expertise précédente si existe
-    const updatedHistory = conversation.expertise_historique.map(entry => {
-      if (!entry.deactivated_at) {
-        return { ...entry, deactivated_at: now };
-      }
-      return entry;
-    });
-
-    // Ajouter la nouvelle expertise
-    const newEntry: ExpertiseHistoryEntry = {
+    // Ajouter à l'historique
+    const historique = [...(conv.expertise_historique || []), {
       expertise_id: expertiseId,
       expertise_code: expertiseCode,
       expertise_nom: expertiseNom,
-      activated_at: now,
-      trigger
-    };
+      activated_at: new Date().toISOString(),
+      source
+    }];
 
-    updatedHistory.push(newEntry);
-
-    // Mettre à jour en BDD
-    const { error } = await supabase
+    // Mettre à jour
+    const { error: updateError } = await supabase
       .from('conversations')
       .update({
         expertise_actuelle_id: expertiseId,
         code_expertise_actuelle: expertiseCode,
-        expertise_historique: updatedHistory,
-        derniere_activite: now,
-        updated_at: now
+        expertise_historique: historique,
+        updated_at: new Date().toISOString()
       })
       .eq('id', conversationId);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
-    console.log(`✅ Expertise changée: ${expertiseCode} (${trigger})`);
     return true;
-
   } catch (error) {
-    console.error('Error updating expertise:', error);
+    console.error('Erreur mise à jour expertise:', error);
     return false;
   }
 }
 
 /**
- * Ajoute une décision à une conversation
+ * Ajoute une décision au journal
  */
-export async function addDecision(
+export async function addDecisionToJournal(
   conversationId: string,
-  decision: Omit<Decision, 'id' | 'created_at'>
-): Promise<Decision | null> {
+  decision: Omit<Decision, 'id' | 'date'>
+): Promise<boolean> {
   try {
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
+    const { data: conv, error: fetchError } = await supabase
+      .from('conversations')
+      .select('journal')
+      .eq('id', conversationId)
+      .single();
 
-    const newDecision: Decision = {
-      id: generateDecisionId(),
+    if (fetchError) throw fetchError;
+
+    const journal: Journal = conv.journal || getDefaultJournal();
+    
+    journal.decisions.push({
       ...decision,
-      created_at: toISOTimestamp()
-    };
-
-    const updatedDecisions = [...conversation.decisions_prises, newDecision];
-
-    const { error } = await supabase
-      .from('conversations')
-      .update({
-        decisions_prises: updatedDecisions,
-        derniere_activite: toISOTimestamp(),
-        updated_at: toISOTimestamp()
-      })
-      .eq('id', conversationId);
-
-    if (error) throw error;
-
-    console.log(`✅ Décision enregistrée: ${decision.type}`);
-    return newDecision;
-
-  } catch (error) {
-    console.error('Error adding decision:', error);
-    return null;
-  }
-}
-
-/**
- * Ajoute une action suggérée
- */
-export async function addSuggestedAction(
-  conversationId: string,
-  action: Omit<SuggestedAction, 'id' | 'suggested_at' | 'status'>
-): Promise<SuggestedAction | null> {
-  try {
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
-
-    const newAction: SuggestedAction = {
-      id: generateActionId(),
-      ...action,
-      suggested_at: toISOTimestamp(),
-      status: 'pending'
-    };
-
-    const updatedActions = [...conversation.actions_suggerees, newAction];
-
-    const { error } = await supabase
-      .from('conversations')
-      .update({
-        actions_suggerees: updatedActions,
-        updated_at: toISOTimestamp()
-      })
-      .eq('id', conversationId);
-
-    if (error) throw error;
-
-    return newAction;
-
-  } catch (error) {
-    console.error('Error adding suggested action:', error);
-    return null;
-  }
-}
-
-/**
- * Met à jour le statut d'une action suggérée
- */
-export async function updateActionStatus(
-  conversationId: string,
-  actionId: string,
-  status: SuggestedAction['status']
-): Promise<boolean> {
-  try {
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
-
-    const updatedActions = conversation.actions_suggerees.map(action => {
-      if (action.id === actionId) {
-        return { ...action, status };
-      }
-      return action;
+      id: generateUUID(),
+      date: new Date().toISOString()
     });
+    journal.derniere_mise_a_jour = new Date().toISOString();
 
-    const { error } = await supabase
+    const { error: updateError } = await supabase
       .from('conversations')
-      .update({
-        actions_suggerees: updatedActions,
-        updated_at: toISOTimestamp()
+      .update({ 
+        journal,
+        updated_at: new Date().toISOString()
       })
       .eq('id', conversationId);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
+    console.log('📝 Décision ajoutée au journal');
     return true;
-
   } catch (error) {
-    console.error('Error updating action status:', error);
+    console.error('Erreur ajout décision:', error);
     return false;
   }
 }
 
 /**
- * Met à jour le contexte actuel
+ * Ajoute un problème résolu au journal
  */
-export async function updateContext(
+export async function addProblemeResoluToJournal(
   conversationId: string,
-  contexte: Partial<Conversation['contexte_actuel']>
+  probleme: Omit<ProblemeResolu, 'id' | 'date'>
 ): Promise<boolean> {
   try {
-    const conversation = await getConversationById(conversationId);
-    if (!conversation) {
-      throw new Error('Conversation not found');
-    }
-
-    const updatedContext = {
-      ...conversation.contexte_actuel,
-      ...contexte
-    };
-
-    const { error } = await supabase
+    const { data: conv, error: fetchError } = await supabase
       .from('conversations')
-      .update({
-        contexte_actuel: updatedContext,
-        updated_at: toISOTimestamp()
+      .select('journal')
+      .eq('id', conversationId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const journal: Journal = conv.journal || getDefaultJournal();
+    
+    journal.problemes_resolus.push({
+      ...probleme,
+      id: generateUUID(),
+      date: new Date().toISOString()
+    });
+    journal.derniere_mise_a_jour = new Date().toISOString();
+
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ 
+        journal,
+        updated_at: new Date().toISOString()
       })
       .eq('id', conversationId);
 
-    if (error) throw error;
+    if (updateError) throw updateError;
 
+    console.log('🔧 Problème résolu ajouté au journal');
     return true;
-
   } catch (error) {
-    console.error('Error updating context:', error);
+    console.error('Erreur ajout problème résolu:', error);
     return false;
   }
 }
 
-// ==================== CLÔTURE ====================
+/**
+ * Ajoute un point d'attention au journal
+ */
+export async function addPointAttentionToJournal(
+  conversationId: string,
+  point: string
+): Promise<boolean> {
+  try {
+    const { data: conv, error: fetchError } = await supabase
+      .from('conversations')
+      .select('journal')
+      .eq('id', conversationId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const journal: Journal = conv.journal || getDefaultJournal();
+    
+    // Éviter les doublons
+    if (!journal.points_attention.includes(point)) {
+      journal.points_attention.push(point);
+      journal.derniere_mise_a_jour = new Date().toISOString();
+
+      const { error: updateError } = await supabase
+        .from('conversations')
+        .update({ 
+          journal,
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', conversationId);
+
+      if (updateError) throw updateError;
+
+      console.log('⚠️ Point d\'attention ajouté');
+    }
+    
+    return true;
+  } catch (error) {
+    console.error('Erreur ajout point attention:', error);
+    return false;
+  }
+}
 
 /**
- * Clôture une conversation
+ * Met à jour les préférences du bricoleur
+ */
+export async function updatePreferencesBricoleur(
+  conversationId: string,
+  preferences: Partial<Journal['preferences_bricoleur']>
+): Promise<boolean> {
+  try {
+    const { data: conv, error: fetchError } = await supabase
+      .from('conversations')
+      .select('journal')
+      .eq('id', conversationId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const journal: Journal = conv.journal || getDefaultJournal();
+    
+    journal.preferences_bricoleur = {
+      ...journal.preferences_bricoleur,
+      ...preferences
+    };
+    journal.derniere_mise_a_jour = new Date().toISOString();
+
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ 
+        journal,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (updateError) throw updateError;
+
+    console.log('👤 Préférences bricoleur mises à jour');
+    return true;
+  } catch (error) {
+    console.error('Erreur mise à jour préférences:', error);
+    return false;
+  }
+}
+
+/**
+ * Met à jour le résumé de conversation dans le journal
+ */
+export async function updateConversationResume(
+  conversationId: string,
+  resume: string
+): Promise<boolean> {
+  try {
+    const { data: conv, error: fetchError } = await supabase
+      .from('conversations')
+      .select('journal')
+      .eq('id', conversationId)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    const journal: Journal = conv.journal || getDefaultJournal();
+    journal.resume_conversation = resume;
+    journal.derniere_mise_a_jour = new Date().toISOString();
+
+    const { error: updateError } = await supabase
+      .from('conversations')
+      .update({ 
+        journal,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', conversationId);
+
+    if (updateError) throw updateError;
+
+    return true;
+  } catch (error) {
+    console.error('Erreur mise à jour résumé:', error);
+    return false;
+  }
+}
+
+/**
+ * Récupère les messages avec sliding window
+ */
+export function getMessagesForAPI(
+  allMessages: Message[],
+  maxMessages: number = MAX_MESSAGES_DISPLAY
+): Message[] {
+  if (allMessages.length <= maxMessages) {
+    return allMessages;
+  }
+  
+  // Retourner les N derniers messages
+  return allMessages.slice(-maxMessages);
+}
+
+/**
+ * Vérifie si un résumé est nécessaire
+ */
+export function needsResume(messagesCount: number): boolean {
+  return messagesCount > RESUME_THRESHOLD;
+}
+
+/**
+ * Ferme une conversation
  */
 export async function closeConversation(
   conversationId: string,
@@ -597,108 +587,87 @@ export async function closeConversation(
   feedback?: string
 ): Promise<boolean> {
   try {
-    const now = toISOTimestamp();
-
-    const updateData: any = {
-      statut: 'closed',
-      closed_at: now,
-      updated_at: now
-    };
-
-    if (satisfaction !== undefined) {
-      updateData.satisfaction_user = satisfaction;
-    }
-
-    if (feedback) {
-      updateData.feedback_user = feedback;
-    }
-
-    const { error } = await supabase
-      .from('conversations')
-      .update(updateData)
-      .eq('id', conversationId);
-
-    if (error) throw error;
-
-    console.log('✅ Conversation clôturée:', conversationId);
-    return true;
-
-  } catch (error) {
-    console.error('Error closing conversation:', error);
-    return false;
-  }
-}
-
-/**
- * Archive une conversation
- */
-export async function archiveConversation(conversationId: string): Promise<boolean> {
-  try {
+    const now = new Date().toISOString();
+    
     const { error } = await supabase
       .from('conversations')
       .update({
-        statut: 'archived',
-        updated_at: toISOTimestamp()
+        statut: 'closed',
+        satisfaction_user: satisfaction || null,
+        feedback_user: feedback || null,
+        closed_at: now,
+        updated_at: now
       })
       .eq('id', conversationId);
 
     if (error) throw error;
 
+    console.log('🔒 Conversation fermée:', conversationId);
     return true;
-
   } catch (error) {
-    console.error('Error archiving conversation:', error);
+    console.error('Erreur fermeture conversation:', error);
     return false;
   }
 }
 
-// ==================== UTILITAIRES ====================
-
 /**
- * Parse une conversation depuis la BDD (gestion des JSONB)
+ * Démarre une nouvelle conversation (ferme l'ancienne si existe)
  */
-function parseConversation(data: any): Conversation {
-  return {
-    ...data,
-    messages: Array.isArray(data.messages) ? data.messages : JSON.parse(data.messages || '[]'),
-    expertise_historique: Array.isArray(data.expertise_historique) ? data.expertise_historique : JSON.parse(data.expertise_historique || '[]'),
-    decisions_prises: Array.isArray(data.decisions_prises) ? data.decisions_prises : JSON.parse(data.decisions_prises || '[]'),
-    actions_suggerees: Array.isArray(data.actions_suggerees) ? data.actions_suggerees : JSON.parse(data.actions_suggerees || '[]'),
-    contexte_initial: typeof data.contexte_initial === 'object' ? data.contexte_initial : JSON.parse(data.contexte_initial || '{}'),
-    contexte_actuel: typeof data.contexte_actuel === 'object' ? data.contexte_actuel : JSON.parse(data.contexte_actuel || '{}')
-  };
+export async function startNewConversation(params: {
+  userId: string;
+  type: ConversationType;
+  chantierId?: string;
+  travailId?: string;
+}): Promise<Conversation | null> {
+  try {
+    // Fermer l'ancienne conversation active si elle existe
+    if (params.chantierId) {
+      const existing = await getConversationByChantier(params.userId, params.chantierId);
+      if (existing) {
+        await closeConversation(existing.id);
+      }
+    }
+
+    // Créer la nouvelle
+    return await createConversation({
+      userId: params.userId,
+      type: params.type,
+      chantierId: params.chantierId,
+      travailId: params.travailId,
+      titre: `Nouvelle discussion - ${new Date().toLocaleDateString('fr-FR')}`
+    });
+  } catch (error) {
+    console.error('Erreur démarrage nouvelle conversation:', error);
+    return null;
+  }
 }
 
 /**
- * Supprime les conversations anciennes archivées (maintenance)
+ * Récupère ou crée une conversation pour le contexte actuel
  */
-export async function cleanupOldConversations(
-  userId: string,
-  daysOld: number = 90
-): Promise<number> {
-  try {
-    const cutoffDate = new Date();
-    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
-
-    const { data, error } = await supabase
-      .from('conversations')
-      .delete()
-      .eq('user_id', userId)
-      .eq('statut', 'archived')
-      .lt('updated_at', cutoffDate.toISOString())
-      .select('id');
-
-    if (error) throw error;
-
-    const count = data?.length || 0;
-    if (count > 0) {
-      console.log(`🗑️ ${count} conversations archivées supprimées`);
+export async function getOrCreateConversation(params: {
+  userId: string;
+  type: ConversationType;
+  chantierId?: string;
+  travailId?: string;
+}): Promise<Conversation | null> {
+  // Si on a un chantier, chercher la conversation liée
+  if (params.chantierId) {
+    const existing = await getConversationByChantier(params.userId, params.chantierId);
+    if (existing) {
+      console.log('📂 Conversation existante trouvée:', existing.id);
+      return existing;
     }
-
-    return count;
-
-  } catch (error) {
-    console.error('Error cleaning up conversations:', error);
-    return 0;
+  } else {
+    // Sinon, chercher une conversation générale active
+    const existing = await getActiveConversation(params.userId, params.type);
+    if (existing) {
+      console.log('📂 Conversation générale trouvée:', existing.id);
+      return existing;
+    }
   }
+
+  // Créer une nouvelle conversation
+  console.log('🆕 Création nouvelle conversation');
+  return await createConversation(params);
 }
