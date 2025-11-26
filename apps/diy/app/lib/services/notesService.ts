@@ -1,280 +1,312 @@
 /**
- * notesService.ts
+ * NotesButton.tsx
  * 
- * Service de gestion des notes (pense-bêtes) attachées aux niveaux du projet
- * Les notes peuvent être attachées aux travaux (lots), étapes ou tâches
+ * Bouton + modale affichant les notes style Post-It jaune
+ * Optimisé mobile-first
  * 
- * @version 1.0
+ * @version 2.0
  * @date 26 novembre 2025
  */
 
-import { supabase } from '@/app/lib/supabaseClient';
+'use client';
 
-// ==================== TYPES ====================
+import { useState, useEffect } from 'react';
+import { getNotes, deleteNote, type NoteLevel, type Note } from '../lib/services/notesService';
 
-export interface Note {
+interface NotesButtonProps {
+  level: NoteLevel;
   id: string;
-  texte: string;
-  source: 'assistant_ia' | 'utilisateur';
-  message_original?: string;  // Le message complet dont est extraite la note
-  created_at: string;
 }
 
-export type NoteLevel = 'chantier' | 'travail' | 'etape' | 'tache';
+export default function NotesButton({ level, id }: NotesButtonProps) {
+  const [notes, setNotes] = useState<Note[]>([]);
+  const [isOpen, setIsOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
-// ==================== HELPERS ====================
-
-function generateUUID(): string {
-  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-    const r = Math.random() * 16 | 0;
-    const v = c === 'x' ? r : (r & 0x3 | 0x8);
-    return v.toString(16);
-  });
-}
-
-function getTableName(level: NoteLevel): string {
-  switch (level) {
-    case 'chantier':
-      return 'chantiers';
-    case 'travail':
-      return 'travaux';
-    case 'etape':
-      return 'etapes';
-    case 'tache':
-      return 'taches';
-    default:
-      return 'travaux';
-  }
-}
-
-// ==================== FONCTIONS PRINCIPALES ====================
-
-/**
- * Récupère les notes d'un élément
- */
-export async function getNotes(level: NoteLevel, id: string): Promise<Note[]> {
-  try {
-    const tableName = getTableName(level);
-    
-    const { data, error } = await supabase
-      .from(tableName)
-      .select('notes')
-      .eq('id', id)
-      .single();
-
-    if (error) throw error;
-
-    // Parser les notes (peut être string ou array)
-    if (!data?.notes) return [];
-    
-    if (typeof data.notes === 'string') {
-      try {
-        return JSON.parse(data.notes);
-      } catch {
-        return [];
-      }
-    }
-    
-    return data.notes as Note[];
-  } catch (error) {
-    console.error('Erreur récupération notes:', error);
-    return [];
-  }
-}
-
-/**
- * Ajoute une note à un élément
- */
-export async function addNote(
-  level: NoteLevel,
-  id: string,
-  texte: string,
-  source: 'assistant_ia' | 'utilisateur' = 'assistant_ia',
-  messageOriginal?: string
-): Promise<boolean> {
-  try {
-    const tableName = getTableName(level);
-    
-    // Récupérer les notes existantes
-    const { data, error: fetchError } = await supabase
-      .from(tableName)
-      .select('notes')
-      .eq('id', id)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    // Parser les notes existantes (peut être string ou array)
-    let existingNotes: Note[] = [];
-    if (data?.notes) {
-      if (typeof data.notes === 'string') {
-        try {
-          existingNotes = JSON.parse(data.notes);
-        } catch {
-          existingNotes = [];
-        }
-      } else if (Array.isArray(data.notes)) {
-        existingNotes = data.notes;
-      }
-    }
-
-    // Créer la nouvelle note
-    const newNote: Note = {
-      id: generateUUID(),
-      texte,
-      source,
-      message_original: messageOriginal,
-      created_at: new Date().toISOString()
+  // Charger les notes
+  useEffect(() => {
+    const loadNotes = async () => {
+      setLoading(true);
+      const data = await getNotes(level, id);
+      setNotes(data);
+      setLoading(false);
     };
-
-    // Ajouter à la liste
-    const updatedNotes = [...existingNotes, newNote];
-
-    // Sauvegarder (stringify si colonne text)
-    const { error: updateError } = await supabase
-      .from(tableName)
-      .update({ notes: JSON.stringify(updatedNotes) })
-      .eq('id', id);
-
-    if (updateError) throw updateError;
-
-    console.log(`📌 Note ajoutée à ${level} ${id}`);
-    return true;
-  } catch (error) {
-    console.error('Erreur ajout note:', error);
-    return false;
-  }
-}
-
-/**
- * Supprime une note
- */
-export async function deleteNote(
-  level: NoteLevel,
-  elementId: string,
-  noteId: string
-): Promise<boolean> {
-  try {
-    const tableName = getTableName(level);
     
-    // Récupérer les notes existantes
-    const { data, error: fetchError } = await supabase
-      .from(tableName)
-      .select('notes')
-      .eq('id', elementId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    const existingNotes: Note[] = data?.notes || [];
-
-    // Filtrer pour retirer la note
-    const updatedNotes = existingNotes.filter(n => n.id !== noteId);
-
-    // Sauvegarder
-    const { error: updateError } = await supabase
-      .from(tableName)
-      .update({ notes: updatedNotes })
-      .eq('id', elementId);
-
-    if (updateError) throw updateError;
-
-    console.log(`🗑️ Note supprimée de ${level} ${elementId}`);
-    return true;
-  } catch (error) {
-    console.error('Erreur suppression note:', error);
-    return false;
-  }
-}
-
-/**
- * Met à jour une note
- */
-export async function updateNote(
-  level: NoteLevel,
-  elementId: string,
-  noteId: string,
-  newTexte: string
-): Promise<boolean> {
-  try {
-    const tableName = getTableName(level);
-    
-    // Récupérer les notes existantes
-    const { data, error: fetchError } = await supabase
-      .from(tableName)
-      .select('notes')
-      .eq('id', elementId)
-      .single();
-
-    if (fetchError) throw fetchError;
-
-    const existingNotes: Note[] = data?.notes || [];
-
-    // Mettre à jour la note
-    const updatedNotes = existingNotes.map(n => 
-      n.id === noteId ? { ...n, texte: newTexte } : n
-    );
-
-    // Sauvegarder
-    const { error: updateError } = await supabase
-      .from(tableName)
-      .update({ notes: updatedNotes })
-      .eq('id', elementId);
-
-    if (updateError) throw updateError;
-
-    console.log(`✏️ Note mise à jour dans ${level} ${elementId}`);
-    return true;
-  } catch (error) {
-    console.error('Erreur mise à jour note:', error);
-    return false;
-  }
-}
-
-/**
- * Compte le nombre total de notes pour un chantier
- */
-export async function countNotesForChantier(chantierId: string): Promise<number> {
-  try {
-    let total = 0;
-
-    // Compter les notes du chantier lui-même
-    const { data: chantier } = await supabase
-      .from('chantiers')
-      .select('notes')
-      .eq('id', chantierId)
-      .single();
-    
-    if (chantier?.notes) {
-      total += (chantier.notes as Note[]).length;
+    if (id) {
+      loadNotes();
     }
+  }, [level, id]);
 
-    // Compter dans travaux
-    const { data: travaux } = await supabase
-      .from('travaux')
-      .select('id, notes')
-      .eq('chantier_id', chantierId);
+  // Supprimer une note
+  const handleDelete = async (noteId: string) => {
+    if (!confirm('Supprimer ce pense-bête ?')) return;
+    
+    const success = await deleteNote(level, id, noteId);
+    if (success) {
+      setNotes(prev => prev.filter(n => n.id !== noteId));
+    }
+  };
 
-    travaux?.forEach(t => {
-      total += (t.notes as Note[] || []).length;
+  // Toggle voir plus/moins
+  const toggleExpand = (noteId: string) => {
+    setExpandedNotes(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(noteId)) {
+        newSet.delete(noteId);
+      } else {
+        newSet.add(noteId);
+      }
+      return newSet;
     });
+  };
 
-    // Compter dans étapes (via travaux)
-    const travailIds = travaux?.map(t => t.id) || [];
-    if (travailIds.length > 0) {
-      const { data: etapes } = await supabase
-        .from('etapes')
-        .select('notes')
-        .in('travail_id', travailIds);
+  // Formater la date
+  const formatDate = (isoDate: string) => {
+    const date = new Date(isoDate);
+    return date.toLocaleDateString('fr-FR', {
+      day: 'numeric',
+      month: 'short',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  };
 
-      etapes?.forEach(e => {
-        total += (e.notes as Note[] || []).length;
-      });
-    }
+  // Vérifier si texte dépasse la limite
+  const needsTruncation = (text: string) => text.length > 200;
+  
+  const truncateText = (text: string) => {
+    if (text.length <= 200) return text;
+    return text.substring(0, 200) + '...';
+  };
 
-    return total;
-  } catch (error) {
-    console.error('Erreur comptage notes:', error);
-    return 0;
-  }
+  // Pas de notes = pas de bouton
+  if (loading) return null;
+  if (notes.length === 0) return null;
+
+  return (
+    <>
+      {/* Bouton Post-It miniature */}
+      <button
+        onClick={() => setIsOpen(true)}
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.3rem',
+          padding: '0.4rem 0.6rem',
+          border: 'none',
+          background: '#fef08a',
+          color: '#854d0e',
+          fontSize: '0.8rem',
+          fontWeight: '700',
+          cursor: 'pointer',
+          boxShadow: '2px 2px 6px rgba(0,0,0,0.2)',
+          transform: 'rotate(-2deg)',
+          transition: 'transform 0.15s ease'
+        }}
+      >
+        <span>📌</span>
+        <span>{notes.length}</span>
+      </button>
+
+      {/* Modale plein écran mobile */}
+      {isOpen && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.7)',
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            zIndex: 1000
+          }}
+          onClick={() => setIsOpen(false)}
+        >
+          <div
+            style={{
+              background: '#262626',
+              borderRadius: '16px 16px 0 0',
+              width: '100%',
+              maxWidth: '500px',
+              maxHeight: '85vh',
+              overflow: 'hidden',
+              display: 'flex',
+              flexDirection: 'column'
+            }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div
+              style={{
+                padding: '1rem 1rem 0.75rem',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                borderBottom: '1px solid #404040'
+              }}
+            >
+              <h3 style={{ 
+                margin: 0, 
+                fontSize: '1.1rem', 
+                fontWeight: '700',
+                color: '#fbbf24',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                📌 Pense-bêtes
+                <span style={{
+                  background: '#fbbf24',
+                  color: '#1a1a1a',
+                  fontSize: '0.7rem',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '10px',
+                  fontWeight: '800'
+                }}>
+                  {notes.length}
+                </span>
+              </h3>
+              <button
+                onClick={() => setIsOpen(false)}
+                style={{
+                  background: '#404040',
+                  border: 'none',
+                  width: '32px',
+                  height: '32px',
+                  borderRadius: '50%',
+                  fontSize: '1.2rem',
+                  cursor: 'pointer',
+                  color: '#a3a3a3',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center'
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Liste des Post-Its */}
+            <div
+              style={{
+                padding: '1rem',
+                overflowY: 'auto',
+                flex: 1,
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem'
+              }}
+            >
+              {notes.map((note) => {
+                const isExpanded = expandedNotes.has(note.id);
+                const showToggle = needsTruncation(note.texte);
+                
+                return (
+                  <div
+                    key={note.id}
+                    style={{
+                      background: '#fef08a',
+                      padding: '1rem',
+                      boxShadow: '4px 4px 10px rgba(0,0,0,0.3)',
+                      position: 'relative',
+                      minHeight: '120px'
+                    }}
+                  >
+                    {/* Punaise en haut */}
+                    <div style={{
+                      position: 'absolute',
+                      top: '-8px',
+                      left: '50%',
+                      transform: 'translateX(-50%)',
+                      fontSize: '1.1rem',
+                      filter: 'drop-shadow(1px 1px 2px rgba(0,0,0,0.3))'
+                    }}>
+                      📌
+                    </div>
+
+                    {/* Bouton supprimer */}
+                    <button
+                      onClick={() => handleDelete(note.id)}
+                      style={{
+                        position: 'absolute',
+                        top: '0.5rem',
+                        right: '0.5rem',
+                        background: 'rgba(0,0,0,0.1)',
+                        border: 'none',
+                        width: '28px',
+                        height: '28px',
+                        borderRadius: '50%',
+                        cursor: 'pointer',
+                        fontSize: '0.8rem',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
+                      }}
+                    >
+                      🗑️
+                    </button>
+
+                    {/* Contenu de la note */}
+                    <div style={{ marginTop: '0.5rem' }}>
+                      <p style={{
+                        margin: 0,
+                        fontSize: '0.9rem',
+                        color: '#1c1917',
+                        lineHeight: '1.6',
+                        whiteSpace: 'pre-wrap',
+                        wordBreak: 'break-word',
+                        fontFamily: 'system-ui, -apple-system, sans-serif'
+                      }}>
+                        {isExpanded ? note.texte : truncateText(note.texte)}
+                      </p>
+
+                      {/* Bouton voir plus/moins */}
+                      {showToggle && (
+                        <button
+                          onClick={() => toggleExpand(note.id)}
+                          style={{
+                            background: 'rgba(0,0,0,0.12)',
+                            border: 'none',
+                            borderRadius: '4px',
+                            padding: '0.5rem 0.75rem',
+                            fontSize: '0.8rem',
+                            color: '#78716c',
+                            cursor: 'pointer',
+                            fontWeight: '600',
+                            marginTop: '0.75rem',
+                            width: '100%'
+                          }}
+                        >
+                          {isExpanded ? '▲ Voir moins' : '▼ Voir plus'}
+                        </button>
+                      )}
+                    </div>
+
+                    {/* Footer : date + source */}
+                    <div style={{
+                      marginTop: '0.75rem',
+                      paddingTop: '0.5rem',
+                      borderTop: '1px dashed rgba(0,0,0,0.2)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontSize: '0.7rem',
+                      color: '#78716c'
+                    }}>
+                      <span>{note.source === 'assistant_ia' ? '🤖' : '👤'}</span>
+                      <span>{formatDate(note.created_at)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }
