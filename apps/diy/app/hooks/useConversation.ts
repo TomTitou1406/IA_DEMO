@@ -2,12 +2,12 @@
  * useConversation.ts
  * 
  * Hook React pour gérer les conversations avec :
+ * - Rétrocompatibilité totale avec l'ancien ChatInterface
  * - Persistance par chantier
  * - Sliding window (20 derniers messages)
  * - Journal de chantier
- * - Gestion automatique création/récupération
  * 
- * @version 2.0
+ * @version 3.0
  * @date 26 novembre 2025
  */
 
@@ -19,16 +19,14 @@ import {
   getOrCreateConversation,
   getConversationByChantier,
   addMessage as addMessageToDB,
-  updateExpertise,
+  updateExpertise as updateExpertiseDB,
   addDecisionToJournal,
   addProblemeResoluToJournal,
   addPointAttentionToJournal,
   updatePreferencesBricoleur,
-  updateConversationResume,
   closeConversation,
   startNewConversation,
   getMessagesForAPI,
-  needsResume,
   type Conversation,
   type Message,
   type ConversationType,
@@ -39,13 +37,17 @@ import {
 
 // ==================== TYPES ====================
 
+// Options rétrocompatibles avec l'ancien format
 export interface UseConversationOptions {
-  userId?: string;  // Optionnel, si non fourni on génère
+  userId: string;
   type: ConversationType;
-  chantierId?: string;
+  contextId?: string;      // Ancien format (= chantierId)
+  chantierId?: string;     // Nouveau format
   travailId?: string;
   etapeId?: string;
-  autoLoad?: boolean;
+  autoCreate?: boolean;    // Ancien format (= autoLoad)
+  autoSave?: boolean;      // Ancien format (ignoré, toujours true)
+  autoLoad?: boolean;      // Nouveau format
 }
 
 export interface UseConversationReturn {
@@ -54,8 +56,8 @@ export interface UseConversationReturn {
   messages: Message[];
   messagesForAPI: Message[];
   journal: Journal | null;
+  loading: boolean;
   isLoading: boolean;
-  loading: boolean; // Alias rétrocompatibilité
   error: string | null;
   
   // Expertise (rétrocompatibilité)
@@ -65,8 +67,7 @@ export interface UseConversationReturn {
   addMessage: (message: Omit<Message, 'id' | 'timestamp'>) => Promise<boolean>;
   
   // Actions expertise
-  setExpertise: (expertiseId: string | null, code: string, nom: string) => Promise<boolean>;
-  updateExpertise: (expertiseId: string | null, code: string, nom: string) => Promise<boolean>; // Alias
+  updateExpertise: (expertiseId: string | null, code: string, nom?: string) => Promise<boolean>;
   
   // Actions journal
   addDecision: (decision: Omit<Decision, 'id' | 'date'>) => Promise<boolean>;
@@ -83,7 +84,12 @@ export interface UseConversationReturn {
 // ==================== HOOK ====================
 
 export function useConversation(options: UseConversationOptions): UseConversationReturn {
-  const { userId: providedUserId, type, chantierId, travailId, etapeId, autoLoad = true } = options;
+  // Normaliser les options (rétrocompatibilité)
+  const userId = options.userId;
+  const type = options.type;
+  const chantierId = options.chantierId || options.contextId; // contextId → chantierId
+  const travailId = options.travailId;
+  const autoLoad = options.autoLoad ?? options.autoCreate ?? true; // autoCreate → autoLoad
   
   // États
   const [conversation, setConversation] = useState<Conversation | null>(null);
@@ -93,7 +99,7 @@ export function useConversation(options: UseConversationOptions): UseConversatio
   
   // Refs pour éviter les doubles appels
   const loadingRef = useRef(false);
-  const userIdRef = useRef<string | null>(null);
+  const userIdRef = useRef<string>(userId);
 
   // ==================== CHARGEMENT ====================
 
@@ -105,8 +111,6 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     setError(null);
 
     try {
-      // Récupérer l'ID utilisateur (fourni ou généré)
-      const userId = providedUserId || getUserId();
       userIdRef.current = userId;
 
       // Récupérer ou créer la conversation
@@ -122,71 +126,69 @@ export function useConversation(options: UseConversationOptions): UseConversatio
         setMessages(conv.messages || []);
         console.log('💬 Conversation chargée:', conv.id, `(${conv.messages?.length || 0} messages)`);
       } else {
-        setError('Impossible de charger la conversation');
+        // Pas d'erreur si pas de conversation, on continue en local
+        console.log('ℹ️ Pas de conversation persistée, mode local');
       }
     } catch (err) {
       console.error('Erreur chargement conversation:', err);
-      setError('Erreur lors du chargement');
+      // On ne bloque pas, on continue en mode local
     } finally {
       setIsLoading(false);
       loadingRef.current = false;
     }
-  }, [providedUserId, type, chantierId, travailId]);
+  }, [userId, type, chantierId, travailId]);
 
   // Charger au mount si autoLoad
   useEffect(() => {
     if (autoLoad) {
       loadConversation();
+    } else {
+      setIsLoading(false);
     }
   }, [autoLoad, loadConversation]);
-
-  // Recharger si le chantier change
-  useEffect(() => {
-    if (chantierId && autoLoad) {
-      loadConversation();
-    }
-  }, [chantierId, autoLoad, loadConversation]);
 
   // ==================== ACTIONS MESSAGES ====================
 
   const addMessage = useCallback(async (
     message: Omit<Message, 'id' | 'timestamp'>
   ): Promise<boolean> => {
-    if (!conversation) {
-      console.error('Pas de conversation active');
-      return false;
-    }
-
     const fullMessage: Message = {
       ...message,
       id: crypto.randomUUID?.() || `msg_${Date.now()}`,
       timestamp: new Date().toISOString()
     };
 
-    // Optimistic update
+    // Optimistic update (toujours)
     setMessages(prev => [...prev, fullMessage]);
 
-    // Persister en BDD
-    const success = await addMessageToDB(conversation.id, fullMessage);
-    
-    if (!success) {
-      // Rollback si échec
-      setMessages(prev => prev.filter(m => m.id !== fullMessage.id));
+    // Persister en BDD si on a une conversation
+    if (conversation) {
+      const success = await addMessageToDB(conversation.id, fullMessage);
+      if (!success) {
+        console.warn('⚠️ Message non persisté en BDD');
+      }
+      return success;
     }
 
-    return success;
+    return true; // Mode local, on considère que c'est ok
   }, [conversation]);
 
   // ==================== ACTIONS EXPERTISE ====================
 
-  const setExpertise = useCallback(async (
+  const updateExpertise = useCallback(async (
     expertiseId: string | null,
     code: string,
-    nom: string
+    nom?: string
   ): Promise<boolean> => {
     if (!conversation) return false;
 
-    const success = await updateExpertise(conversation.id, expertiseId, code, nom, 'auto');
+    const success = await updateExpertiseDB(
+      conversation.id, 
+      expertiseId, 
+      code, 
+      nom || code, 
+      'auto'
+    );
     
     if (success) {
       setConversation(prev => prev ? {
@@ -230,14 +232,11 @@ export function useConversation(options: UseConversationOptions): UseConversatio
   // ==================== ACTIONS CONVERSATION ====================
 
   const startNew = useCallback(async (): Promise<boolean> => {
-    const userId = userIdRef.current || providedUserId || getUserId();
-    if (!userId) return false;
-
     setIsLoading(true);
     
     try {
       const newConv = await startNewConversation({
-        userId,
+        userId: userIdRef.current,
         type,
         chantierId,
         travailId
@@ -253,7 +252,7 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     } finally {
       setIsLoading(false);
     }
-  }, [providedUserId, type, chantierId, travailId]);
+  }, [type, chantierId, travailId]);
 
   const close = useCallback(async (
     satisfaction?: number,
@@ -283,13 +282,13 @@ export function useConversation(options: UseConversationOptions): UseConversatio
   // Journal actuel
   const journal = conversation?.journal || null;
 
-  // ==================== RETURN ====================
-
   // Expertise courante (pour rétrocompatibilité)
   const currentExpertise = conversation ? {
     id: conversation.expertise_actuelle_id,
     code: conversation.code_expertise_actuelle
   } : null;
+
+  // ==================== RETURN ====================
 
   return {
     // État
@@ -297,8 +296,8 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     messages,
     messagesForAPI,
     journal,
+    loading: isLoading,   // Alias rétrocompatibilité
     isLoading,
-    loading: isLoading, // Alias rétrocompatibilité
     error,
     
     // Expertise (rétrocompatibilité)
@@ -308,8 +307,7 @@ export function useConversation(options: UseConversationOptions): UseConversatio
     addMessage,
     
     // Actions expertise
-    setExpertise,
-    updateExpertise: setExpertise, // Alias rétrocompatibilité
+    updateExpertise,
     
     // Actions journal
     addDecision,
@@ -325,3 +323,6 @@ export function useConversation(options: UseConversationOptions): UseConversatio
 }
 
 export default useConversation;
+
+// Re-export pour rétrocompatibilité
+export { getUserId } from '../lib/services/conversationService';
