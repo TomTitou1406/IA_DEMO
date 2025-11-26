@@ -6,9 +6,10 @@
  * - Détection automatique d'expertise (useExpertiseDetection)
  * - Support mode vocal et texte
  * - Intégration complète du système d'expertise
+ * - Notes épinglables (📌)
  * 
- * @version 2.0
- * @date 25 novembre 2025
+ * @version 2.1
+ * @date 26 novembre 2025
  */
 
 'use client';
@@ -21,45 +22,40 @@ import { getUserId } from '../lib/services/conversationService';
 import { useExpertiseDetection } from '../hooks/useExpertiseDetection';
 import ExpertiseBanner, { ExpertiseTransitionMessage } from './ExpertiseBanner';
 import type { Message, ConversationType } from '../lib/types/conversation';
+import { addNote, type NoteLevel } from '../lib/services/notesService';
 
 // ==================== TYPES ====================
 
 export interface ChatInterfaceProps {
   /** Contexte de la page (home, chantiers, travaux...) */
   pageContext: string;
-  
   /** Couleur du thème */
   contextColor?: string;
-  
   /** Placeholder du champ de saisie */
   placeholder?: string;
-  
   /** Message de bienvenue */
   welcomeMessage?: string;
-  
   /** Contexte additionnel (texte libre) */
   additionalContext?: string;
-  
   /** Contexte structuré pour le prompt */
   promptContext?: PromptContext;
-  
   /** Callback changement d'état (idle, thinking, speaking) */
   onStateChange?: (state: 'idle' | 'thinking' | 'speaking') => void;
-  
   /** Mode compact (pour modal) */
   compact?: boolean;
-  
   /** Désactiver la persistance */
   disablePersistence?: boolean;
-  
   /** Désactiver la détection d'expertise */
   disableExpertiseDetection?: boolean;
-  
   /** ID du chantier (pour contexte) */
   chantierId?: string;
-  
   /** ID du travail (pour contexte) */
   travailId?: string;
+  /** Utilisé pour sticker les notes importantes */
+  noteContext?: {
+    level: NoteLevel;
+    id: string;
+  };
 }
 
 // ==================== COMPOSANT ====================
@@ -76,7 +72,8 @@ export default function ChatInterface({
   disablePersistence = false,
   disableExpertiseDetection = false,
   chantierId,
-  travailId
+  travailId,
+  noteContext
 }: ChatInterfaceProps) {
   
   // ==================== ÉTAT LOCAL ====================
@@ -91,6 +88,11 @@ export default function ChatInterface({
   const [recordingTime, setRecordingTime] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
   const [transitionExpertise, setTransitionExpertise] = useState<string | null>(null);
+  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
+  const [showNoteModal, setShowNoteModal] = useState(false);
+  const [noteText, setNoteText] = useState('');
+  const [selectedMessageForNote, setSelectedMessageForNote] = useState<Message | null>(null);
+  const [savingNote, setSavingNote] = useState(false);
   
   // ==================== REFS ====================
   
@@ -177,6 +179,46 @@ export default function ChatInterface({
     code?: string;
     nom?: string;
   } | null>(null);
+
+  // ==================== FONCTIONS NOTES ====================
+
+  const handleSaveNote = async () => {
+    if (!noteText.trim() || !noteContext || !selectedMessageForNote) return;
+    
+    setSavingNote(true);
+    try {
+      const success = await addNote(
+        noteContext.level,
+        noteContext.id,
+        noteText.trim(),
+        'assistant_ia',
+        selectedMessageForNote.content
+      );
+      
+      if (success) {
+        setShowNoteModal(false);
+        setNoteText('');
+        setSelectedMessageForNote(null);
+        alert('📌 Note enregistrée !');
+      } else {
+        alert('Erreur lors de l\'enregistrement');
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde note:', error);
+      alert('Erreur lors de l\'enregistrement');
+    } finally {
+      setSavingNote(false);
+    }
+  };
+  
+  const handlePinClick = (message: Message) => {
+    setSelectedMessageForNote(message);
+    const extrait = message.content.length > 100 
+      ? message.content.substring(0, 100) + '...'
+      : message.content;
+    setNoteText(extrait);
+    setShowNoteModal(true);
+  };
 
   // Sync expertise depuis conversation
   useEffect(() => {
@@ -498,7 +540,8 @@ export default function ChatInterface({
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      background: 'white'
+      background: 'white',
+      position: 'relative'
     }}>
       
       {/* Zone messages */}
@@ -552,39 +595,67 @@ export default function ChatInterface({
         {/* Messages */}
         {displayMessages.map((message, index) => (
           <div
-            key={message.id || index}
+            key={index}
             style={{
               display: 'flex',
               justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '0.75rem'
             }}
+            onMouseEnter={() => message.role === 'assistant' && setHoveredMessageIndex(index)}
+            onMouseLeave={() => setHoveredMessageIndex(null)}
           >
             <div
               style={{
                 maxWidth: '75%',
-                padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
-                borderRadius: compact ? '12px' : '16px',
-                background: message.role === 'user' ? 'var(--cyan)' : contextColor,
-                color: 'var(--white)',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
-                fontSize: compact ? '0.85rem' : '0.95rem',
-                lineHeight: '1.5',
-                whiteSpace: 'pre-wrap',
-                wordBreak: 'break-word'
+                position: 'relative'
               }}
             >
-              {/* Badge expertise si différente */}
-              {message.role === 'assistant' && message.expertise_nom && (
-                <div style={{
-                  fontSize: '0.7rem',
-                  color: contextColor,
-                  marginBottom: '0.3rem',
-                  fontWeight: '600'
-                }}>
-                  🔧 {message.expertise_nom}
-                </div>
+              {/* Bulle du message */}
+              <div
+                style={{
+                  padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
+                  borderRadius: compact ? '12px' : '16px',
+                  background: message.role === 'user' ? contextColor : 'white',
+                  color: message.role === 'user' ? 'white' : 'var(--text)',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
+                  fontSize: compact ? '0.85rem' : '0.95rem',
+                  lineHeight: '1.5',
+                  whiteSpace: 'pre-wrap',
+                  wordBreak: 'break-word'
+                }}
+              >
+                {message.content}
+              </div>
+              
+              {/* Bouton 📌 au survol (seulement pour messages IA) */}
+              {message.role === 'assistant' && hoveredMessageIndex === index && noteContext && (
+                <button
+                  onClick={() => handlePinClick(message)}
+                  title="Épingler comme note"
+                  style={{
+                    position: 'absolute',
+                    top: '0.25rem',
+                    right: '-2rem',
+                    width: '24px',
+                    height: '24px',
+                    borderRadius: '50%',
+                    border: 'none',
+                    background: '#f97316',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
+                    transition: 'transform 0.2s'
+                  }}
+                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
+                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                >
+                  📌
+                </button>
               )}
-              {message.content}
             </div>
           </div>
         ))}
@@ -795,6 +866,107 @@ export default function ChatInterface({
           </div>
         )}
       </div>
+
+      {/* ==================== MODALE NOTE ==================== */}
+      {showNoteModal && (
+        <div style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 100
+        }}>
+          <div style={{
+            background: 'white',
+            borderRadius: '12px',
+            padding: '1.25rem',
+            width: '90%',
+            maxWidth: '320px',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.2)'
+          }}>
+            <div style={{
+              fontWeight: '700',
+              fontSize: '1rem',
+              marginBottom: '0.75rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              📌 Épingler comme note
+            </div>
+            
+            <textarea
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder="Résumé de la note..."
+              style={{
+                width: '100%',
+                minHeight: '80px',
+                padding: '0.75rem',
+                borderRadius: '8px',
+                border: '1px solid #e5e7eb',
+                fontSize: '0.9rem',
+                resize: 'vertical',
+                marginBottom: '0.75rem',
+                boxSizing: 'border-box'
+              }}
+            />
+            
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#6b7280',
+              marginBottom: '1rem'
+            }}>
+              Cette note sera attachée au niveau actuel.
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              gap: '0.5rem',
+              justifyContent: 'flex-end'
+            }}>
+              <button
+                onClick={() => {
+                  setShowNoteModal(false);
+                  setNoteText('');
+                  setSelectedMessageForNote(null);
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid #e5e7eb',
+                  background: 'white',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+              >
+                Annuler
+              </button>
+              <button
+                onClick={handleSaveNote}
+                disabled={!noteText.trim() || savingNote}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: savingNote ? '#9ca3af' : '#f97316',
+                  color: 'white',
+                  cursor: savingNote ? 'not-allowed' : 'pointer',
+                  fontWeight: '600',
+                  fontSize: '0.85rem'
+                }}
+              >
+                {savingNote ? '...' : '✓ Enregistrer'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
