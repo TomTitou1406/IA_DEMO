@@ -16,6 +16,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAssistantContext } from '../hooks/useAssistantContext';
 import ChatInterface from './ChatInterface';
+import { type NoteLevel } from '../lib/services/notesService';
 
 type AssistantState = 'idle' | 'pulse' | 'thinking' | 'speaking';
 
@@ -42,7 +43,11 @@ export default function FloatingAssistant() {
     additionalContext,
     header,
     expertise,
-    isLoading
+    isLoading,
+    // IDs pour les notes
+    chantierId,
+    travailId,
+    etapeId
   } = useAssistantContext();
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -110,6 +115,13 @@ export default function FloatingAssistant() {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
       setChatKey(prev => prev + 1);
     }
+  };
+
+  // Contexte pour les notes (niveau et ID où attacher)
+  const getNoteContext = (): { level: NoteLevel; id: string } | undefined => {
+    if (etapeId) return { level: 'etape', id: etapeId };
+    if (travailId) return { level: 'travail', id: travailId };
+    return undefined;
   };
 
   // Indicateur d'état
@@ -408,6 +420,7 @@ export default function FloatingAssistant() {
               additionalContext={additionalContext}
               onStateChange={handleStateChange}
               compact={true}
+              noteContext={getNoteContext()}
             />
           </div>
         </div>
