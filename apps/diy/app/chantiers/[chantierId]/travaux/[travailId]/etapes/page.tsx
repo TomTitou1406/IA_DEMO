@@ -8,6 +8,7 @@ import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape, termin
 import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesTaches } from '@/app/lib/services/tachesService';
 import { useRouter } from 'next/navigation';
+import NotesButton from '@/app/components/NotesButton';
 
 interface Etape {
   id: string;
@@ -722,17 +723,29 @@ export default function TravailDetailPage() {
           paddingBottom: '1.5rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)'
         }}>
-          <h1 style={{ 
-            fontSize: '1.5rem', 
-            marginBottom: '0.75rem',
-            color: 'var(--gray-light)',
-            fontWeight: '700',
+          {/* Header avec titre + bouton notes */}
+          <div style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: '0.75rem',
+            gap: '1rem'
           }}>
-            🔨 {travail.titre}
-          </h1>
+            <h1 style={{ 
+              fontSize: '1.5rem', 
+              margin: 0,
+              color: 'var(--gray-light)',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              🔨 {travail.titre}
+            </h1>
+            
+            {/* Bouton Notes du lot */}
+            <NotesButton level="travail" id={travailId} />
+          </div>
           {travail.description && (
             <p style={{ 
               fontSize: '0.95rem', 
