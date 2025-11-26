@@ -350,7 +350,7 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
     // Charger les tâches de l'étape (très détaillées) - utilise "numero"
     const { data: taches } = await supabase
       .from('taches')
-      .select('id, titre, description, numero, statut, duree_estimee_minutes, est_critique, outils_necessaires, conseils')
+      .select('id, titre, description, numero, statut, duree_estimee_minutes, est_critique, outils_necessaires, conseils_pro')
       .eq('etape_id', etapeId)
       .order('numero', { ascending: true });
 
