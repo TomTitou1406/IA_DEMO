@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { getTachesByEtape, demarrerTache, terminerTache } from '@/app/lib/services/tachesService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import CardButton from '@/app/components/CardButton';
+import NotesButton from '@/app/components/NotesButton';
 
 interface Tache {
   id: string;
@@ -545,17 +546,29 @@ export default function TachesPage() {
           paddingBottom: '1.5rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)'
         }}>
-          <h1 style={{ 
-            fontSize: '1.5rem', 
-            marginBottom: '0.75rem',
-            color: 'var(--gray-light)',
-            fontWeight: '700',
+          {/* Header avec titre + bouton notes */}
+          <div style={{
             display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: '0.75rem',
+            gap: '1rem'
           }}>
-            🎯 {etape.titre}
-          </h1>
+            <h1 style={{ 
+              fontSize: '1.5rem', 
+              margin: 0,
+              color: 'var(--gray-light)',
+              fontWeight: '700',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              🎯 {etape.titre}
+            </h1>
+            
+            {/* Bouton Notes */}
+            <NotesButton level="etape" id={etapeId} />
+          </div>
           {etape.description && (
             <p style={{ 
               fontSize: '0.95rem', 
@@ -629,8 +642,6 @@ export default function TachesPage() {
               </span>
             </div>
           </div>
-
-
         </div>
 
         {/* Section À FAIRE */}
