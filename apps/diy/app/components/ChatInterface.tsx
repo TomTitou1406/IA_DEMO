@@ -88,7 +88,6 @@ export default function ChatInterface({
   const [recordingTime, setRecordingTime] = useState(0);
   const [showTransition, setShowTransition] = useState(false);
   const [transitionExpertise, setTransitionExpertise] = useState<string | null>(null);
-  const [hoveredMessageIndex, setHoveredMessageIndex] = useState<number | null>(null);
   const [showNoteModal, setShowNoteModal] = useState(false);
   const [noteText, setNoteText] = useState('');
   const [selectedMessageForNote, setSelectedMessageForNote] = useState<Message | null>(null);
@@ -601,8 +600,6 @@ export default function ChatInterface({
               justifyContent: message.role === 'user' ? 'flex-end' : 'flex-start',
               marginBottom: '0.75rem'
             }}
-            onMouseEnter={() => message.role === 'assistant' && setHoveredMessageIndex(index)}
-            onMouseLeave={() => setHoveredMessageIndex(null)}
           >
             <div
               style={{
@@ -627,31 +624,39 @@ export default function ChatInterface({
                 {message.content}
               </div>
               
-              {/* Bouton 📌 au survol (seulement pour messages IA) */}
-              {message.role === 'assistant' && hoveredMessageIndex === index && noteContext && (
+              {/* Bouton 📌 toujours visible (seulement pour messages IA) */}
+              {message.role === 'assistant' && noteContext && (
                 <button
                   onClick={() => handlePinClick(message)}
                   title="Épingler comme note"
+                  className="pin-button"
                   style={{
                     position: 'absolute',
-                    top: '0.25rem',
-                    right: '-2rem',
-                    width: '24px',
-                    height: '24px',
+                    bottom: '-0.5rem',
+                    right: '-0.5rem',
+                    width: '28px',
+                    height: '28px',
                     borderRadius: '50%',
-                    border: 'none',
-                    background: '#f97316',
-                    color: 'white',
-                    fontSize: '0.75rem',
+                    border: '2px solid #e5e7eb',
+                    background: 'white',
+                    fontSize: '0.9rem',
                     cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    boxShadow: '0 2px 4px rgba(0,0,0,0.2)',
-                    transition: 'transform 0.2s'
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                    transition: 'all 0.2s'
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.1)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#f97316';
+                    e.currentTarget.style.borderColor = '#f97316';
+                    e.currentTarget.style.transform = 'scale(1.1)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'white';
+                    e.currentTarget.style.borderColor = '#e5e7eb';
+                    e.currentTarget.style.transform = 'scale(1)';
+                  }}
                 >
                   📌
                 </button>
