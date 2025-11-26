@@ -2,11 +2,11 @@
  * FloatingAssistant.tsx
  * 
  * Assistant flottant avec :
- * - Header 2 lignes : navigation + expertise
+ * - Header 2 lignes : contexte + expertise
  * - Couleur selon le contexte fonctionnel
- * - Modes : bouton flottant, modal, plein écran
+ * - Chargement du contexte hiérarchique
  * 
- * @version 2.0
+ * @version 3.0
  * @date 26 novembre 2025
  */
 
@@ -30,7 +30,8 @@ export default function FloatingAssistant() {
     placeholder, 
     additionalContext,
     navigation,
-    expertise
+    expertise,
+    isLoading
   } = useAssistantContext();
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -86,21 +87,9 @@ export default function FloatingAssistant() {
     setAssistantState(state);
   };
 
-  // Construire le titre ligne 1 (navigation)
-  const getHeaderLine1 = () => {
-    if (navigation.breadcrumb) {
-      return `${navigation.breadcrumb} • ${navigation.title}`;
-    }
-    return navigation.title;
-  };
-
-  // Construire le titre ligne 2 (expertise)
-  const getHeaderLine2 = () => {
-    return `${expertise.icon} ${expertise.nom}`;
-  };
-
-  // Indicateur d'état court
+  // Indicateur d'état
   const getStatusIndicator = () => {
+    if (isLoading) return '⏳';
     switch (assistantState) {
       case 'thinking':
         return '🤔';
@@ -131,7 +120,7 @@ export default function FloatingAssistant() {
             background: 'var(--white)',
             border: `3px solid ${contextColor}`,
             cursor: 'pointer',
-            boxShadow: `0 4px 20px rgba(0,0,0,0.15)`,
+            boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
             zIndex: 1000,
             transition: 'all 0.3s ease',
             display: 'flex',
@@ -203,7 +192,7 @@ export default function FloatingAssistant() {
               alignItems: 'center', 
               gap: '0.75rem',
               flex: 1,
-              minWidth: 0 // Permet le truncate
+              minWidth: 0
             }}>
               
               {/* Avatar */}
@@ -254,7 +243,7 @@ export default function FloatingAssistant() {
                 flexDirection: 'column',
                 gap: '0.15rem'
               }}>
-                {/* Ligne 1 : Navigation */}
+                {/* Ligne 1 : Contexte (titre + count) */}
                 <div style={{ 
                   fontWeight: '700', 
                   fontSize: '0.95rem',
@@ -263,10 +252,10 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  {getHeaderLine1()}
+                  {navigation.title}
                 </div>
                 
-                {/* Ligne 2 : Expertise */}
+                {/* Ligne 2 : Expertise (icon + nom) */}
                 <div style={{ 
                   fontSize: '0.8rem', 
                   opacity: 0.9,
@@ -275,7 +264,7 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  {getHeaderLine2()}
+                  {expertise.icon} {expertise.nom}
                 </div>
               </div>
             </div>
