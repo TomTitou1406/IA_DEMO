@@ -3,12 +3,14 @@
  * 
  * Service de chargement du contexte hiérarchique pour l'assistant IA
  * Stratégie "Zoom progressif" : compact pour les parents, détaillé pour le niveau courant
+ * Inclut le journal de chantier (décisions, problèmes, points attention)
  * 
- * @version 1.2
+ * @version 1.3
  * @date 26 novembre 2025
  */
 
 import { supabase } from '@/app/lib/supabaseClient';
+import { getUserId, getConversationByChantier, type Journal } from './conversationService';
 
 // ==================== TYPES ====================
 
@@ -45,8 +47,16 @@ export interface ContextData {
   // Counts
   itemCount: number;
   
+  // IDs pour la conversation
+  chantierId?: string;
+  travailId?: string;
+  etapeId?: string;
+  
   // Contexte formaté pour l'IA
   contextForAI: string;
+  
+  // Journal de chantier (si disponible)
+  journal?: Journal;
   
   // Données brutes (si besoin)
   raw?: {
@@ -112,6 +122,77 @@ function formatDuree(minutes?: number): string {
   return m > 0 ? `${h}h${m}` : `${h}h`;
 }
 
+/**
+ * Formate le journal pour l'inclure dans le contexte IA
+ */
+function formatJournalForAI(journal?: Journal): string {
+  if (!journal) return '';
+  
+  const sections: string[] = [];
+  
+  // Décisions prises
+  if (journal.decisions && journal.decisions.length > 0) {
+    const decisionsText = journal.decisions
+      .slice(-5) // 5 dernières décisions
+      .map(d => `• ${d.description} (${d.categorie})`)
+      .join('\n   ');
+    sections.push(`📝 DÉCISIONS PRISES :\n   ${decisionsText}`);
+  }
+  
+  // Problèmes résolus
+  if (journal.problemes_resolus && journal.problemes_resolus.length > 0) {
+    const problemesText = journal.problemes_resolus
+      .slice(-3) // 3 derniers problèmes
+      .map(p => `• ${p.probleme} → ${p.solution}`)
+      .join('\n   ');
+    sections.push(`🔧 PROBLÈMES RÉSOLUS :\n   ${problemesText}`);
+  }
+  
+  // Points d'attention
+  if (journal.points_attention && journal.points_attention.length > 0) {
+    const pointsText = journal.points_attention
+      .slice(-5) // 5 derniers points
+      .map(p => `• ${p}`)
+      .join('\n   ');
+    sections.push(`⚠️ POINTS D'ATTENTION :\n   ${pointsText}`);
+  }
+  
+  // Préférences bricoleur
+  const prefs = journal.preferences_bricoleur;
+  if (prefs && Object.keys(prefs).length > 0) {
+    const prefsLines: string[] = [];
+    if (prefs.niveau) prefsLines.push(`Niveau : ${prefs.niveau}`);
+    if (prefs.disponibilites) prefsLines.push(`Disponibilités : ${prefs.disponibilites}`);
+    if (prefs.outillage?.length) prefsLines.push(`Outillage : ${prefs.outillage.join(', ')}`);
+    if (prefs.notes) prefsLines.push(`Notes : ${prefs.notes}`);
+    
+    if (prefsLines.length > 0) {
+      sections.push(`👤 PROFIL BRICOLEUR :\n   ${prefsLines.join('\n   ')}`);
+    }
+  }
+  
+  // Résumé de conversation
+  if (journal.resume_conversation) {
+    sections.push(`📋 RÉSUMÉ DISCUSSION PRÉCÉDENTE :\n   ${journal.resume_conversation}`);
+  }
+  
+  return sections.length > 0 ? '\n\n' + sections.join('\n\n') : '';
+}
+
+/**
+ * Charge le journal depuis la conversation du chantier
+ */
+async function loadJournalForChantier(chantierId: string): Promise<Journal | undefined> {
+  try {
+    const userId = getUserId();
+    const conversation = await getConversationByChantier(userId, chantierId);
+    return conversation?.journal;
+  } catch (error) {
+    console.error('Erreur chargement journal:', error);
+    return undefined;
+  }
+}
+
 // ==================== LOADERS ====================
 
 /**
@@ -159,6 +240,9 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
 
     if (lotsError) throw lotsError;
 
+    // Charger le journal
+    const journal = await loadJournalForChantier(chantierId);
+
     const nbLots = lots?.length || 0;
 
     // Formater le contexte compact
@@ -168,6 +252,8 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
       return `${idx + 1}. ${statut} ${lot.titre} (${expertise})`;
     }).join('\n   ');
 
+    const journalText = formatJournalForAI(journal);
+
     const contextForAI = `
 🏗️ CHANTIER : ${chantier.titre}
    ${chantier.description || 'Pas de description'}
@@ -175,8 +261,8 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
 
 📦 LOTS À RÉALISER (${nbLots}) :
    ${lotsFormatted || 'Aucun lot défini'}
-
-TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir les priorités, identifier les dépendances entre lots. Tu as la vision globale du projet.
+${journalText}
+TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir les priorités, identifier les dépendances entre lots. Tu as la vision globale du projet. Tu te souviens des décisions prises et des problèmes rencontrés.
 `.trim();
 
     return {
@@ -190,7 +276,9 @@ TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir 
       expertiseNom: 'Chef de chantier',
       expertiseIcon: '📋',
       itemCount: nbLots,
+      chantierId,
       contextForAI,
+      journal,
       raw: { chantier, lots: lots || undefined }
     };
 
@@ -236,6 +324,9 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       .eq('travail_id', travailId)
       .order('numero', { ascending: true });
 
+    // Charger le journal
+    const journal = await loadJournalForChantier(chantierId);
+
     const nbEtapes = etapes?.length || 0;
 
     // Formater les lots en une ligne compacte
@@ -256,6 +347,8 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
     const expertiseIcon = getExpertiseIcon(expertiseCode);
 
+    const journalText = formatJournalForAI(journal);
+
     const contextForAI = `
 🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}% avancé)
 
@@ -267,8 +360,8 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
 
 📋 ÉTAPES À RÉALISER (${nbEtapes}) :
    ${etapesFormatted || 'Aucune étape définie'}
-
-TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, étape par étape. Tu connais les dépendances avec les autres lots du chantier.
+${journalText}
+TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, étape par étape. Tu connais les dépendances avec les autres lots du chantier. Tu te souviens des décisions prises et des problèmes rencontrés.
 `.trim();
 
     return {
@@ -282,7 +375,10 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, 
       expertiseNom,
       expertiseIcon,
       itemCount: nbEtapes,
+      chantierId,
+      travailId,
       contextForAI,
+      journal,
       raw: { 
         chantier: chantier || undefined, 
         lots: lots || undefined, 
@@ -344,6 +440,9 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       .eq('etape_id', etapeId)
       .order('numero', { ascending: true });
 
+    // Charger le journal
+    const journal = await loadJournalForChantier(chantierId);
+
     const nbTaches = taches?.length || 0;
 
     // Formater lots compact (une ligne)
@@ -385,6 +484,8 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
     const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
     const expertiseIcon = getExpertiseIcon(expertiseCode);
 
+    const journalText = formatJournalForAI(journal);
+
     const contextForAI = `
 🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}%)
 
@@ -399,8 +500,8 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
 
 ✅ TÂCHES À RÉALISER (${nbTaches}) :
    ${tachesFormatted || 'Aucune tâche définie'}
-
-TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par tâche. Tu donnes des conseils pratiques, techniques de sécurité, et tu connais le contexte global du chantier.
+${journalText}
+TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par tâche. Tu donnes des conseils pratiques, techniques de sécurité, et tu connais le contexte global du chantier. Tu te souviens des décisions prises et des problèmes rencontrés.
 `.trim();
 
     return {
@@ -414,7 +515,11 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par t�
       expertiseNom,
       expertiseIcon,
       itemCount: nbTaches,
+      chantierId,
+      travailId,
+      etapeId,
       contextForAI,
+      journal,
       raw: { 
         chantier: chantier || undefined, 
         lots: lots || undefined, 
