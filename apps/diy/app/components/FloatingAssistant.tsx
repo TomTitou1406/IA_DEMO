@@ -276,7 +276,7 @@ export default function FloatingAssistant() {
                 {header.breadcrumb && (
                   <div style={{ 
                     fontSize: '0.8rem', 
-                    fontWeight: '600',
+                    fontWeight: '700',
                     opacity: 0.9,
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
@@ -289,14 +289,15 @@ export default function FloatingAssistant() {
                 
                 {/* Ligne 3 : Expertise */}
                 <div style={{ 
-                  fontSize: '0.75rem', 
+                  fontSize: '0.8rem', 
+                  fontWeight: '700',
                   opacity: 0.9,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  ✨ Assistant IA : {expertise.nom}
+                  ✨ IA : {expertise.nom}
                 </div>
               </div>
             </div>
