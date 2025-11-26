@@ -7,6 +7,7 @@ import ConfirmModal from '@/app/components/ConfirmModal';
 import { getEtapesByTravail, annulerEtape, reactiverEtape, demarrerEtape, terminerEtape } from '@/app/lib/services/etapesService';
 import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesTaches } from '@/app/lib/services/tachesService';
+import { useRouter } from 'next/navigation';
 
 interface Etape {
   id: string;
@@ -110,6 +111,9 @@ export default function TravailDetailPage() {
   const bloquees = etapes.filter(e => e.statut === 'bloqué');
   const annulees = etapes.filter(e => e.statut === 'annulé');
   const aVenir = etapes.filter(e => e.statut === 'à_venir' || !e.statut);
+
+  // Ajout pour éviter le reload des tâches
+  const router = useRouter();
 
   // Calculer les stats
   const totalEtapes = etapes.length;
@@ -294,7 +298,7 @@ export default function TravailDetailPage() {
                   icon="📋"
                   label="Tâches"
                   onClick={() => {
-                    window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                    router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`);
                   }}
                 />
                 <CardButton
