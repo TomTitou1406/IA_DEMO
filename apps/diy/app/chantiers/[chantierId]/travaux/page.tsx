@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getChantierDemo, getChantierStats } from '@/app/lib/services/chantierService';
+import { getChantierById, getChantierStats } from '@/app/lib/services/chantierService';
 import ConfirmModal from '@/app/components/ConfirmModal';
 import { useParams } from 'next/navigation';
 import CardButton from '@/app/components/CardButton';
