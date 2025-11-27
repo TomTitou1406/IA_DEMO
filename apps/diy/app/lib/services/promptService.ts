@@ -458,6 +458,14 @@ Structuré, pragmatique, conseils clairs.${additionalContext ? `\n\nCONTEXTE:\n$
       placeholder: 'Comment organiser mon chantier ?',
       source: 'fallback'
     },
+     chantier_edit: {
+      code: 'fallback_chantier_edit',
+      role: 'coach',
+      systemPrompt: `Tu es un assistant pour créer un nouveau chantier bricolage.
+  Aide l'utilisateur à définir son projet étape par étape.${additionalContext ? `\n\nCONTEXTE:\n${additionalContext}` : ''}`,
+      placeholder: 'Décris-moi ton projet...',
+      source: 'fallback'
+    },
     travaux: {
       code: 'fallback_travaux',
       role: 'instructeur',
