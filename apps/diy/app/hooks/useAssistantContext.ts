@@ -139,7 +139,7 @@ function mapLevelToPageContext(level: NavigationLevel, pathname: string): PageCo
   
   switch (level) {
     case 'chantier_edit':
-      return 'chantiers';  // Utilise le même contexte que chantiers
+      return 'chantier_edit';
     case 'chantiers':
       return 'chantiers';
     case 'lots':
