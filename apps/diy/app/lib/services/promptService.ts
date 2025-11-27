@@ -417,6 +417,7 @@ function getPlaceholderForContext(contextType: ContextType): string {
   const placeholders: Record<ContextType, string> = {
     home: 'Comment fonctionne Papibricole ?',
     chantiers: 'Comment organiser mon chantier ?',
+    chantier_edit: 'Décris-moi ton projet...',
     travaux: 'Comment faire cette étape ?',
     chat: 'Pose ta question bricolage...',
     profil: 'Quel est ton niveau en bricolage ?',
