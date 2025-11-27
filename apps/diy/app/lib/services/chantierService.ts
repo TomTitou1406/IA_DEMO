@@ -309,6 +309,7 @@ export async function updateChantier(chantierId: string, updates: {
   date_fin_souhaitee?: string;
   contraintes?: string;
   statut?: string;
+  metadata?: Record<string, any>;
 }) {
   try {
     const { data, error } = await supabase
