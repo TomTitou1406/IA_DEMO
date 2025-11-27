@@ -235,3 +235,87 @@ export async function supprimerChantier(chantierId: string) {
     throw error;
   }
 }
+/**
+ * Récupère un chantier par son ID
+ */
+export async function getChantierById(chantierId: string) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .select('*')
+      .eq('id', chantierId)
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error fetching chantier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Crée un nouveau chantier
+ */
+export async function createChantier(chantierData: {
+  titre: string;
+  description?: string;
+  budget_initial?: number;
+  duree_estimee_heures?: number;
+  date_fin_souhaitee?: string;
+  contraintes?: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .insert({
+        user_id: DEMO_USER_ID,
+        titre: chantierData.titre,
+        description: chantierData.description,
+        budget_initial: chantierData.budget_initial,
+        duree_estimee_heures: chantierData.duree_estimee_heures,
+        date_fin_souhaitee: chantierData.date_fin_souhaitee,
+        statut: 'nouveau',
+        progression: 0
+      })
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error creating chantier:', error);
+    throw error;
+  }
+}
+
+/**
+ * Met à jour un chantier existant
+ */
+export async function updateChantier(chantierId: string, updates: {
+  titre?: string;
+  description?: string;
+  budget_initial?: number;
+  duree_estimee_heures?: number;
+  date_fin_souhaitee?: string;
+  contraintes?: string;
+  statut?: string;
+}) {
+  try {
+    const { data, error } = await supabase
+      .from('chantiers')
+      .update({
+        ...updates,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', chantierId)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return data;
+  } catch (error) {
+    console.error('Error updating chantier:', error);
+    throw error;
+  }
+}
