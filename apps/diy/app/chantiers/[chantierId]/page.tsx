@@ -107,11 +107,11 @@ export default function ChantierEditPage() {
             lineHeight: '1.5'
           }}>
             {isCreation 
-              ? "Décris ton projet à l'assistant, il te guidera !"
-              : "Dis à l'assistant ce que tu veux modifier."
+              ? "Je vais t'aider à décrire ton projet, prêt à démarrer ?"
+              : "Dis-moi ce que tu veux modifier."
             }
           </p>
-
+          
           {/* Tips en ligne */}
           <div style={{
             display: 'flex',
@@ -135,18 +135,50 @@ export default function ChantierEditPage() {
               </span>
             ))}
           </div>
-
-          {/* CTA bouton qui ouvre l'assistant */}
+          
+          {/* Bouton vidéo explicative */}
           <button
             onClick={() => {
-              if (typeof window !== 'undefined') {
-                sessionStorage.setItem('papibricole_assistant_open', 'true');
-                window.dispatchEvent(new Event('storage'));
-              }
+              // Ouvrir la vidéo dans une modal ou nouvel onglet
+              window.open('/videos/Melina-Bienvenue-espace-projets.mp4', '_blank');
             }}
             style={{
               display: 'inline-flex',
               alignItems: 'center',
+              gap: '0.5rem',
+              color: 'var(--gray-light)',
+              fontSize: '0.9rem',
+              fontWeight: '500',
+              padding: '0.6rem 1.25rem',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '25px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              marginBottom: '1rem'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+            }}
+          >
+            <span>🎬</span>
+            <span>Voir une vidéo explicative</span>
+          </button>
+          
+          {/* CTA bouton qui ouvre l'assistant */}
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('openAssistant'));
+            }}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
               gap: '0.5rem',
               color: 'white',
               fontSize: '1rem',
@@ -157,7 +189,8 @@ export default function ChantierEditPage() {
               borderRadius: '25px',
               cursor: 'pointer',
               transition: 'all 0.2s',
-              boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+              boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)',
+              margin: '0 auto'
             }}
             onMouseEnter={(e) => {
               e.currentTarget.style.transform = 'scale(1.05)';
@@ -168,8 +201,15 @@ export default function ChantierEditPage() {
               e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
             }}
           >
-            <span>💬 Démarrer avec l'assistant</span>
+            <span>✨ Démarrer avec l'assistant</span>
           </button>
+          ```
+          
+          ---
+          
+          **Pour la vidéo, place-la ici :**
+          ```
+          apps/diy/public/videos/Melina-Bienvenue-espace-projets.mp4
         </div>
       </div>
 
