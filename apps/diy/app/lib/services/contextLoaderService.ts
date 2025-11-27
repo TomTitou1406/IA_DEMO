@@ -5,8 +5,8 @@
  * Stratégie "Zoom progressif" : compact pour les parents, détaillé pour le niveau courant
  * Inclut le journal de chantier (décisions, problèmes, points attention)
  * 
- * @version 1.3
- * @date 26 novembre 2025
+ * @version 1.4
+ * @date 27 novembre 2025
  */
 
 import { supabase } from '@/app/lib/supabaseClient';
@@ -296,7 +296,7 @@ async function loadChantierEditContext(chantierId?: string): Promise<ContextData
   const isCreation = !chantierId || chantierId === 'nouveau';
   
   if (isCreation) {
-    // MODE CRÉATION
+    // ==================== MODE CRÉATION ====================
     return {
       level: 'chantier_edit',
       header: {
@@ -351,11 +351,12 @@ NE génère ce JSON que quand tu as VRAIMENT toutes les infos essentielles.`
     };
   }
   
-  // MODE ÉDITION - Charger le chantier existant
+  // ==================== MODE ÉDITION ====================
+  // Charger le chantier existant avec metadata
   try {
     const { data: chantier, error } = await supabase
       .from('chantiers')
-      .select('id, titre, description, statut, progression, budget_initial, duree_estimee_heures')
+      .select('id, titre, description, statut, progression, budget_initial, duree_estimee_heures, metadata')
       .eq('id', chantierId)
       .single();
 
@@ -371,11 +372,24 @@ NE génère ce JSON que quand tu as VRAIMENT toutes les infos essentielles.`
     const nbLots = lots?.length || 0;
     const lotsFormatted = (lots || []).map((lot: any, idx: number) => 
       `${idx + 1}. ${getStatutEmoji(lot.statut)} ${lot.titre}`
-    ).join('\n   ');
+    ).join('\n');
 
     // Charger le journal si existant
     const journal = await loadJournalForChantier(chantierId);
     const journalText = formatJournalForAI(journal);
+
+    // Extraire le metadata pour le contexte
+    const meta = chantier.metadata || {};
+    const metadataText = meta.competences_ok ? `
+📊 DÉTAILS COLLECTÉS PRÉCÉDEMMENT :
+- Budget inclut matériaux : ${meta.budget_inclut_materiaux ? 'Oui' : 'Non'}
+- Disponibilité : ${meta.disponibilite_heures_semaine || '?'}h/semaine
+- Objectif : ${meta.deadline_semaines || '?'} semaines
+- Compétences OK : ${meta.competences_ok?.join(', ') || 'Non précisé'}
+- Compétences faibles : ${meta.competences_faibles?.join(', ') || 'Aucune'}
+- Travaux pro suggérés : ${meta.travaux_pro_suggeres?.join(', ') || 'Aucun'}
+- Contraintes : ${meta.contraintes || 'Aucune'}
+` : '';
 
     return {
       level: 'chantier_edit',
@@ -389,27 +403,51 @@ NE génère ce JSON que quand tu as VRAIMENT toutes les infos essentielles.`
       expertiseIcon: '📋',
       itemCount: nbLots,
       chantierId,
-      contextForAI: `MODE ÉDITION DE CHANTIER
+      contextForAI: `MODE MODIFICATION DE CHANTIER
 
-🏗️ CHANTIER EXISTANT : ${chantier.titre}
-   ${chantier.description || 'Pas de description'}
-   Budget : ${chantier.budget_initial || 'Non défini'}€
-   Durée estimée : ${chantier.duree_estimee_heures || 'Non définie'}h
-   Statut : ${chantier.statut}
-   Progression : ${chantier.progression || 0}%
+🏗️ CHANTIER EN COURS DE CONFIGURATION : ${chantier.titre}
 
+📋 INFORMATIONS ACTUELLES :
+- Projet : ${chantier.description || 'Non défini'}
+- Budget : ${chantier.budget_initial || 'Non défini'}€
+- Durée estimée : ${chantier.duree_estimee_heures || 'Non définie'}h
+- Statut : ${chantier.statut}
+${metadataText}
 📦 LOTS ACTUELS (${nbLots}) :
-   ${lotsFormatted || 'Aucun lot défini'}
+${lotsFormatted || 'Aucun lot - phasage non encore effectué'}
 ${journalText}
 
 🎯 TON RÔLE :
-Tu aides le bricoleur à MODIFIER son chantier. Il peut vouloir :
-- Changer le budget ou les délais
-- Ajouter/supprimer des lots
-- Modifier la description
-- Relancer un phasage complet
+Tu es le Chef de chantier. L'utilisateur revient sur son chantier pour le MODIFIER avant de lancer le phasage.
 
-💡 Si le bricoleur veut RELANCER LE PHASAGE, préviens-le que les lots actuels seront remplacés et demande confirmation.`,
+Il peut vouloir :
+- Ajouter des éléments au projet (ex: "ajouter un sèche-serviettes")
+- Modifier le budget ou les délais
+- Préciser des contraintes
+- Changer ses compétences déclarées
+
+💡 COMPORTEMENT :
+- Comprends sa demande de modification
+- Mets à jour mentalement les infos du chantier
+- Reformule pour confirmer ce qui va changer
+- Quand il confirme, génère un nouveau JSON récapitulatif avec les modifications
+
+📝 FORMAT DE RÉPONSE QUAND MODIFICATIONS TERMINÉES :
+Quand l'utilisateur dit "c'est bon", "j'ai fini", ou valide les modifications, réponds avec :
+
+\`\`\`json
+{"ready_for_recap": true, "recap": {
+  "projet": "Description mise à jour du projet",
+  "budget_max": ${chantier.budget_initial || 8000},
+  "budget_inclut_materiaux": ${meta.budget_inclut_materiaux ?? true},
+  "disponibilite_heures_semaine": ${meta.disponibilite_heures_semaine || 15},
+  "deadline_semaines": ${meta.deadline_semaines || 5},
+  "competences_ok": ${JSON.stringify(meta.competences_ok || [])},
+  "competences_faibles": ${JSON.stringify(meta.competences_faibles || [])},
+  "travaux_pro_suggeres": ${JSON.stringify(meta.travaux_pro_suggeres || [])},
+  "contraintes": "${meta.contraintes || ''}"
+}}
+\`\`\``,
       journal,
       raw: { chantier, lots: lots || [] }
     };
