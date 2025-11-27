@@ -7,9 +7,10 @@
  * - Support mode vocal et texte
  * - Intégration complète du système d'expertise
  * - Notes épinglables (📌)
+ * - Focus automatique après envoi
  * 
- * @version 2.1
- * @date 26 novembre 2025
+ * @version 2.2
+ * @date 27 novembre 2025
  */
 
 'use client';
@@ -100,6 +101,7 @@ export default function ChatInterface({
   const audioChunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   // ==================== HOOKS PERSONNALISÉS ====================
   
@@ -449,6 +451,8 @@ export default function ChatInterface({
     const content = input;
     setInput('');
     await sendMessage(content);
+    // Remettre le focus sur l'input après envoi
+    inputRef.current?.focus();
   };
 
   // Gestion vocal
@@ -826,6 +830,7 @@ export default function ChatInterface({
         ) : (
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
