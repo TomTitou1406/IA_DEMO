@@ -90,6 +90,20 @@ export default function FloatingAssistant() {
     };
   }, [isOpen]);
 
+  // Écouter l'événement custom pour ouvrir l'assistant
+  useEffect(() => {
+    const handleOpenAssistant = () => {
+      setIsOpen(true);
+      setAssistantState('idle');
+    };
+  
+    window.addEventListener('openAssistant', handleOpenAssistant);
+    
+    return () => {
+      window.removeEventListener('openAssistant', handleOpenAssistant);
+    };
+  }, []);
+
   // GIF selon état
   const getAssistantGif = () => {
     switch (assistantState) {
