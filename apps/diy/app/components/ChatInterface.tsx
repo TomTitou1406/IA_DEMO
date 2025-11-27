@@ -565,11 +565,6 @@ export default function ChatInterface({
       };
 
       const titreShort = generateTitreShort(recap.projet);
-      
-      // Vérifier si on est en mode modification (chantierId existe dans promptContext)
-      const existingChantierId = promptContext?.chantierId;
-      const isModification = existingChantierId && existingChantierId !== 'nouveau';
-      
       const chantierData = {
         titre: titreShort,
         description: recap.projet,
@@ -699,8 +694,25 @@ export default function ChatInterface({
     }
   };
 
-  // Vérifier si on est en mode modification
-  const isModificationMode = !!(promptContext?.chantierId && promptContext.chantierId !== 'nouveau');
+  // Détection mode modification : soit via promptContext, soit via l'URL
+  const getExistingChantierId = (): string | null => {
+    // Via promptContext
+    if (promptContext?.chantierId && promptContext.chantierId !== 'nouveau') {
+      return promptContext.chantierId;
+    }
+    // Via URL (fallback)
+    if (typeof window !== 'undefined') {
+      const path = window.location.pathname;
+      const match = path.match(/\/chantiers\/([^\/]+)/);
+      if (match && match[1] && match[1] !== 'nouveau') {
+        return match[1];
+      }
+    }
+    return null;
+  };
+  
+  const existingChantierId = getExistingChantierId();
+  const isModification = !!existingChantierId;
 
   // ==================== RENDU ====================
 
