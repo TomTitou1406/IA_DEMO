@@ -264,19 +264,28 @@ export async function createChantier(chantierData: {
   duree_estimee_heures?: number;
   date_fin_souhaitee?: string;
   contraintes?: string;
+  metadata?: Record<string, any>;
 }) {
   try {
+    // Générer un titre court si le titre est trop long
+    let titre = chantierData.titre;
+    if (titre.length > 100) {
+      // Prendre les premiers mots jusqu'à 100 caractères
+      titre = titre.substring(0, 97) + '...';
+    }
+
     const { data, error } = await supabase
       .from('chantiers')
       .insert({
         user_id: DEMO_USER_ID,
-        titre: chantierData.titre,
+        titre: titre,
         description: chantierData.description,
         budget_initial: chantierData.budget_initial,
         duree_estimee_heures: chantierData.duree_estimee_heures,
         date_fin_souhaitee: chantierData.date_fin_souhaitee,
         statut: 'nouveau',
-        progression: 0
+        progression: 0,
+        metadata: chantierData.metadata || {}
       })
       .select()
       .single();
