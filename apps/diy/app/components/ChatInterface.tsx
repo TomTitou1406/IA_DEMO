@@ -522,11 +522,45 @@ export default function ChatInterface({
     try {
       // Import dynamique pour éviter les problèmes de dépendances circulaires
       const { createChantier } = await import('../lib/services/chantierService');
+
+      // Générer un titre court à partir du projet
+      const generateTitreShort = (projet: string): string => {
+        // Extraire les mots clés principaux
+        const keywords = ['rénovation', 'création', 'aménagement', 'installation', 'construction'];
+        const rooms = ['salle de bain', 'sdb', 'cuisine', 'chambre', 'salon', 'garage', 'terrasse', 'combles', 'grenier'];
+        
+        const projetLower = projet.toLowerCase();
+        
+        let action = '';
+        let room = '';
+        
+        for (const kw of keywords) {
+          if (projetLower.includes(kw)) {
+            action = kw.charAt(0).toUpperCase() + kw.slice(1);
+            break;
+          }
+        }
+        
+        for (const r of rooms) {
+          if (projetLower.includes(r)) {
+            room = r === 'sdb' ? 'SDB' : r.charAt(0).toUpperCase() + r.slice(1);
+            break;
+          }
+        }
+        
+        if (action && room) {
+          return `${action} ${room}`;
+        }
+        
+        // Fallback : premiers mots
+        return projet.split(' ').slice(0, 3).join(' ');
+      };
       
       // Créer le chantier en BDD
+      const titreShort = generateTitreShort(recap.projet);
       const chantier = await createChantier({
-        titre: recap.projet.substring(0, 100), // Limiter la longueur du titre
-        description: recap.projet,
+        titre: titreShort,  // ← Titre court
+        description: recap.projet,  // ← Description complète
         budget_initial: recap.budget_max,
         duree_estimee_heures: recap.disponibilite_heures_semaine * recap.deadline_semaines,
         metadata: {
@@ -549,7 +583,7 @@ export default function ChatInterface({
       setShowRecapModal(false);
       
       // Rediriger vers la page du chantier
-      window.location.href = `/chantiers/${chantier.id}/travaux`;
+      window.location.href = `/chantiers/${chantier.id}`;
       
     } catch (error) {
       console.error('Erreur création chantier:', error);
