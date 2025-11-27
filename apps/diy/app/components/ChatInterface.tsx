@@ -515,31 +515,90 @@ export default function ChatInterface({
     // L'utilisateur peut continuer à discuter pour modifier
   };
   
-  // Valider et créer le chantier
-  const handleValidateRecap = async (recap: RecapData) => {
-    setIsCreatingChantier(true);
+ // Valider et créer/modifier le chantier
+const handleValidateRecap = async (recap: RecapData) => {
+  setIsCreatingChantier(true);
+  
+  try {
+    const { createChantier, updateChantier } = await import('../lib/services/chantierService');
     
-    try {
-      // Import dynamique pour éviter les problèmes de dépendances circulaires
-      const { createChantier } = await import('../lib/services/chantierService');
-
-      // Générer un titre court à partir du projet
-      const generateTitreShort = (projet: string): string => {
-        // Extraire les mots clés principaux
-        const keywords = ['rénovation', 'création', 'aménagement', 'installation', 'construction'];
-        const rooms = ['salle de bain', 'sdb', 'cuisine', 'chambre', 'salon', 'garage', 'terrasse', 'combles', 'grenier'];
-        
-        const projetLower = projet.toLowerCase();
-        
-        let action = '';
-        let room = '';
-        
-        for (const kw of keywords) {
-          if (projetLower.includes(kw)) {
-            action = kw.charAt(0).toUpperCase() + kw.slice(1);
-            break;
-          }
+    // Générer un titre court
+    const generateTitreShort = (projet: string): string => {
+      const keywords = ['rénovation', 'création', 'aménagement', 'installation', 'construction'];
+      const rooms = ['salle de bain', 'sdb', 'cuisine', 'chambre', 'salon', 'garage', 'terrasse', 'combles', 'grenier'];
+      
+      const projetLower = projet.toLowerCase();
+      let action = '';
+      let room = '';
+      
+      for (const kw of keywords) {
+        if (projetLower.includes(kw)) {
+          action = kw.charAt(0).toUpperCase() + kw.slice(1);
+          break;
         }
+      }
+      
+      for (const r of rooms) {
+        if (projetLower.includes(r)) {
+          room = r === 'sdb' ? 'SDB' : r.charAt(0).toUpperCase() + r.slice(1);
+          break;
+        }
+      }
+      
+      if (action && room) return `${action} ${room}`;
+      return projet.split(' ').slice(0, 3).join(' ');
+    };
+
+    const titreShort = generateTitreShort(recap.projet);
+    
+    // Vérifier si on est en mode modification (chantierId existe dans promptContext)
+    const existingChantierId = promptContext?.chantierId;
+    const isModification = existingChantierId && existingChantierId !== 'nouveau';
+    
+    const chantierData = {
+      titre: titreShort,
+      description: recap.projet,
+      budget_initial: recap.budget_max,
+      duree_estimee_heures: recap.disponibilite_heures_semaine * recap.deadline_semaines,
+      metadata: {
+        budget_inclut_materiaux: recap.budget_inclut_materiaux,
+        disponibilite_heures_semaine: recap.disponibilite_heures_semaine,
+        deadline_semaines: recap.deadline_semaines,
+        competences_ok: recap.competences_ok,
+        competences_faibles: recap.competences_faibles,
+        travaux_pro_suggeres: recap.travaux_pro_suggeres,
+        contraintes: recap.contraintes
+      }
+    };
+    
+    let chantier;
+    
+    if (isModification) {
+      // MODE MODIFICATION - Mettre à jour le chantier existant
+      chantier = await updateChantier(existingChantierId, chantierData);
+      console.log('✅ Chantier mis à jour:', chantier);
+    } else {
+      // MODE CRÉATION - Créer un nouveau chantier
+      chantier = await createChantier(chantierData);
+      console.log('✅ Chantier créé:', chantier);
+    }
+
+    if (!chantier || !chantier.id) {
+      throw new Error('Échec de la création/modification du chantier');
+    }
+    
+    setShowRecapModal(false);
+    
+    // Rediriger vers la page du chantier
+    window.location.href = `/chantiers/${chantier.id}`;
+    
+  } catch (error) {
+    console.error('Erreur création/modification chantier:', error);
+    alert('Erreur lors de la création/modification du chantier. Vérifie la console.');
+  } finally {
+    setIsCreatingChantier(false);
+  }
+};
         
         for (const r of rooms) {
           if (projetLower.includes(r)) {
