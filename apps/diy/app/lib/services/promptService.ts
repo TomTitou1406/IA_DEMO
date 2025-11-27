@@ -13,7 +13,7 @@ import { getExpertiseByCode, type Expertise } from './expertiseService';
 
 // ==================== TYPES ====================
 
-export type ContextType = 'home' | 'chantiers' | 'travaux' | 'chat' | 'profil' | 'aide';
+export type ContextType = 'home' | 'chantiers' | 'chantier_edit' | 'travaux' | 'chat' | 'profil' | 'aide';
 
 export interface PromptConfig {
   code: string;
