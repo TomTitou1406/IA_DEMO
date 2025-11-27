@@ -583,7 +583,7 @@ export default function ChatInterface({
         }
       };
       
-      let chantier;
+      let chantier: any;
       
       if (isModification) {
         // MODE MODIFICATION - Mettre à jour le chantier existant
