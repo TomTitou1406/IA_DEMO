@@ -529,6 +529,9 @@ export default function ChatInterface({
   
   // Valider et créer/modifier le chantier
   const handleValidateRecap = async (recap: RecapData) => {
+    console.log('🔍 DEBUG promptContext:', promptContext);
+    console.log('🔍 DEBUG chantierId:', promptContext?.chantierId);
+    console.log('🔍 DEBUG isModification:', promptContext?.chantierId && promptContext.chantierId !== 'nouveau');
     setIsCreatingChantier(true);
     
     try {
