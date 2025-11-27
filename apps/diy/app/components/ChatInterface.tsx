@@ -255,7 +255,6 @@ export default function ChatInterface({
     cleanContent: string;
   } => {
     try {
-      // Chercher le bloc JSON dans la réponse
       const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
       
       if (jsonMatch && jsonMatch[1]) {
@@ -263,13 +262,25 @@ export default function ChatInterface({
         const parsed = JSON.parse(jsonStr);
         
         if (parsed.ready_for_recap && parsed.recap) {
-          // Extraire le contenu AVANT le JSON pour l'afficher
-          const cleanContent = content.split('```json')[0].trim();
+          // Extraire le contenu AVANT toute mention du JSON/récap
+          let cleanContent = content.split('```json')[0].trim();
+          
+          // Supprimer les phrases d'introduction du JSON
+          cleanContent = cleanContent
+            .replace(/Voici le récapitulatif[^:]*:/gi, '')
+            .replace(/Voici le récap[^:]*:/gi, '')
+            .replace(/récapitulatif mis à jour[^:]*:/gi, '')
+            .trim();
+          
+          // Si le contenu est vide ou trop court, mettre un message par défaut
+          if (!cleanContent || cleanContent.length < 20) {
+            cleanContent = "Parfait, j'ai bien pris en compte tes modifications !";
+          }
           
           return {
             hasRecap: true,
             recap: parsed.recap as RecapData,
-            cleanContent: cleanContent || "J'ai bien compris ton projet ! Voici le récapitulatif :"
+            cleanContent
           };
         }
       }
@@ -588,6 +599,9 @@ export default function ChatInterface({
       }
       
       setShowRecapModal(false);
+      
+      // Fermer le FloatingAssistant
+      window.dispatchEvent(new CustomEvent('closeAssistant'));
       
       // Rediriger vers la page du chantier
       window.location.href = `/chantiers/${chantier.id}`;
