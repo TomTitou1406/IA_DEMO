@@ -270,11 +270,12 @@ export default function ChatInterface({
             .replace(/Voici le récapitulatif[^:]*:/gi, '')
             .replace(/Voici le récap[^:]*:/gi, '')
             .replace(/récapitulatif mis à jour[^:]*:/gi, '')
+            .replace(/récapitulatif final[^:]*:/gi, '')
             .trim();
           
           // Si le contenu est vide ou trop court, mettre un message par défaut
           if (!cleanContent || cleanContent.length < 20) {
-            cleanContent = "Parfait, j'ai bien pris en compte tes modifications !";
+            cleanContent = "Parfait, j'ai bien pris en compte tes informations !";
           }
           
           return {
