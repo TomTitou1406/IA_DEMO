@@ -329,3 +329,86 @@ export async function updateChantier(chantierId: string, updates: {
     throw error;
   }
 }
+
+/**
+ * Supprime un chantier et toutes ses données liées (travaux, étapes, tâches)
+ * @param chantierId - ID du chantier à supprimer
+ * @param force - Si true, supprime même les chantiers non "nouveau"
+ */
+export async function deleteChantier(chantierId: string, force: boolean = false) {
+  try {
+    // Vérifier le chantier
+    const { data: chantier, error: checkError } = await supabase
+      .from('chantiers')
+      .select('id, statut, titre')
+      .eq('id', chantierId)
+      .single();
+
+    if (checkError || !chantier) {
+      throw new Error('Chantier non trouvé');
+    }
+
+    // Sécurité : ne pas supprimer les chantiers en cours sauf si force
+    if (!force && chantier.statut === 'en_cours') {
+      throw new Error('Impossible de supprimer un chantier en cours. Utilisez force=true.');
+    }
+
+    // 1. Récupérer tous les travaux du chantier
+    const { data: travaux } = await supabase
+      .from('travaux')
+      .select('id')
+      .eq('chantier_id', chantierId);
+
+    if (travaux && travaux.length > 0) {
+      const travailIds = travaux.map(t => t.id);
+
+      // 2. Récupérer toutes les étapes de ces travaux
+      const { data: etapes } = await supabase
+        .from('etapes')
+        .select('id')
+        .in('travail_id', travailIds);
+
+      if (etapes && etapes.length > 0) {
+        const etapeIds = etapes.map(e => e.id);
+
+        // 3. Supprimer toutes les tâches
+        await supabase
+          .from('taches')
+          .delete()
+          .in('etape_id', etapeIds);
+      }
+
+      // 4. Supprimer toutes les étapes
+      await supabase
+        .from('etapes')
+        .delete()
+        .in('travail_id', travailIds);
+
+      // 5. Supprimer tous les travaux
+      await supabase
+        .from('travaux')
+        .delete()
+        .eq('chantier_id', chantierId);
+    }
+
+    // 6. Supprimer les conversations liées (optionnel)
+    await supabase
+      .from('conversations')
+      .delete()
+      .eq('chantier_id', chantierId);
+
+    // 7. Supprimer le chantier
+    const { error: deleteError } = await supabase
+      .from('chantiers')
+      .delete()
+      .eq('id', chantierId);
+
+    if (deleteError) throw deleteError;
+
+    console.log(`✅ Chantier "${chantier.titre}" supprimé avec succès`);
+    return true;
+  } catch (error) {
+    console.error('Error deleting chantier:', error);
+    throw error;
+  }
+}
