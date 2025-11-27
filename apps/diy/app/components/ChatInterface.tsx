@@ -24,6 +24,7 @@ import { useExpertiseDetection } from '../hooks/useExpertiseDetection';
 import ExpertiseBanner, { ExpertiseTransitionMessage } from './ExpertiseBanner';
 import type { Message, ConversationType } from '../lib/types/conversation';
 import { addNote, type NoteLevel } from '../lib/services/notesService';
+import RecapModal, { type RecapData } from './RecapModal';
 
 // ==================== TYPES ====================
 
@@ -93,6 +94,9 @@ export default function ChatInterface({
   const [noteText, setNoteText] = useState('');
   const [selectedMessageForNote, setSelectedMessageForNote] = useState<Message | null>(null);
   const [savingNote, setSavingNote] = useState(false);
+  const [showRecapModal, setShowRecapModal] = useState(false);
+  const [recapData, setRecapData] = useState<RecapData | null>(null);
+  const [isCreatingChantier, setIsCreatingChantier] = useState(false);
   
   // ==================== REFS ====================
   
@@ -241,6 +245,42 @@ export default function ChatInterface({
     }
   }, [isGeneratingAudio, isPlaying, loading, onStateChange]);
 
+  /**
+   * Détecte et extrait le JSON de récap d'une réponse IA
+   * Retourne { hasRecap, recap, cleanContent }
+   */
+  const extractRecapFromResponse = (content: string): {
+    hasRecap: boolean;
+    recap: RecapData | null;
+    cleanContent: string;
+  } => {
+    try {
+      // Chercher le bloc JSON dans la réponse
+      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      
+      if (jsonMatch && jsonMatch[1]) {
+        const jsonStr = jsonMatch[1].trim();
+        const parsed = JSON.parse(jsonStr);
+        
+        if (parsed.ready_for_recap && parsed.recap) {
+          // Extraire le contenu AVANT le JSON pour l'afficher
+          const cleanContent = content.split('```json')[0].trim();
+          
+          return {
+            hasRecap: true,
+            recap: parsed.recap as RecapData,
+            cleanContent: cleanContent || "J'ai bien compris ton projet ! Voici le récapitulatif :"
+          };
+        }
+      }
+      
+      return { hasRecap: false, recap: null, cleanContent: content };
+    } catch (error) {
+      console.error('Erreur parsing recap JSON:', error);
+      return { hasRecap: false, recap: null, cleanContent: content };
+    }
+  };
+
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -381,24 +421,34 @@ export default function ChatInterface({
         }
       });
 
-      // Message assistant
+      // Vérifier si la réponse contient un recap JSON
+      const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
+      
+      // Message assistant (sans le JSON si recap détecté)
       const assistantMessage: Message = {
         role: 'assistant',
-        content: response.message,
+        content: cleanContent,  // ← Contenu nettoyé
         timestamp: new Date().toISOString(),
         expertise_code: activeExpertise?.code,
         expertise_nom: response.expertiseNom || activeExpertise?.nom,
         metadata: {
           isVoiceMode: voiceMode,
-          promptSource: response.promptSource
+          promptSource: response.promptSource,
+          hasRecap: hasRecap  // ← Flag pour savoir qu'un recap a été généré
         }
       };
-
+      
       // Ajouter à l'affichage
       if (disablePersistence) {
         setLocalMessages(prev => [...prev, assistantMessage]);
       } else {
         await persistMessage(assistantMessage);
+      }
+      
+      // Si recap détecté, ouvrir la modal
+      if (hasRecap && recap) {
+        setRecapData(recap);
+        setShowRecapModal(true);
       }
 
       // Lecture audio si mode vocal
@@ -453,6 +503,40 @@ export default function ChatInterface({
     await sendMessage(content);
     // Remettre le focus sur l'input après envoi
     inputRef.current?.focus();
+  };
+
+  // Fermer la modal recap
+  const handleCloseRecap = () => {
+    setShowRecapModal(false);
+  };
+  
+  // Modifier le recap (retour conversation)
+  const handleModifyRecap = () => {
+    setShowRecapModal(false);
+    // L'utilisateur peut continuer à discuter pour modifier
+  };
+  
+  // Valider et créer le chantier
+  const handleValidateRecap = async (recap: RecapData) => {
+    setIsCreatingChantier(true);
+    
+    try {
+      // TODO: Étape 2.3 - Appeler generatorService pour créer chantier + lots
+      console.log('Création du chantier avec:', recap);
+      
+      // Pour l'instant, juste un log
+      alert('🎉 Chantier créé ! (TODO: implémentation complète)');
+      
+      setShowRecapModal(false);
+      
+      // TODO: Rediriger vers /chantiers/[id]/travaux
+      
+    } catch (error) {
+      console.error('Erreur création chantier:', error);
+      alert('Erreur lors de la création du chantier');
+    } finally {
+      setIsCreatingChantier(false);
+    }
   };
 
   // Gestion vocal
@@ -978,6 +1062,18 @@ export default function ChatInterface({
             </div>
           </div>
         </div>
+      )}
+      {/* Modal Récapitulatif */}
+      {showRecapModal && recapData && (
+        <RecapModal
+          isOpen={showRecapModal}
+          recap={recapData}
+          onClose={handleCloseRecap}
+          onValidate={handleValidateRecap}
+          onModify={handleModifyRecap}
+          isLoading={isCreatingChantier}
+          themeColor={contextColor}
+        />
       )}
     </div>
   );
