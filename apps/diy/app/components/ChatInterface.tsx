@@ -434,7 +434,6 @@ export default function ChatInterface({
         metadata: {
           isVoiceMode: voiceMode,
           promptSource: response.promptSource,
-          hasRecap: hasRecap  // ← Flag pour savoir qu'un recap a été généré
         }
       };
       
