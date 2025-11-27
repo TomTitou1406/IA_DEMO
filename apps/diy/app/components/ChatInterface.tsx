@@ -605,7 +605,9 @@ export default function ChatInterface({
       window.dispatchEvent(new CustomEvent('closeAssistant'));
       
       // Rediriger vers la page du chantier
-      window.location.href = `/chantiers/${chantier.id}`;
+      setTimeout(() => {
+        window.location.href = `/chantiers/${chantier.id}`;
+      }, 100);
       
     } catch (error) {
       console.error('Erreur création/modification chantier:', error);
