@@ -8,8 +8,9 @@
  * - Intégration complète du système d'expertise
  * - Notes épinglables (📌)
  * - Focus automatique après envoi
+ * - Détection JSON récap pour création/modification chantier
  * 
- * @version 2.2
+ * @version 2.3
  * @date 27 novembre 2025
  */
 
@@ -218,7 +219,6 @@ export default function ChatInterface({
   
   const handlePinClick = (message: Message) => {
     setSelectedMessageForNote(message);
-    // Stocker le message complet
     setNoteText(message.content);
     setShowNoteModal(true);
   };
@@ -439,7 +439,7 @@ export default function ChatInterface({
       // Message assistant (sans le JSON si recap détecté)
       const assistantMessage: Message = {
         role: 'assistant',
-        content: cleanContent,  // ← Contenu nettoyé
+        content: cleanContent,
         timestamp: new Date().toISOString(),
         expertise_code: activeExpertise?.code,
         expertise_nom: response.expertiseNom || activeExpertise?.nom,
@@ -527,7 +527,7 @@ export default function ChatInterface({
     // L'utilisateur peut continuer à discuter pour modifier
   };
   
- // Valider et créer/modifier le chantier
+  // Valider et créer/modifier le chantier
   const handleValidateRecap = async (recap: RecapData) => {
     setIsCreatingChantier(true);
     
@@ -560,7 +560,7 @@ export default function ChatInterface({
         if (action && room) return `${action} ${room}`;
         return projet.split(' ').slice(0, 3).join(' ');
       };
-  
+
       const titreShort = generateTitreShort(recap.projet);
       
       // Vérifier si on est en mode modification (chantierId existe dans promptContext)
@@ -594,7 +594,7 @@ export default function ChatInterface({
         chantier = await createChantier(chantierData);
         console.log('✅ Chantier créé:', chantier);
       }
-  
+
       if (!chantier || !chantier.id) {
         throw new Error('Échec de la création/modification du chantier');
       }
@@ -604,10 +604,10 @@ export default function ChatInterface({
       // Fermer le FloatingAssistant
       window.dispatchEvent(new CustomEvent('closeAssistant'));
       
-      // Rediriger vers la page du chantier
+      // Petit délai pour laisser les modales se fermer avant la redirection
       setTimeout(() => {
         window.location.href = `/chantiers/${chantier.id}`;
-      }, 100);
+      }, 150);
       
     } catch (error) {
       console.error('Erreur création/modification chantier:', error);
@@ -695,6 +695,9 @@ export default function ChatInterface({
       }
     }
   };
+
+  // Vérifier si on est en mode modification
+  const isModificationMode = !!(promptContext?.chantierId && promptContext.chantierId !== 'nouveau');
 
   // ==================== RENDU ====================
 
@@ -1141,7 +1144,8 @@ export default function ChatInterface({
           </div>
         </div>
       )}
-      {/* Modal Récapitulatif */}
+
+      {/* ==================== MODALE RÉCAP ==================== */}
       {showRecapModal && recapData && (
         <RecapModal
           isOpen={showRecapModal}
@@ -1151,6 +1155,7 @@ export default function ChatInterface({
           onModify={handleModifyRecap}
           isLoading={isCreatingChantier}
           themeColor={contextColor}
+          isModification={isModificationMode}
         />
       )}
     </div>
