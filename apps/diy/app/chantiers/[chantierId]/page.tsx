@@ -1,25 +1,31 @@
 /**
- * /chantiers/[id]/page.tsx
+ * /chantiers/[chantierId]/page.tsx
  * 
  * Page unifiée Création / Édition de chantier
- * - Si id === "nouveau" → mode création
- * - Sinon → mode édition
+ * Version compacte mobile-first
  * 
- * @version 1.0
+ * @version 1.1
  * @date 27 novembre 2025
  */
 
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useParams, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
+import { useParams } from 'next/navigation';
 import Link from 'next/link';
 
 export default function ChantierEditPage() {
   const params = useParams();
-  const router = useRouter();
-  const chantierId = params.chantierId as string;  
+  const chantierId = params.chantierId as string;
   const isCreation = chantierId === 'nouveau';
+
+  // Ouvrir l'assistant automatiquement
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('papibricole_assistant_open', 'true');
+      window.dispatchEvent(new Event('storage'));
+    }
+  }, []);
 
   return (
     <>
@@ -37,11 +43,11 @@ export default function ChantierEditPage() {
         <div style={{ 
           maxWidth: '1100px', 
           margin: '0 auto', 
-          padding: '1rem',
+          padding: '0.75rem 1rem',
           display: 'flex', 
           alignItems: 'center',
           gap: '0.5rem',
-          fontSize: '1rem'
+          fontSize: '0.95rem'
         }}>
           <Link 
             href="/chantiers" 
@@ -57,68 +63,92 @@ export default function ChantierEditPage() {
           </Link>
           <span style={{ color: 'var(--gray)' }}>/</span>
           <span style={{ color: 'var(--orange)', fontWeight: '600' }}>
-            {isCreation ? '✨ Nouveau chantier' : '✏️ Modifier le chantier'}
+            {isCreation ? '✨ Nouveau chantier' : '✏️ Modifier'}
           </span>
         </div>
       </div>
 
-      {/* CONTENU PRINCIPAL */}
+      {/* CONTENU - CARTE UNIQUE */}
       <div style={{ 
-        maxWidth: '1100px', 
+        maxWidth: '600px', 
         margin: '0 auto', 
-        padding: '0.75rem 1rem',
-        paddingTop: '85px',
-        minHeight: 'calc(100vh - 200px)'
+        padding: '1rem',
+        paddingTop: '70px',
       }}>
         
-        {/* MESSAGE D'ACCUEIL */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%)',
+          background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.05) 100%)',
           border: '1px solid rgba(249, 115, 22, 0.3)',
           borderRadius: '16px',
-          padding: '2rem',
-          marginBottom: '2rem',
+          padding: '1.5rem',
           textAlign: 'center'
         }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>
+          {/* Header compact */}
+          <div style={{ 
+            fontSize: '2.5rem', 
+            marginBottom: '0.5rem' 
+          }}>
             {isCreation ? '🏗️' : '✏️'}
           </div>
           
           <h1 style={{ 
-            fontSize: '1.8rem', 
+            fontSize: '1.4rem', 
             fontWeight: '700', 
             color: 'var(--gray-light)',
-            marginBottom: '0.75rem'
+            marginBottom: '0.5rem'
           }}>
-            {isCreation ? 'Créons ton nouveau chantier !' : 'Modifie ton chantier'}
+            {isCreation ? 'Nouveau chantier' : 'Modifier le chantier'}
           </h1>
           
           <p style={{ 
-            fontSize: '1.1rem', 
+            fontSize: '0.95rem', 
             color: 'var(--gray)',
-            maxWidth: '600px',
-            margin: '0 auto',
-            lineHeight: '1.6'
+            marginBottom: '1.25rem',
+            lineHeight: '1.5'
           }}>
             {isCreation 
-              ? "L'assistant IA va t'aider à définir ton projet étape par étape. Décris-lui ce que tu veux faire, il te posera les bonnes questions !"
-              : "L'assistant IA a chargé les informations de ton chantier. Dis-lui ce que tu veux modifier."
+              ? "Décris ton projet à l'assistant, il te guidera !"
+              : "Dis à l'assistant ce que tu veux modifier."
             }
           </p>
 
-          {/* Indicateur visuel vers l'assistant */}
+          {/* Tips en ligne */}
           <div style={{
-            marginTop: '2rem',
             display: 'flex',
-            alignItems: 'center',
+            flexWrap: 'wrap',
             justifyContent: 'center',
             gap: '0.5rem',
-            color: 'var(--orange)',
-            fontSize: '1rem',
-            fontWeight: '600'
+            marginBottom: '1.25rem'
           }}>
-            <span>👉</span>
-            <span>Ouvre l'assistant en bas à droite pour commencer</span>
+            {['💬 Projet', '💰 Budget', '⏰ Dispo', '🎯 Compétences'].map((tip) => (
+              <span 
+                key={tip}
+                style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  padding: '0.35rem 0.75rem',
+                  borderRadius: '20px',
+                  fontSize: '0.85rem',
+                  color: 'var(--gray-light)'
+                }}
+              >
+                {tip}
+              </span>
+            ))}
+          </div>
+
+          {/* CTA vers assistant */}
+          <div style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            color: 'var(--orange)',
+            fontSize: '0.95rem',
+            fontWeight: '600',
+            padding: '0.5rem 1rem',
+            background: 'rgba(249, 115, 22, 0.15)',
+            borderRadius: '25px'
+          }}>
+            <span>👉 Ouvre l'assistant</span>
             <span style={{ 
               animation: 'bounce 1s infinite',
               display: 'inline-block'
@@ -127,73 +157,15 @@ export default function ChantierEditPage() {
             </span>
           </div>
         </div>
-
-        {/* TIPS / AIDE */}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-          gap: '1rem'
-        }}>
-          <TipCard 
-            icon="💬"
-            title="Décris ton projet"
-            description="Explique ce que tu veux faire : rénovation, création, aménagement... Sois précis sur tes attentes !"
-          />
-          <TipCard 
-            icon="💰"
-            title="Indique ton budget"
-            description="L'assistant adaptera les propositions à ton budget. Précise si les matériaux sont inclus."
-          />
-          <TipCard 
-            icon="⏰"
-            title="Donne tes disponibilités"
-            description="Combien d'heures par semaine ? Une deadline ? L'assistant planifiera en conséquence."
-          />
-          <TipCard 
-            icon="🎯"
-            title="Parle de tes compétences"
-            description="Points forts, points faibles... L'assistant saura quels travaux te confier ou suggérer un pro."
-          />
-        </div>
       </div>
-  
-      {/* ANIMATION CSS */}
+
+      {/* Animation */}
       <style jsx>{`
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(5px); }
+          50% { transform: translateY(3px); }
         }
       `}</style>
     </>
-  );
-}
-
-// Composant TipCard
-function TipCard({ icon, title, description }: { icon: string; title: string; description: string }) {
-  return (
-    <div style={{
-      background: 'rgba(255,255,255,0.03)',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderRadius: '12px',
-      padding: '1.25rem',
-      transition: 'all 0.2s'
-    }}>
-      <div style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>{icon}</div>
-      <h3 style={{ 
-        fontSize: '1rem', 
-        fontWeight: '600', 
-        color: 'var(--gray-light)',
-        marginBottom: '0.5rem'
-      }}>
-        {title}
-      </h3>
-      <p style={{ 
-        fontSize: '0.9rem', 
-        color: 'var(--gray)',
-        lineHeight: '1.5'
-      }}>
-        {description}
-      </p>
-    </div>
   );
 }
