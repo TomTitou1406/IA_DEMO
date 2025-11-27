@@ -73,7 +73,7 @@ export default function TravauxPage() {
   useEffect(() => {
     async function loadData() {
       try {
-        const chantierData = await getChantierDemo();
+        const chantierData = await getChantierById(chantierId);
         if (chantierData) {
           setChantier(chantierData);
           const [statsData, allTravaux] = await Promise.all([
