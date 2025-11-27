@@ -19,7 +19,7 @@ import FloatingAssistant from '@/app/components/FloatingAssistant';
 export default function ChantierEditPage() {
   const params = useParams();
   const router = useRouter();
-  const chantierId = params.id as string;
+  const chantierId = params.chantierId as string;  
   const isCreation = chantierId === 'nouveau';
 
   const [isAssistantReady, setIsAssistantReady] = useState(false);
