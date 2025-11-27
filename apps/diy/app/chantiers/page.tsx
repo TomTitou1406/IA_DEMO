@@ -178,32 +178,30 @@ export default function ChantiersPage() {
             flexShrink: 0,
             alignItems: 'flex-start'
           }}>
-            {/* NOUVEAU */}
+            {/* NOUVEAU - pas encore phasé */}
             {chantier.statut === 'nouveau' && (
               <>
                 <CardButton
-                  variant="secondary"
-                  color="var(--green)"
+                  variant="primary"
+                  color="var(--orange)"
                   icon="🚀"
-                  label="Démarrer"
-                  onClick={() => console.log('Démarrer chantier')}
-                />
-                <CardButton
-                  variant="secondary"
-                  color="var(--blue)"
-                  icon="📝"
-                  label="Configurer"
-                  onClick={() => console.log('Configurer chantier')}
+                  label="Configurer / Phaser"
+                  href={`/chantiers/${chantier.id}`}
                 />
                 <CardButton
                   variant="danger"
                   icon="🗑️"
                   label="Supprimer"
-                  onClick={() => console.log('Supprimer chantier')}
+                  onClick={() => {
+                    if (confirm('Supprimer ce chantier ?')) {
+                      // TODO: implémenter supprimerChantier
+                      console.log('Supprimer chantier', chantier.id);
+                    }
+                  }}
                 />
               </>
             )}
-
+          
             {/* EN COURS (ou ACTIF ou NULL - anciens statuts) */}
             {(chantier.statut === 'en_cours' || chantier.statut === 'actif' || !chantier.statut) && (
               <>
@@ -217,30 +215,30 @@ export default function ChantiersPage() {
                 />
                 <CardButton
                   variant="secondary"
-                  color="var(--blue)"
+                  color="var(--orange)"
                   icon="✏️"
                   label="Modifier"
-                  onClick={() => console.log('Modifier chantier')}
+                  href={`/chantiers/${chantier.id}`}
                 />
               </>
             )}
-
+          
             {/* TERMINÉ */}
             {chantier.statut === 'terminé' && (
               <>
                 <CardButton
                   variant="primary"
-                  color="var(--blue)"
+                  color="var(--green)"
                   icon="📋"
                   label="Voir lots"
                   href={`/chantiers/${chantier.id}/travaux`}
                 />
                 <CardButton
                   variant="secondary"
-                  color="var(--green)"
+                  color="var(--blue)"
                   icon="📊"
                   label="Rapport"
-                  onClick={() => console.log('Voir rapport')}
+                  href={`/chantiers/${chantier.id}`}
                 />
               </>
             )}
