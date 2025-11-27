@@ -14,7 +14,7 @@ import { getUserId, getConversationByChantier, type Journal } from './conversati
 
 // ==================== TYPES ====================
 
-export type NavigationLevel = 'home' | 'chantiers' | 'lots' | 'etapes' | 'taches';
+export type NavigationLevel = 'home' | 'chantiers' | 'chantier_edit' | 'lots' | 'etapes' | 'taches';
 
 export interface NavigationIds {
   chantierId?: string;
@@ -289,6 +289,139 @@ TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir 
 }
 
 /**
+ * Charge le contexte pour la page Création/Édition d'un chantier
+ * Mode "nouveau" si chantierId est undefined ou "nouveau"
+ */
+async function loadChantierEditContext(chantierId?: string): Promise<ContextData> {
+  const isCreation = !chantierId || chantierId === 'nouveau';
+  
+  if (isCreation) {
+    // MODE CRÉATION
+    return {
+      level: 'chantier_edit',
+      header: {
+        title: 'Nouveau chantier',
+        breadcrumb: 'Création assistée par IA',
+        expertiseLine: '📋 Chef de chantier & Économiste'
+      },
+      expertiseCode: 'chef_chantier',
+      expertiseNom: 'Chef de chantier',
+      expertiseIcon: '📋',
+      itemCount: 0,
+      contextForAI: `MODE CRÉATION DE CHANTIER
+
+Tu es le Chef de chantier et Économiste. Tu accompagnes le bricoleur dans la DÉFINITION de son nouveau projet.
+
+🎯 TON OBJECTIF :
+Collecter toutes les informations nécessaires pour créer un plan de chantier structuré en LOTS (travaux).
+
+📋 INFORMATIONS À COLLECTER (pose des questions naturellement, pas tout d'un coup) :
+
+1. **LE PROJET** : Que veut faire le bricoleur ? (rénovation, création, aménagement...)
+2. **L'EXISTANT** : État actuel des lieux, contraintes techniques
+3. **LE BUDGET** : Budget maximum, matériaux inclus ou non
+4. **LE TEMPS** : Disponibilité (heures/semaine), deadline souhaitée
+5. **LES COMPÉTENCES** : Domaines où il se sent à l'aise / moins à l'aise
+6. **L'AIDE PRO** : Y a-t-il des travaux qu'il préfère confier à un pro ? (conformité, technique, sécurité)
+
+💡 COMPORTEMENT :
+- Pose 1-2 questions à la fois, pas plus
+- Reformule pour confirmer ta compréhension
+- Sois encourageant et rassurant
+- Si le bricoleur dit "j'ai tout dit" ou "c'est bon", propose un récapitulatif
+
+📝 QUAND TU AS TOUTES LES INFOS :
+Réponds avec un message contenant EXACTEMENT ce format JSON à la fin :
+
+\`\`\`json
+{"ready_for_recap": true, "recap": {
+  "projet": "Description du projet",
+  "budget_max": 5000,
+  "budget_inclut_materiaux": true,
+  "disponibilite_heures_semaine": 10,
+  "deadline_semaines": 8,
+  "competences_ok": ["peinture", "petit bricolage"],
+  "competences_faibles": ["électricité", "plomberie"],
+  "travaux_pro_suggeres": ["tableau électrique"],
+  "contraintes": "Appartement en étage, pas d'ascenseur"
+}}
+\`\`\`
+
+NE génère ce JSON que quand tu as VRAIMENT toutes les infos essentielles.`
+    };
+  }
+  
+  // MODE ÉDITION - Charger le chantier existant
+  try {
+    const { data: chantier, error } = await supabase
+      .from('chantiers')
+      .select('id, titre, description, statut, progression, budget_initial, duree_estimee_heures')
+      .eq('id', chantierId)
+      .single();
+
+    if (error) throw error;
+
+    // Charger les lots existants
+    const { data: lots } = await supabase
+      .from('travaux')
+      .select('id, titre, ordre, statut, code_expertise')
+      .eq('chantier_id', chantierId)
+      .order('ordre', { ascending: true });
+
+    const nbLots = lots?.length || 0;
+    const lotsFormatted = (lots || []).map((lot: any, idx: number) => 
+      `${idx + 1}. ${getStatutEmoji(lot.statut)} ${lot.titre}`
+    ).join('\n   ');
+
+    // Charger le journal si existant
+    const journal = await loadJournalForChantier(chantierId);
+    const journalText = formatJournalForAI(journal);
+
+    return {
+      level: 'chantier_edit',
+      header: {
+        title: `Modifier : ${chantier.titre}`,
+        breadcrumb: `${nbLots} lot(s) défini(s)`,
+        expertiseLine: '📋 Chef de chantier & Économiste'
+      },
+      expertiseCode: 'chef_chantier',
+      expertiseNom: 'Chef de chantier',
+      expertiseIcon: '📋',
+      itemCount: nbLots,
+      chantierId,
+      contextForAI: `MODE ÉDITION DE CHANTIER
+
+🏗️ CHANTIER EXISTANT : ${chantier.titre}
+   ${chantier.description || 'Pas de description'}
+   Budget : ${chantier.budget_initial || 'Non défini'}€
+   Durée estimée : ${chantier.duree_estimee_heures || 'Non définie'}h
+   Statut : ${chantier.statut}
+   Progression : ${chantier.progression || 0}%
+
+📦 LOTS ACTUELS (${nbLots}) :
+   ${lotsFormatted || 'Aucun lot défini'}
+${journalText}
+
+🎯 TON RÔLE :
+Tu aides le bricoleur à MODIFIER son chantier. Il peut vouloir :
+- Changer le budget ou les délais
+- Ajouter/supprimer des lots
+- Modifier la description
+- Relancer un phasage complet
+
+💡 Si le bricoleur veut RELANCER LE PHASAGE, préviens-le que les lots actuels seront remplacés et demande confirmation.`,
+      journal,
+      raw: { chantier, lots: lots || [] }
+    };
+
+  } catch (error) {
+    console.error('Erreur chargement chantier pour édition:', error);
+    // Fallback vers mode création
+    return loadChantierEditContext(undefined);
+  }
+}
+
+/**
  * Charge le contexte pour la page Étapes d'un lot
  */
 async function loadEtapesContext(chantierId: string, travailId: string): Promise<ContextData> {
@@ -542,6 +675,23 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par t�
  * Parse l'URL pour extraire le niveau et les IDs
  */
 export function parseNavigationFromPath(pathname: string): { level: NavigationLevel; ids: NavigationIds } {
+  // /chantiers/nouveau (CRÉATION)
+  if (pathname === '/chantiers/nouveau') {
+    return {
+      level: 'chantier_edit',
+      ids: { chantierId: 'nouveau' }
+    };
+  }
+
+  // /chantiers/[id] SANS /travaux (ÉDITION)
+  const editMatch = pathname.match(/^\/chantiers\/([^\/]+)$/);
+  if (editMatch && editMatch[1] !== 'nouveau') {
+    return {
+      level: 'chantier_edit',
+      ids: { chantierId: editMatch[1] }
+    };
+  }
+  
   // /chantiers/[id]/travaux/[id]/etapes/[id]/taches
   const tachesMatch = pathname.match(/^\/chantiers\/([^\/]+)\/travaux\/([^\/]+)\/etapes\/([^\/]+)\/taches$/);
   if (tachesMatch) {
@@ -589,6 +739,9 @@ export async function loadContextForPath(pathname: string): Promise<ContextData>
   console.log(`📍 Chargement contexte: niveau=${level}`, ids);
 
   switch (level) {
+    case 'chantier_edit':
+      return loadChantierEditContext(ids.chantierId);
+      
     case 'taches':
       if (ids.chantierId && ids.travailId && ids.etapeId) {
         return loadTachesContext(ids.chantierId, ids.travailId, ids.etapeId);
