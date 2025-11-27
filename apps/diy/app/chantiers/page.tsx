@@ -483,10 +483,7 @@ export default function ChantiersPage() {
             color="var(--orange)"
             icon="✨"
             label="Nouveau chantier"
-            onClick={() => {
-              // TODO: Implémenter plus tard
-              console.log('Créer nouveau chantier');
-            }}
+            href="/chantiers/nouveau"
           />
         </div>
 
