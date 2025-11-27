@@ -520,19 +520,40 @@ export default function ChatInterface({
     setIsCreatingChantier(true);
     
     try {
-      // TODO: Étape 2.3 - Appeler generatorService pour créer chantier + lots
-      console.log('Création du chantier avec:', recap);
+      // Import dynamique pour éviter les problèmes de dépendances circulaires
+      const { createChantier } = await import('../lib/services/chantierService');
       
-      // Pour l'instant, juste un log
-      alert('🎉 Chantier créé ! (TODO: implémentation complète)');
+      // Créer le chantier en BDD
+      const chantier = await createChantier({
+        titre: recap.projet.substring(0, 100), // Limiter la longueur du titre
+        description: recap.projet,
+        budget_initial: recap.budget_max,
+        duree_estimee_heures: recap.disponibilite_heures_semaine * recap.deadline_semaines,
+        metadata: {
+          budget_inclut_materiaux: recap.budget_inclut_materiaux,
+          disponibilite_heures_semaine: recap.disponibilite_heures_semaine,
+          deadline_semaines: recap.deadline_semaines,
+          competences_ok: recap.competences_ok,
+          competences_faibles: recap.competences_faibles,
+          travaux_pro_suggeres: recap.travaux_pro_suggeres,
+          contraintes: recap.contraintes
+        }
+      });
+  
+      if (!chantier || !chantier.id) {
+        throw new Error('Échec de la création du chantier');
+      }
+  
+      console.log('✅ Chantier créé:', chantier);
       
       setShowRecapModal(false);
       
-      // TODO: Rediriger vers /chantiers/[id]/travaux
+      // Rediriger vers la page du chantier
+      window.location.href = `/chantiers/${chantier.id}/travaux`;
       
     } catch (error) {
       console.error('Erreur création chantier:', error);
-      alert('Erreur lors de la création du chantier');
+      alert('Erreur lors de la création du chantier. Vérifie la console.');
     } finally {
       setIsCreatingChantier(false);
     }
