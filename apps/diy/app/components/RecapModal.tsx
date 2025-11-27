@@ -2,9 +2,9 @@
  * RecapModal.tsx
  * 
  * Modal de récapitulatif avant création/modification du chantier
- * Affiche les infos collectées et permet de valider/modifier
+ * Affiche les infos collectées (version enrichie) et permet de valider/modifier
  * 
- * @version 1.1
+ * @version 1.2
  * @date 27 novembre 2025
  */
 
@@ -13,14 +13,38 @@
 import { useState } from 'react';
 
 export interface RecapData {
+  // Infos de base
   projet: string;
+  surface_m2?: number;
+  
+  // Budget et timing
   budget_max: number;
   budget_inclut_materiaux: boolean;
   disponibilite_heures_semaine: number;
   deadline_semaines: number;
+  
+  // État existant (nouveau)
+  etat_existant?: string;
+  elements_a_deposer?: string[];
+  elements_a_conserver?: string[];
+  
+  // Résultat souhaité (nouveau)
+  equipements_souhaites?: string[];
+  style_souhaite?: string;
+  
+  // Réseaux (nouveau)
+  reseaux?: {
+    electricite_a_refaire: boolean;
+    plomberie_a_refaire: boolean;
+    ventilation_a_prevoir: boolean;
+  };
+  
+  // Compétences
   competences_ok: string[];
   competences_faibles: string[];
   travaux_pro_suggeres: string[];
+  
+  // Contraintes
   contraintes: string;
 }
 
@@ -48,6 +72,34 @@ export default function RecapModal({
   
   if (!isOpen) return null;
 
+  // Compter les lots à générer basé sur les infos collectées
+  const estimatedLots = (() => {
+    const lots: string[] = [];
+    
+    // Démolition si éléments à déposer
+    if (recap.elements_a_deposer && recap.elements_a_deposer.length > 0) {
+      lots.push('Démolition');
+    }
+    
+    // Réseaux
+    if (recap.reseaux?.plomberie_a_refaire) lots.push('Plomberie');
+    if (recap.reseaux?.electricite_a_refaire) lots.push('Électricité');
+    if (recap.reseaux?.ventilation_a_prevoir) lots.push('Ventilation');
+    
+    // Selon équipements
+    if (recap.equipements_souhaites?.some(e => 
+      e.toLowerCase().includes('carrelage') || 
+      e.toLowerCase().includes('faïence')
+    )) {
+      lots.push('Carrelage');
+    }
+    
+    // Finitions
+    lots.push('Finitions');
+    
+    return lots;
+  })();
+
   return (
     <div style={{
       position: 'fixed',
@@ -55,7 +107,7 @@ export default function RecapModal({
       left: 0,
       right: 0,
       bottom: 0,
-      background: 'rgba(0,0,0,0.8)',
+      background: 'rgba(0,0,0,0.85)',
       zIndex: 2000,
       display: 'flex',
       alignItems: 'center',
@@ -66,8 +118,8 @@ export default function RecapModal({
         background: '#1a1a1a',
         borderRadius: '16px',
         width: '100%',
-        maxWidth: '500px',
-        maxHeight: '90vh',
+        maxWidth: '600px',
+        maxHeight: '85vh',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
@@ -76,7 +128,7 @@ export default function RecapModal({
         
         {/* Header */}
         <div style={{
-          padding: '1.25rem',
+          padding: '1rem 1.25rem',
           borderBottom: '1px solid rgba(255,255,255,0.1)',
           display: 'flex',
           alignItems: 'center',
@@ -88,14 +140,22 @@ export default function RecapModal({
             gap: '0.75rem'
           }}>
             <span style={{ fontSize: '1.5rem' }}>📋</span>
-            <h2 style={{
-              margin: 0,
-              fontSize: '1.2rem',
-              fontWeight: '700',
-              color: 'var(--gray-light)'
-            }}>
-              Récapitulatif du projet
-            </h2>
+            <div>
+              <h2 style={{
+                margin: 0,
+                fontSize: '1.1rem',
+                fontWeight: '700',
+                color: 'var(--gray-light)'
+              }}>
+                Récapitulatif du projet
+              </h2>
+              <span style={{
+                fontSize: '0.75rem',
+                color: 'var(--gray)'
+              }}>
+                ~{estimatedLots.length} lots à générer
+              </span>
+            </div>
           </div>
           <button
             onClick={onClose}
@@ -116,117 +176,137 @@ export default function RecapModal({
         <div style={{
           flex: 1,
           overflowY: 'auto',
-          padding: '1.25rem'
+          padding: '1rem 1.25rem'
         }}>
           
-          {/* Projet */}
-          <RecapSection 
-            icon="🏗️" 
-            label="Projet" 
+          {/* SECTION 1 : Projet */}
+          <SectionTitle icon="🏗️" title="Le projet" />
+          
+          <RecapItem 
+            icon="📋" 
+            label="Description" 
             value={recap.projet}
           />
+          
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {recap.surface_m2 && (
+              <RecapChip icon="📐" value={`${recap.surface_m2} m²`} />
+            )}
+            {recap.style_souhaite && (
+              <RecapChip icon="🎨" value={recap.style_souhaite} />
+            )}
+          </div>
 
-          {/* Budget */}
-          <RecapSection 
-            icon="💰" 
-            label="Budget maximum" 
-            value={`${recap.budget_max.toLocaleString()} € ${recap.budget_inclut_materiaux ? '(matériaux inclus)' : '(hors matériaux)'}`}
-          />
-
-          {/* Disponibilité */}
-          <RecapSection 
-            icon="⏰" 
-            label="Disponibilité" 
-            value={`${recap.disponibilite_heures_semaine}h / semaine`}
-          />
-
-          {/* Deadline */}
-          <RecapSection 
-            icon="📅" 
-            label="Objectif" 
-            value={`Terminer en ${recap.deadline_semaines} semaines`}
-          />
-
-          {/* Compétences OK */}
-          {recap.competences_ok.length > 0 && (
-            <RecapSection 
-              icon="✅" 
-              label="À l'aise avec"
-            >
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {recap.competences_ok.map((comp, idx) => (
-                  <span key={idx} style={{
-                    background: 'rgba(16, 185, 129, 0.2)',
-                    color: '#10b981',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '20px',
-                    fontSize: '0.85rem'
-                  }}>
-                    {comp}
-                  </span>
-                ))}
-              </div>
-            </RecapSection>
+          {/* SECTION 2 : État existant */}
+          {(recap.etat_existant || recap.elements_a_deposer?.length) && (
+            <>
+              <SectionTitle icon="🔨" title="Existant / Démolition" />
+              
+              {recap.etat_existant && (
+                <RecapItem 
+                  icon="🏚️" 
+                  label="État actuel" 
+                  value={recap.etat_existant}
+                />
+              )}
+              
+              {recap.elements_a_deposer && recap.elements_a_deposer.length > 0 && (
+                <RecapItem icon="🗑️" label="À déposer">
+                  <TagList tags={recap.elements_a_deposer} color="#ef4444" />
+                </RecapItem>
+              )}
+              
+              {recap.elements_a_conserver && recap.elements_a_conserver.length > 0 && (
+                <RecapItem icon="✅" label="À conserver">
+                  <TagList tags={recap.elements_a_conserver} color="#10b981" />
+                </RecapItem>
+              )}
+            </>
           )}
 
-          {/* Compétences faibles */}
-          {recap.competences_faibles.length > 0 && (
-            <RecapSection 
-              icon="⚠️" 
-              label="Moins à l'aise avec"
-            >
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {recap.competences_faibles.map((comp, idx) => (
-                  <span key={idx} style={{
-                    background: 'rgba(245, 158, 11, 0.2)',
-                    color: '#f59e0b',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '20px',
-                    fontSize: '0.85rem'
-                  }}>
-                    {comp}
-                  </span>
-                ))}
-              </div>
-            </RecapSection>
+          {/* SECTION 3 : Équipements souhaités */}
+          {recap.equipements_souhaites && recap.equipements_souhaites.length > 0 && (
+            <>
+              <SectionTitle icon="🛁" title="Équipements à installer" />
+              <TagList tags={recap.equipements_souhaites} color="#3b82f6" />
+            </>
           )}
 
-          {/* Travaux pro */}
-          {recap.travaux_pro_suggeres.length > 0 && (
-            <RecapSection 
-              icon="👷" 
-              label="À confier à un pro (si nécessaire)"
-            >
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem', marginTop: '0.5rem' }}>
-                {recap.travaux_pro_suggeres.map((travail, idx) => (
-                  <span key={idx} style={{
-                    background: 'rgba(99, 102, 241, 0.2)',
-                    color: '#818cf8',
-                    padding: '0.25rem 0.75rem',
-                    borderRadius: '20px',
-                    fontSize: '0.85rem'
-                  }}>
-                    {travail}
-                  </span>
-                ))}
+          {/* SECTION 4 : Réseaux */}
+          {recap.reseaux && (
+            <>
+              <SectionTitle icon="🔌" title="Réseaux" />
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                <NetworkChip 
+                  icon="⚡" 
+                  label="Électricité" 
+                  active={recap.reseaux.electricite_a_refaire} 
+                />
+                <NetworkChip 
+                  icon="💧" 
+                  label="Plomberie" 
+                  active={recap.reseaux.plomberie_a_refaire} 
+                />
+                <NetworkChip 
+                  icon="💨" 
+                  label="Ventilation" 
+                  active={recap.reseaux.ventilation_a_prevoir} 
+                />
               </div>
-            </RecapSection>
+            </>
           )}
 
-          {/* Contraintes */}
-          {recap.contraintes && (
-            <RecapSection 
-              icon="📝" 
-              label="Contraintes" 
-              value={recap.contraintes}
+          {/* SECTION 5 : Budget & Planning */}
+          <SectionTitle icon="💰" title="Budget & Planning" />
+          
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+            <RecapChip 
+              icon="💰" 
+              value={`${recap.budget_max.toLocaleString()} €`}
+              subValue={recap.budget_inclut_materiaux ? 'matériaux inclus' : 'hors matériaux'}
             />
+            <RecapChip icon="⏰" value={`${recap.disponibilite_heures_semaine}h/sem`} />
+            <RecapChip icon="📅" value={`${recap.deadline_semaines} semaines`} />
+          </div>
+
+          {/* SECTION 6 : Compétences */}
+          <SectionTitle icon="🎯" title="Compétences" />
+          
+          {recap.competences_ok.length > 0 && (
+            <RecapItem icon="✅" label="À l'aise avec">
+              <TagList tags={recap.competences_ok} color="#10b981" />
+            </RecapItem>
+          )}
+          
+          {recap.competences_faibles.length > 0 && (
+            <RecapItem icon="⚠️" label="Moins à l'aise">
+              <TagList tags={recap.competences_faibles} color="#f59e0b" />
+            </RecapItem>
+          )}
+          
+          {recap.travaux_pro_suggeres.length > 0 && (
+            <RecapItem icon="👷" label="Pro suggéré">
+              <TagList tags={recap.travaux_pro_suggeres} color="#818cf8" />
+            </RecapItem>
+          )}
+
+          {/* SECTION 7 : Contraintes */}
+          {recap.contraintes && (
+            <>
+              <SectionTitle icon="📝" title="Contraintes" />
+              <RecapItem 
+                icon="⚠️" 
+                label="" 
+                value={recap.contraintes}
+              />
+            </>
           )}
 
         </div>
 
         {/* Footer - Actions */}
         <div style={{
-          padding: '1.25rem',
+          padding: '1rem 1.25rem',
           borderTop: '1px solid rgba(255,255,255,0.1)',
           display: 'flex',
           gap: '0.75rem'
@@ -241,7 +321,7 @@ export default function RecapModal({
               border: '1px solid rgba(255,255,255,0.2)',
               background: 'transparent',
               color: 'var(--gray-light)',
-              fontSize: '0.95rem',
+              fontSize: '0.9rem',
               fontWeight: '600',
               cursor: isLoading ? 'not-allowed' : 'pointer',
               opacity: isLoading ? 0.5 : 1,
@@ -260,7 +340,7 @@ export default function RecapModal({
               border: 'none',
               background: themeColor,
               color: 'white',
-              fontSize: '0.95rem',
+              fontSize: '0.9rem',
               fontWeight: '700',
               cursor: isLoading ? 'not-allowed' : 'pointer',
               opacity: isLoading ? 0.7 : 1,
@@ -286,8 +366,34 @@ export default function RecapModal({
   );
 }
 
-// Sous-composant pour chaque section
-function RecapSection({ 
+// ==================== SOUS-COMPOSANTS ====================
+
+function SectionTitle({ icon, title }: { icon: string; title: string }) {
+  return (
+    <div style={{
+      display: 'flex',
+      alignItems: 'center',
+      gap: '0.5rem',
+      marginTop: '1rem',
+      marginBottom: '0.5rem',
+      paddingBottom: '0.35rem',
+      borderBottom: '1px solid rgba(255,255,255,0.08)'
+    }}>
+      <span style={{ fontSize: '0.9rem' }}>{icon}</span>
+      <span style={{
+        fontSize: '0.75rem',
+        fontWeight: '700',
+        color: 'var(--gray)',
+        textTransform: 'uppercase',
+        letterSpacing: '0.5px'
+      }}>
+        {title}
+      </span>
+    </div>
+  );
+}
+
+function RecapItem({ 
   icon, 
   label, 
   value, 
@@ -300,32 +406,30 @@ function RecapSection({
 }) {
   return (
     <div style={{
-      marginBottom: '1rem',
-      padding: '0.75rem',
+      marginBottom: '0.6rem',
+      padding: '0.5rem 0.6rem',
       background: 'rgba(255,255,255,0.03)',
-      borderRadius: '10px'
+      borderRadius: '8px'
     }}>
-      <div style={{
-        display: 'flex',
-        alignItems: 'flex-start',
-        gap: '0.75rem'
-      }}>
-        <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.5rem' }}>
+        <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{icon}</span>
         <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: '0.8rem',
-            color: 'var(--gray)',
-            marginBottom: '0.25rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            {label}
-          </div>
+          {label && (
+            <div style={{
+              fontSize: '0.65rem',
+              color: 'var(--gray)',
+              marginBottom: '0.15rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.3px'
+            }}>
+              {label}
+            </div>
+          )}
           {value && (
             <div style={{
-              fontSize: '0.95rem',
+              fontSize: '0.85rem',
               color: 'var(--gray-light)',
-              lineHeight: '1.4'
+              lineHeight: '1.35'
             }}>
               {value}
             </div>
@@ -333,6 +437,87 @@ function RecapSection({
           {children}
         </div>
       </div>
+    </div>
+  );
+}
+
+function RecapChip({ 
+  icon, 
+  value,
+  subValue
+}: { 
+  icon: string; 
+  value: string;
+  subValue?: string;
+}) {
+  return (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.35rem',
+      padding: '0.35rem 0.6rem',
+      background: 'rgba(255,255,255,0.05)',
+      borderRadius: '8px',
+      fontSize: '0.8rem',
+      color: 'var(--gray-light)'
+    }}>
+      <span>{icon}</span>
+      <span style={{ fontWeight: '600' }}>{value}</span>
+      {subValue && (
+        <span style={{ fontSize: '0.7rem', color: 'var(--gray)' }}>({subValue})</span>
+      )}
+    </div>
+  );
+}
+
+function NetworkChip({ 
+  icon, 
+  label, 
+  active 
+}: { 
+  icon: string; 
+  label: string; 
+  active: boolean;
+}) {
+  return (
+    <div style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.35rem',
+      padding: '0.35rem 0.6rem',
+      background: active ? 'rgba(239, 68, 68, 0.15)' : 'rgba(255,255,255,0.05)',
+      border: active ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid transparent',
+      borderRadius: '8px',
+      fontSize: '0.8rem',
+      color: active ? '#ef4444' : 'var(--gray)'
+    }}>
+      <span>{icon}</span>
+      <span>{label}</span>
+      <span style={{ 
+        fontSize: '0.7rem',
+        fontWeight: '600'
+      }}>
+        {active ? 'À refaire' : 'OK'}
+      </span>
+    </div>
+  );
+}
+
+function TagList({ tags, color }: { tags: string[]; color: string }) {
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem', marginTop: '0.25rem' }}>
+      {tags.map((tag, idx) => (
+        <span key={idx} style={{
+          background: `${color}20`,
+          color: color,
+          padding: '0.15rem 0.5rem',
+          borderRadius: '12px',
+          fontSize: '0.75rem',
+          fontWeight: '500'
+        }}>
+          {tag}
+        </span>
+      ))}
     </div>
   );
 }
