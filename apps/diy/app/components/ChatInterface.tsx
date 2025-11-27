@@ -1170,7 +1170,7 @@ export default function ChatInterface({
           onModify={handleModifyRecap}
           isLoading={isCreatingChantier}
           themeColor={contextColor}
-          isModification={isModificationMode}
+          isModification={isModification}
         />
       )}
     </div>
