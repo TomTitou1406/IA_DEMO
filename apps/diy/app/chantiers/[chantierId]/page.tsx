@@ -136,26 +136,40 @@ export default function ChantierEditPage() {
             ))}
           </div>
 
-          {/* CTA vers assistant */}
-          <div style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            color: 'var(--orange)',
-            fontSize: '0.95rem',
-            fontWeight: '600',
-            padding: '0.5rem 1rem',
-            background: 'rgba(249, 115, 22, 0.15)',
-            borderRadius: '25px'
-          }}>
-            <span>👉 Ouvre l'assistant</span>
-            <span style={{ 
-              animation: 'bounce 1s infinite',
-              display: 'inline-block'
-            }}>
-              ↘️
-            </span>
-          </div>
+          {/* CTA bouton qui ouvre l'assistant */}
+          <button
+            onClick={() => {
+              if (typeof window !== 'undefined') {
+                sessionStorage.setItem('papibricole_assistant_open', 'true');
+                window.dispatchEvent(new Event('storage'));
+              }
+            }}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: 'white',
+              fontSize: '1rem',
+              fontWeight: '600',
+              padding: '0.75rem 1.5rem',
+              background: 'var(--orange)',
+              border: 'none',
+              borderRadius: '25px',
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.05)';
+              e.currentTarget.style.boxShadow = '0 6px 16px rgba(249, 115, 22, 0.4)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.3)';
+            }}
+          >
+            <span>💬 Démarrer avec l'assistant</span>
+          </button>
         </div>
       </div>
 
