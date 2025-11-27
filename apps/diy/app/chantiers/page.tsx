@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAllChantiers, getChantierStats } from '../lib/services/chantierService';
+import { getAllChantiers, getChantierStats, deleteChantier } from '../lib/services/chantierService';
 import CardButton from '@/app/components/CardButton';
 
 interface Chantier {
@@ -193,9 +193,12 @@ export default function ChantiersPage() {
                   icon="🗑️"
                   label="Supprimer"
                   onClick={() => {
-                    if (confirm('Supprimer ce chantier ?')) {
-                      // TODO: implémenter supprimerChantier
-                      console.log('Supprimer chantier', chantier.id);
+                    if (confirm(`Supprimer le chantier "${chantier.titre}" et toutes ses données ?`)) {
+                      deleteChantier(chantier.id, true)
+                        .then(() => {
+                          setChantiers(prev => prev.filter(c => c.id !== chantier.id));
+                        })
+                        .catch(err => alert('Erreur: ' + err.message));
                     }
                   }}
                 />
