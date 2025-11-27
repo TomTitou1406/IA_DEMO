@@ -5,7 +5,9 @@
  * - Si id === "nouveau" → mode création (conversation IA)
  * - Sinon → mode récap/édition (affiche le chantier + actions)
  * 
- * @version 2.0
+ * Design compact avec 2 colonnes sur desktop
+ * 
+ * @version 2.1
  * @date 27 novembre 2025
  */
 
@@ -253,43 +255,29 @@ export default function ChantierEditPage() {
     );
   }
 
-  // ==================== MODE CHARGEMENT ====================
+  // ==================== MODE ÉDITION/RÉCAP ====================
+
   if (loading) {
     return (
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'center', 
-        alignItems: 'center', 
-        minHeight: '50vh',
-        color: 'var(--gray)'
-      }}>
-        <div className="spinner" style={{ marginRight: '1rem' }}></div>
-        Chargement du chantier...
+      <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+        <div className="spinner"></div>
+        <p style={{ marginTop: '1rem', color: 'var(--gray)' }}>Chargement...</p>
       </div>
     );
   }
 
-  // ==================== MODE ERREUR ====================
   if (error || !chantier) {
     return (
-      <div style={{ 
-        maxWidth: '500px', 
-        margin: '0 auto', 
-        padding: '2rem 1rem',
-        textAlign: 'center'
-      }}>
+      <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
         <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>😕</div>
-        <h2 style={{ color: 'var(--gray-light)', marginBottom: '0.5rem' }}>
-          {error || 'Chantier non trouvé'}
-        </h2>
-        <Link href="/chantiers" style={{ color: 'var(--orange)' }}>
+        <p style={{ color: 'var(--red)', marginBottom: '1rem' }}>{error || 'Chantier non trouvé'}</p>
+        <Link href="/chantiers" style={{ color: 'var(--blue)' }}>
           ← Retour aux chantiers
         </Link>
       </div>
     );
   }
 
-  // ==================== MODE RÉCAP/ÉDITION ====================
   const meta = chantier.metadata || {};
 
   return (
@@ -314,7 +302,10 @@ export default function ChantierEditPage() {
           gap: '0.5rem',
           fontSize: '0.95rem'
         }}>
-          <Link href="/chantiers" style={{ color: 'var(--gray)', fontWeight: '500' }}>
+          <Link 
+            href="/chantiers" 
+            style={{ color: 'var(--gray)', fontWeight: '500' }}
+          >
             ← Mes chantiers
           </Link>
           <span style={{ color: 'var(--gray)' }}>/</span>
@@ -326,236 +317,222 @@ export default function ChantierEditPage() {
 
       {/* CONTENU PRINCIPAL */}
       <div style={{ 
-        maxWidth: '600px', 
+        maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: '70px'
+        paddingTop: '70px',
       }}>
         
-        {/* CARTE RÉCAP */}
+        {/* CARTE PRINCIPALE - Style cohérent avec les autres pages */}
         <div style={{
-          background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.12) 0%, rgba(249, 115, 22, 0.04) 100%)',
-          border: '1px solid rgba(249, 115, 22, 0.25)',
+          background: 'linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, var(--orange) 30%, #1a1a1a) 100%)',
           borderRadius: '16px',
+          borderLeft: '4px solid var(--orange)',
+          boxShadow: '0 4px 16px rgba(249, 115, 22, 0.15)',
           overflow: 'hidden'
         }}>
           
-          {/* Header */}
+          {/* Header avec titre et badge */}
           <div style={{
-            padding: '1.25rem',
+            padding: '1rem 1.25rem',
             borderBottom: '1px solid rgba(255,255,255,0.08)',
             display: 'flex',
-            alignItems: 'flex-start',
             justifyContent: 'space-between',
-            gap: '1rem'
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: '0.75rem'
           }}>
-            <div>
-              <h1 style={{ 
-                fontSize: '1.5rem', 
-                fontWeight: '700', 
-                color: 'var(--gray-light)',
-                margin: 0,
-                marginBottom: '0.25rem'
-              }}>
-                🏗️ {chantier.titre}
-              </h1>
-              <span style={{
-                display: 'inline-block',
-                padding: '0.2rem 0.6rem',
-                borderRadius: '12px',
-                fontSize: '0.75rem',
-                fontWeight: '600',
-                background: chantier.statut === 'nouveau' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                color: chantier.statut === 'nouveau' ? '#a855f7' : '#3b82f6'
-              }}>
-                {chantier.statut === 'nouveau' ? '✨ Nouveau' : '🔄 En cours'}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🏗️</span>
+              <div>
+                <h1 style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: '700',
+                  color: 'var(--gray-light)',
+                  margin: 0
+                }}>
+                  {chantier.titre}
+                </h1>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '10px',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  marginTop: '0.25rem',
+                  background: chantier.statut === 'nouveau' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                  color: chantier.statut === 'nouveau' ? '#a855f7' : '#3b82f6'
+                }}>
+                  {chantier.statut === 'nouveau' ? '✨ Nouveau' : '🔄 En cours'}
+                </span>
+              </div>
+            </div>
+            
+            {/* Boutons d'action - TOUJOURS VISIBLES */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <button
+                onClick={handleModifier}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'rgba(255,255,255,0.05)',
+                  color: 'var(--gray-light)',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                ✏️ Modifier
+              </button>
+              <button
+                onClick={handleLancerPhasage}
+                disabled={isLaunchingPhasage}
+                style={{
+                  padding: '0.5rem 1.25rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--orange)',
+                  color: 'white',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  cursor: isLaunchingPhasage ? 'not-allowed' : 'pointer',
+                  opacity: isLaunchingPhasage ? 0.7 : 1,
+                  transition: 'all 0.2s',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.35rem'
+                }}
+              >
+                {isLaunchingPhasage ? (
+                  <>
+                    <span className="spinner" style={{ width: '14px', height: '14px' }}></span>
+                    Phasage...
+                  </>
+                ) : (
+                  <>🚀 Lancer le phasage</>
+                )}
+              </button>
             </div>
           </div>
 
-          {/* Contenu */}
-          <div style={{ padding: '1.25rem' }}>
-            
-            {/* Description */}
-            {chantier.description && (
-              <RecapItem 
-                icon="📋" 
-                label="Projet" 
-                value={chantier.description}
-              />
-            )}
-
-            {/* Budget */}
-            {chantier.budget_initial && (
-              <RecapItem 
-                icon="💰" 
-                label="Budget maximum" 
-                value={`${chantier.budget_initial.toLocaleString()} € ${meta.budget_inclut_materiaux ? '(matériaux inclus)' : ''}`}
-              />
-            )}
-
-            {/* Disponibilité */}
-            {meta.disponibilite_heures_semaine && (
-              <RecapItem 
-                icon="⏰" 
-                label="Disponibilité" 
-                value={`${meta.disponibilite_heures_semaine}h / semaine`}
-              />
-            )}
-
-            {/* Deadline */}
-            {meta.deadline_semaines && (
-              <RecapItem 
-                icon="📅" 
-                label="Objectif" 
-                value={`Terminer en ${meta.deadline_semaines} semaines`}
-              />
-            )}
-
-            {/* Compétences OK */}
-            {meta.competences_ok && meta.competences_ok.length > 0 && (
-              <RecapItem icon="✅" label="À l'aise avec">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
-                  {meta.competences_ok.map((comp, idx) => (
-                    <span key={idx} style={{
-                      background: 'rgba(16, 185, 129, 0.2)',
-                      color: '#10b981',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '15px',
-                      fontSize: '0.8rem'
-                    }}>
-                      {comp}
-                    </span>
-                  ))}
-                </div>
-              </RecapItem>
-            )}
-
-            {/* Compétences faibles */}
-            {meta.competences_faibles && meta.competences_faibles.length > 0 && (
-              <RecapItem icon="⚠️" label="Moins à l'aise avec">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
-                  {meta.competences_faibles.map((comp, idx) => (
-                    <span key={idx} style={{
-                      background: 'rgba(245, 158, 11, 0.2)',
-                      color: '#f59e0b',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '15px',
-                      fontSize: '0.8rem'
-                    }}>
-                      {comp}
-                    </span>
-                  ))}
-                </div>
-              </RecapItem>
-            )}
-
-            {/* Travaux pro */}
-            {meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 && (
-              <RecapItem icon="👷" label="À confier à un pro (si nécessaire)">
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', marginTop: '0.4rem' }}>
-                  {meta.travaux_pro_suggeres.map((travail, idx) => (
-                    <span key={idx} style={{
-                      background: 'rgba(99, 102, 241, 0.2)',
-                      color: '#818cf8',
-                      padding: '0.2rem 0.6rem',
-                      borderRadius: '15px',
-                      fontSize: '0.8rem'
-                    }}>
-                      {travail}
-                    </span>
-                  ))}
-                </div>
-              </RecapItem>
-            )}
-
-            {/* Contraintes */}
-            {meta.contraintes && (
-              <RecapItem 
-                icon="📝" 
-                label="Contraintes" 
-                value={meta.contraintes}
-              />
-            )}
-
-          </div>
-
-          {/* Footer - Actions */}
+          {/* Contenu en GRID 2 colonnes sur desktop */}
           <div style={{
-            padding: '1.25rem',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            display: 'flex',
+            padding: '1rem 1.25rem',
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '0.75rem'
           }}>
-            <button
-              onClick={handleModifier}
-              style={{
-                flex: 1,
-                padding: '0.75rem',
-                borderRadius: '10px',
-                border: '1px solid rgba(255,255,255,0.2)',
-                background: 'transparent',
-                color: 'var(--gray-light)',
-                fontSize: '0.95rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              ✏️ Modifier
-            </button>
-            <button
-              onClick={handleLancerPhasage}
-              disabled={isLaunchingPhasage}
-              style={{
-                flex: 2,
-                padding: '0.75rem',
-                borderRadius: '10px',
-                border: 'none',
-                background: 'var(--orange)',
-                color: 'white',
-                fontSize: '0.95rem',
-                fontWeight: '700',
-                cursor: isLaunchingPhasage ? 'not-allowed' : 'pointer',
-                opacity: isLaunchingPhasage ? 0.7 : 1,
-                transition: 'all 0.2s',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              {isLaunchingPhasage ? (
-                <>
-                  <span className="spinner" style={{ width: '16px', height: '16px' }}></span>
-                  Phasage en cours...
-                </>
-              ) : (
-                <>🚀 Lancer le phasage</>
+            
+            {/* COLONNE GAUCHE */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              
+              {/* Description */}
+              {chantier.description && (
+                <CompactItem 
+                  icon="📋" 
+                  label="Projet" 
+                  value={chantier.description}
+                  fullWidth
+                />
               )}
-            </button>
+
+              {/* Budget + Dispo sur même ligne */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {chantier.budget_initial && (
+                  <CompactItem 
+                    icon="💰" 
+                    label="Budget" 
+                    value={`${chantier.budget_initial.toLocaleString()} €`}
+                    subValue={meta.budget_inclut_materiaux ? '(matériaux inclus)' : ''}
+                  />
+                )}
+                {meta.disponibilite_heures_semaine && (
+                  <CompactItem 
+                    icon="⏰" 
+                    label="Dispo" 
+                    value={`${meta.disponibilite_heures_semaine}h/sem`}
+                  />
+                )}
+                {meta.deadline_semaines && (
+                  <CompactItem 
+                    icon="📅" 
+                    label="Objectif" 
+                    value={`${meta.deadline_semaines} sem`}
+                  />
+                )}
+              </div>
+
+              {/* Contraintes */}
+              {meta.contraintes && (
+                <CompactItem 
+                  icon="📝" 
+                  label="Contraintes" 
+                  value={meta.contraintes}
+                  fullWidth
+                />
+              )}
+            </div>
+
+            {/* COLONNE DROITE - Compétences */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              
+              {/* Compétences OK */}
+              {meta.competences_ok && meta.competences_ok.length > 0 && (
+                <TagsItem 
+                  icon="✅" 
+                  label="À l'aise avec"
+                  tags={meta.competences_ok}
+                  color="#10b981"
+                />
+              )}
+
+              {/* Compétences faibles */}
+              {meta.competences_faibles && meta.competences_faibles.length > 0 && (
+                <TagsItem 
+                  icon="⚠️" 
+                  label="Moins à l'aise"
+                  tags={meta.competences_faibles}
+                  color="#f59e0b"
+                />
+              )}
+
+              {/* Travaux pro */}
+              {meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 && (
+                <TagsItem 
+                  icon="👷" 
+                  label="Pro suggéré"
+                  tags={meta.travaux_pro_suggeres}
+                  color="#818cf8"
+                />
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Info supplémentaire */}
+        {/* Info phasage - Plus discret */}
         <div style={{
-          marginTop: '1rem',
-          padding: '1rem',
+          marginTop: '0.75rem',
+          padding: '0.75rem 1rem',
           background: 'rgba(255,255,255,0.03)',
-          borderRadius: '12px',
-          textAlign: 'center'
+          borderRadius: '10px',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
         }}>
+          <span style={{ fontSize: '1rem' }}>💡</span>
           <p style={{ 
-            fontSize: '0.85rem', 
+            fontSize: '0.8rem', 
             color: 'var(--gray)',
-            margin: 0
+            margin: 0,
+            lineHeight: '1.4'
           }}>
-            💡 Le phasage va générer automatiquement les <strong>lots de travaux</strong> adaptés à ton projet.
-            Tu pourras ensuite les ajuster et démarrer ton chantier !
+            Le phasage génère automatiquement les <strong style={{ color: 'var(--gray-light)' }}>lots de travaux</strong> adaptés. 
+            Tu pourras les ajuster ensuite.
           </p>
         </div>
       </div>
@@ -563,48 +540,107 @@ export default function ChantierEditPage() {
   );
 }
 
-// Composant pour chaque item du récap
-function RecapItem({ 
+// ==================== COMPOSANTS COMPACTS ====================
+
+function CompactItem({ 
   icon, 
   label, 
-  value, 
-  children 
+  value,
+  subValue,
+  fullWidth = false
 }: { 
   icon: string; 
   label: string; 
-  value?: string;
-  children?: React.ReactNode;
+  value: string;
+  subValue?: string;
+  fullWidth?: boolean;
 }) {
   return (
     <div style={{
-      marginBottom: '1rem',
-      padding: '0.75rem',
-      background: 'rgba(0,0,0,0.2)',
-      borderRadius: '10px'
+      flex: fullWidth ? '1 1 100%' : '1 1 auto',
+      minWidth: fullWidth ? '100%' : '120px',
+      padding: '0.6rem 0.75rem',
+      background: 'rgba(0,0,0,0.25)',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '0.5rem'
     }}>
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
-        <span style={{ fontSize: '1.1rem' }}>{icon}</span>
-        <div style={{ flex: 1 }}>
-          <div style={{
-            fontSize: '0.75rem',
-            color: 'var(--gray)',
-            marginBottom: '0.25rem',
-            textTransform: 'uppercase',
-            letterSpacing: '0.5px'
-          }}>
-            {label}
-          </div>
-          {value && (
-            <div style={{
-              fontSize: '0.9rem',
-              color: 'var(--gray-light)',
-              lineHeight: '1.4'
-            }}>
-              {value}
-            </div>
-          )}
-          {children}
+      <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: '0.65rem',
+          color: 'var(--gray)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px',
+          marginBottom: '0.15rem'
+        }}>
+          {label}
         </div>
+        <div style={{
+          fontSize: '0.85rem',
+          color: 'var(--gray-light)',
+          lineHeight: '1.3',
+          wordBreak: 'break-word'
+        }}>
+          {value}
+          {subValue && (
+            <span style={{ fontSize: '0.75rem', color: 'var(--gray)', marginLeft: '0.25rem' }}>
+              {subValue}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TagsItem({ 
+  icon, 
+  label, 
+  tags,
+  color
+}: { 
+  icon: string; 
+  label: string; 
+  tags: string[];
+  color: string;
+}) {
+  return (
+    <div style={{
+      padding: '0.6rem 0.75rem',
+      background: 'rgba(0,0,0,0.25)',
+      borderRadius: '8px'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        marginBottom: '0.4rem'
+      }}>
+        <span style={{ fontSize: '0.85rem' }}>{icon}</span>
+        <span style={{
+          fontSize: '0.65rem',
+          color: 'var(--gray)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px'
+        }}>
+          {label}
+        </span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+        {tags.map((tag, idx) => (
+          <span key={idx} style={{
+            background: `${color}20`,
+            color: color,
+            padding: '0.15rem 0.5rem',
+            borderRadius: '12px',
+            fontSize: '0.75rem',
+            fontWeight: '500'
+          }}>
+            {tag}
+          </span>
+        ))}
       </div>
     </div>
   );
