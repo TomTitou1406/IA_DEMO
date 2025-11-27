@@ -99,7 +99,7 @@ function getWelcomeMessage(level: NavigationLevel): string {
       if (window.location.pathname === '/chantiers/nouveau') {
         return "Salut ! Je vais t'aider à décrire ton projet, prêt à démarrer ? 🏗️";
       }
-  return "Tu souhaites apporter une modification au chantier avant le phasage ? 🔧";
+      return "Tu souhaites apporter une modification au chantier avant le phasage ? 🔧";
     case 'chantiers':
       return 'Salut ! Je peux t\'aider à gérer tes projets ?';
     case 'lots':
