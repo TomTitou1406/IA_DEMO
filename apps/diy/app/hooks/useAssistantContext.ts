@@ -95,7 +95,11 @@ function getWelcomeMessage(level: NavigationLevel): string {
     case 'home':
       return 'Salut ! Je suis ton assistant bricolage. Que veux-tu savoir sur l\'application PapiBricole ?';
     case 'chantier_edit':
-      return 'Salut ! Je vais t\'aider à décrire ton projet, prêt à démarrer ? 🏗️';
+      // Vérifier si c'est une création ou une édition
+      if (window.location.pathname === '/chantiers/nouveau') {
+        return "Salut ! Je vais t'aider à décrire ton projet, prêt à démarrer ? 🏗️";
+      }
+  return "Tu souhaites apporter une modification au chantier avant le phasage ? 🔧";
     case 'chantiers':
       return 'Salut ! Je peux t\'aider à gérer tes projets ?';
     case 'lots':
