@@ -386,6 +386,14 @@ export default function ChantierEditPage() {
                   alignItems: 'center',
                   gap: '0.35rem'
                 }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  e.currentTarget.style.borderColor = 'var(--gray-light)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                }}
               >
                 ✏️ Modifier
               </button>
@@ -406,6 +414,16 @@ export default function ChantierEditPage() {
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.35rem'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isLaunchingPhasage) {
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 {isLaunchingPhasage ? (
