@@ -516,89 +516,27 @@ export default function ChatInterface({
   };
   
  // Valider et créer/modifier le chantier
-const handleValidateRecap = async (recap: RecapData) => {
-  setIsCreatingChantier(true);
-  
-  try {
-    const { createChantier, updateChantier } = await import('../lib/services/chantierService');
+  const handleValidateRecap = async (recap: RecapData) => {
+    setIsCreatingChantier(true);
     
-    // Générer un titre court
-    const generateTitreShort = (projet: string): string => {
-      const keywords = ['rénovation', 'création', 'aménagement', 'installation', 'construction'];
-      const rooms = ['salle de bain', 'sdb', 'cuisine', 'chambre', 'salon', 'garage', 'terrasse', 'combles', 'grenier'];
+    try {
+      const { createChantier, updateChantier } = await import('../lib/services/chantierService');
       
-      const projetLower = projet.toLowerCase();
-      let action = '';
-      let room = '';
-      
-      for (const kw of keywords) {
-        if (projetLower.includes(kw)) {
-          action = kw.charAt(0).toUpperCase() + kw.slice(1);
-          break;
+      // Générer un titre court
+      const generateTitreShort = (projet: string): string => {
+        const keywords = ['rénovation', 'création', 'aménagement', 'installation', 'construction'];
+        const rooms = ['salle de bain', 'sdb', 'cuisine', 'chambre', 'salon', 'garage', 'terrasse', 'combles', 'grenier'];
+        
+        const projetLower = projet.toLowerCase();
+        let action = '';
+        let room = '';
+        
+        for (const kw of keywords) {
+          if (projetLower.includes(kw)) {
+            action = kw.charAt(0).toUpperCase() + kw.slice(1);
+            break;
+          }
         }
-      }
-      
-      for (const r of rooms) {
-        if (projetLower.includes(r)) {
-          room = r === 'sdb' ? 'SDB' : r.charAt(0).toUpperCase() + r.slice(1);
-          break;
-        }
-      }
-      
-      if (action && room) return `${action} ${room}`;
-      return projet.split(' ').slice(0, 3).join(' ');
-    };
-
-    const titreShort = generateTitreShort(recap.projet);
-    
-    // Vérifier si on est en mode modification (chantierId existe dans promptContext)
-    const existingChantierId = promptContext?.chantierId;
-    const isModification = existingChantierId && existingChantierId !== 'nouveau';
-    
-    const chantierData = {
-      titre: titreShort,
-      description: recap.projet,
-      budget_initial: recap.budget_max,
-      duree_estimee_heures: recap.disponibilite_heures_semaine * recap.deadline_semaines,
-      metadata: {
-        budget_inclut_materiaux: recap.budget_inclut_materiaux,
-        disponibilite_heures_semaine: recap.disponibilite_heures_semaine,
-        deadline_semaines: recap.deadline_semaines,
-        competences_ok: recap.competences_ok,
-        competences_faibles: recap.competences_faibles,
-        travaux_pro_suggeres: recap.travaux_pro_suggeres,
-        contraintes: recap.contraintes
-      }
-    };
-    
-    let chantier;
-    
-    if (isModification) {
-      // MODE MODIFICATION - Mettre à jour le chantier existant
-      chantier = await updateChantier(existingChantierId, chantierData);
-      console.log('✅ Chantier mis à jour:', chantier);
-    } else {
-      // MODE CRÉATION - Créer un nouveau chantier
-      chantier = await createChantier(chantierData);
-      console.log('✅ Chantier créé:', chantier);
-    }
-
-    if (!chantier || !chantier.id) {
-      throw new Error('Échec de la création/modification du chantier');
-    }
-    
-    setShowRecapModal(false);
-    
-    // Rediriger vers la page du chantier
-    window.location.href = `/chantiers/${chantier.id}`;
-    
-  } catch (error) {
-    console.error('Erreur création/modification chantier:', error);
-    alert('Erreur lors de la création/modification du chantier. Vérifie la console.');
-  } finally {
-    setIsCreatingChantier(false);
-  }
-};
         
         for (const r of rooms) {
           if (projetLower.includes(r)) {
@@ -607,19 +545,19 @@ const handleValidateRecap = async (recap: RecapData) => {
           }
         }
         
-        if (action && room) {
-          return `${action} ${room}`;
-        }
-        
-        // Fallback : premiers mots
+        if (action && room) return `${action} ${room}`;
         return projet.split(' ').slice(0, 3).join(' ');
       };
-      
-      // Créer le chantier en BDD
+  
       const titreShort = generateTitreShort(recap.projet);
-      const chantier = await createChantier({
-        titre: titreShort,  // ← Titre court
-        description: recap.projet,  // ← Description complète
+      
+      // Vérifier si on est en mode modification (chantierId existe dans promptContext)
+      const existingChantierId = promptContext?.chantierId;
+      const isModification = existingChantierId && existingChantierId !== 'nouveau';
+      
+      const chantierData = {
+        titre: titreShort,
+        description: recap.projet,
         budget_initial: recap.budget_max,
         duree_estimee_heures: recap.disponibilite_heures_semaine * recap.deadline_semaines,
         metadata: {
@@ -631,13 +569,23 @@ const handleValidateRecap = async (recap: RecapData) => {
           travaux_pro_suggeres: recap.travaux_pro_suggeres,
           contraintes: recap.contraintes
         }
-      });
-  
-      if (!chantier || !chantier.id) {
-        throw new Error('Échec de la création du chantier');
+      };
+      
+      let chantier;
+      
+      if (isModification) {
+        // MODE MODIFICATION - Mettre à jour le chantier existant
+        chantier = await updateChantier(existingChantierId, chantierData);
+        console.log('✅ Chantier mis à jour:', chantier);
+      } else {
+        // MODE CRÉATION - Créer un nouveau chantier
+        chantier = await createChantier(chantierData);
+        console.log('✅ Chantier créé:', chantier);
       }
   
-      console.log('✅ Chantier créé:', chantier);
+      if (!chantier || !chantier.id) {
+        throw new Error('Échec de la création/modification du chantier');
+      }
       
       setShowRecapModal(false);
       
@@ -645,8 +593,8 @@ const handleValidateRecap = async (recap: RecapData) => {
       window.location.href = `/chantiers/${chantier.id}`;
       
     } catch (error) {
-      console.error('Erreur création chantier:', error);
-      alert('Erreur lors de la création du chantier. Vérifie la console.');
+      console.error('Erreur création/modification chantier:', error);
+      alert('Erreur lors de la création/modification du chantier. Vérifie la console.');
     } finally {
       setIsCreatingChantier(false);
     }
