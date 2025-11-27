@@ -1,10 +1,10 @@
 /**
  * RecapModal.tsx
  * 
- * Modal de récapitulatif avant création du chantier
+ * Modal de récapitulatif avant création/modification du chantier
  * Affiche les infos collectées et permet de valider/modifier
  * 
- * @version 1.0
+ * @version 1.1
  * @date 27 novembre 2025
  */
 
@@ -32,6 +32,7 @@ interface RecapModalProps {
   onModify: () => void;
   isLoading?: boolean;
   themeColor?: string;
+  isModification?: boolean;
 }
 
 export default function RecapModal({
@@ -41,7 +42,8 @@ export default function RecapModal({
   onValidate,
   onModify,
   isLoading = false,
-  themeColor = 'var(--orange)'
+  themeColor = 'var(--orange)',
+  isModification = false
 }: RecapModalProps) {
   
   if (!isOpen) return null;
@@ -272,10 +274,10 @@ export default function RecapModal({
             {isLoading ? (
               <>
                 <span className="spinner" style={{ width: '16px', height: '16px' }}></span>
-                Création en cours...
+                {isModification ? 'Mise à jour...' : 'Création en cours...'}
               </>
             ) : (
-              <>🚀 Créer le chantier</>
+              <>{isModification ? '✅ Mettre à jour' : '🚀 Créer le chantier'}</>
             )}
           </button>
         </div>
