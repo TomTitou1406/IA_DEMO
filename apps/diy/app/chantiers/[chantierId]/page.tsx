@@ -14,29 +14,12 @@
 import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
-import FloatingAssistant from '@/app/components/FloatingAssistant';
 
 export default function ChantierEditPage() {
   const params = useParams();
   const router = useRouter();
   const chantierId = params.chantierId as string;  
   const isCreation = chantierId === 'nouveau';
-
-  const [isAssistantReady, setIsAssistantReady] = useState(false);
-
-  // Ouvrir l'assistant automatiquement après le montage
-  useEffect(() => {
-    // Petit délai pour laisser le contexte se charger
-    const timer = setTimeout(() => {
-      setIsAssistantReady(true);
-      // Ouvrir l'assistant via sessionStorage (le FloatingAssistant lit cette valeur)
-      if (typeof window !== 'undefined') {
-        sessionStorage.setItem('papibricole_assistant_open', 'true');
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, []);
 
   return (
     <>
@@ -173,10 +156,7 @@ export default function ChantierEditPage() {
           />
         </div>
       </div>
-
-      {/* FLOATING ASSISTANT */}
-      {isAssistantReady && <FloatingAssistant />}
-
+  
       {/* ANIMATION CSS */}
       <style jsx>{`
         @keyframes bounce {
