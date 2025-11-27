@@ -91,16 +91,22 @@ export default function FloatingAssistant() {
   }, [isOpen]);
 
   // Écouter l'événement custom pour ouvrir l'assistant
-  useEffect(() => {
+   useEffect(() => {
     const handleOpenAssistant = () => {
       setIsOpen(true);
       setAssistantState('idle');
     };
-  
+    
+    const handleCloseAssistant = () => {
+      setIsOpen(false);
+    };
+    
     window.addEventListener('openAssistant', handleOpenAssistant);
+    window.addEventListener('closeAssistant', handleCloseAssistant);
     
     return () => {
       window.removeEventListener('openAssistant', handleOpenAssistant);
+      window.removeEventListener('closeAssistant', handleCloseAssistant);
     };
   }, []);
 
