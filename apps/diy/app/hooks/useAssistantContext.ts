@@ -20,6 +20,7 @@ export type PageContext =
   | 'home'
   | 'aide'
   | 'chantiers'
+  | 'chantier_edit'
   | 'lots'
   | 'etapes'
   | 'taches'
@@ -92,15 +93,17 @@ function getColorForLevel(level: NavigationLevel, pathname: string): string {
 function getWelcomeMessage(level: NavigationLevel): string {
   switch (level) {
     case 'home':
-      return 'Salut ! Je suis ton assistant bricolage. Pose-moi tes questions ! 🔨';
+      return 'Salut ! Je suis ton assistant bricolage. Que veux-tu savoir sur l\'application PapiBricole ?';
+    case 'chantier_edit':
+      return 'Salut ! Je vais t\'aider à décrire ton projet, prêt à démarrer ? 🏗️';
     case 'chantiers':
-      return 'Je peux t\'aider à organiser tes projets !';
+      return 'Salut ! Je peux t\'aider à gérer tes projets ?';
     case 'lots':
-      return 'Je connais ce chantier. Comment puis-je t\'aider ?';
+      return 'Salut ! Je connais ce chantier. Comment puis-je t\'aider ?';
     case 'etapes':
-      return 'Je suis ton expert pour ce lot. Pose-moi tes questions !';
+      return 'Salut ! Je suis ton expert pour ce lot. Comment puis-je t\'aider ?';
     case 'taches':
-      return 'Je te guide tâche par tâche. Prêt ?';
+      return 'Salut ! Je te guide tâche par tâche. Comment puis-je t\'aider ?';
     default:
       return 'Comment puis-je t\'aider ?';
   }
@@ -110,16 +113,18 @@ function getPlaceholder(level: NavigationLevel): string {
   switch (level) {
     case 'home':
       return 'Comment puis-je t\'aider ?';
+    case 'chantier_edit':
+      return 'Décris-moi ton projet...';
     case 'chantiers':
       return 'Une question sur tes projets ?';
     case 'lots':
-      return 'Question sur ce chantier...';
+      return 'Une question sur ce lot ?';
     case 'etapes':
-      return 'Question sur ce lot...';
+      return 'Une question sur les étapes à suivre ?';
     case 'taches':
       return 'Besoin d\'aide sur une tâche ?';
     default:
-      return 'Ta question...';
+      return 'Quelle est ta question ?';
   }
 }
 
@@ -129,6 +134,8 @@ function mapLevelToPageContext(level: NavigationLevel, pathname: string): PageCo
   if (pathname.startsWith('/profil')) return 'profil';
   
   switch (level) {
+    case 'chantier_edit':
+      return 'chantiers';  // Utilise le même contexte que chantiers
     case 'chantiers':
       return 'chantiers';
     case 'lots':
