@@ -245,8 +245,8 @@ export default function ChatInterface({
     }
   }, [isGeneratingAudio, isPlaying, loading, onStateChange]);
 
-  /**
-   * Détecte et extrait le JSON de récap d'une réponse IA
+    /**
+   * Extrait le recap JSON de la réponse si présent
    * Retourne { hasRecap, recap, cleanContent }
    */
   const extractRecapFromResponse = (content: string): {
@@ -255,28 +255,43 @@ export default function ChatInterface({
     cleanContent: string;
   } => {
     try {
-      const jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      // Pattern 1: ```json ... ```
+      let jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      
+      // Pattern 2: JSON brut avec ready_for_recap (sans backticks)
+      if (!jsonMatch) {
+        jsonMatch = content.match(/(\{[\s\S]*"ready_for_recap"\s*:\s*true[\s\S]*\})/);
+      }
       
       if (jsonMatch && jsonMatch[1]) {
-        const jsonStr = jsonMatch[1].trim();
+        // Nettoyer le JSON (supprimer espaces multiples, normaliser)
+        let jsonStr = jsonMatch[1].trim();
+        
+        // Normaliser les espaces multiples en un seul
+        jsonStr = jsonStr.replace(/\s+/g, ' ');
+        
+        // Tenter le parsing
         const parsed = JSON.parse(jsonStr);
         
         if (parsed.ready_for_recap && parsed.recap) {
           // Extraire le contenu AVANT toute mention du JSON/récap
-          let cleanContent = content.split('```json')[0].trim();
+          let cleanContent = content.split('```json')[0].split('{"ready_for_recap"')[0].trim();
           
           // Supprimer les phrases d'introduction du JSON
           cleanContent = cleanContent
             .replace(/Voici le récapitulatif[^:]*:/gi, '')
             .replace(/Voici le récap[^:]*:/gi, '')
+            .replace(/Voici la mise à jour[^:]*:/gi, '')
             .replace(/récapitulatif mis à jour[^:]*:/gi, '')
             .replace(/récapitulatif final[^:]*:/gi, '')
             .trim();
           
           // Si le contenu est vide ou trop court, mettre un message par défaut
-          if (!cleanContent || cleanContent.length < 20) {
-            cleanContent = "Parfait, j'ai bien pris en compte tes informations !";
+          if (!cleanContent || cleanContent.length < 10) {
+            cleanContent = "Parfait, je mets à jour ton projet !";
           }
+          
+          console.log('✅ Recap JSON détecté:', parsed.recap);
           
           return {
             hasRecap: true,
@@ -288,11 +303,11 @@ export default function ChatInterface({
       
       return { hasRecap: false, recap: null, cleanContent: content };
     } catch (error) {
-      console.error('Erreur parsing recap JSON:', error);
+      console.error('Erreur parsing recap JSON:', error, 'Content:', content);
       return { hasRecap: false, recap: null, cleanContent: content };
     }
   };
-
+  
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
