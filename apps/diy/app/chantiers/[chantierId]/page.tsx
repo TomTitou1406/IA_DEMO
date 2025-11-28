@@ -6,9 +6,10 @@
  * - Sinon → mode récap/édition (affiche le chantier + actions)
  * 
  * Design compact avec 2 colonnes sur desktop
+ * Affiche tous les champs enrichis (surface, équipements, réseaux, etc.)
  * 
- * @version 2.1
- * @date 27 novembre 2025
+ * @version 2.2
+ * @date 28 novembre 2025
  */
 
 'use client';
@@ -26,9 +27,23 @@ interface ChantierData {
   statut: string;
   progression: number;
   metadata?: {
+    // Budget & Planning
     budget_inclut_materiaux?: boolean;
     disponibilite_heures_semaine?: number;
     deadline_semaines?: number;
+    // Infos enrichies
+    surface_m2?: number;
+    style_souhaite?: string;
+    etat_existant?: string;
+    elements_a_deposer?: string[];
+    elements_a_conserver?: string[];
+    equipements_souhaites?: string[];
+    reseaux?: {
+      electricite_a_refaire: boolean;
+      plomberie_a_refaire: boolean;
+      ventilation_a_prevoir: boolean;
+    };
+    // Compétences
     competences_ok?: string[];
     competences_faibles?: string[];
     travaux_pro_suggeres?: string[];
@@ -459,7 +474,25 @@ export default function ChantierEditPage() {
                 />
               )}
 
-              {/* Budget + Dispo sur même ligne */}
+              {/* Surface + Style sur même ligne */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {meta.surface_m2 && (
+                  <CompactItem 
+                    icon="📐" 
+                    label="Surface" 
+                    value={`${meta.surface_m2} m²`}
+                  />
+                )}
+                {meta.style_souhaite && (
+                  <CompactItem 
+                    icon="🎨" 
+                    label="Style" 
+                    value={meta.style_souhaite}
+                  />
+                )}
+              </div>
+
+              {/* Budget + Dispo + Deadline */}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {chantier.budget_initial && (
                   <CompactItem 
@@ -485,6 +518,26 @@ export default function ChantierEditPage() {
                 )}
               </div>
 
+              {/* État existant */}
+              {meta.etat_existant && (
+                <CompactItem 
+                  icon="🏚️" 
+                  label="État existant" 
+                  value={meta.etat_existant}
+                  fullWidth
+                />
+              )}
+
+              {/* Éléments à déposer */}
+              {meta.elements_a_deposer && meta.elements_a_deposer.length > 0 && (
+                <TagsItem 
+                  icon="🗑️" 
+                  label="À déposer"
+                  tags={meta.elements_a_deposer}
+                  color="#ef4444"
+                />
+              )}
+
               {/* Contraintes */}
               {meta.contraintes && (
                 <CompactItem 
@@ -496,8 +549,49 @@ export default function ChantierEditPage() {
               )}
             </div>
 
-            {/* COLONNE DROITE - Compétences */}
+            {/* COLONNE DROITE */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+
+              {/* Équipements souhaités */}
+              {meta.equipements_souhaites && meta.equipements_souhaites.length > 0 && (
+                <TagsItem 
+                  icon="🛁" 
+                  label="Équipements à installer"
+                  tags={meta.equipements_souhaites}
+                  color="#3b82f6"
+                />
+              )}
+
+              {/* Réseaux */}
+              {meta.reseaux && (
+                <div style={{
+                  padding: '0.6rem 0.75rem',
+                  background: 'rgba(0,0,0,0.25)',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    marginBottom: '0.4rem'
+                  }}>
+                    <span style={{ fontSize: '0.85rem' }}>🔌</span>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      color: 'var(--gray)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.3px'
+                    }}>
+                      Réseaux
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                    <NetworkChip icon="⚡" label="Élec" active={meta.reseaux.electricite_a_refaire} />
+                    <NetworkChip icon="💧" label="Plomb" active={meta.reseaux.plomberie_a_refaire} />
+                    <NetworkChip icon="💨" label="Ventil" active={meta.reseaux.ventilation_a_prevoir} />
+                  </div>
+                </div>
+              )}
               
               {/* Compétences OK */}
               {meta.competences_ok && meta.competences_ok.length > 0 && (
@@ -661,5 +755,33 @@ function TagsItem({
         ))}
       </div>
     </div>
+  );
+}
+
+function NetworkChip({ 
+  icon, 
+  label, 
+  active 
+}: { 
+  icon: string; 
+  label: string; 
+  active: boolean;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.25rem',
+      padding: '0.2rem 0.5rem',
+      background: active ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+      border: active ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
+      borderRadius: '12px',
+      fontSize: '0.7rem',
+      color: active ? '#ef4444' : '#10b981'
+    }}>
+      <span>{icon}</span>
+      <span>{label}</span>
+      <span style={{ fontWeight: '600' }}>{active ? '⚠️' : '✓'}</span>
+    </span>
   );
 }
