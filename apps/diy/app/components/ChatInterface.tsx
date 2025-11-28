@@ -565,21 +565,58 @@ export default function ChatInterface({
       };
 
       const titreShort = generateTitreShort(recap.projet);
-      const chantierData = {
-        titre: titreShort,
-        description: recap.projet,
-        budget_initial: recap.budget_max,
-        duree_estimee_heures: recap.disponibilite_heures_semaine * recap.deadline_semaines,
-        metadata: {
-          budget_inclut_materiaux: recap.budget_inclut_materiaux,
-          disponibilite_heures_semaine: recap.disponibilite_heures_semaine,
-          deadline_semaines: recap.deadline_semaines,
-          competences_ok: recap.competences_ok,
-          competences_faibles: recap.competences_faibles,
-          travaux_pro_suggeres: recap.travaux_pro_suggeres,
-          contraintes: recap.contraintes
+
+      // En mode modification, récupérer les données existantes pour fusion
+      let existingMetadata = {};
+      if (isModification && existingChantierId) {
+        try {
+          const { getChantierById } = await import('../lib/services/chantierService');
+          const existingChantier = await getChantierById(existingChantierId);
+          if (existingChantier?.metadata) {
+            existingMetadata = existingChantier.metadata;
+          }
+        } catch (err) {
+          console.warn('Impossible de charger le chantier existant:', err);
         }
+      }
+      
+      // Construire les nouvelles metadata en fusionnant avec l'existant
+      const newMetadata = {
+        ...existingMetadata, // Garde les valeurs existantes
+        // Écrase uniquement les champs présents dans le recap
+        ...(recap.budget_inclut_materiaux !== undefined && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
+        ...(recap.disponibilite_heures_semaine !== undefined && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
+        ...(recap.deadline_semaines !== undefined && { deadline_semaines: recap.deadline_semaines }),
+        ...(recap.competences_ok !== undefined && { competences_ok: recap.competences_ok }),
+        ...(recap.competences_faibles !== undefined && { competences_faibles: recap.competences_faibles }),
+        ...(recap.travaux_pro_suggeres !== undefined && { travaux_pro_suggeres: recap.travaux_pro_suggeres }),
+        ...(recap.contraintes !== undefined && { contraintes: recap.contraintes }),
+        // Nouveaux champs enrichis
+        ...(recap.surface_m2 !== undefined && { surface_m2: recap.surface_m2 }),
+        ...(recap.etat_existant !== undefined && { etat_existant: recap.etat_existant }),
+        ...(recap.elements_a_deposer !== undefined && { elements_a_deposer: recap.elements_a_deposer }),
+        ...(recap.elements_a_conserver !== undefined && { elements_a_conserver: recap.elements_a_conserver }),
+        ...(recap.equipements_souhaites !== undefined && { equipements_souhaites: recap.equipements_souhaites }),
+        ...(recap.style_souhaite !== undefined && { style_souhaite: recap.style_souhaite }),
+        ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
       };
+      
+      const chantierData = {
+        titre: recap.projet ? titreShort : undefined, // Ne change le titre que si projet modifié
+        description: recap.projet || undefined,
+        budget_initial: recap.budget_max || undefined,
+        duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
+          ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
+          : undefined,
+        metadata: newMetadata
+      };
+      
+      // Nettoyer les undefined pour ne pas écraser avec null
+      Object.keys(chantierData).forEach(key => {
+        if (chantierData[key as keyof typeof chantierData] === undefined) {
+          delete chantierData[key as keyof typeof chantierData];
+        }
+      });
       
       let chantier: any;
       
