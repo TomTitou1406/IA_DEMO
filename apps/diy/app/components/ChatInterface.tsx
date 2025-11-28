@@ -631,9 +631,17 @@ export default function ChatInterface({
       ...(!isEmptyValue(recap.budget_inclut_materiaux) && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
       ...(!isEmptyValue(recap.disponibilite_heures_semaine) && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
       ...(!isEmptyValue(recap.deadline_semaines) && { deadline_semaines: recap.deadline_semaines }),
-      ...(!isEmptyValue(recap.contraintes) && { contraintes: recap.contraintes }),
+      ...(!isEmptyValue(recap.contraintes) && { 
+        contraintes: existingMetadata.contraintes 
+          ? `${existingMetadata.contraintes} ${recap.contraintes}`
+          : recap.contraintes 
+      }),
+      ...(!isEmptyValue(recap.etat_existant) && { 
+        etat_existant: existingMetadata.etat_existant 
+          ? `${existingMetadata.etat_existant} ${recap.etat_existant}`
+          : recap.etat_existant 
+      }),
       ...(!isEmptyValue(recap.surface_m2) && { surface_m2: recap.surface_m2 }),
-      ...(!isEmptyValue(recap.etat_existant) && { etat_existant: recap.etat_existant }),
       ...(!isEmptyValue(recap.style_souhaite) && { style_souhaite: recap.style_souhaite }),
       ...(!isEmptyValue(recap.reseaux) && { reseaux: recap.reseaux }),
       ...(!isEmptyValue(recap.budget_max) && { budget_max: recap.budget_max }),
