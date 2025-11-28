@@ -64,7 +64,8 @@ export async function POST(request: NextRequest) {
 - Reste conversationnel
 - N'utilise JAMAIS de formatage Markdown (**, __, etc.)`;
     }
-
+    
+    console.log('📋 CONTEXTE ENVOYÉ À L\'IA:', finalPrompt.substring(0, 2000));
     const systemMessage = {
       role: 'system' as const,
       content: finalPrompt
