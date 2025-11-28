@@ -662,6 +662,14 @@ const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefi
           updateData.description = recap.projet;
         }
         
+        // Mettre à jour les colonnes directes si modifiées
+        if (recap.budget_max !== undefined) {
+          updateData.budget_initial = recap.budget_max;
+        }
+        if (recap.disponibilite_heures_semaine !== undefined && recap.deadline_semaines !== undefined) {
+          updateData.duree_estimee_heures = recap.disponibilite_heures_semaine * recap.deadline_semaines;
+        }
+        
         chantier = await updateChantier(existingChantierId, updateData);
         console.log('✅ Chantier mis à jour:', chantier);
       }
