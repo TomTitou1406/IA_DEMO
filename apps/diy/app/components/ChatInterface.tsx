@@ -603,15 +603,24 @@ export default function ChatInterface({
         ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
       };
       
-      const chantierData = {
-        titre: titreShort || 'Nouveau chantier',
-        description: recap.projet,
-        budget_initial: recap.budget_max,
-        duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
-          ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
-          : undefined,
+    const chantierData: Record<string, any> = {
         metadata: newMetadata
       };
+      
+      // En mode création, ajouter titre et description
+      // En mode modification, ne les changer que si recap.projet est défini
+      if (!isModification) {
+        chantierData.titre = titreShort || 'Mon chantier';
+        chantierData.description = recap.projet;
+        chantierData.budget_initial = recap.budget_max;
+        chantierData.duree_estimee_heures = (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
+          ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
+          : undefined;
+      } else if (recap.projet) {
+        // En modification, ne changer que si explicitement fourni
+        chantierData.titre = titreShort;
+        chantierData.description = recap.projet;
+      }
       
       // Nettoyer les undefined pour ne pas écraser avec null
       Object.keys(chantierData).forEach(key => {
