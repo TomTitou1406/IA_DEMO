@@ -279,6 +279,31 @@ export default function RecapModal({
             </>
           )}
 
+          {/* SECTION 6 : Compétences */}
+          {(recap.competences_ok?.length > 0 || recap.competences_faibles?.length > 0 || recap.travaux_pro_suggeres?.length > 0) && (
+            <>
+              <SectionTitle icon="🎯" title="Compétences" />
+              
+              {recap.competences_ok?.length > 0 && (
+                <RecapItem icon="✅" label="À l'aise avec">
+                  <TagList tags={recap.competences_ok} color="#10b981" />
+                </RecapItem>
+              )}
+              
+              {recap.competences_faibles?.length > 0 && (
+                <RecapItem icon="⚠️" label="Moins à l'aise">
+                  <TagList tags={recap.competences_faibles} color="#f59e0b" />
+                </RecapItem>
+              )}
+              
+              {recap.travaux_pro_suggeres?.length > 0 && (
+                <RecapItem icon="👷" label="Pro suggéré">
+                  <TagList tags={recap.travaux_pro_suggeres} color="#818cf8" />
+                </RecapItem>
+              )}
+            </>
+          )}
+
         </div>
 
         {/* Footer - Actions */}
