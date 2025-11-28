@@ -257,48 +257,25 @@ export default function RecapModal({
           )}
 
           {/* SECTION 5 : Budget & Planning */}
-          <SectionTitle icon="💰" title="Budget & Planning" />
-          
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-            <RecapChip 
-              icon="💰" 
-              value={`${recap.budget_max.toLocaleString()} €`}
-              subValue={recap.budget_inclut_materiaux ? 'matériaux inclus' : 'hors matériaux'}
-            />
-            <RecapChip icon="⏰" value={`${recap.disponibilite_heures_semaine}h/sem`} />
-            <RecapChip icon="📅" value={`${recap.deadline_semaines} semaines`} />
-          </div>
-
-          {/* SECTION 6 : Compétences */}
-          <SectionTitle icon="🎯" title="Compétences" />
-          
-          {recap.competences_ok.length > 0 && (
-            <RecapItem icon="✅" label="À l'aise avec">
-              <TagList tags={recap.competences_ok} color="#10b981" />
-            </RecapItem>
-          )}
-          
-          {recap.competences_faibles.length > 0 && (
-            <RecapItem icon="⚠️" label="Moins à l'aise">
-              <TagList tags={recap.competences_faibles} color="#f59e0b" />
-            </RecapItem>
-          )}
-          
-          {recap.travaux_pro_suggeres.length > 0 && (
-            <RecapItem icon="👷" label="Pro suggéré">
-              <TagList tags={recap.travaux_pro_suggeres} color="#818cf8" />
-            </RecapItem>
-          )}
-
-          {/* SECTION 7 : Contraintes */}
-          {recap.contraintes && (
+          {(recap.budget_max || recap.disponibilite_heures_semaine || recap.deadline_semaines) && (
             <>
-              <SectionTitle icon="📝" title="Contraintes" />
-              <RecapItem 
-                icon="⚠️" 
-                label="" 
-                value={recap.contraintes}
-              />
+              <SectionTitle icon="💰" title="Budget & Planning" />
+              
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                {recap.budget_max && (
+                  <RecapChip 
+                    icon="💰" 
+                    value={`${recap.budget_max.toLocaleString()} €`}
+                    subValue={recap.budget_inclut_materiaux ? 'matériaux inclus' : 'hors matériaux'}
+                  />
+                )}
+                {recap.disponibilite_heures_semaine && (
+                  <RecapChip icon="⏰" value={`${recap.disponibilite_heures_semaine}h/sem`} />
+                )}
+                {recap.deadline_semaines && (
+                  <RecapChip icon="📅" value={`${recap.deadline_semaines} semaines`} />
+                )}
+              </div>
             </>
           )}
 
