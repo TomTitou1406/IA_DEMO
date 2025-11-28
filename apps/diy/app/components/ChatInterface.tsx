@@ -582,23 +582,8 @@ export default function ChatInterface({
         }
       }
       
-      // Fonction pour fusionner les tableaux (concat + dédoublonner)
-const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefined): string[] | undefined => {
-  if (!incoming) return existing;
-  if (!existing) return incoming;
-  // Fusionner et dédoublonner (insensible à la casse)
-  const merged = [...existing];
-  incoming.forEach(item => {
-    const itemLower = item.toLowerCase();
-    if (!merged.some(m => m.toLowerCase() === itemLower)) {
-      merged.push(item);
-    }
-  });
-  return merged;
-};
-
 // Construire les nouvelles metadata en fusionnant avec l'existant
-    // Fonction pour fusionner les tableaux (concat + dédoublonner)
+// Fonction pour fusionner les tableaux (concat + dédoublonner)
 const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefined): string[] | undefined => {
   if (!incoming || incoming.length === 0) return existing;
   if (!existing || existing.length === 0) return incoming;
