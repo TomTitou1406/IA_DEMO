@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
     });
 
     let finalPrompt = promptConfig.systemPrompt;
-    let maxTokens = 800;
+    let maxTokens = 2000;
 
     // Ajustements pour le mode vocal
     if (isVoiceMode) {
