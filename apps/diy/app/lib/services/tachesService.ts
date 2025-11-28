@@ -1,6 +1,7 @@
 // apps/diy/app/lib/services/tachesService.ts
 
 import { supabase } from '@/app/lib/supabaseClient';
+import { updateEtapeProgression } from './progressionService';
 
 /**
  * Récupère toutes les tâches d'une étape avec stats
@@ -56,9 +57,20 @@ export async function getTacheById(tacheId: string) {
 
 /**
  * Remet une tâche à faire (terminée → à_faire)
+ * ET met à jour la progression de toute la hiérarchie
  */
 export async function demarrerTache(tacheId: string) {
   try {
+    // 1. Récupérer la tâche pour avoir l'etape_id
+    const { data: tache } = await supabase
+      .from('taches')
+      .select('etape_id')
+      .eq('id', tacheId)
+      .single();
+
+    if (!tache) throw new Error('Tâche introuvable');
+
+    // 2. Mettre à jour le statut
     const { data, error } = await supabase
       .from('taches')
       .update({
@@ -71,6 +83,10 @@ export async function demarrerTache(tacheId: string) {
       .single();
 
     if (error) throw error;
+
+    // 3. Mettre à jour la progression de l'étape (et cascade vers lot et chantier)
+    await updateEtapeProgression(tache.etape_id);
+
     return data;
   } catch (error) {
     console.error('Error restarting tache:', error);
@@ -80,7 +96,7 @@ export async function demarrerTache(tacheId: string) {
 
 /**
  * Termine une tâche (à_faire → terminée)
- * ET met à jour l'étape en "en_cours" si c'était la 1ère tâche
+ * ET met à jour la progression de toute la hiérarchie
  */
 export async function terminerTache(tacheId: string, dureeReelleMinutes?: number) {
   try {
@@ -113,23 +129,8 @@ export async function terminerTache(tacheId: string, dureeReelleMinutes?: number
 
     if (error) throw error;
 
-    // 3. Vérifier si l'étape doit passer en "en_cours"
-    const { data: etape } = await supabase
-      .from('etapes')
-      .select('statut')
-      .eq('id', tache.etape_id)
-      .single();
-
-    // Si l'étape est "à_venir", la passer en "en_cours"
-    if (etape && etape.statut === 'à_venir') {
-      await supabase
-        .from('etapes')
-        .update({
-          statut: 'en_cours',
-          updated_at: new Date().toISOString()
-        })
-        .eq('id', tache.etape_id);
-    }
+    // 3. Mettre à jour la progression de l'étape (et cascade vers lot et chantier)
+    await updateEtapeProgression(tache.etape_id);
 
     return data;
   } catch (error) {
@@ -287,30 +288,52 @@ export async function createTache(tacheData: any) {
  */
 export async function deleteTache(tacheId: string) {
   try {
+    // 1. Récupérer l'etape_id avant suppression
+    const { data: tache } = await supabase
+      .from('taches')
+      .select('etape_id')
+      .eq('id', tacheId)
+      .single();
+
+    // 2. Supprimer la tâche
     const { error } = await supabase
       .from('taches')
       .delete()
       .eq('id', tacheId);
 
     if (error) throw error;
+
+    // 3. Mettre à jour la progression de l'étape
+    if (tache?.etape_id) {
+      await updateEtapeProgression(tache.etape_id);
+    }
   } catch (error) {
     console.error('Error deleting tache:', error);
     throw error;
   }
 }
 
-// Terminer toutes les tâches d'une étape
+/**
+ * Terminer toutes les tâches d'une étape
+ * ET met à jour la progression de toute la hiérarchie
+ */
 export async function terminerToutesLesTaches(etapeId: string) {
   try {
     const { data, error } = await supabase
       .from('taches')
       .update({ 
-        statut: 'terminée'
+        statut: 'terminée',
+        completed_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
       })
       .eq('etape_id', etapeId)
       .neq('statut', 'terminée');
 
     if (error) throw error;
+
+    // Mettre à jour la progression de l'étape (et cascade)
+    await updateEtapeProgression(etapeId);
+
     return data;
   } catch (error) {
     console.error('Error terminating all taches:', error);
