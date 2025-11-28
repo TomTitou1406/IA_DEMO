@@ -460,6 +460,9 @@ export default function ChatInterface({
       if (hasRecap && recap) {
         setRecapData(recap);
         setShowRecapModal(true);
+        // Arrêter l'audio et fermer l'assistant
+        stopAudio();
+        window.dispatchEvent(new CustomEvent('closeAssistant'));
       }
 
       // Lecture audio si mode vocal
