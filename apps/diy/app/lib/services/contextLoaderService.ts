@@ -486,10 +486,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     // Charger le lot courant (détaillé)
     const { data: lotCourant } = await supabase
       .from('travaux')
-      .select(`
-        id, titre, description, ordre, statut, progression,
-        expertise:expertises(code, nom)
-      `)
+      .select(`id, titre, progression, expertise:expertises(code, nom)`)
       .eq('id', travailId)
       .single();
 
@@ -534,7 +531,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
 
 📦 LOTS : ${lotsCompact}
 
-🔌 LOT ACTUEL : ${lotCourant?.titre || 'Lot'}
+🔌 LOT ACTUEL : ${lotCourant?.titre || 'Lot'} - ${lotCourant?.progression || 0}%
    ${lotCourant?.description || ''}
    Avancement : ${lotCourant?.progression || 0}%
 
@@ -595,7 +592,10 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
     // Charger le lot courant
     const { data: lotCourant } = await supabase
       .from('travaux')
-      .select(`id, titre, expertise:expertises(code, nom)`)
+      .select(`
+        id, titre, description, ordre, statut, progression,
+        expertise:expertises(code, nom)
+      `)
       .eq('id', travailId)
       .single();
 
@@ -609,7 +609,7 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
     // Charger l'étape courante (détaillée)
     const { data: etapeCourante } = await supabase
       .from('etapes')
-      .select('id, titre, description, numero, statut, duree_estimee_minutes')
+      .select('id, titre, description, numero, statut, progression, duree_estimee_minutes')
       .eq('id', etapeId)
       .single();
 
@@ -671,11 +671,11 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
 
 📦 LOTS : ${lotsCompact}
 
-🔌 LOT : ${lotCourant?.titre || 'Lot'} (${expertiseNom})
+🔌 LOT : ${lotCourant?.titre || 'Lot'} (${expertiseNom}) - ${lotCourant?.progression || 0}%
 
 📋 ÉTAPES : ${etapesCompact}
 
-📍 ÉTAPE ACTUELLE : ${etapeCourante?.titre || 'Étape'}
+📍 ÉTAPE ACTUELLE : ${etapeCourante?.titre || 'Étape'} - ${etapeCourante?.progression || 0}%
    ${etapeCourante?.description || ''}
 
 ✅ TÂCHES À RÉALISER (${nbTaches}) :
