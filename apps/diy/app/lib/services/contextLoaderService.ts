@@ -602,7 +602,7 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par t�
 
   } catch (error) {
     console.error('Erreur chargement contexte tâches:', error);
-    return loadEtapesContext(chantierId, travailId); // Fallback
+    return loadLotsContext(chantierId); // Fallback
   }
 }
 
