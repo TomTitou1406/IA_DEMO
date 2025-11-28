@@ -73,7 +73,7 @@ RÈGLES CONVERSATIONNELLES :
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [systemMessage, ...messages],
-      temperature: 0.2, // Déterministe pour instructions bricolage précises
+      temperature: 0.4, // 0,2 si on veut plus déterministe pour instructions bricolage précises
       max_tokens: maxTokens
     });
 
