@@ -601,10 +601,10 @@ export default function ChatInterface({
         ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
       };
       
-      const chantierData = {
-        titre: recap.projet ? titreShort : undefined, // Ne change le titre que si projet modifié
-        description: recap.projet || undefined,
-        budget_initial: recap.budget_max || undefined,
+      const chantierData: Record<string, any> = {
+        titre: titreShort || 'Nouveau chantier',
+        description: recap.projet,
+        budget_initial: recap.budget_max,
         duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
           ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
           : undefined,
