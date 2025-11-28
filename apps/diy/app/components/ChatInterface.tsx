@@ -569,7 +569,7 @@ export default function ChatInterface({
       const titreShort = generateTitreShort(recap.projet);
 
       // En mode modification, récupérer les données existantes pour fusion
-      let existingMetadata = {};
+     let existingMetadata: Record<string, any> = {};
       if (isModification && existingChantierId) {
         try {
           const { getChantierById } = await import('../lib/services/chantierService');
