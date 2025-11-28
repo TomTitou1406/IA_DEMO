@@ -607,40 +607,37 @@ export default function ChatInterface({
         metadata: newMetadata
       };
       
-      // En mode création, ajouter titre et description
-      // En mode modification, ne les changer que si recap.projet est défini
-      if (!isModification) {
-        chantierData.titre = titreShort || 'Mon chantier';
-        chantierData.description = recap.projet;
-        chantierData.budget_initial = recap.budget_max;
-        chantierData.duree_estimee_heures = (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
-          ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
-          : undefined;
-      } else if (recap.projet) {
-        // En modification, ne changer que si explicitement fourni
-        chantierData.titre = titreShort;
-        chantierData.description = recap.projet;
-      }
-      
-      // Nettoyer les undefined pour ne pas écraser avec null
-      Object.keys(chantierData).forEach(key => {
-        if (chantierData[key as keyof typeof chantierData] === undefined) {
-          delete chantierData[key as keyof typeof chantierData];
-        }
-      });
-      
-      let chantier: any;
-      
-      if (isModification) {
-        // MODE MODIFICATION - Mettre à jour le chantier existant
-        chantier = await updateChantier(existingChantierId, chantierData);
-        console.log('✅ Chantier mis à jour:', chantier);
-      } else {
-        // MODE CRÉATION - Créer un nouveau chantier
-        chantier = await createChantier(chantierData);
-        console.log('✅ Chantier créé:', chantier);
-      }
+     let chantier: any;
 
+      // En mode création
+      if (!isModification) {
+        const createData = {
+          titre: titreShort || 'Mon chantier',
+          description: recap.projet,
+          budget_initial: recap.budget_max,
+          duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
+            ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
+            : undefined,
+          metadata: newMetadata
+        };
+        
+        chantier = await createChantier(createData);
+        console.log('✅ Chantier créé:', chantier);
+      } else {
+        // MODE MODIFICATION - Ne changer que les champs nécessaires
+        const updateData: Record<string, any> = {
+          metadata: newMetadata
+        };
+        
+        if (recap.projet) {
+          updateData.titre = titreShort;
+          updateData.description = recap.projet;
+        }
+        
+        chantier = await updateChantier(existingChantierId, updateData);
+        console.log('✅ Chantier mis à jour:', chantier);
+      }
+      
       if (!chantier || !chantier.id) {
         throw new Error('Échec de la création/modification du chantier');
       }
