@@ -456,24 +456,22 @@ export default function ChatInterface({
         await persistMessage(assistantMessage);
       }
       
-      // Si recap détecté, ouvrir la modal
+      // Si recap détecté, ouvrir la modal et NE PAS lire l'audio
       if (hasRecap && recap) {
         setRecapData(recap);
         setShowRecapModal(true);
-        // Arrêter l'audio et fermer l'assistant
-        stopAudio();
-        window.dispatchEvent(new CustomEvent('closeAssistant'));
-      }
-
-      // Lecture audio si mode vocal
-      if (voiceMode && autoPlayAudio) {
-        setIsGeneratingAudio(true);
-        try {
-          const audioBlob = await textToSpeech(response.message);
-          await playAudio(audioBlob, audioElementRef);
-        } catch (audioError) {
-          console.error('Erreur audio:', audioError);
-          setIsGeneratingAudio(false);
+        // Pas de lecture audio, pas de fermeture assistant (la modal s'affiche par-dessus)
+      } else {
+        // Lecture audio SEULEMENT si PAS de recap
+        if (voiceMode && autoPlayAudio) {
+          setIsGeneratingAudio(true);
+          try {
+            const audioBlob = await textToSpeech(cleanContent);
+            await playAudio(audioBlob, audioElementRef);
+          } catch (audioError) {
+            console.error('Erreur audio:', audioError);
+            setIsGeneratingAudio(false);
+          }
         }
       }
 
