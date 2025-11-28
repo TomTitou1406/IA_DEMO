@@ -289,8 +289,8 @@ TON RÔLE : Tu es le Chef de chantier. Tu aides à organiser les lots, définir 
 }
 
 /**
- * Charge le contexte pour la page Création/Édition d'un chantier
- * Mode "nouveau" si chantierId est undefined ou "nouveau"
+ * Charge le contexte DONNÉES pour la page Création/Édition d'un chantier
+ * Retourne uniquement les données formatées, pas les instructions comportementales
  */
 async function loadChantierEditContext(chantierId?: string): Promise<ContextData> {
   const isCreation = !chantierId || chantierId === 'nouveau';
@@ -308,51 +308,14 @@ async function loadChantierEditContext(chantierId?: string): Promise<ContextData
       expertiseNom: 'Chef de chantier',
       expertiseIcon: '📋',
       itemCount: 0,
-      contextForAI: `MODE CRÉATION DE CHANTIER
+      contextForAI: `## DONNÉES DU CHANTIER
 
-Tu es le Chef de chantier et Économiste. Tu accompagnes le bricoleur dans la DÉFINITION de son nouveau projet.
-
-🎯 TON OBJECTIF :
-Collecter toutes les informations nécessaires pour créer un plan de chantier structuré en LOTS (travaux).
-
-📋 INFORMATIONS À COLLECTER (pose des questions naturellement, pas tout d'un coup) :
-
-1. **LE PROJET** : Que veut faire le bricoleur ? (rénovation, création, aménagement...)
-2. **L'EXISTANT** : État actuel des lieux, contraintes techniques
-3. **LE BUDGET** : Budget maximum, matériaux inclus ou non
-4. **LE TEMPS** : Disponibilité (heures/semaine), deadline souhaitée
-5. **LES COMPÉTENCES** : Domaines où il se sent à l'aise / moins à l'aise
-6. **L'AIDE PRO** : Y a-t-il des travaux qu'il préfère confier à un pro ? (conformité, technique, sécurité)
-
-💡 COMPORTEMENT :
-- Pose 1-2 questions à la fois, pas plus
-- Reformule pour confirmer ta compréhension
-- Sois encourageant et rassurant
-- Si le bricoleur dit "j'ai tout dit" ou "c'est bon", propose un récapitulatif
-
-📝 QUAND TU AS TOUTES LES INFOS :
-Réponds avec un message contenant EXACTEMENT ce format JSON à la fin :
-
-\`\`\`json
-{"ready_for_recap": true, "recap": {
-  "projet": "Description du projet",
-  "budget_max": 5000,
-  "budget_inclut_materiaux": true,
-  "disponibilite_heures_semaine": 10,
-  "deadline_semaines": 8,
-  "competences_ok": ["peinture", "petit bricolage"],
-  "competences_faibles": ["électricité", "plomberie"],
-  "travaux_pro_suggeres": ["tableau électrique"],
-  "contraintes": "Appartement en étage, pas d'ascenseur"
-}}
-\`\`\`
-
-NE génère ce JSON que quand tu as VRAIMENT toutes les infos essentielles.`
+Mode : CRÉATION (nouveau chantier)
+Aucune donnée existante.`
     };
   }
   
-  // ==================== MODE ÉDITION ====================
-  // Charger le chantier existant avec metadata
+  // ==================== MODE ÉDITION / VISUALISATION ====================
   try {
     const { data: chantier, error } = await supabase
       .from('chantiers')
@@ -369,198 +332,134 @@ NE génère ce JSON que quand tu as VRAIMENT toutes les infos essentielles.`
       .eq('chantier_id', chantierId)
       .order('ordre', { ascending: true });
 
+    // Charger les notes épinglées du chantier
+    const { data: notes } = await supabase
+      .from('notes')
+      .select('contenu, source, created_at')
+      .eq('level', 'chantier')
+      .eq('level_id', chantierId)
+      .order('created_at', { ascending: false })
+      .limit(10);
+
     const nbLots = lots?.length || 0;
     const lotsFormatted = (lots || []).map((lot: any, idx: number) => 
       `${idx + 1}. ${getStatutEmoji(lot.statut)} ${lot.titre}`
-    ).join('\n');
+    ).join('\n   ');
 
     // Charger le journal si existant
     const journal = await loadJournalForChantier(chantierId);
     const journalText = formatJournalForAI(journal);
 
-    // Extraire le metadata pour le contexte
+    // Extraire TOUS les metadata
     const meta = chantier.metadata || {};
-    const metadataText = meta.competences_ok ? `
-📊 DÉTAILS COLLECTÉS PRÉCÉDEMMENT :
-- Budget inclut matériaux : ${meta.budget_inclut_materiaux ? 'Oui' : 'Non'}
-- Disponibilité : ${meta.disponibilite_heures_semaine || '?'}h/semaine
-- Objectif : ${meta.deadline_semaines || '?'} semaines
-- Compétences OK : ${meta.competences_ok?.join(', ') || 'Non précisé'}
-- Compétences faibles : ${meta.competences_faibles?.join(', ') || 'Aucune'}
-- Travaux pro suggérés : ${meta.travaux_pro_suggeres?.join(', ') || 'Aucun'}
-- Contraintes : ${meta.contraintes || 'Aucune'}
-` : '';
+    
+    // ==================== CONSTRUIRE LE CONTEXTE DONNÉES ====================
+    let contextForAI = `## DONNÉES ACTUELLES DU CHANTIER\n\n`;
+    
+    // Infos générales
+    contextForAI += `**Titre :** ${chantier.titre || 'Non défini'}\n`;
+    contextForAI += `**Description :** ${chantier.description || 'Non définie'}\n`;
+    contextForAI += `**Statut :** ${chantier.statut || 'nouveau'}\n`;
+    contextForAI += `**Progression :** ${chantier.progression || 0}%\n\n`;
+    
+    // Caractéristiques
+    if (meta.surface_m2) contextForAI += `**Surface :** ${meta.surface_m2} m²\n`;
+    if (meta.style_souhaite) contextForAI += `**Style :** ${meta.style_souhaite}\n`;
+    
+    // Budget & Planning
+    const budget = chantier.budget_initial || meta.budget_max;
+    if (budget) {
+      contextForAI += `**Budget :** ${budget}€ ${meta.budget_inclut_materiaux ? '(matériaux inclus)' : '(hors matériaux)'}\n`;
+    }
+    if (meta.disponibilite_heures_semaine) {
+      contextForAI += `**Disponibilité :** ${meta.disponibilite_heures_semaine}h/semaine\n`;
+    }
+    if (meta.deadline_semaines) {
+      contextForAI += `**Objectif :** ${meta.deadline_semaines} semaines\n`;
+    }
+    
+    // État existant
+    if (meta.etat_existant) {
+      contextForAI += `**État existant :** ${meta.etat_existant}\n`;
+    }
+    
+    // Équipements & Éléments
+    if (meta.equipements_souhaites && meta.equipements_souhaites.length > 0) {
+      contextForAI += `**Équipements à installer :** ${meta.equipements_souhaites.join(', ')}\n`;
+    }
+    if (meta.elements_a_deposer && meta.elements_a_deposer.length > 0) {
+      contextForAI += `**Éléments à déposer :** ${meta.elements_a_deposer.join(', ')}\n`;
+    }
+    if (meta.elements_a_conserver && meta.elements_a_conserver.length > 0) {
+      contextForAI += `**Éléments à conserver :** ${meta.elements_a_conserver.join(', ')}\n`;
+    }
+    
+    // Réseaux
+    if (meta.reseaux) {
+      const reseauxList = [];
+      reseauxList.push(meta.reseaux.electricite_a_refaire ? 'Électricité à refaire' : 'Électricité OK');
+      reseauxList.push(meta.reseaux.plomberie_a_refaire ? 'Plomberie à refaire' : 'Plomberie OK');
+      reseauxList.push(meta.reseaux.ventilation_a_prevoir ? 'Ventilation à prévoir' : 'Ventilation OK');
+      contextForAI += `**Réseaux :** ${reseauxList.join(' | ')}\n`;
+    }
+    
+    // Compétences
+    if (meta.competences_ok && meta.competences_ok.length > 0) {
+      contextForAI += `**Compétences maîtrisées :** ${meta.competences_ok.join(', ')}\n`;
+    }
+    if (meta.competences_faibles && meta.competences_faibles.length > 0) {
+      contextForAI += `**Compétences faibles :** ${meta.competences_faibles.join(', ')}\n`;
+    }
+    if (meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0) {
+      contextForAI += `**Travaux pro suggérés :** ${meta.travaux_pro_suggeres.join(', ')}\n`;
+    }
+    
+    // Contraintes
+    if (meta.contraintes) {
+      contextForAI += `**Contraintes :** ${meta.contraintes}\n`;
+    }
+    
+    // Lots
+    contextForAI += `\n## LOTS DÉFINIS (${nbLots})\n\n`;
+    if (nbLots > 0) {
+      contextForAI += `   ${lotsFormatted}\n`;
+    } else {
+      contextForAI += `   Aucun lot - phasage non encore effectué\n`;
+    }
+    
+    // Notes épinglées
+    if (notes && notes.length > 0) {
+      contextForAI += `\n## NOTES ÉPINGLÉES\n\n`;
+      notes.forEach((n: any) => {
+        contextForAI += `   📌 ${n.contenu}\n`;
+      });
+    }
+    
+    // Journal
+    if (journalText) {
+      contextForAI += `\n## JOURNAL\n${journalText}`;
+    }
 
     return {
       level: 'chantier_edit',
       header: {
-        title: `Modifier : ${chantier.titre}`,
-        breadcrumb: `${nbLots} lot(s) défini(s)`,
-        expertiseLine: '📋 Chef de chantier & Économiste'
+        title: chantier.titre || 'Mon chantier',
+        breadcrumb: nbLots > 0 ? `${nbLots} lot(s) défini(s)` : 'Phasage à lancer',
+        expertiseLine: '📋 Chef de chantier'
       },
       expertiseCode: 'chef_chantier',
       expertiseNom: 'Chef de chantier',
       expertiseIcon: '📋',
       itemCount: nbLots,
       chantierId,
-      contextForAI: `MODE MODIFICATION DE CHANTIER
-
-🏗️ CHANTIER EN COURS DE CONFIGURATION : ${chantier.titre}
-
-📋 INFORMATIONS ACTUELLES :
-- Projet : ${chantier.description || 'Non défini'}
-- Budget : ${chantier.budget_initial || 'Non défini'}€
-- Durée estimée : ${chantier.duree_estimee_heures || 'Non définie'}h
-- Statut : ${chantier.statut}
-${metadataText}
-📦 LOTS ACTUELS (${nbLots}) :
-${lotsFormatted || 'Aucun lot - phasage non encore effectué'}
-${journalText}
-
-🎯 TON RÔLE :
-Tu es le Chef de chantier. L'utilisateur revient sur son chantier pour le MODIFIER avant de lancer le phasage.
-
-Il peut vouloir :
-- Ajouter des éléments au projet (ex: "ajouter un sèche-serviettes")
-- Modifier le budget ou les délais
-- Préciser des contraintes
-- Changer ses compétences déclarées
-
-💡 COMPORTEMENT :
-- Comprends sa demande de modification
-- Mets à jour mentalement les infos du chantier
-- Reformule pour confirmer ce qui va changer
-- Quand il confirme, génère un nouveau JSON récapitulatif avec les modifications
-
-📝 FORMAT DE RÉPONSE QUAND MODIFICATIONS TERMINÉES :
-Quand l'utilisateur dit "c'est bon", "j'ai fini", ou valide les modifications, réponds avec :
-
-\`\`\`json
-{"ready_for_recap": true, "recap": {
-  "projet": "Description mise à jour du projet",
-  "budget_max": ${chantier.budget_initial || 8000},
-  "budget_inclut_materiaux": ${meta.budget_inclut_materiaux ?? true},
-  "disponibilite_heures_semaine": ${meta.disponibilite_heures_semaine || 15},
-  "deadline_semaines": ${meta.deadline_semaines || 5},
-  "competences_ok": ${JSON.stringify(meta.competences_ok || [])},
-  "competences_faibles": ${JSON.stringify(meta.competences_faibles || [])},
-  "travaux_pro_suggeres": ${JSON.stringify(meta.travaux_pro_suggeres || [])},
-  "contraintes": "${meta.contraintes || ''}"
-}}
-\`\`\``,
+      contextForAI,
       journal,
       raw: { chantier, lots: lots || [] }
     };
 
   } catch (error) {
     console.error('Erreur chargement chantier pour édition:', error);
-    // Fallback vers mode création
     return loadChantierEditContext(undefined);
-  }
-}
-
-/**
- * Charge le contexte pour la page Étapes d'un lot
- */
-async function loadEtapesContext(chantierId: string, travailId: string): Promise<ContextData> {
-  try {
-    // Charger le chantier (compact)
-    const { data: chantier } = await supabase
-      .from('chantiers')
-      .select('id, titre, progression')
-      .eq('id', chantierId)
-      .single();
-
-    // Charger tous les lots (compact) - utilise "ordre"
-    const { data: lots } = await supabase
-      .from('travaux')
-      .select(`id, titre, ordre, statut, expertise:expertises(code, nom)`)
-      .eq('chantier_id', chantierId)
-      .order('ordre', { ascending: true });
-
-    // Charger le lot courant (détaillé)
-    const { data: lotCourant } = await supabase
-      .from('travaux')
-      .select(`
-        id, titre, description, ordre, statut, progression,
-        expertise:expertises(code, nom)
-      `)
-      .eq('id', travailId)
-      .single();
-
-    // Charger les étapes du lot - utilise "numero"
-    const { data: etapes } = await supabase
-      .from('etapes')
-      .select('id, titre, description, numero, statut, duree_estimee_minutes, difficulte')
-      .eq('travail_id', travailId)
-      .order('numero', { ascending: true });
-
-    // Charger le journal
-    const journal = await loadJournalForChantier(chantierId);
-
-    const nbEtapes = etapes?.length || 0;
-
-    // Formater les lots en une ligne compacte
-    const lotsCompact = (lots || []).map((lot: any) => {
-      const isCurrent = lot.id === travailId;
-      const emoji = getStatutEmoji(lot.statut);
-      return isCurrent ? `[${emoji} ${lot.titre}]` : `${emoji} ${lot.titre}`;
-    }).join(' → ');
-
-    // Formater les étapes (détaillées)
-    const etapesFormatted = (etapes || []).map((etape: any) => {
-      const statut = getStatutEmoji(etape.statut);
-      const duree = formatDuree(etape.duree_estimee_minutes);
-      return `${etape.numero}. ${statut} ${etape.titre}${duree ? ` (${duree})` : ''}`;
-    }).join('\n   ');
-
-    const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
-    const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
-    const expertiseIcon = getExpertiseIcon(expertiseCode);
-
-    const journalText = formatJournalForAI(journal);
-
-    const contextForAI = `
-🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}% avancé)
-
-📦 LOTS : ${lotsCompact || 'Aucun'}
-
-🔌 LOT ACTUEL : ${lotCourant?.titre || 'Lot'}
-   ${lotCourant?.description || ''}
-   Expertise : ${expertiseNom} | Avancement : ${lotCourant?.progression || 0}%
-
-📋 ÉTAPES À RÉALISER (${nbEtapes}) :
-   ${etapesFormatted || 'Aucune étape définie'}
-${journalText}
-TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot, étape par étape. Tu connais les dépendances avec les autres lots du chantier. Tu te souviens des décisions prises et des problèmes rencontrés.
-`.trim();
-
-    return {
-      level: 'etapes',
-      header: {
-        title: lotCourant?.titre || 'Lot',
-        breadcrumb: `Chantier/Lot >> ${nbEtapes} étapes`,
-        expertiseLine: `${expertiseIcon} ${expertiseNom}`
-      },
-      expertiseCode,
-      expertiseNom,
-      expertiseIcon,
-      itemCount: nbEtapes,
-      chantierId,
-      travailId,
-      contextForAI,
-      journal,
-      raw: { 
-        chantier: chantier || undefined, 
-        lots: lots || undefined, 
-        lotCourant: lotCourant || undefined, 
-        etapes: etapes || undefined 
-      }
-    };
-
-  } catch (error) {
-    console.error('Erreur chargement contexte étapes:', error);
-    return loadLotsContext(chantierId); // Fallback
   }
 }
 
