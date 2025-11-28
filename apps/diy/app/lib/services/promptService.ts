@@ -13,7 +13,7 @@ import { getExpertiseByCode, type Expertise } from './expertiseService';
 
 // ==================== TYPES ====================
 
-export type ContextType = 'home' | 'chantiers' | 'chantier_edit' | 'travaux' | 'chat' | 'profil' | 'aide';
+export type ContextType = 'home' | 'chantiers' | 'chantier_edit' | 'chantier_modification' | 'travaux' | 'chat' | 'profil' | 'aide';
 
 export interface PromptConfig {
   code: string;
@@ -418,6 +418,7 @@ function getPlaceholderForContext(contextType: ContextType): string {
     home: 'Comment fonctionne Papibricole ?',
     chantiers: 'Comment organiser mon chantier ?',
     chantier_edit: 'Décris-moi ton projet...',
+    chantier_modification: 'Quelle modification veux-tu apporter ?',
     travaux: 'Comment faire cette étape ?',
     chat: 'Pose ta question bricolage...',
     profil: 'Quel est ton niveau en bricolage ?',
@@ -464,6 +465,14 @@ Structuré, pragmatique, conseils clairs.${additionalContext ? `\n\nCONTEXTE:\n$
       systemPrompt: `Tu es un assistant pour créer un nouveau chantier bricolage.
   Aide l'utilisateur à définir son projet étape par étape.${additionalContext ? `\n\nCONTEXTE:\n${additionalContext}` : ''}`,
       placeholder: 'Décris-moi ton projet...',
+      source: 'fallback'
+    },
+    chantier_modification: {
+      code: 'fallback_chantier_modification',
+      role: 'coach',
+      systemPrompt: `Tu es un assistant pour modifier un chantier existant.
+    Écoute la modification demandée et applique-la.${additionalContext ? `\n\nCONTEXTE:\n${additionalContext}` : ''}`,
+      placeholder: 'Quelle modification veux-tu apporter ?',
       source: 'fallback'
     },
     travaux: {
