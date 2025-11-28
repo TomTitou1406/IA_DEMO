@@ -484,9 +484,9 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       .order('ordre', { ascending: true });
 
     // Charger le lot courant (détaillé)
-    const { data: lotCourant } = await supabase
+   const { data: lotCourant } = await supabase
       .from('travaux')
-      .select(`id, titre, progression, expertise:expertises(code, nom)`)
+      .select(`id, titre, description, progression, statut, expertise:expertises(code, nom)`)
       .eq('id', travailId)
       .single();
 
