@@ -439,8 +439,15 @@ export default function FloatingAssistant() {
               placeholder={placeholder}
               welcomeMessage={welcomeMessage}
               additionalContext={additionalContext}
+              promptContext={{
+                chantierId,
+                travailId,
+                etapeId
+              }}
               onStateChange={handleStateChange}
               compact={true}
+              chantierId={chantierId}
+              travailId={travailId}
               noteContext={getNoteContext()}
             />
           </div>
