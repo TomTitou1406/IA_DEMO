@@ -50,7 +50,7 @@ export async function POST(request: NextRequest) {
       finalPrompt = finalPrompt.replace('{{CHANTIER_CONTEXT}}', '(Aucune donnée de chantier disponible)');
     }
 
-    let maxTokens = 2000;
+    let maxTokens = 2500;
 
     // Ajustements pour le mode vocal
     if (isVoiceMode) {
