@@ -623,6 +623,16 @@ const isEmptyValue = (val: any): boolean => {
 };
 
     // Construire les nouvelles metadata en fusionnant avec l'existant
+    // Fonction pour vérifier si une valeur est "vide" (à ignorer)
+const isEmptyValue = (val: any): boolean => {
+  if (val === undefined || val === null) return true;
+  if (typeof val === 'string' && val.trim() === '') return true;
+  if (typeof val === 'number' && val === 0) return true;
+  if (Array.isArray(val) && val.length === 0) return true;
+  return false;
+};
+
+// Construire les nouvelles metadata en fusionnant avec l'existant
     const newMetadata: Record<string, any> = {
       ...existingMetadata,
       // Champs simples : écraser SEULEMENT si valeur non vide
