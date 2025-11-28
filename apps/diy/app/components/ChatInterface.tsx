@@ -582,40 +582,31 @@ export default function ChatInterface({
         }
       }
       
-// Construire les nouvelles metadata en fusionnant avec l'existant
-// Fonction pour fusionner les tableaux (concat + dédoublonner)
-const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefined): string[] | undefined => {
-  if (!incoming || incoming.length === 0) return existing;
-  if (!existing || existing.length === 0) return incoming;
-  // Fusionner et dédoublonner (insensible à la casse)
-  const merged = [...existing];
-  incoming.forEach(item => {
-    const itemLower = item.toLowerCase();
-    if (!merged.some(m => m.toLowerCase() === itemLower)) {
-      merged.push(item);
-    }
-  });
-  return merged;
-};
-
-// Fonction pour vérifier si une valeur est "vide" (à ignorer)
-const isEmptyValue = (val: any): boolean => {
-  if (val === undefined || val === null) return true;
-  if (typeof val === 'string' && val.trim() === '') return true;
-  if (typeof val === 'number' && val === 0) return true;
-  if (Array.isArray(val) && val.length === 0) return true;
-  return false;
-};
+    // Construire les nouvelles metadata en fusionnant avec l'existant
+    // Fonction pour fusionner les tableaux (concat + dédoublonner)
+    const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefined): string[] | undefined => {
+      if (!incoming || incoming.length === 0) return existing;
+      if (!existing || existing.length === 0) return incoming;
+      // Fusionner et dédoublonner (insensible à la casse)
+      const merged = [...existing];
+      incoming.forEach(item => {
+        const itemLower = item.toLowerCase();
+        if (!merged.some(m => m.toLowerCase() === itemLower)) {
+          merged.push(item);
+        }
+      });
+      return merged;
+    };
 
     // Construire les nouvelles metadata en fusionnant avec l'existant
     // Fonction pour vérifier si une valeur est "vide" (à ignorer)
-const isEmptyValue = (val: any): boolean => {
-  if (val === undefined || val === null) return true;
-  if (typeof val === 'string' && val.trim() === '') return true;
-  if (typeof val === 'number' && val === 0) return true;
-  if (Array.isArray(val) && val.length === 0) return true;
-  return false;
-};
+    const isEmptyValue = (val: any): boolean => {
+      if (val === undefined || val === null) return true;
+      if (typeof val === 'string' && val.trim() === '') return true;
+      if (typeof val === 'number' && val === 0) return true;
+      if (Array.isArray(val) && val.length === 0) return true;
+      return false;
+    };
 
 // Construire les nouvelles metadata en fusionnant avec l'existant
     const newMetadata: Record<string, any> = {
