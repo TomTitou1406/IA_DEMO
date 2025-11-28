@@ -598,37 +598,51 @@ const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefi
 };
 
 // Construire les nouvelles metadata en fusionnant avec l'existant
+    // Fonction pour fusionner les tableaux (concat + dédoublonner)
+const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefined): string[] | undefined => {
+  if (!incoming || incoming.length === 0) return existing;
+  if (!existing || existing.length === 0) return incoming;
+  // Fusionner et dédoublonner (insensible à la casse)
+  const merged = [...existing];
+  incoming.forEach(item => {
+    const itemLower = item.toLowerCase();
+    if (!merged.some(m => m.toLowerCase() === itemLower)) {
+      merged.push(item);
+    }
+  });
+  return merged;
+};
+
+// Fonction pour vérifier si une valeur est "vide" (à ignorer)
+const isEmptyValue = (val: any): boolean => {
+  if (val === undefined || val === null) return true;
+  if (typeof val === 'string' && val.trim() === '') return true;
+  if (typeof val === 'number' && val === 0) return true;
+  if (Array.isArray(val) && val.length === 0) return true;
+  return false;
+};
+
+    // Construire les nouvelles metadata en fusionnant avec l'existant
     const newMetadata: Record<string, any> = {
       ...existingMetadata,
-      // Champs simples : écraser si présent
-      ...(recap.budget_inclut_materiaux !== undefined && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
-      ...(recap.disponibilite_heures_semaine !== undefined && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
-      ...(recap.deadline_semaines !== undefined && { deadline_semaines: recap.deadline_semaines }),
-      ...(recap.contraintes !== undefined && { contraintes: recap.contraintes }),
-      ...(recap.surface_m2 !== undefined && { surface_m2: recap.surface_m2 }),
-      ...(recap.etat_existant !== undefined && { etat_existant: recap.etat_existant }),
-      ...(recap.style_souhaite !== undefined && { style_souhaite: recap.style_souhaite }),
-      ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
+      // Champs simples : écraser SEULEMENT si valeur non vide
+      ...(!isEmptyValue(recap.budget_inclut_materiaux) && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
+      ...(!isEmptyValue(recap.disponibilite_heures_semaine) && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
+      ...(!isEmptyValue(recap.deadline_semaines) && { deadline_semaines: recap.deadline_semaines }),
+      ...(!isEmptyValue(recap.contraintes) && { contraintes: recap.contraintes }),
+      ...(!isEmptyValue(recap.surface_m2) && { surface_m2: recap.surface_m2 }),
+      ...(!isEmptyValue(recap.etat_existant) && { etat_existant: recap.etat_existant }),
+      ...(!isEmptyValue(recap.style_souhaite) && { style_souhaite: recap.style_souhaite }),
+      ...(!isEmptyValue(recap.reseaux) && { reseaux: recap.reseaux }),
+      ...(!isEmptyValue(recap.budget_max) && { budget_max: recap.budget_max }),
       
       // Tableaux : FUSIONNER au lieu d'écraser
-      ...(recap.competences_ok !== undefined && { 
-        competences_ok: mergeArrays(existingMetadata.competences_ok, recap.competences_ok) 
-      }),
-      ...(recap.competences_faibles !== undefined && { 
-        competences_faibles: mergeArrays(existingMetadata.competences_faibles, recap.competences_faibles) 
-      }),
-      ...(recap.travaux_pro_suggeres !== undefined && { 
-        travaux_pro_suggeres: mergeArrays(existingMetadata.travaux_pro_suggeres, recap.travaux_pro_suggeres) 
-      }),
-      ...(recap.elements_a_deposer !== undefined && { 
-        elements_a_deposer: mergeArrays(existingMetadata.elements_a_deposer, recap.elements_a_deposer) 
-      }),
-      ...(recap.elements_a_conserver !== undefined && { 
-        elements_a_conserver: mergeArrays(existingMetadata.elements_a_conserver, recap.elements_a_conserver) 
-      }),
-      ...(recap.equipements_souhaites !== undefined && { 
-        equipements_souhaites: mergeArrays(existingMetadata.equipements_souhaites, recap.equipements_souhaites) 
-      }),
+      competences_ok: mergeArrays(existingMetadata.competences_ok, recap.competences_ok),
+      competences_faibles: mergeArrays(existingMetadata.competences_faibles, recap.competences_faibles),
+      travaux_pro_suggeres: mergeArrays(existingMetadata.travaux_pro_suggeres, recap.travaux_pro_suggeres),
+      elements_a_deposer: mergeArrays(existingMetadata.elements_a_deposer, recap.elements_a_deposer),
+      elements_a_conserver: mergeArrays(existingMetadata.elements_a_conserver, recap.elements_a_conserver),
+      equipements_souhaites: mergeArrays(existingMetadata.equipements_souhaites, recap.equipements_souhaites),
     };
       
     const chantierData: Record<string, any> = {
