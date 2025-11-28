@@ -601,7 +601,7 @@ export default function ChatInterface({
         ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
       };
       
-      const chantierData: Record<string, any> = {
+      const chantierData = {
         titre: titreShort || 'Nouveau chantier',
         description: recap.projet,
         budget_initial: recap.budget_max,
