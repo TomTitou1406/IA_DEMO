@@ -510,13 +510,13 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     }).join(' → ');
 
     // Formater étapes (détaillées)
-    const etapesFormatted = (etapes || []).map((etape: any) => {
+   const etapesFormatted = (etapes || []).map((etape: any) => {
       const statut = getStatutEmoji(etape.statut);
       const duree = formatDuree(etape.duree_estimee_minutes);
       const difficulte = etape.difficulte ? `[${etape.difficulte}]` : '';
-      let line = `${etape.numero}. ${statut} ${etape.titre} ${difficulte}`;
-      if (duree) line += ` (${duree})`;
-      if (etape.description) line += `\n      → ${etape.description}`;
+      const progression = etape.progression || 0;
+      let line = `${etape.numero}. ${statut} ${etape.titre} ${difficulte} (${duree}) - ${progression}%`;
+      // PAS de description ici pour réduire la taille
       return line;
     }).join('\n   ');
 
