@@ -539,6 +539,8 @@ export default function ChatInterface({
       
       // Générer un titre court
       const generateTitreShort = (projet: string): string => {
+        if (!projet) return 'Mon chantier';
+        
         const keywords = ['rénovation', 'création', 'aménagement', 'installation', 'construction'];
         const rooms = ['salle de bain', 'sdb', 'cuisine', 'chambre', 'salon', 'garage', 'terrasse', 'combles', 'grenier'];
         
