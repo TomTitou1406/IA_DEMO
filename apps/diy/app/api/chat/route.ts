@@ -61,7 +61,7 @@ RÈGLES CONVERSATIONNELLES :
 - Le BON SENS prime : si 5 étapes nécessaires, cite les 5
 - Sois clair mais agréable à écouter
 - N'utilise JAMAIS de formatage Markdown (**, __, etc.) car c'est pour l'audio`;
-      maxTokens = 200;
+      maxTokens = 2000;
     }
 
     const systemMessage = {
