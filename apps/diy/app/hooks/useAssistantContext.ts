@@ -21,6 +21,7 @@ export type PageContext =
   | 'aide'
   | 'chantiers'
   | 'chantier_edit'
+  | 'chantier_modification'
   | 'lots'
   | 'etapes'
   | 'taches'
@@ -139,7 +140,11 @@ function mapLevelToPageContext(level: NavigationLevel, pathname: string): PageCo
   
   switch (level) {
     case 'chantier_edit':
-      return 'chantier_edit';
+      // Distinguer création vs modification
+      if (pathname === '/chantiers/nouveau') {
+        return 'chantier_edit';  // Création → prompt collecte
+      }
+      return 'chantier_modification';  // Modification → prompt modification
     case 'chantiers':
       return 'chantiers';
     case 'lots':
