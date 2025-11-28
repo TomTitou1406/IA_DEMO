@@ -249,7 +249,8 @@ async function loadLotsContext(chantierId: string): Promise<ContextData> {
     const lotsFormatted = (lots || []).map((lot: any, idx: number) => {
       const statut = getStatutEmoji(lot.statut);
       const expertise = lot.expertise?.[0]?.nom || 'Général';
-      return `${idx + 1}. ${statut} ${lot.titre} (${expertise})`;
+      const progression = lot.progression || 0;
+      return `${idx + 1}. ${statut} ${lot.titre} (${expertise}) - ${progression}%`;
     }).join('\n   ');
 
     const journalText = formatJournalForAI(journal);
