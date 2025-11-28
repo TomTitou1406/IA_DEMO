@@ -464,6 +464,115 @@ Aucune donnée existante.`
 }
 
 /**
+ * Charge le contexte pour la page Étapes d'un lot
+ */
+async function loadEtapesContext(chantierId: string, travailId: string): Promise<ContextData> {
+  try {
+    // Charger le chantier (compact)
+    const { data: chantier } = await supabase
+      .from('chantiers')
+      .select('id, titre, progression')
+      .eq('id', chantierId)
+      .single();
+
+    // Charger tous les lots (compact) - utilise "ordre"
+    const { data: lots } = await supabase
+      .from('travaux')
+      .select(`id, titre, ordre, statut, expertise:expertises(code, nom)`)
+      .eq('chantier_id', chantierId)
+      .order('ordre', { ascending: true });
+
+    // Charger le lot courant (détaillé)
+    const { data: lotCourant } = await supabase
+      .from('travaux')
+      .select(`
+        id, titre, description, ordre, statut, progression,
+        expertise:expertises(code, nom)
+      `)
+      .eq('id', travailId)
+      .single();
+
+    // Charger les étapes du lot - utilise "numero"
+    const { data: etapes } = await supabase
+      .from('etapes')
+      .select('id, titre, description, numero, statut, duree_estimee_minutes, difficulte')
+      .eq('travail_id', travailId)
+      .order('numero', { ascending: true });
+
+    // Charger le journal
+    const journal = await loadJournalForChantier(chantierId);
+
+    const nbEtapes = etapes?.length || 0;
+
+    // Formater lots compact (une ligne)
+    const lotsCompact = (lots || []).map((lot: any) => {
+      const isCurrent = lot.id === travailId;
+      const emoji = getStatutEmoji(lot.statut);
+      return isCurrent ? `[${emoji} ${lot.titre}]` : `${emoji} ${lot.titre}`;
+    }).join(' → ');
+
+    // Formater étapes (détaillées)
+    const etapesFormatted = (etapes || []).map((etape: any) => {
+      const statut = getStatutEmoji(etape.statut);
+      const duree = formatDuree(etape.duree_estimee_minutes);
+      const difficulte = etape.difficulte ? `[${etape.difficulte}]` : '';
+      let line = `${etape.numero}. ${statut} ${etape.titre} ${difficulte}`;
+      if (duree) line += ` (${duree})`;
+      if (etape.description) line += `\n      → ${etape.description}`;
+      return line;
+    }).join('\n   ');
+
+    const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
+    const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
+    const expertiseIcon = getExpertiseIcon(expertiseCode);
+
+    const journalText = formatJournalForAI(journal);
+
+    const contextForAI = `
+🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}%)
+
+📦 LOTS : ${lotsCompact}
+
+🔌 LOT ACTUEL : ${lotCourant?.titre || 'Lot'}
+   ${lotCourant?.description || ''}
+   Avancement : ${lotCourant?.progression || 0}%
+
+📋 ÉTAPES À RÉALISER (${nbEtapes}) :
+   ${etapesFormatted || 'Aucune étape définie'}
+${journalText}
+TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot. Tu connais toutes les étapes et peux donner des conseils sur l'ordre, les dépendances, les points d'attention. Tu te souviens des décisions prises.
+`.trim();
+
+    return {
+      level: 'etapes',
+      header: {
+        title: lotCourant?.titre || 'Lot',
+        breadcrumb: `Chantier/Lot >> ${nbEtapes} étapes`,
+        expertiseLine: `${expertiseIcon} ${expertiseNom}`
+      },
+      expertiseCode,
+      expertiseNom,
+      expertiseIcon,
+      itemCount: nbEtapes,
+      chantierId,
+      travailId,
+      contextForAI,
+      journal,
+      raw: { 
+        chantier: chantier || undefined, 
+        lots: lots || undefined, 
+        lotCourant: lotCourant || undefined, 
+        etapes: etapes || undefined 
+      }
+    };
+
+  } catch (error) {
+    console.error('Erreur chargement contexte étapes:', error);
+    return loadLotsContext(chantierId); // Fallback
+  }
+}
+
+/**
  * Charge le contexte pour la page Tâches d'une étape
  */
 async function loadTachesContext(chantierId: string, travailId: string, etapeId: string): Promise<ContextData> {
@@ -602,7 +711,7 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par t�
 
   } catch (error) {
     console.error('Erreur chargement contexte tâches:', error);
-    return loadLotsContext(chantierId); // Fallback
+    return loadEtapesContext(chantierId, travailId); // Fallback
   }
 }
 
