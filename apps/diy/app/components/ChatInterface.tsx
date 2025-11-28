@@ -582,26 +582,54 @@ export default function ChatInterface({
         }
       }
       
-      // Construire les nouvelles metadata en fusionnant avec l'existant
-      const newMetadata = {
-        ...existingMetadata, // Garde les valeurs existantes
-        // Écrase uniquement les champs présents dans le recap
-        ...(recap.budget_inclut_materiaux !== undefined && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
-        ...(recap.disponibilite_heures_semaine !== undefined && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
-        ...(recap.deadline_semaines !== undefined && { deadline_semaines: recap.deadline_semaines }),
-        ...(recap.competences_ok !== undefined && { competences_ok: recap.competences_ok }),
-        ...(recap.competences_faibles !== undefined && { competences_faibles: recap.competences_faibles }),
-        ...(recap.travaux_pro_suggeres !== undefined && { travaux_pro_suggeres: recap.travaux_pro_suggeres }),
-        ...(recap.contraintes !== undefined && { contraintes: recap.contraintes }),
-        // Nouveaux champs enrichis
-        ...(recap.surface_m2 !== undefined && { surface_m2: recap.surface_m2 }),
-        ...(recap.etat_existant !== undefined && { etat_existant: recap.etat_existant }),
-        ...(recap.elements_a_deposer !== undefined && { elements_a_deposer: recap.elements_a_deposer }),
-        ...(recap.elements_a_conserver !== undefined && { elements_a_conserver: recap.elements_a_conserver }),
-        ...(recap.equipements_souhaites !== undefined && { equipements_souhaites: recap.equipements_souhaites }),
-        ...(recap.style_souhaite !== undefined && { style_souhaite: recap.style_souhaite }),
-        ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
-      };
+      // Fonction pour fusionner les tableaux (concat + dédoublonner)
+const mergeArrays = (existing: string[] | undefined, incoming: string[] | undefined): string[] | undefined => {
+  if (!incoming) return existing;
+  if (!existing) return incoming;
+  // Fusionner et dédoublonner (insensible à la casse)
+  const merged = [...existing];
+  incoming.forEach(item => {
+    const itemLower = item.toLowerCase();
+    if (!merged.some(m => m.toLowerCase() === itemLower)) {
+      merged.push(item);
+    }
+  });
+  return merged;
+};
+
+// Construire les nouvelles metadata en fusionnant avec l'existant
+    const newMetadata: Record<string, any> = {
+      ...existingMetadata,
+      // Champs simples : écraser si présent
+      ...(recap.budget_inclut_materiaux !== undefined && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
+      ...(recap.disponibilite_heures_semaine !== undefined && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
+      ...(recap.deadline_semaines !== undefined && { deadline_semaines: recap.deadline_semaines }),
+      ...(recap.contraintes !== undefined && { contraintes: recap.contraintes }),
+      ...(recap.surface_m2 !== undefined && { surface_m2: recap.surface_m2 }),
+      ...(recap.etat_existant !== undefined && { etat_existant: recap.etat_existant }),
+      ...(recap.style_souhaite !== undefined && { style_souhaite: recap.style_souhaite }),
+      ...(recap.reseaux !== undefined && { reseaux: recap.reseaux }),
+      
+      // Tableaux : FUSIONNER au lieu d'écraser
+      ...(recap.competences_ok !== undefined && { 
+        competences_ok: mergeArrays(existingMetadata.competences_ok, recap.competences_ok) 
+      }),
+      ...(recap.competences_faibles !== undefined && { 
+        competences_faibles: mergeArrays(existingMetadata.competences_faibles, recap.competences_faibles) 
+      }),
+      ...(recap.travaux_pro_suggeres !== undefined && { 
+        travaux_pro_suggeres: mergeArrays(existingMetadata.travaux_pro_suggeres, recap.travaux_pro_suggeres) 
+      }),
+      ...(recap.elements_a_deposer !== undefined && { 
+        elements_a_deposer: mergeArrays(existingMetadata.elements_a_deposer, recap.elements_a_deposer) 
+      }),
+      ...(recap.elements_a_conserver !== undefined && { 
+        elements_a_conserver: mergeArrays(existingMetadata.elements_a_conserver, recap.elements_a_conserver) 
+      }),
+      ...(recap.equipements_souhaites !== undefined && { 
+        equipements_souhaites: mergeArrays(existingMetadata.equipements_souhaites, recap.equipements_souhaites) 
+      }),
+    };
       
     const chantierData: Record<string, any> = {
         metadata: newMetadata
