@@ -174,7 +174,20 @@ export function useAssistantContext(): AssistantContext {
   const [contextData, setContextData] = useState<ContextData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Charger le contexte quand le pathname change
+ // État pour forcer le rechargement
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+
+  // Écouter l'événement de refresh
+  useEffect(() => {
+    const handleRefresh = () => {
+      setRefreshTrigger(prev => prev + 1);
+    };
+    
+    window.addEventListener('refreshAssistantContext', handleRefresh);
+    return () => window.removeEventListener('refreshAssistantContext', handleRefresh);
+  }, []);
+
+  // Charger le contexte quand le pathname change OU quand on force le refresh
   useEffect(() => {
     let isMounted = true;
 
@@ -201,7 +214,7 @@ export function useAssistantContext(): AssistantContext {
     return () => {
       isMounted = false;
     };
-  }, [pathname]);
+  }, [pathname, refreshTrigger]);
 
   // Construire le résultat
   return useMemo(() => {
