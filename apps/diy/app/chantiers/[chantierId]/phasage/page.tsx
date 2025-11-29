@@ -237,9 +237,12 @@ function Modale({
 
 // ==================== COMPOSANT LOADING ====================
 
+// ==================== COMPOSANT LOADING ====================
+
 function LoadingPhasage() {
   const [step, setStep] = useState(0);
   const [completed, setCompleted] = useState<number[]>([]);
+  const [progress, setProgress] = useState(0);
   
   const steps = [
     { icon: '📋', text: 'Analyse du projet...' },
@@ -249,20 +252,39 @@ function LoadingPhasage() {
     { icon: '⏱️', text: 'Estimation durées et coûts...' },
   ];
 
+  const TOTAL_DURATION = 30000; // 30 secondes
+  const STEP_DURATION = TOTAL_DURATION / steps.length; // 6 secondes par étape
+
+  // Progress bar animation (30 secondes pour faire le tour)
   useEffect(() => {
-    const interval = setInterval(() => {
-      setStep((prev) => {
-        const next = prev + 1;
-        if (next < steps.length) {
-          setCompleted((c) => [...c, prev]);
-          return next;
-        }
-        // Reste sur la dernière étape sans boucler
-        return prev;
-      });
-    }, 1500);
-    return () => clearInterval(interval);
+    const startTime = Date.now();
+    
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / TOTAL_DURATION) * 100, 100);
+      setProgress(newProgress);
+      
+      // Calculer l'étape actuelle basée sur le temps
+      const newStep = Math.min(Math.floor(elapsed / STEP_DURATION), steps.length - 1);
+      
+      if (newStep > step) {
+        setCompleted(prev => [...prev, step]);
+        setStep(newStep);
+      }
+      
+      // Arrêter à 100%
+      if (newProgress >= 100) {
+        clearInterval(progressInterval);
+      }
+    }, 100);
+    
+    return () => clearInterval(progressInterval);
   }, []);
+
+  // Calculer le cercle SVG
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
 
   return (
     <div style={{
@@ -274,30 +296,75 @@ function LoadingPhasage() {
       padding: '2rem'
     }}>
       <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-        {/* Animation */}
+        {/* Progress bar circulaire */}
         <div style={{
-          width: '80px',
-          height: '80px',
+          width: '120px',
+          height: '120px',
           margin: '0 auto 1.5rem',
           position: 'relative'
         }}>
+          {/* SVG cercle de progression */}
+          <svg
+            width="120"
+            height="120"
+            style={{
+              transform: 'rotate(-90deg)',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          >
+            {/* Cercle de fond */}
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke="rgba(249, 115, 22, 0.2)"
+              strokeWidth="8"
+            />
+            {/* Cercle de progression */}
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke="var(--orange)"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              style={{
+                transition: 'stroke-dashoffset 0.1s linear'
+              }}
+            />
+          </svg>
+          
+          {/* Icône centrale */}
           <div style={{
             position: 'absolute',
             inset: 0,
-            border: '3px solid rgba(249, 115, 22, 0.2)',
-            borderTopColor: 'var(--orange)',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite'
-          }} />
-          <div style={{
-            position: 'absolute',
-            inset: '10px',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            fontSize: '2rem'
+            fontSize: '2.5rem'
           }}>
             🏗️
+          </div>
+          
+          {/* Pourcentage */}
+          <div style={{
+            position: 'absolute',
+            bottom: '-8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#0a0a0a',
+            padding: '0 0.5rem',
+            fontSize: '0.75rem',
+            color: 'var(--orange)',
+            fontWeight: '700'
+          }}>
+            {Math.round(progress)}%
           </div>
         </div>
 
@@ -349,7 +416,7 @@ function LoadingPhasage() {
                 {s.text}
               </span>
               {completed.includes(idx) && <span style={{ color: '#10b981' }}>✓</span>}
-              {idx === step && <span className="loading-dot" style={{ color: 'var(--orange)' }}>...</span>}
+              {idx === step && <span style={{ color: 'var(--orange)' }}>...</span>}
             </div>
           ))}
         </div>
@@ -357,12 +424,6 @@ function LoadingPhasage() {
         <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
           Cela peut prendre quelques secondes...
         </p>
-
-        <style jsx global>{`
-          @keyframes spin {
-            to { transform: rotate(360deg); }
-          }
-        `}</style>
       </div>
     </div>
   );
