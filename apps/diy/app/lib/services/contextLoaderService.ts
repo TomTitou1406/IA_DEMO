@@ -493,9 +493,15 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     // Charger les étapes du lot - utilise "numero"
     const { data: etapes } = await supabase
       .from('etapes')
-      .select('id, titre, description, numero, statut, duree_estimee_minutes, difficulte')
+      .select('id, titre, description, numero, statut, progression, duree_estimee_minutes, difficulte')
       .eq('travail_id', travailId)
       .order('numero', { ascending: true });
+    // DEBUG : voir ce que Supabase retourne
+    console.log('📊 ÉTAPES BRUTES SUPABASE:', JSON.stringify(etapes?.map(e => ({ 
+      titre: e.titre, 
+      statut: e.statut,
+      progression: e.progression 
+    }))));
 
     // Charger le journal
     const journal = await loadJournalForChantier(chantierId);
