@@ -1,9 +1,16 @@
 /**
  * API Route : /api/phasage
  * 
- * Génère les lots de travaux pour un chantier
+ * Génère et gère les lots de travaux pour un chantier
  * 
- * @version 1.0
+ * Actions disponibles :
+ * - (défaut) : Génère le phasage via IA
+ * - 'save_brouillon' : Sauvegarde les lots en brouillon
+ * - 'validate' : Valide le brouillon (passe en à_venir)
+ * - 'reset' : Supprime les lots existants
+ * - 'load_brouillon' : Charge les lots brouillon existants
+ * 
+ * @version 2.0
  * @date 29 novembre 2025
  */
 
@@ -15,6 +22,8 @@ import {
   formatReglesForPrompt, 
   saveLots,
   deleteLots,
+  loadBrouillon,
+  validerBrouillon,
   type ResultatPhasage 
 } from '@/app/lib/services/phasageService';
 
@@ -125,7 +134,7 @@ async function loadPromptPhasage(): Promise<string> {
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { chantierId, action } = body;
+    const { chantierId, action, lots } = body;
 
     if (!chantierId) {
       return NextResponse.json(
@@ -134,19 +143,53 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Action : supprimer les lots existants (re-phasage)
+    // ========== ACTION : RESET (supprimer les lots) ==========
     if (action === 'reset') {
-      const deleted = await deleteLots(chantierId);
-      return NextResponse.json({ success: deleted });
+      const result = await deleteLots(chantierId);
+      return NextResponse.json({ success: result.success, error: result.error });
     }
 
-    // Action : sauvegarder les lots validés
-    if (action === 'save' && body.lots) {
-      const saved = await saveLots(chantierId, body.lots);
-      return NextResponse.json({ success: saved });
+    // ========== ACTION : LOAD_BROUILLON ==========
+    if (action === 'load_brouillon') {
+      const brouillonLots = await loadBrouillon(chantierId);
+      return NextResponse.json({ 
+        success: true, 
+        hasBrouillon: brouillonLots.length > 0,
+        lots: brouillonLots 
+      });
     }
 
-    // Action par défaut : générer le phasage
+    // ========== ACTION : SAVE_BROUILLON ==========
+    if (action === 'save_brouillon' && lots) {
+      // D'abord supprimer les anciens brouillons
+      await deleteLots(chantierId, 'brouillon');
+      // Puis sauvegarder les nouveaux
+      const result = await saveLots(chantierId, lots, 'brouillon');
+      return NextResponse.json({ success: result.success, error: result.error });
+    }
+
+    // ========== ACTION : VALIDATE (brouillon → à_venir) ==========
+    if (action === 'validate') {
+      // Si des lots sont fournis, on les sauvegarde d'abord
+      if (lots && lots.length > 0) {
+        await deleteLots(chantierId, 'brouillon');
+        const saveResult = await saveLots(chantierId, lots, 'à_venir');
+        if (!saveResult.success) {
+          return NextResponse.json({ success: false, error: saveResult.error });
+        }
+        // Mettre à jour le statut du chantier
+        await supabase
+          .from('chantiers')
+          .update({ statut: 'en_cours', updated_at: new Date().toISOString() })
+          .eq('id', chantierId);
+        return NextResponse.json({ success: true });
+      }
+      // Sinon on valide le brouillon existant
+      const result = await validerBrouillon(chantierId);
+      return NextResponse.json({ success: result.success, error: result.error });
+    }
+
+    // ========== ACTION PAR DÉFAUT : GÉNÉRER LE PHASAGE ==========
     console.log('🚀 Démarrage phasage pour chantier:', chantierId);
 
     // 1. Charger le contexte du chantier
@@ -175,7 +218,7 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: prompt },
         { role: 'user', content: 'Génère le phasage de ce projet en JSON.' }
       ],
-      temperature: 0.3,
+      temperature: 0.2, // Réduit pour plus de cohérence
       max_tokens: 4000,
     });
 
@@ -185,7 +228,6 @@ export async function POST(request: NextRequest) {
     // 6. Parser le JSON
     let result: ResultatPhasage;
     try {
-      // Extraire le JSON de la réponse (au cas où il y a du texte autour)
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
       if (!jsonMatch) {
         throw new Error('Pas de JSON trouvé dans la réponse');
