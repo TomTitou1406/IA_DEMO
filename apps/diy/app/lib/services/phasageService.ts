@@ -263,23 +263,31 @@ export async function validerBrouillon(chantierId: string): Promise<{ success: b
 }
 
 /**
- * Supprime les lots existants d'un chantier (pour re-phasage)
+ * Supprime les lots d'un chantier
+ * @param chantierId - ID du chantier
+ * @param statut - Si fourni, ne supprime que les lots avec ce statut
  */
-export async function deleteLots(chantierId: string): Promise<boolean> {
+export async function deleteLots(
+  chantierId: string,
+  statut?: string
+): Promise<{ success: boolean; error?: string }> {
   try {
-    const { error } = await supabase
+    let query = supabase
       .from('travaux')
       .delete()
-      .eq('chantier_id', chantierId);
-
-    if (error) {
-      console.error('Erreur suppression lots:', error);
-      return false;
+      .eq('chantier_id', chantierId)
+      .eq('niveau', 'lot');
+    
+    if (statut) {
+      query = query.eq('statut', statut);
     }
 
-    return true;
-  } catch (error) {
-    console.error('Erreur suppression lots:', error);
-    return false;
+    const { error } = await query;
+
+    if (error) throw error;
+    return { success: true };
+  } catch (err) {
+    console.error('Erreur suppression lots:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Erreur inconnue' };
   }
 }
