@@ -200,7 +200,7 @@ export async function hasBrouillon(chantierId: string): Promise<boolean> {
     .eq('statut', 'brouillon')
     .limit(1);
   
-  return (data && data.length > 0);
+  return data !== null && data.length > 0;
 }
 
 /**
