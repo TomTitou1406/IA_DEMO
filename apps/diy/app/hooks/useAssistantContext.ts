@@ -185,7 +185,7 @@ export function useAssistantContext(): AssistantContext {
     return () => window.removeEventListener('refreshAssistantContext', handleRefresh);
   }, []);
 
-  // Charger le contexte quand le pathname change OU quand on force le refresh
+ // Charger le contexte quand le pathname change
   useEffect(() => {
     let isMounted = true;
 
@@ -212,7 +212,7 @@ export function useAssistantContext(): AssistantContext {
     return () => {
       isMounted = false;
     };
-  }, [pathname, refreshTrigger]);
+  }, [pathname]);
 
   // Construire le résultat
   return useMemo(() => {
