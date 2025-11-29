@@ -182,7 +182,7 @@ export async function saveLots(
         .eq('id', chantierId);
     }
 
-    return true;
+    return { success: true };
   } catch (err) {
     console.error('Erreur sauvegarde lots:', err);
     return { success: false, error: err instanceof Error ? err.message : 'Erreur inconnue' };
