@@ -868,6 +868,15 @@ export function parseNavigationFromPath(pathname: string): { level: NavigationLe
     };
   }
 
+  // /chantiers/[id]/phasage (PHASAGE)
+  const phasageMatch = pathname.match(/^\/chantiers\/([^\/]+)\/phasage$/);
+  if (phasageMatch) {
+    return {
+      level: 'phasage',
+      ids: { chantierId: phasageMatch[1] }
+    };
+  }
+
   // /chantiers/[id] SANS /travaux (ÉDITION)
   const editMatch = pathname.match(/^\/chantiers\/([^\/]+)$/);
   if (editMatch && editMatch[1] !== 'nouveau') {
@@ -930,6 +939,12 @@ export async function loadContextForPath(pathname: string): Promise<ContextData>
     case 'taches':
       if (ids.chantierId && ids.travailId && ids.etapeId) {
         return loadTachesContext(ids.chantierId, ids.travailId, ids.etapeId);
+      }
+      break;
+
+    case 'phasage':
+      if (ids.chantierId) {
+        return loadPhasageContext(ids.chantierId);
       }
       break;
 
