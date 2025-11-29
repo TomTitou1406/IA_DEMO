@@ -58,10 +58,11 @@ export default function ChantierEditPage() {
   const chantierId = params.chantierId as string;
   const isCreation = chantierId === 'nouveau';
 
-  // États
+ // États
   const [chantier, setChantier] = useState<ChantierData | null>(null);
   const [loading, setLoading] = useState(!isCreation);
   const [error, setError] = useState<string | null>(null);
+  const [hasBrouillon, setHasBrouillon] = useState(false); // AJOUTER
   
   // Charger le chantier si mode édition
   useEffect(() => {
@@ -81,6 +82,19 @@ export default function ChantierEditPage() {
         }
         
         setChantier(data);
+        
+        // Vérifier s'il y a un brouillon de phasage
+        try {
+          const brouillonRes = await fetch('/api/phasage', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ chantierId, action: 'load_brouillon' }),
+          });
+          const brouillonData = await brouillonRes.json();
+          setHasBrouillon(brouillonData.hasBrouillon || false);
+        } catch (e) {
+          console.error('Erreur vérification brouillon:', e);
+        }
       } catch (err) {
         console.error('Erreur chargement chantier:', err);
         setError('Erreur lors du chargement du chantier');
@@ -421,7 +435,7 @@ export default function ChantierEditPage() {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                🚀 Lancer le phasage
+                {hasBrouillon ? '🔄 Reprendre le phasage' : '🚀 Lancer le phasage'}
               </button>
             </div>
           </div>
