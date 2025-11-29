@@ -267,8 +267,13 @@ function LoadingPhasage() {
       // Calculer l'étape actuelle basée sur le temps
       const newStep = Math.min(Math.floor(elapsed / STEP_DURATION), steps.length - 1);
       
-      if (newStep > step) {
-        setCompleted(prev => [...prev, step]);
+      // Marquer toutes les étapes précédentes comme complétées
+      if (newStep !== step) {
+        const completedSteps = [];
+        for (let i = 0; i < newStep; i++) {
+          completedSteps.push(i);
+        }
+        setCompleted(completedSteps);
         setStep(newStep);
       }
       
