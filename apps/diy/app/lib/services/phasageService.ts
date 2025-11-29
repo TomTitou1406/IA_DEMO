@@ -156,7 +156,7 @@ export async function saveLots(chantierId: string, lots: LotGenere[]): Promise<b
       prerequis_stricts: lot.prerequis_stricts,
       points_attention: lot.points_attention,
       dependances_type: lot.dependances_type,
-      statut: 'a_venir',
+      statut: 'à_venir',
       progression: 0,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
