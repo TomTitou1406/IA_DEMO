@@ -4,12 +4,13 @@
  * Page de phasage d'un chantier
  * Génère et affiche les lots de travaux proposés par l'IA
  * 
- * @version 1.0
+ * @version 2.0 - Thème sombre cohérent
  * @date 29 novembre 2025
  */
 
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { supabase } from '@/app/lib/supabaseClient';
 
 // ==================== TYPES ====================
@@ -49,29 +50,155 @@ interface Chantier {
 
 // ==================== HELPERS ====================
 
-const EXPERTISE_LABELS: Record<string, string> = {
-  demolition: '🔨 Démolition',
-  plomberie: '💧 Plomberie',
-  electricite: '⚡ Électricité',
-  plaquiste: '🧱 Plaquiste',
-  carreleur: '🔲 Carreleur',
-  peintre: '🎨 Peintre',
-  menuisier: '🪚 Menuisier',
-  generaliste: '🔧 Généraliste',
-  isolation: '🧤 Isolation',
+const EXPERTISE_LABELS: Record<string, { label: string; icon: string }> = {
+  demolition: { label: 'Démolition', icon: '🔨' },
+  plomberie: { label: 'Plomberie', icon: '💧' },
+  electricite: { label: 'Électricité', icon: '⚡' },
+  plaquiste: { label: 'Plaquiste', icon: '🧱' },
+  carreleur: { label: 'Carreleur', icon: '🔲' },
+  peintre: { label: 'Peinture', icon: '🎨' },
+  menuisier: { label: 'Menuiserie', icon: '🪚' },
+  generaliste: { label: 'Général', icon: '🔧' },
+  isolation: { label: 'Isolation', icon: '🧤' },
 };
 
-const NIVEAU_LABELS: Record<string, { label: string; color: string }> = {
-  debutant: { label: 'Débutant', color: 'bg-green-100 text-green-800' },
-  intermediaire: { label: 'Intermédiaire', color: 'bg-yellow-100 text-yellow-800' },
-  confirme: { label: 'Confirmé', color: 'bg-red-100 text-red-800' },
+const NIVEAU_CONFIG: Record<string, { label: string; color: string; bg: string }> = {
+  debutant: { label: 'Débutant', color: '#10b981', bg: 'rgba(16, 185, 129, 0.2)' },
+  intermediaire: { label: 'Intermédiaire', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.2)' },
+  confirme: { label: 'Confirmé', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.2)' },
 };
 
-const ALERTE_STYLES: Record<string, { icon: string; bg: string; border: string }> = {
-  critique: { icon: '🚨', bg: 'bg-red-50', border: 'border-red-300' },
-  attention: { icon: '⚠️', bg: 'bg-yellow-50', border: 'border-yellow-300' },
-  conseil: { icon: '💡', bg: 'bg-blue-50', border: 'border-blue-300' },
+const ALERTE_CONFIG: Record<string, { icon: string; color: string; bg: string; border: string }> = {
+  critique: { icon: '🚨', color: '#ef4444', bg: 'rgba(239, 68, 68, 0.15)', border: 'rgba(239, 68, 68, 0.3)' },
+  attention: { icon: '⚠️', color: '#f59e0b', bg: 'rgba(245, 158, 11, 0.15)', border: 'rgba(245, 158, 11, 0.3)' },
+  conseil: { icon: '💡', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)' },
 };
+
+// ==================== COMPOSANT LOADING ====================
+
+function LoadingPhasage() {
+  const [step, setStep] = useState(0);
+  const steps = [
+    { icon: '📋', text: 'Analyse du projet...' },
+    { icon: '🔍', text: 'Identification des travaux nécessaires...' },
+    { icon: '📦', text: 'Organisation en lots cohérents...' },
+    { icon: '🔗', text: 'Vérification des dépendances...' },
+    { icon: '⏱️', text: 'Estimation durées et coûts...' },
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setStep((prev) => (prev + 1) % steps.length);
+    }, 2000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: '#0a0a0a',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem'
+    }}>
+      <div style={{
+        textAlign: 'center',
+        maxWidth: '400px'
+      }}>
+        {/* Animation */}
+        <div style={{
+          width: '80px',
+          height: '80px',
+          margin: '0 auto 1.5rem',
+          position: 'relative'
+        }}>
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            border: '3px solid rgba(249, 115, 22, 0.2)',
+            borderTopColor: 'var(--orange)',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite'
+          }} />
+          <div style={{
+            position: 'absolute',
+            inset: '10px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '2rem'
+          }}>
+            🏗️
+          </div>
+        </div>
+
+        <h2 style={{
+          fontSize: '1.3rem',
+          fontWeight: '700',
+          color: 'var(--gray-light)',
+          marginBottom: '0.5rem'
+        }}>
+          Génération du phasage...
+        </h2>
+
+        <p style={{
+          fontSize: '0.95rem',
+          color: 'var(--gray)',
+          marginBottom: '1.5rem'
+        }}>
+          L'assistant analyse votre projet et prépare les lots de travaux adaptés.
+        </p>
+
+        {/* Étapes */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '1rem'
+        }}>
+          {steps.map((s, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem',
+                borderRadius: '8px',
+                background: idx === step ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
+                transition: 'all 0.3s'
+              }}
+            >
+              <span style={{ fontSize: '1.1rem' }}>{s.icon}</span>
+              <span style={{
+                fontSize: '0.85rem',
+                color: idx === step ? 'var(--orange)' : 'var(--gray)',
+                fontWeight: idx === step ? '600' : '400'
+              }}>
+                {s.text}
+              </span>
+              {idx < step && <span style={{ marginLeft: 'auto', color: '#10b981' }}>✓</span>}
+            </div>
+          ))}
+        </div>
+
+        <p style={{
+          fontSize: '0.8rem',
+          color: 'var(--gray)'
+        }}>
+          Cela peut prendre quelques secondes...
+        </p>
+
+        <style jsx global>{`
+          @keyframes spin {
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    </div>
+  );
+}
 
 // ==================== COMPOSANT PRINCIPAL ====================
 
@@ -143,6 +270,14 @@ export default function PhasagePage() {
     }
   }
 
+  // ==================== RÉGÉNÉRATION (repart de zéro) ====================
+
+  async function regeneratePhasage() {
+    setLots([]);
+    setPhasage(null);
+    generatePhasage();
+  }
+
   // ==================== MODIFICATION LOTS ====================
 
   function removeLot(ordre: number) {
@@ -165,7 +300,6 @@ export default function PhasagePage() {
     const swapIndex = direction === 'up' ? index - 1 : index + 1;
     [newLots[index], newLots[swapIndex]] = [newLots[swapIndex], newLots[index]];
     
-    // Recalculer les ordres
     setLots(newLots.map((l, idx) => ({ ...l, ordre: idx + 1 })));
   }
 
@@ -192,7 +326,6 @@ export default function PhasagePage() {
         throw new Error(data.error || 'Erreur sauvegarde');
       }
 
-      // Redirection vers la page des lots
       router.push(`/chantiers/${chantierId}/travaux`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur sauvegarde');
@@ -207,51 +340,37 @@ export default function PhasagePage() {
 
   // ==================== RENDU ====================
 
-  // Loading initial
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Chargement du chantier...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Génération en cours
-  if (generating) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-blue-600 mx-auto mb-6"></div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">
-            🏗️ Génération du phasage...
-          </h2>
-          <p className="text-gray-600 mb-4">
-            L'assistant analyse votre projet et prépare les lots de travaux adaptés.
-          </p>
-          <p className="text-sm text-gray-500">
-            Cela peut prendre quelques secondes...
-          </p>
-        </div>
-      </div>
-    );
+  // Loading ou génération
+  if (loading || generating) {
+    return <LoadingPhasage />;
   }
 
   // Erreur
   if (error && !phasage) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-500 text-5xl mb-4">❌</div>
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Erreur</h2>
-          <p className="text-gray-600 mb-4">{error}</p>
+      <div style={{
+        minHeight: '100vh',
+        background: '#0a0a0a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center', padding: '2rem' }}>
+          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>❌</div>
+          <h2 style={{ color: 'var(--gray-light)', marginBottom: '0.5rem' }}>Erreur</h2>
+          <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>{error}</p>
           <button
             onClick={() => router.back()}
-            className="px-4 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+            style={{
+              padding: '0.75rem 1.5rem',
+              background: 'rgba(255,255,255,0.1)',
+              border: '1px solid rgba(255,255,255,0.2)',
+              borderRadius: '8px',
+              color: 'var(--gray-light)',
+              cursor: 'pointer'
+            }}
           >
-            Retour
+            ← Retour
           </button>
         </div>
       </div>
@@ -259,183 +378,391 @@ export default function PhasagePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 pb-24">
-      {/* Header */}
-      <header className="bg-white shadow-sm sticky top-0 z-10">
-        <div className="max-w-4xl mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <button
-                onClick={() => router.back()}
-                className="text-gray-500 hover:text-gray-700 mb-1"
-              >
-                ← Retour
-              </button>
-              <h1 className="text-xl font-bold text-gray-800">
-                Phasage : {chantier?.titre}
-              </h1>
-            </div>
-            <button
-              onClick={generatePhasage}
-              disabled={generating}
-              className="px-3 py-1.5 text-sm bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
-            >
-              🔄 Régénérer
-            </button>
+    <div style={{ minHeight: '100vh', background: '#0a0a0a', paddingBottom: '100px' }}>
+      {/* BREADCRUMB */}
+      <div style={{
+        position: 'fixed',
+        top: '100px',
+        left: 0,
+        right: 0,
+        zIndex: 100,
+        background: 'rgba(0, 0, 0, 0.98)',
+        backdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.08)'
+      }}>
+        <div style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          padding: '0.75rem 1rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
+            <Link href={`/chantiers/${chantierId}`} style={{ color: 'var(--gray)' }}>
+              ← Retour
+            </Link>
+            <span style={{ color: 'var(--gray)' }}>/</span>
+            <span style={{ color: 'var(--orange)', fontWeight: '600' }}>
+              🏗️ Phasage : {chantier?.titre}
+            </span>
           </div>
+          <button
+            onClick={regeneratePhasage}
+            disabled={generating}
+            style={{
+              padding: '0.4rem 0.75rem',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '6px',
+              color: 'var(--gray-light)',
+              fontSize: '0.8rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.3rem'
+            }}
+          >
+            🔄 Régénérer
+          </button>
         </div>
-      </header>
+      </div>
 
-      <main className="max-w-4xl mx-auto px-4 py-6">
-        {/* Analyse */}
+      {/* CONTENU */}
+      <div style={{ maxWidth: '900px', margin: '0 auto', padding: '1rem', paddingTop: '70px' }}>
+        
+        {/* ANALYSE */}
         {phasage?.analyse && (
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-            <h3 className="font-semibold text-blue-800 mb-2">📋 Analyse du projet</h3>
-            <p className="text-blue-700">{phasage.analyse}</p>
+          <div style={{
+            background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15) 0%, rgba(59, 130, 246, 0.05) 100%)',
+            border: '1px solid rgba(59, 130, 246, 0.3)',
+            borderRadius: '12px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <span>📋</span>
+              <span style={{ fontWeight: '600', color: '#60a5fa' }}>Analyse du projet</span>
+            </div>
+            <p style={{ color: 'var(--gray-light)', fontSize: '0.9rem', lineHeight: '1.5', margin: 0 }}>
+              {phasage.analyse}
+            </p>
           </div>
         )}
 
-        {/* Alertes */}
+        {/* ALERTES */}
         {phasage?.alertes && phasage.alertes.length > 0 && (
-          <div className="space-y-2 mb-6">
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1rem' }}>
             {phasage.alertes.map((alerte, idx) => {
-              const style = ALERTE_STYLES[alerte.type] || ALERTE_STYLES.conseil;
+              const config = ALERTE_CONFIG[alerte.type] || ALERTE_CONFIG.conseil;
               return (
                 <div
                   key={idx}
-                  className={`${style.bg} border ${style.border} rounded-lg p-3 flex items-start gap-2`}
+                  style={{
+                    background: config.bg,
+                    border: `1px solid ${config.border}`,
+                    borderRadius: '8px',
+                    padding: '0.75rem 1rem',
+                    display: 'flex',
+                    alignItems: 'flex-start',
+                    gap: '0.75rem'
+                  }}
                 >
-                  <span>{style.icon}</span>
-                  <p className="text-sm">{alerte.message}</p>
+                  <span>{config.icon}</span>
+                  <p style={{ color: config.color, fontSize: '0.85rem', margin: 0 }}>{alerte.message}</p>
                 </div>
               );
             })}
           </div>
         )}
 
-        {/* Résumé */}
-        <div className="bg-white rounded-lg shadow-sm p-4 mb-6">
-          <div className="grid grid-cols-3 gap-4 text-center">
-            <div>
-              <p className="text-2xl font-bold text-blue-600">{lots.length}</p>
-              <p className="text-sm text-gray-500">Lots</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-green-600">{budgetTotal} €</p>
-              <p className="text-sm text-gray-500">Budget estimé</p>
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-orange-600">{dureeTotal}h</p>
-              <p className="text-sm text-gray-500">Durée estimée</p>
-            </div>
+        {/* RÉSUMÉ */}
+        <div style={{
+          background: 'rgba(255,255,255,0.03)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '1.5rem',
+          display: 'grid',
+          gridTemplateColumns: 'repeat(3, 1fr)',
+          gap: '1rem',
+          textAlign: 'center'
+        }}>
+          <div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#3b82f6' }}>{lots.length}</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Lots</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#10b981' }}>{budgetTotal.toLocaleString()} €</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Budget estimé</div>
+          </div>
+          <div>
+            <div style={{ fontSize: '1.75rem', fontWeight: '700', color: '#f59e0b' }}>{dureeTotal}h</div>
+            <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Durée estimée</div>
           </div>
         </div>
 
-        {/* Liste des lots */}
-        <h2 className="text-lg font-semibold text-gray-800 mb-4">
+        {/* TITRE SECTION */}
+        <h2 style={{
+          fontSize: '1.1rem',
+          fontWeight: '600',
+          color: 'var(--gray-light)',
+          marginBottom: '1rem',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem'
+        }}>
           📦 Lots de travaux ({lots.length})
         </h2>
 
-        <div className="space-y-3">
-          {lots.map((lot) => (
-            <div
-              key={lot.ordre}
-              className="bg-white rounded-lg shadow-sm p-4 border border-gray-100"
-            >
-              <div className="flex items-start justify-between">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-0.5 rounded">
-                      {lot.ordre}
-                    </span>
-                    <h3 className="font-semibold text-gray-800">{lot.titre}</h3>
-                  </div>
+        {/* LISTE DES LOTS */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+          {lots.map((lot) => {
+            const expertise = EXPERTISE_LABELS[lot.code_expertise] || { label: lot.code_expertise, icon: '🔧' };
+            const niveau = NIVEAU_CONFIG[lot.niveau_requis] || NIVEAU_CONFIG.intermediaire;
+
+            return (
+              <div
+                key={lot.ordre}
+                style={{
+                  background: 'linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 100%)',
+                  borderRadius: '12px',
+                  borderLeft: '4px solid var(--blue)',
+                  padding: '1rem 1.25rem',
+                  display: 'flex',
+                  gap: '1rem',
+                  alignItems: 'flex-start'
+                }}
+              >
+                {/* Numéro */}
+                <div style={{
+                  background: 'var(--blue)',
+                  color: 'white',
+                  width: '28px',
+                  height: '28px',
+                  borderRadius: '50%',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontSize: '0.85rem',
+                  fontWeight: '700',
+                  flexShrink: 0
+                }}>
+                  {lot.ordre}
+                </div>
+
+                {/* Contenu */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: 'var(--gray-light)',
+                    margin: '0 0 0.35rem 0'
+                  }}>
+                    {lot.titre}
+                  </h3>
                   
-                  <p className="text-sm text-gray-600 mb-2">{lot.description}</p>
-                  
-                  <div className="flex flex-wrap gap-2 text-xs">
-                    <span className="bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                      {EXPERTISE_LABELS[lot.code_expertise] || lot.code_expertise}
+                  <p style={{
+                    fontSize: '0.85rem',
+                    color: 'var(--gray)',
+                    margin: '0 0 0.75rem 0',
+                    lineHeight: '1.4'
+                  }}>
+                    {lot.description}
+                  </p>
+
+                  {/* Tags */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                    <span style={{
+                      background: 'rgba(255,255,255,0.1)',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      color: 'var(--gray-light)',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.25rem'
+                    }}>
+                      {expertise.icon} {expertise.label}
                     </span>
-                    <span className={`px-2 py-1 rounded ${NIVEAU_LABELS[lot.niveau_requis]?.color || 'bg-gray-100'}`}>
-                      {NIVEAU_LABELS[lot.niveau_requis]?.label || lot.niveau_requis}
+                    <span style={{
+                      background: niveau.bg,
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      color: niveau.color
+                    }}>
+                      {niveau.label}
                     </span>
-                    <span className="bg-green-100 text-green-700 px-2 py-1 rounded">
+                    <span style={{
+                      background: 'rgba(16, 185, 129, 0.15)',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      color: '#10b981'
+                    }}>
                       {lot.cout_estime} €
                     </span>
-                    <span className="bg-orange-100 text-orange-700 px-2 py-1 rounded">
+                    <span style={{
+                      background: 'rgba(245, 158, 11, 0.15)',
+                      padding: '0.2rem 0.5rem',
+                      borderRadius: '12px',
+                      fontSize: '0.75rem',
+                      color: '#f59e0b'
+                    }}>
                       {lot.duree_estimee_heures}h
                     </span>
                   </div>
 
+                  {/* Point d'attention */}
                   {lot.points_attention && (
-                    <p className="text-xs text-amber-600 mt-2">
-                      ⚠️ {lot.points_attention}
+                    <p style={{
+                      fontSize: '0.8rem',
+                      color: '#f59e0b',
+                      margin: '0.5rem 0 0 0',
+                      display: 'flex',
+                      alignItems: 'flex-start',
+                      gap: '0.35rem'
+                    }}>
+                      <span>⚠️</span> {lot.points_attention}
                     </p>
                   )}
                 </div>
 
                 {/* Actions */}
-                <div className="flex flex-col gap-1 ml-2">
+                <div style={{
+                  display: 'flex',
+                  flexDirection: 'column',
+                  gap: '0.25rem',
+                  flexShrink: 0
+                }}>
                   <button
                     onClick={() => moveLot(lot.ordre, 'up')}
                     disabled={lot.ordre === 1}
-                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: lot.ordre === 1 ? 'rgba(255,255,255,0.2)' : 'var(--gray)',
+                      cursor: lot.ordre === 1 ? 'not-allowed' : 'pointer',
+                      padding: '0.25rem',
+                      fontSize: '0.9rem'
+                    }}
                   >
                     ▲
                   </button>
                   <button
                     onClick={() => moveLot(lot.ordre, 'down')}
                     disabled={lot.ordre === lots.length}
-                    className="p-1 text-gray-400 hover:text-gray-600 disabled:opacity-30"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: lot.ordre === lots.length ? 'rgba(255,255,255,0.2)' : 'var(--gray)',
+                      cursor: lot.ordre === lots.length ? 'not-allowed' : 'pointer',
+                      padding: '0.25rem',
+                      fontSize: '0.9rem'
+                    }}
                   >
                     ▼
                   </button>
                   <button
                     onClick={() => removeLot(lot.ordre)}
-                    className="p-1 text-red-400 hover:text-red-600"
+                    style={{
+                      background: 'transparent',
+                      border: 'none',
+                      color: '#ef4444',
+                      cursor: 'pointer',
+                      padding: '0.25rem',
+                      fontSize: '0.9rem'
+                    }}
                   >
                     ✕
                   </button>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
-        {/* Message si modification */}
+        {/* Message modification */}
         {phasage && lots.length !== phasage.lots.length && (
-          <p className="text-sm text-amber-600 mt-4">
+          <p style={{
+            fontSize: '0.85rem',
+            color: '#f59e0b',
+            marginTop: '1rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
             ⚠️ Vous avez modifié le phasage ({phasage.lots.length} → {lots.length} lots)
           </p>
         )}
 
         {/* Erreur */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-4">
-            <p className="text-red-700 text-sm">{error}</p>
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.15)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '8px',
+            padding: '0.75rem 1rem',
+            marginTop: '1rem'
+          }}>
+            <p style={{ color: '#ef4444', fontSize: '0.85rem', margin: 0 }}>{error}</p>
           </div>
         )}
-      </main>
+      </div>
 
-      {/* Footer fixe */}
-      <footer className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-lg p-4">
-        <div className="max-w-4xl mx-auto flex gap-3">
+      {/* FOOTER FIXE */}
+      <div style={{
+        position: 'fixed',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        background: 'rgba(0, 0, 0, 0.95)',
+        backdropFilter: 'blur(10px)',
+        borderTop: '1px solid rgba(255,255,255,0.1)',
+        padding: '1rem'
+      }}>
+        <div style={{
+          maxWidth: '900px',
+          margin: '0 auto',
+          display: 'flex',
+          gap: '0.75rem'
+        }}>
           <button
             onClick={() => router.back()}
-            className="flex-1 py-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200"
+            style={{
+              flex: 1,
+              padding: '0.875rem',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '10px',
+              color: 'var(--gray-light)',
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
           >
             Annuler
           </button>
           <button
             onClick={savePhasage}
             disabled={saving || lots.length === 0}
-            className="flex-1 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50"
+            style={{
+              flex: 1,
+              padding: '0.875rem',
+              background: lots.length === 0 ? 'rgba(255,255,255,0.1)' : 'var(--orange)',
+              border: 'none',
+              borderRadius: '10px',
+              color: 'white',
+              fontSize: '0.95rem',
+              fontWeight: '700',
+              cursor: lots.length === 0 ? 'not-allowed' : 'pointer',
+              opacity: saving ? 0.7 : 1
+            }}
           >
             {saving ? 'Sauvegarde...' : `✓ Valider ${lots.length} lots`}
           </button>
         </div>
-      </footer>
+      </div>
     </div>
   );
 }
