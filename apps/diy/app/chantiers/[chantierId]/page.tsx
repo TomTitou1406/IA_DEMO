@@ -62,8 +62,7 @@ export default function ChantierEditPage() {
   const [chantier, setChantier] = useState<ChantierData | null>(null);
   const [loading, setLoading] = useState(!isCreation);
   const [error, setError] = useState<string | null>(null);
-  const [isLaunchingPhasage, setIsLaunchingPhasage] = useState(false);
-
+  
   // Charger le chantier si mode édition
   useEffect(() => {
     if (isCreation) return;
@@ -98,9 +97,10 @@ export default function ChantierEditPage() {
     window.dispatchEvent(new CustomEvent('openAssistant'));
   };
 
-  // Lancer le phasage (génération des lots)
-  const handleLancerPhasage = async () => {
-    setIsLaunchingPhasage(true);
+ // Lancer le phasage (génération des lots)
+    const handleLancerPhasage = () => {
+      router.push(`/chantiers/${chantierId}/phasage`);
+    };
     
     try {
       // TODO: Étape suivante - appeler generatorService pour générer les lots
@@ -414,7 +414,6 @@ export default function ChantierEditPage() {
               </button>
               <button
                 onClick={handleLancerPhasage}
-                disabled={isLaunchingPhasage}
                 style={{
                   padding: '0.5rem 1.25rem',
                   borderRadius: '8px',
@@ -423,32 +422,22 @@ export default function ChantierEditPage() {
                   color: 'white',
                   fontSize: '0.85rem',
                   fontWeight: '700',
-                  cursor: isLaunchingPhasage ? 'not-allowed' : 'pointer',
-                  opacity: isLaunchingPhasage ? 0.7 : 1,
+                  cursor: 'pointer',
                   transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
                   gap: '0.35rem'
                 }}
                 onMouseEnter={(e) => {
-                  if (!isLaunchingPhasage) {
-                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
-                    e.currentTarget.style.transform = 'translateY(-1px)';
-                  }
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
                 }}
                 onMouseLeave={(e) => {
                   e.currentTarget.style.boxShadow = 'none';
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                {isLaunchingPhasage ? (
-                  <>
-                    <span className="spinner" style={{ width: '14px', height: '14px' }}></span>
-                    Phasage...
-                  </>
-                ) : (
-                  <>🚀 Lancer le phasage</>
-                )}
+                🚀 Lancer le phasage
               </button>
             </div>
           </div>
