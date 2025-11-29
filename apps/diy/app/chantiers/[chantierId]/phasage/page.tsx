@@ -585,8 +585,27 @@ export default function PhasagePage() {
 
   // ==================== RENDU ====================
 
-  if (loading || generating) {
+  // Loading génération IA = animation complète
+  if (generating) {
     return <LoadingPhasage />;
+  }
+
+  // Loading initial (chargement brouillon) = spinner simple
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        background: '#0a0a0a',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div className="spinner" style={{ margin: '0 auto 1rem' }}></div>
+          <p style={{ color: 'var(--gray)' }}>Chargement...</p>
+        </div>
+      </div>
+    );
   }
 
   if (error && !phasage) {
