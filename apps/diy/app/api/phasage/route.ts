@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // ========== ACTION : SAVE_BROUILLON ==========
+   // ========== ACTION : SAVE_BROUILLON ==========
     if (action === 'save_brouillon' && lots) {
       // D'abord supprimer les anciens brouillons
       await deleteLots(chantierId, 'brouillon');
