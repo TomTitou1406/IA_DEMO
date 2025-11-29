@@ -170,12 +170,10 @@ function mapLevelToPageContext(level: NavigationLevel, pathname: string): PageCo
 export function useAssistantContext(): AssistantContext {
   const pathname = usePathname();
   
-  // État
+  // États
   const [contextData, setContextData] = useState<ContextData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-
- // État pour forcer le rechargement
-  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);  // <-- ICI, dans la fonction
 
   // Écouter l'événement de refresh
   useEffect(() => {
