@@ -14,7 +14,7 @@ import { getUserId, getConversationByChantier, type Journal } from './conversati
 
 // ==================== TYPES ====================
 
-export type NavigationLevel = 'home' | 'chantiers' | 'chantier_edit' | 'lots' | 'etapes' | 'taches';
+export type NavigationLevel = 'home' | 'chantiers' | 'chantier_edit' | 'phasage' | 'lots' | 'etapes' | 'taches';
 
 export interface NavigationIds {
   chantierId?: string;
@@ -573,6 +573,138 @@ TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur dans ce lot. 
   } catch (error) {
     console.error('Erreur chargement contexte étapes:', error);
     return loadLotsContext(chantierId); // Fallback
+  }
+}
+
+/**
+ * Charge le contexte pour la page Phasage d'un chantier
+ */
+async function loadPhasageContext(chantierId: string): Promise<ContextData> {
+  try {
+    // Charger le chantier avec metadata
+    const { data: chantier, error: chantierError } = await supabase
+      .from('chantiers')
+      .select('id, titre, description, statut, budget_initial, metadata')
+      .eq('id', chantierId)
+      .single();
+
+    if (chantierError) throw chantierError;
+
+    // Charger les lots brouillon existants
+    const { data: lotsBrouillon } = await supabase
+      .from('travaux')
+      .select('id, titre, ordre, statut, code_expertise, cout_estime, duree_estimee_heures')
+      .eq('chantier_id', chantierId)
+      .eq('statut', 'brouillon')
+      .order('ordre', { ascending: true });
+
+    // Charger les règles de phasage
+    const { data: regles } = await supabase
+      .from('regles_phasage')
+      .select('code, titre, type_regle, message_ia')
+      .eq('est_active', true)
+      .order('priorite', { ascending: true });
+
+    const meta = chantier.metadata || {};
+    const nbLotsBrouillon = lotsBrouillon?.length || 0;
+
+    // Formater les infos du chantier
+    let chantierInfo = `🏗️ CHANTIER : ${chantier.titre}\n`;
+    chantierInfo += `   ${chantier.description || 'Pas de description'}\n`;
+    if (chantier.budget_initial) chantierInfo += `   Budget : ${chantier.budget_initial}€\n`;
+    if (meta.surface_m2) chantierInfo += `   Surface : ${meta.surface_m2} m²\n`;
+    if (meta.style_souhaite) chantierInfo += `   Style : ${meta.style_souhaite}\n`;
+    
+    // Équipements souhaités
+    if (meta.equipements_souhaites?.length) {
+      chantierInfo += `   Équipements à installer : ${meta.equipements_souhaites.join(', ')}\n`;
+    }
+    
+    // Éléments à déposer
+    if (meta.elements_a_deposer?.length) {
+      chantierInfo += `   À déposer : ${meta.elements_a_deposer.join(', ')}\n`;
+    }
+    
+    // Réseaux
+    if (meta.reseaux) {
+      const reseauxList = [];
+      if (meta.reseaux.electricite_a_refaire) reseauxList.push('Électricité');
+      if (meta.reseaux.plomberie_a_refaire) reseauxList.push('Plomberie');
+      if (meta.reseaux.ventilation_a_prevoir) reseauxList.push('Ventilation');
+      if (reseauxList.length) chantierInfo += `   Réseaux à refaire : ${reseauxList.join(', ')}\n`;
+    }
+    
+    // Compétences du bricoleur
+    if (meta.competences_ok?.length) {
+      chantierInfo += `   Compétences maîtrisées : ${meta.competences_ok.join(', ')}\n`;
+    }
+    if (meta.competences_faibles?.length) {
+      chantierInfo += `   Compétences faibles : ${meta.competences_faibles.join(', ')}\n`;
+    }
+
+    // Formater les lots brouillon actuels
+    let lotsBrouillonInfo = '';
+    if (nbLotsBrouillon > 0) {
+      const lotsFormatted = (lotsBrouillon || []).map((lot: any) => {
+        return `   ${lot.ordre}. ${lot.titre} (${lot.code_expertise || 'général'}) - ${lot.cout_estime || 0}€ - ${lot.duree_estimee_heures || 0}h`;
+      }).join('\n');
+      lotsBrouillonInfo = `\n📦 LOTS PROPOSÉS (${nbLotsBrouillon}) :\n${lotsFormatted}`;
+    }
+
+    // Formater les règles importantes
+    let reglesInfo = '';
+    if (regles && regles.length > 0) {
+      const reglesFormatted = regles
+        .filter((r: any) => r.type_regle === 'dependance' || r.type_regle === 'interdit')
+        .slice(0, 10)
+        .map((r: any) => `   • ${r.message_ia || r.titre}`)
+        .join('\n');
+      reglesInfo = `\n📏 RÈGLES DE PHASAGE À RESPECTER :\n${reglesFormatted}`;
+    }
+
+    const contextForAI = `
+${chantierInfo}
+${lotsBrouillonInfo}
+${reglesInfo}
+
+TON RÔLE : Tu es l'Assistant Phasage. Tu aides le bricoleur à comprendre et organiser les lots de travaux proposés pour son chantier.
+
+TES CAPACITÉS :
+- Expliquer pourquoi certains lots sont dans cet ordre (dépendances techniques)
+- Répondre aux questions sur chaque lot (durée, coût, difficulté)
+- Conseiller sur les lots à faire soi-même vs confier à un pro
+- Alerter sur les points de vigilance (sécurité, normes)
+- Aider à réordonner les lots si le bricoleur le souhaite
+
+IMPORTANT :
+- Tu connais le contexte complet du chantier et les compétences du bricoleur
+- Tu respectes les règles de dépendances (ex: démolition avant plomberie)
+- Tu es pédagogue et rassure le bricoleur
+- Tu donnes des conseils pratiques et concrets
+`.trim();
+
+    return {
+      level: 'phasage',
+      header: {
+        title: `Phasage : ${chantier.titre}`,
+        breadcrumb: nbLotsBrouillon > 0 ? `${nbLotsBrouillon} lots proposés` : 'Génération en cours...',
+        expertiseLine: '📋 Assistant Phasage'
+      },
+      expertiseCode: 'chef_chantier',
+      expertiseNom: 'Assistant Phasage',
+      expertiseIcon: '📋',
+      itemCount: nbLotsBrouillon,
+      chantierId,
+      contextForAI,
+      raw: {
+        chantier,
+        lots: lotsBrouillon || undefined
+      }
+    };
+
+  } catch (error) {
+    console.error('Erreur chargement contexte phasage:', error);
+    return loadChantiersContext(); // Fallback
   }
 }
 
