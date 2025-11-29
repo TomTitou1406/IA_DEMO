@@ -93,8 +93,6 @@ const REGLES_ORDRE: Record<string, string[]> = {
   peintre: ['menuisier'], // finitions
 };
 
-const [assistantKey, setAssistantKey] = useState(0);
-
 function verifierRegles(lots: LotGenere[]): RegleViolation[] {
   const violations: RegleViolation[] = [];
   
@@ -473,8 +471,6 @@ export default function PhasagePage() {
           }),
         });
         console.log('✅ Brouillon auto-sauvegardé');
-        // Forcer le rechargement du contexte assistant
-        window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
       } catch (e) {
         console.warn('⚠️ Sauvegarde brouillon auto échouée:', e);
       }
