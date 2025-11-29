@@ -138,41 +138,114 @@ export function formatReglesForPrompt(regles: ReglePhasage[]): string {
 // ==================== SAUVEGARDE DES LOTS ====================
 
 /**
- * Sauvegarde les lots générés dans la table travaux
+ * Sauvegarde les lots générés en BDD
+ * @param chantierId - ID du chantier
+ * @param lots - Lots à sauvegarder
+ * @param statut - 'brouillon' ou 'à_venir' (défaut: 'à_venir')
  */
-export async function saveLots(chantierId: string, lots: LotGenere[]): Promise<boolean> {
+export async function saveLots(
+  chantierId: string, 
+  lots: LotGenere[],
+  statut: 'brouillon' | 'à_venir' = 'à_venir'
+): Promise<{ success: boolean; error?: string }> {
   try {
-    // Préparer les données pour insertion
-    const lotsToInsert = lots.map(lot => ({
+    // Préparer les données
+    const travauxData = lots.map((lot) => ({
       chantier_id: chantierId,
       titre: lot.titre,
       description: lot.description,
       ordre: lot.ordre,
+      niveau: 'lot',
       code_expertise: lot.code_expertise,
-      niveau_difficulte: lot.niveau_requis === 'debutant' ? 1 : lot.niveau_requis === 'intermediaire' ? 2 : 3,
       niveau_requis: lot.niveau_requis,
       duree_estimee_heures: lot.duree_estimee_heures,
       cout_estime: lot.cout_estime,
-      prerequis_stricts: lot.prerequis_stricts,
-      points_attention: lot.points_attention,
-      dependances_type: lot.dependances_type,
-      statut: 'à_venir',
+      prerequis_stricts: lot.prerequis_stricts || [],
+      points_attention: lot.points_attention || null,
+      statut: statut,
       progression: 0,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
     }));
 
-    const { error } = await supabase
-      .from('travaux')
-      .insert(lotsToInsert);
+    // Insérer les lots
+    const { error } = await supabase.from('travaux').insert(travauxData);
 
-    if (error) {
-      console.error('Erreur sauvegarde lots:', error);
-      return false;
+    if (error) throw error;
+
+    // Mettre à jour le statut du chantier seulement si on valide (pas brouillon)
+    if (statut === 'à_venir') {
+      await supabase
+        .from('chantiers')
+        .update({ 
+          statut: 'en_cours',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', chantierId);
     }
 
-    // Mettre à jour le statut du chantier
-    await supabase
+    return { success: true };
+  } catch (err) {
+    console.error('Erreur sauvegarde lots:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Erreur inconnue' };
+  }
+}
+
+/**
+ * Vérifie si un chantier a des lots en brouillon
+ */
+export async function hasBrouillon(chantierId: string): Promise<boolean> {
+  const { data } = await supabase
+    .from('travaux')
+    .select('id')
+    .eq('chantier_id', chantierId)
+    .eq('statut', 'brouillon')
+    .limit(1);
+  
+  return (data && data.length > 0);
+}
+
+/**
+ * Charge les lots brouillon d'un chantier
+ */
+export async function loadBrouillon(chantierId: string): Promise<LotGenere[]> {
+  const { data, error } = await supabase
+    .from('travaux')
+    .select('*')
+    .eq('chantier_id', chantierId)
+    .eq('statut', 'brouillon')
+    .order('ordre');
+
+  if (error || !data) return [];
+
+  return data.map((t) => ({
+    ordre: t.ordre,
+    titre: t.titre,
+    description: t.description || '',
+    code_expertise: t.code_expertise || 'generaliste',
+    niveau_requis: t.niveau_requis || 'intermediaire',
+    duree_estimee_heures: t.duree_estimee_heures || 0,
+    cout_estime: t.cout_estime || 0,
+    prerequis_stricts: t.prerequis_stricts || [],
+    points_attention: t.points_attention,
+    dependances_type: 'sequentiel',
+  }));
+}
+
+/**
+ * Valide les lots brouillon (passe de brouillon à à_venir)
+ */
+export async function validerBrouillon(chantierId: string): Promise<{ success: boolean; error?: string }> {
+  try {
+    // Mettre à jour les lots
+    const { error: lotsError } = await supabase
+      .from('travaux')
+      .update({ statut: 'à_venir' })
+      .eq('chantier_id', chantierId)
+      .eq('statut', 'brouillon');
+
+    if (lotsError) throw lotsError;
+
+    // Mettre à jour le chantier
+    const { error: chantierError } = await supabase
       .from('chantiers')
       .update({ 
         statut: 'en_cours',
@@ -180,11 +253,12 @@ export async function saveLots(chantierId: string, lots: LotGenere[]): Promise<b
       })
       .eq('id', chantierId);
 
-    console.log(`✅ ${lots.length} lots sauvegardés pour le chantier ${chantierId}`);
-    return true;
-  } catch (error) {
-    console.error('Erreur sauvegarde lots:', error);
-    return false;
+    if (chantierError) throw chantierError;
+
+    return { success: true };
+  } catch (err) {
+    console.error('Erreur validation brouillon:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Erreur inconnue' };
   }
 }
 
