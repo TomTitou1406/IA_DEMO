@@ -92,30 +92,14 @@ export default function ChantierEditPage() {
     loadChantier();
   }, [chantierId, isCreation]);
 
-  // Ouvrir l'assistant pour modifier
+// Ouvrir l'assistant pour modifier
   const handleModifier = () => {
     window.dispatchEvent(new CustomEvent('openAssistant'));
   };
 
- // Lancer le phasage (génération des lots)
-    const handleLancerPhasage = () => {
-      router.push(`/chantiers/${chantierId}/phasage`);
-    };
-    
-    try {
-      // TODO: Étape suivante - appeler generatorService pour générer les lots
-      console.log('Lancement du phasage pour:', chantier);
-      alert('🚧 Phasage en cours de développement...');
-      
-      // Après génération des lots, rediriger vers la page travaux
-      // router.push(`/chantiers/${chantierId}/travaux`);
-      
-    } catch (err) {
-      console.error('Erreur phasage:', err);
-      alert('Erreur lors du phasage');
-    } finally {
-      setIsLaunchingPhasage(false);
-    }
+  // Lancer le phasage (génération des lots)
+  const handleLancerPhasage = () => {
+    router.push(`/chantiers/${chantierId}/phasage`);
   };
 
   // ==================== MODE CRÉATION ====================
