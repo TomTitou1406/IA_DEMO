@@ -4,7 +4,7 @@
  * Page de phasage d'un chantier
  * Génère et affiche les lots de travaux proposés par l'IA
  * 
- * @version 2.0 - Thème sombre cohérent
+ * @version 2.1 - Brouillon, modale, vérification règles
  * @date 29 novembre 2025
  */
 
@@ -48,6 +48,12 @@ interface Chantier {
   budget_initial?: number;
 }
 
+interface RegleViolation {
+  lot: string;
+  probleme: string;
+  suggestion: string;
+}
+
 // ==================== HELPERS ====================
 
 const EXPERTISE_LABELS: Record<string, { label: string; icon: string }> = {
@@ -74,10 +80,167 @@ const ALERTE_CONFIG: Record<string, { icon: string; color: string; bg: string; b
   conseil: { icon: '💡', color: '#3b82f6', bg: 'rgba(59, 130, 246, 0.15)', border: 'rgba(59, 130, 246, 0.3)' },
 };
 
+// ==================== RÈGLES DE DÉPENDANCES ====================
+
+const REGLES_ORDRE: Record<string, string[]> = {
+  // code_expertise : doit être AVANT ces codes
+  demolition: ['plomberie', 'electricite', 'isolation', 'plaquiste', 'carreleur', 'peintre', 'menuisier', 'generaliste'],
+  plomberie: ['plaquiste', 'carreleur', 'peintre'],
+  electricite: ['plaquiste', 'carreleur', 'peintre'],
+  isolation: ['plaquiste'],
+  plaquiste: ['carreleur', 'peintre'],
+  carreleur: ['generaliste', 'menuisier'], // équipements sanitaires souvent en generaliste
+  peintre: ['menuisier'], // finitions
+};
+
+function verifierRegles(lots: LotGenere[]): RegleViolation[] {
+  const violations: RegleViolation[] = [];
+  
+  lots.forEach((lot) => {
+    const doitEtreAvant = REGLES_ORDRE[lot.code_expertise] || [];
+    
+    doitEtreAvant.forEach((codeApres) => {
+      // Chercher si un lot avec ce code est AVANT le lot actuel
+      const lotAvant = lots.find(
+        (l) => l.code_expertise === codeApres && l.ordre < lot.ordre
+      );
+      
+      if (lotAvant) {
+        const expertiseActuel = EXPERTISE_LABELS[lot.code_expertise]?.label || lot.code_expertise;
+        const expertiseAvant = EXPERTISE_LABELS[codeApres]?.label || codeApres;
+        
+        violations.push({
+          lot: lot.titre,
+          probleme: `"${expertiseActuel}" (n°${lot.ordre}) devrait être avant "${expertiseAvant}" (n°${lotAvant.ordre})`,
+          suggestion: `Déplacez "${lot.titre}" avant "${lotAvant.titre}"`,
+        });
+      }
+    });
+  });
+  
+  return violations;
+}
+
+// ==================== COMPOSANT MODALE ====================
+
+function Modale({ 
+  isOpen, 
+  title, 
+  message, 
+  confirmText, 
+  cancelText, 
+  onConfirm, 
+  onCancel,
+  type = 'warning'
+}: {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  confirmText: string;
+  cancelText: string;
+  onConfirm: () => void;
+  onCancel: () => void;
+  type?: 'warning' | 'danger' | 'info';
+}) {
+  if (!isOpen) return null;
+
+  const colors = {
+    warning: { bg: 'rgba(245, 158, 11, 0.15)', border: '#f59e0b', icon: '⚠️' },
+    danger: { bg: 'rgba(239, 68, 68, 0.15)', border: '#ef4444', icon: '🚨' },
+    info: { bg: 'rgba(59, 130, 246, 0.15)', border: '#3b82f6', icon: '💡' },
+  };
+  const config = colors[type];
+
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem'
+    }}>
+      <div style={{
+        background: '#1a1a1a',
+        borderRadius: '16px',
+        border: `1px solid ${config.border}`,
+        maxWidth: '450px',
+        width: '100%',
+        overflow: 'hidden'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: config.bg,
+          padding: '1rem 1.25rem',
+          borderBottom: `1px solid ${config.border}`,
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem'
+        }}>
+          <span style={{ fontSize: '1.5rem' }}>{config.icon}</span>
+          <h3 style={{ margin: 0, color: 'var(--gray-light)', fontSize: '1.1rem', fontWeight: '600' }}>
+            {title}
+          </h3>
+        </div>
+        
+        {/* Body */}
+        <div style={{ padding: '1.25rem' }}>
+          <p style={{ color: 'var(--gray)', fontSize: '0.95rem', lineHeight: '1.5', margin: 0 }}>
+            {message}
+          </p>
+        </div>
+        
+        {/* Footer */}
+        <div style={{
+          padding: '1rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          display: 'flex',
+          gap: '0.75rem',
+          justifyContent: 'flex-end'
+        }}>
+          <button
+            onClick={onCancel}
+            style={{
+              padding: '0.6rem 1.25rem',
+              background: 'rgba(255,255,255,0.05)',
+              border: '1px solid rgba(255,255,255,0.15)',
+              borderRadius: '8px',
+              color: 'var(--gray-light)',
+              fontSize: '0.9rem',
+              cursor: 'pointer'
+            }}
+          >
+            {cancelText}
+          </button>
+          <button
+            onClick={onConfirm}
+            style={{
+              padding: '0.6rem 1.25rem',
+              background: config.border,
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            {confirmText}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== COMPOSANT LOADING ====================
 
 function LoadingPhasage() {
   const [step, setStep] = useState(0);
+  const [completed, setCompleted] = useState<number[]>([]);
+  
   const steps = [
     { icon: '📋', text: 'Analyse du projet...' },
     { icon: '🔍', text: 'Identification des travaux nécessaires...' },
@@ -88,8 +251,16 @@ function LoadingPhasage() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setStep((prev) => (prev + 1) % steps.length);
-    }, 2000);
+      setStep((prev) => {
+        const next = prev + 1;
+        if (next < steps.length) {
+          setCompleted((c) => [...c, prev]);
+          return next;
+        }
+        // Reste sur la dernière étape sans boucler
+        return prev;
+      });
+    }, 1500);
     return () => clearInterval(interval);
   }, []);
 
@@ -102,10 +273,7 @@ function LoadingPhasage() {
       justifyContent: 'center',
       padding: '2rem'
     }}>
-      <div style={{
-        textAlign: 'center',
-        maxWidth: '400px'
-      }}>
+      <div style={{ textAlign: 'center', maxWidth: '400px' }}>
         {/* Animation */}
         <div style={{
           width: '80px',
@@ -173,20 +341,20 @@ function LoadingPhasage() {
               <span style={{ fontSize: '1.1rem' }}>{s.icon}</span>
               <span style={{
                 fontSize: '0.85rem',
-                color: idx === step ? 'var(--orange)' : 'var(--gray)',
-                fontWeight: idx === step ? '600' : '400'
+                color: idx === step ? 'var(--orange)' : completed.includes(idx) ? '#10b981' : 'var(--gray)',
+                fontWeight: idx === step ? '600' : '400',
+                flex: 1,
+                textAlign: 'left'
               }}>
                 {s.text}
               </span>
-              {idx < step && <span style={{ marginLeft: 'auto', color: '#10b981' }}>✓</span>}
+              {completed.includes(idx) && <span style={{ color: '#10b981' }}>✓</span>}
+              {idx === step && <span className="loading-dot" style={{ color: 'var(--orange)' }}>...</span>}
             </div>
           ))}
         </div>
 
-        <p style={{
-          fontSize: '0.8rem',
-          color: 'var(--gray)'
-        }}>
+        <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
           Cela peut prendre quelques secondes...
         </p>
 
@@ -215,6 +383,12 @@ export default function PhasagePage() {
   const [error, setError] = useState<string | null>(null);
   const [phasage, setPhasage] = useState<ResultatPhasage | null>(null);
   const [lots, setLots] = useState<LotGenere[]>([]);
+  
+  // Modales
+  const [showRegenerateModal, setShowRegenerateModal] = useState(false);
+  const [showValidateModal, setShowValidateModal] = useState(false);
+  const [showQuitModal, setShowQuitModal] = useState(false);
+  const [violations, setViolations] = useState<RegleViolation[]>([]);
 
   // ==================== CHARGEMENT INITIAL ====================
 
@@ -233,8 +407,30 @@ export default function PhasagePage() {
       if (error) throw error;
       setChantier(data);
       
-      // Lancer le phasage automatiquement
-      generatePhasage();
+      // Vérifier s'il y a un brouillon existant
+      const brouillonResponse = await fetch('/api/phasage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chantierId, action: 'load_brouillon' }),
+      });
+      const brouillonData = await brouillonResponse.json();
+      
+      if (brouillonData.hasBrouillon && brouillonData.lots?.length > 0) {
+        // Charger le brouillon existant
+        setLots(brouillonData.lots);
+        setPhasage({
+          ready_for_phasage: true,
+          analyse: 'Brouillon chargé - Vous pouvez continuer votre phasage.',
+          lots: brouillonData.lots,
+          alertes: [],
+          budget_total_estime: brouillonData.lots.reduce((s: number, l: LotGenere) => s + (l.cout_estime || 0), 0),
+          duree_totale_estimee_heures: brouillonData.lots.reduce((s: number, l: LotGenere) => s + (l.duree_estimee_heures || 0), 0),
+        });
+        setLoading(false);
+      } else {
+        // Sinon générer
+        generatePhasage();
+      }
     } catch (err) {
       setError('Chantier non trouvé');
       setLoading(false);
@@ -270,11 +466,25 @@ export default function PhasagePage() {
     }
   }
 
-  // ==================== RÉGÉNÉRATION (repart de zéro) ====================
+  // ==================== RÉGÉNÉRATION ====================
 
-  async function regeneratePhasage() {
+  function handleRegenerateClick() {
+    setShowRegenerateModal(true);
+  }
+
+  async function confirmRegenerate() {
+    setShowRegenerateModal(false);
     setLots([]);
     setPhasage(null);
+    setViolations([]);
+    
+    // Supprimer les brouillons existants
+    await fetch('/api/phasage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chantierId, action: 'reset' }),
+    });
+    
     generatePhasage();
   }
 
@@ -285,6 +495,7 @@ export default function PhasagePage() {
       .filter(l => l.ordre !== ordre)
       .map((l, idx) => ({ ...l, ordre: idx + 1 }));
     setLots(newLots);
+    setViolations([]); // Reset violations quand on modifie
   }
 
   function moveLot(ordre: number, direction: 'up' | 'down') {
@@ -301,11 +512,25 @@ export default function PhasagePage() {
     [newLots[index], newLots[swapIndex]] = [newLots[swapIndex], newLots[index]];
     
     setLots(newLots.map((l, idx) => ({ ...l, ordre: idx + 1 })));
+    setViolations([]); // Reset violations quand on modifie
   }
 
-  // ==================== SAUVEGARDE ====================
+  // ==================== VALIDATION ====================
 
-  async function savePhasage() {
+  function handleValidateClick() {
+    // Vérifier les règles
+    const reglesViolees = verifierRegles(lots);
+    setViolations(reglesViolees);
+    
+    if (reglesViolees.length > 0) {
+      setShowValidateModal(true);
+    } else {
+      // Pas de violation, valider directement
+      savePhasage('validate');
+    }
+  }
+
+  async function savePhasage(action: 'save_brouillon' | 'validate') {
     setSaving(true);
     setError(null);
 
@@ -315,7 +540,7 @@ export default function PhasagePage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
           chantierId, 
-          action: 'save',
+          action,
           lots 
         }),
       });
@@ -326,11 +551,31 @@ export default function PhasagePage() {
         throw new Error(data.error || 'Erreur sauvegarde');
       }
 
-      router.push(`/chantiers/${chantierId}/travaux`);
+      if (action === 'validate') {
+        router.push(`/chantiers/${chantierId}/travaux`);
+      } else {
+        router.push(`/chantiers/${chantierId}`);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur sauvegarde');
       setSaving(false);
     }
+  }
+
+  // ==================== QUITTER ====================
+
+  function handleQuitClick() {
+    setShowQuitModal(true);
+  }
+
+  async function confirmQuitWithSave() {
+    setShowQuitModal(false);
+    await savePhasage('save_brouillon');
+  }
+
+  function confirmQuitWithoutSave() {
+    setShowQuitModal(false);
+    router.push(`/chantiers/${chantierId}`);
   }
 
   // ==================== CALCULS ====================
@@ -340,12 +585,10 @@ export default function PhasagePage() {
 
   // ==================== RENDU ====================
 
-  // Loading ou génération
   if (loading || generating) {
     return <LoadingPhasage />;
   }
 
-  // Erreur
   if (error && !phasage) {
     return (
       <div style={{
@@ -379,6 +622,41 @@ export default function PhasagePage() {
 
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', paddingBottom: '100px' }}>
+      
+      {/* MODALES */}
+      <Modale
+        isOpen={showRegenerateModal}
+        type="warning"
+        title="Régénérer le phasage ?"
+        message="Cette action va supprimer tous les lots actuels et en générer de nouveaux. Les modifications non sauvegardées seront perdues."
+        confirmText="Régénérer"
+        cancelText="Annuler"
+        onConfirm={confirmRegenerate}
+        onCancel={() => setShowRegenerateModal(false)}
+      />
+
+      <Modale
+        isOpen={showValidateModal}
+        type="danger"
+        title="Ordre des lots incorrect"
+        message={`Attention : ${violations.length} problème(s) d'ordre détecté(s). Par exemple : ${violations[0]?.probleme || ''}. Voulez-vous quand même valider ?`}
+        confirmText="Valider quand même"
+        cancelText="Corriger"
+        onConfirm={() => { setShowValidateModal(false); savePhasage('validate'); }}
+        onCancel={() => setShowValidateModal(false)}
+      />
+
+      <Modale
+        isOpen={showQuitModal}
+        type="info"
+        title="Quitter le phasage ?"
+        message="Voulez-vous sauvegarder votre phasage en brouillon pour y revenir plus tard ?"
+        confirmText="Sauvegarder et quitter"
+        cancelText="Quitter sans sauvegarder"
+        onConfirm={confirmQuitWithSave}
+        onCancel={confirmQuitWithoutSave}
+      />
+
       {/* BREADCRUMB */}
       <div style={{
         position: 'fixed',
@@ -399,16 +677,19 @@ export default function PhasagePage() {
           justifyContent: 'space-between'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.95rem' }}>
-            <Link href={`/chantiers/${chantierId}`} style={{ color: 'var(--gray)' }}>
+            <span 
+              onClick={handleQuitClick}
+              style={{ color: 'var(--gray)', cursor: 'pointer' }}
+            >
               ← Retour
-            </Link>
+            </span>
             <span style={{ color: 'var(--gray)' }}>/</span>
             <span style={{ color: 'var(--orange)', fontWeight: '600' }}>
               🏗️ Phasage : {chantier?.titre}
             </span>
           </div>
           <button
-            onClick={regeneratePhasage}
+            onClick={handleRegenerateClick}
             disabled={generating}
             style={{
               padding: '0.4rem 0.75rem',
@@ -476,6 +757,34 @@ export default function PhasagePage() {
           </div>
         )}
 
+        {/* VIOLATIONS DE RÈGLES */}
+        {violations.length > 0 && (
+          <div style={{
+            background: 'rgba(239, 68, 68, 0.1)',
+            border: '1px solid rgba(239, 68, 68, 0.3)',
+            borderRadius: '12px',
+            padding: '1rem 1.25rem',
+            marginBottom: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
+              <span>🚨</span>
+              <span style={{ fontWeight: '600', color: '#ef4444' }}>
+                Problèmes d'ordre détectés ({violations.length})
+              </span>
+            </div>
+            {violations.map((v, idx) => (
+              <div key={idx} style={{ 
+                fontSize: '0.85rem', 
+                color: 'var(--gray-light)',
+                marginBottom: '0.5rem',
+                paddingLeft: '1.5rem'
+              }}>
+                • {v.probleme}
+              </div>
+            ))}
+          </div>
+        )}
+
         {/* RÉSUMÉ */}
         <div style={{
           background: 'rgba(255,255,255,0.03)',
@@ -519,6 +828,7 @@ export default function PhasagePage() {
           {lots.map((lot) => {
             const expertise = EXPERTISE_LABELS[lot.code_expertise] || { label: lot.code_expertise, icon: '🔧' };
             const niveau = NIVEAU_CONFIG[lot.niveau_requis] || NIVEAU_CONFIG.intermediaire;
+            const hasViolation = violations.some(v => v.lot === lot.titre);
 
             return (
               <div
@@ -526,16 +836,17 @@ export default function PhasagePage() {
                 style={{
                   background: 'linear-gradient(90deg, #0d0d0d 0%, #1a1a1a 100%)',
                   borderRadius: '12px',
-                  borderLeft: '4px solid var(--blue)',
+                  borderLeft: `4px solid ${hasViolation ? '#ef4444' : 'var(--blue)'}`,
                   padding: '1rem 1.25rem',
                   display: 'flex',
                   gap: '1rem',
-                  alignItems: 'flex-start'
+                  alignItems: 'flex-start',
+                  transition: 'all 0.2s'
                 }}
               >
                 {/* Numéro */}
                 <div style={{
-                  background: 'var(--blue)',
+                  background: hasViolation ? '#ef4444' : 'var(--blue)',
                   color: 'white',
                   width: '28px',
                   height: '28px',
@@ -682,20 +993,6 @@ export default function PhasagePage() {
           })}
         </div>
 
-        {/* Message modification */}
-        {phasage && lots.length !== phasage.lots.length && (
-          <p style={{
-            fontSize: '0.85rem',
-            color: '#f59e0b',
-            marginTop: '1rem',
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem'
-          }}>
-            ⚠️ Vous avez modifié le phasage ({phasage.lots.length} → {lots.length} lots)
-          </p>
-        )}
-
         {/* Erreur */}
         {error && (
           <div style={{
@@ -728,7 +1025,7 @@ export default function PhasagePage() {
           gap: '0.75rem'
         }}>
           <button
-            onClick={() => router.back()}
+            onClick={handleQuitClick}
             style={{
               flex: 1,
               padding: '0.875rem',
@@ -744,7 +1041,7 @@ export default function PhasagePage() {
             Annuler
           </button>
           <button
-            onClick={savePhasage}
+            onClick={handleValidateClick}
             disabled={saving || lots.length === 0}
             style={{
               flex: 1,
