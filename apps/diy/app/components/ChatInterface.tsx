@@ -441,8 +441,7 @@ export default function ChatInterface({
       } catch (e) {
         console.warn('⚠️ Impossible de recharger le contexte:', e);
       }
-
-    try {
+    
       // Préparer les messages pour l'API
       const apiMessages = [...displayMessages, userMessage].map(m => ({
         role: m.role as 'user' | 'assistant',
