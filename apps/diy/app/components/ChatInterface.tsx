@@ -525,6 +525,7 @@ export default function ChatInterface({
     displayMessages, 
     activeExpertise, 
     additionalContext, 
+    pathname, 
     voiceMode, 
     pageContext, 
     promptContext,
