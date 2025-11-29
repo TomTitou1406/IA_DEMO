@@ -26,6 +26,8 @@ import ExpertiseBanner, { ExpertiseTransitionMessage } from './ExpertiseBanner';
 import type { Message, ConversationType } from '../lib/types/conversation';
 import { addNote, type NoteLevel } from '../lib/services/notesService';
 import RecapModal, { type RecapData } from './RecapModal';
+import { loadContextForPath } from '../lib/services/contextLoaderService';
+import { usePathname } from 'next/navigation';
 
 // ==================== TYPES ====================
 
@@ -107,6 +109,8 @@ export default function ChatInterface({
   const timerRef = useRef<NodeJS.Timeout | null>(null);
   const audioElementRef = useRef<HTMLAudioElement | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const pathname = usePathname();
 
   // ==================== HOOKS PERSONNALISÉS ====================
   
@@ -428,6 +432,17 @@ export default function ChatInterface({
     setLoading(true);
 
     try {
+      // Recharger le contexte frais depuis la BDD
+      let freshContext = additionalContext;
+      try {
+        const contextData = await loadContextForPath(pathname);
+        freshContext = contextData.contextForAI;
+        console.log('🔄 Contexte rechargé pour le message');
+      } catch (e) {
+        console.warn('⚠️ Impossible de recharger le contexte:', e);
+      }
+
+    try {
       // Préparer les messages pour l'API
       const apiMessages = [...displayMessages, userMessage].map(m => ({
         role: m.role as 'user' | 'assistant',
@@ -435,9 +450,9 @@ export default function ChatInterface({
       }));
 
       // Appel API avec expertise si active
-      const response: ChatResponse = await sendChat({
+     const response: ChatResponse = await sendChat({
         messages: apiMessages,
-        context: additionalContext,
+        context: freshContext,
         isVoiceMode: voiceMode,
         pageContext,
         expertiseCode: activeExpertise?.code,
