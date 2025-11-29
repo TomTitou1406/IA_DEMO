@@ -237,8 +237,6 @@ function Modale({
 
 // ==================== COMPOSANT LOADING ====================
 
-// ==================== COMPOSANT LOADING ====================
-
 function LoadingPhasage() {
   const [step, setStep] = useState(0);
   const [completed, setCompleted] = useState<number[]>([]);
@@ -252,8 +250,8 @@ function LoadingPhasage() {
     { icon: '⏱️', text: 'Estimation durées et coûts...' },
   ];
 
-  const TOTAL_DURATION = 30000; // 30 secondes
-  const STEP_DURATION = TOTAL_DURATION / steps.length; // 6 secondes par étape
+  const TOTAL_DURATION = 25000; // 30 secondes
+  const STEP_DURATION = TOTAL_DURATION / steps.length; 
 
   // Progress bar animation (30 secondes pour faire le tour)
   useEffect(() => {
