@@ -22,6 +22,7 @@ export type PageContext =
   | 'chantiers'
   | 'chantier_edit'
   | 'chantier_modification'
+  | 'phasage'
   | 'lots'
   | 'etapes'
   | 'taches'
@@ -103,6 +104,8 @@ function getWelcomeMessage(level: NavigationLevel): string {
       return "Tu souhaites apporter une modification au chantier avant le phasage ? 🔧";
     case 'chantiers':
       return 'Salut ! Je peux t\'aider à gérer tes projets ?';
+    case 'phasage':
+      return "Je t'aide à comprendre et organiser les lots de travaux. Tu as des questions ? 📋";
     case 'lots':
       return 'Salut ! Je connais ce chantier. Comment puis-je t\'aider ?';
     case 'etapes':
@@ -122,6 +125,8 @@ function getPlaceholder(level: NavigationLevel): string {
       return 'Décris-moi ton projet...';
     case 'chantiers':
       return 'Une question sur tes projets ?';
+    case 'phasage':
+      return 'Une question sur les lots proposés ?';
     case 'lots':
       return 'Une question sur ce lot ?';
     case 'etapes':
@@ -151,6 +156,8 @@ function mapLevelToPageContext(level: NavigationLevel, pathname: string): PageCo
       return 'lots';
     case 'etapes':
       return 'etapes';
+    case 'phasage':
+      return 'phasage';
     case 'taches':
       return 'taches';
     default:
