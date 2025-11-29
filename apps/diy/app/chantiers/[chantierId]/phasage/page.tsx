@@ -78,7 +78,7 @@ const ALERTE_STYLES: Record<string, { icon: string; bg: string; border: string }
 export default function PhasagePage() {
   const params = useParams();
   const router = useRouter();
-  const chantierId = params.id as string;
+  const chantierId = params.chantierId as string;
 
   // États
   const [chantier, setChantier] = useState<Chantier | null>(null);
