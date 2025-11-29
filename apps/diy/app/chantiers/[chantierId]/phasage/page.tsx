@@ -458,6 +458,22 @@ export default function PhasagePage() {
 
       setPhasage(data.phasage);
       setLots(data.phasage.lots);
+      
+      // Sauvegarder automatiquement en brouillon pour que l'assistant ait le contexte
+      try {
+        await fetch('/api/phasage', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            chantierId, 
+            action: 'save_brouillon',
+            lots: data.phasage.lots 
+          }),
+        });
+        console.log('✅ Brouillon auto-sauvegardé');
+      } catch (e) {
+        console.warn('⚠️ Sauvegarde brouillon auto échouée:', e);
+      }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
     } finally {
