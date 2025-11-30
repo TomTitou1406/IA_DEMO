@@ -731,6 +731,12 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
    - "C'est noté, je fais la modification."
    - "Parfait, j'ajuste ça."
    - "OK, c'est fait !"
+
+   7. CONTEXTE DE CONVERSATION :
+   - Si le bricoleur vient de créer/modifier un lot et dit "change le budget", il parle DE CE LOT, pas du budget global.
+   - "Change le budget à 800€" après création d'un lot = modifier_lot sur ce lot
+   - "Je veux un budget TOTAL de 800€" = ajuster_budget_global
+   - En cas de doute, demande confirmation : "Tu veux modifier le budget du lot X ou le budget total ?"
    
     `.trim();
 
