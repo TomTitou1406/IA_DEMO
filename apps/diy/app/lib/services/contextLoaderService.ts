@@ -707,29 +707,30 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
          - OBLIGATOIRE : Une phrase courte + bloc json IMMÉDIATEMENT APRÈS
          - Si tu oublies le JSON, RIEN ne se passe côté interface
       
-      5. Pour DOCUMENTER ou COMPLÉTER un lot existant, utilise modifier_lot. NE CRÉE PAS un nouveau lot.
-         Indices que le bricoleur veut MODIFIER (pas ajouter) :
-         - "rajoute à ce lot", "complète le lot", "ajoute dans le lot"
-         - "rajoute des équipements" (= modifier le lot récemment créé/discuté)
-         - Référence au lot qu'on vient de créer ou discuter
-         → Utilise modifier_lot avec le lot_ordre correspondant
-      
-      6. CONTEXTE DE CONVERSATION :
-         - Si le bricoleur vient de créer/modifier un lot et dit "change le budget", il parle DE CE LOT, pas du budget global.
-         - "Change le budget à 800€" après création d'un lot = modifier_lot sur ce lot
-         - "Je veux un budget TOTAL de 800€" = ajuster_budget_global
-         - En cas de doute, demande confirmation : "Tu veux modifier le budget du lot X ou le budget total ?"
-      
-      7. SI TU NE GÉNÈRES PAS LE JSON, L'ACTION NE SE FAIT PAS.
-         Le bricoleur ne verra AUCUNE modification si tu oublies le JSON.
-      
-      EXEMPLES :
-      - "Réduis le budget du lot 1 à 300€" → modifier_lot, lot_ordre: 1, modifications: { cout_estime: 300 }
-      - "Supprime le lot 9" → supprimer_lot, lot_ordre: 9
-      - "Documente le lot 9" → modifier_lot, lot_ordre: 9, modifications: { description: "..." }
-      - "Rajoute X dans ce lot" → modifier_lot sur le lot récemment discuté
-      - "Ajoute une mention d'attention" → modifier_lot avec points_attention: "..."
-      `.trim();
+     5. COMPLÉTER UN LOT = CONSERVER + AJOUTER (ne jamais écraser)
+     Quand le bricoleur dit "ajoute X au lot Y" :
+     - Tu CONSERVES la description existante
+     - Tu AJOUTES le nouvel élément à la suite
+     Exemple : description existante "Installation douche" + ajout "console effet pluie"
+     → nouvelle description : "Installation douche. Console effet pluie."
+     
+     Idem pour points_attention : CONCATÉNER, pas remplacer.
+  
+  6. CONTEXTE DE CONVERSATION :
+     - Si le bricoleur vient de créer/modifier un lot et dit "change le budget", il parle DE CE LOT
+     - "Change le budget à 800€" après création d'un lot = modifier_lot sur ce lot
+     - "Je veux un budget TOTAL de 800€" = ajuster_budget_global
+  
+  7. DOCUMENTER UN LOT = Enrichir sa description avec des détails utiles.
+     Utilise modifier_lot avec une description COMPLÈTE (ancien + nouveau).
+  
+  EXEMPLES DE MODIFICATIONS :
+  - "Réduis le budget du lot 1 à 300€" → modifier_lot, lot_ordre: 1, modifications: { cout_estime: 300 }
+  - "Supprime le lot 5" → supprimer_lot, lot_ordre: 5
+  - "Ajoute X au lot 9" → modifier_lot, lot_ordre: 9, modifications: { description: "[description existante]. X." }
+  - "Ajoute un point d'attention" → modifier_lot avec points_attention: "[ancien point]. [nouveau point]"
+  - "Documente le lot 8" → modifier_lot avec description enrichie et complète
+  `.trim();
 
     return {
       level: 'phasage',
@@ -853,76 +854,22 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
     const journalText = formatJournalForAI(journal);
 
     const contextForAI = `
-    ${chantierInfo}
-    ${lotsBrouillonInfo}
-    ${reglesInfo}
-    
-    TON RÔLE : Tu es l'Assistant Phasage. Tu aides le bricoleur à organiser ses lots de travaux.
-    
-    🔧 TU PEUX MODIFIER LES LOTS :
-    Quand le bricoleur te demande une modification, tu DOIS l'exécuter et inclure le JSON.
-    
-    FORMAT OBLIGATOIRE pour toute modification :
-    \`\`\`json
-    {
-      "phasage_action": {
-        "action": "TYPE_ACTION",
-        "params": { ... },
-        "message": "Ce que tu as fait"
-      }
-    }
-    \`\`\`
-    
-    ACTIONS DISPONIBLES :
-    - modifier_lot : { "lot_ordre": 3, "modifications": { "cout_estime": 1000 } }
-    - ajouter_lot : { "position": 5, "titre": "...", "code_expertise": "...", "cout_estime": 0, "duree_estimee_heures": 0, "description": "..." }
-    - supprimer_lot : { "lot_ordre": 9 }
-    - deplacer_lot : { "lot_ordre": 3, "nouvelle_position": 1 }
-    - fusionner_lots : { "lots_ordres": [4, 5], "nouveau_titre": "...", "cout_estime": 0, "duree_estimee_heures": 0 }
-    - ajuster_budget_global : { "budget_cible": 5000 }
-    
-    ⚠️ RÈGLES STRICTES :
-    
-    1. TU OBÉIS AU BRICOLEUR. S'il veut modifier un budget, supprimer un lot, ou réorganiser : TU LE FAIS.
-    
-    2. TU REFUSES UNIQUEMENT si l'action viole une RÈGLE DE DÉPENDANCE TECHNIQUE :
-       - Démolition doit rester en premier
-       - Plomberie/Électricité avant Placo
-       - Placo avant Carrelage/Peinture
-       
-    3. Si le bricoleur insiste malgré un refus, TU EXÉCUTES avec un avertissement.
-    
-    4. CHAQUE DEMANDE DE MODIFICATION = UN BLOC JSON OBLIGATOIRE.
-       ❌ INTERDIT : Répondre "Voici la mise à jour" ou "C'est fait" SANS bloc JSON
-       ❌ INTERDIT : Promettre une action sans la faire
-       ✅ OBLIGATOIRE : Phrase courte + bloc json DANS LA MÊME RÉPONSE
-       
-       Si tu ne mets pas le JSON, le bricoleur ne verra AUCUN changement.
-    
-    5. COMPLÉTER UN LOT = CONSERVER + AJOUTER (ne jamais écraser)
-       Quand le bricoleur dit "ajoute X au lot Y" :
-       - Tu CONSERVES la description existante
-       - Tu AJOUTES le nouvel élément à la suite
-       Exemple : description existante "Installation douche" + ajout "console effet pluie"
-       → nouvelle description : "Installation douche. Console effet pluie."
-       
-       Idem pour points_attention : CONCATÉNER, pas remplacer.
-    
-    6. CONTEXTE DE CONVERSATION :
-       - Si le bricoleur vient de créer/modifier un lot et dit "change le budget", il parle DE CE LOT
-       - "Change le budget à 800€" après création d'un lot = modifier_lot sur ce lot
-       - "Je veux un budget TOTAL de 800€" = ajuster_budget_global
-    
-    7. DOCUMENTER UN LOT = Enrichir sa description avec des détails utiles.
-       Utilise modifier_lot avec une description COMPLÈTE (ancien + nouveau).
-    
-    EXEMPLES DE MODIFICATIONS :
-    - "Réduis le budget du lot 1 à 300€" → modifier_lot, lot_ordre: 1, modifications: { cout_estime: 300 }
-    - "Supprime le lot 5" → supprimer_lot, lot_ordre: 5
-    - "Ajoute X au lot 9" → modifier_lot, lot_ordre: 9, modifications: { description: "[description existante]. X." }
-    - "Ajoute un point d'attention" → modifier_lot avec points_attention: "[ancien point]. [nouveau point]"
-    - "Documente le lot 8" → modifier_lot avec description enrichie et complète
-    `.trim();
+🏗️ CHANTIER : ${chantier?.titre || 'Chantier'} (${chantier?.progression || 0}%)
+
+📦 LOTS : ${lotsCompact}
+
+🔌 LOT : ${lotCourant?.titre || 'Lot'} (${expertiseNom}) - ${lotCourant?.progression || 0}%
+
+📋 ÉTAPES : ${etapesCompact}
+
+📍 ÉTAPE ACTUELLE : ${etapeCourante?.titre || 'Étape'} - ${etapeCourante?.progression || 0}%
+   ${etapeCourante?.description || ''}
+
+✅ TÂCHES À RÉALISER (${nbTaches}) :
+   ${tachesFormatted || 'Aucune tâche définie'}
+${journalText}
+TON RÔLE : Tu es l'Expert ${expertiseNom}. Tu guides le bricoleur tâche par tâche. Tu donnes des conseils pratiques, techniques de sécurité, et tu connais le contexte global du chantier. Tu te souviens des décisions prises et des problèmes rencontrés.
+`.trim();
 
     return {
       level: 'taches',
