@@ -463,6 +463,9 @@ export default function ChatInterface({
         }
       });
 
+     // DEBUG : Voir la réponse brute de l'IA
+      console.log('🤖 RÉPONSE BRUTE IA:', response.message);
+      
       // Vérifier si la réponse contient un recap JSON (création chantier)
       const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
       
