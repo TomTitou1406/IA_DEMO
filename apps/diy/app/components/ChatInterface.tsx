@@ -28,6 +28,7 @@ import { addNote, type NoteLevel } from '../lib/services/notesService';
 import RecapModal, { type RecapData } from './RecapModal';
 import { loadContextForPath } from '../lib/services/contextLoaderService';
 import { usePathname } from 'next/navigation';
+import { extractPhasageAction, dispatchPhasageAction } from '../lib/services/phasageActions';
 
 // ==================== TYPES ====================
 
@@ -462,13 +463,24 @@ export default function ChatInterface({
         }
       });
 
-      // Vérifier si la réponse contient un recap JSON
+      // Vérifier si la réponse contient un recap JSON (création chantier)
       const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
       
-      // Message assistant (sans le JSON si recap détecté)
+      // Vérifier si la réponse contient une action phasage
+      const { hasAction, action, cleanContent: actionCleanContent } = extractPhasageAction(cleanContent);
+      
+      // Utiliser le contenu le plus nettoyé
+      const finalContent = hasAction ? actionCleanContent : cleanContent;
+      
+      // Si action phasage détectée, dispatcher l'événement
+      if (hasAction && action) {
+        dispatchPhasageAction(action);
+      }
+      
+      // Message assistant (sans le JSON)
       const assistantMessage: Message = {
         role: 'assistant',
-        content: cleanContent,
+        content: finalContent,
         timestamp: new Date().toISOString(),
         expertise_code: activeExpertise?.code,
         expertise_nom: response.expertiseNom || activeExpertise?.nom,
