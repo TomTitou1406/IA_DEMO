@@ -662,7 +662,7 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
       reglesInfo = `\n📏 RÈGLES DE PHASAGE À RESPECTER :\n${reglesFormatted}`;
     }
 
-    const contextForAI = `
+   const contextForAI = `
     ${chantierInfo}
     ${lotsBrouillonInfo}
     ${reglesInfo}
@@ -703,44 +703,49 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
        
     3. Si le bricoleur insiste malgré un refus, TU EXÉCUTES avec un avertissement.
     
-    4. CHAQUE DEMANDE DE MODIFICATION = UN BLOC JSON OBLIGATOIRE.
-       ❌ INTERDIT : "Voici le JSON", "Voici la mise à jour", "Je vais faire"
-       ✅ OBLIGATOIRE : Phrase courte PUIS bloc json. Rien d'autre.
+    4. CHAQUE DEMANDE = UN SEUL BLOC JSON.
+       ❌ INTERDIT : "Voici le JSON", "Voici la mise à jour"
+       ✅ OBLIGATOIRE : Phrase courte (ex: "C'est fait !", "Lot supprimé.") PUIS bloc json.
        
-       Exemples de phrases correctes :
-       - "C'est fait !"
-       - "Lot supprimé."
-       - "J'ai ajouté le lot après le carrelage."
-       
-       Si tu ne mets pas le JSON, le bricoleur ne verra AUCUN changement.
+       Si tu ne mets pas le JSON, RIEN ne se passe.
     
-    5. AJOUT DE LOT = RESPECTER LE PHASAGE AUTOMATIQUEMENT.
-       Quand le bricoleur demande d'ajouter un lot, tu DOIS :
-       - Analyser le type de travail (plomberie, équipements, finitions...)
+    5. MODIFIER vs AJOUTER - RÈGLE FONDAMENTALE :
+       - "Affecte un budget au lot X" = MODIFIER le lot X (pas créer un nouveau)
+       - "Change le budget du lot X" = MODIFIER
+       - "Ajoute X au lot Y" = MODIFIER (compléter la description)
+       - "Ajoute UN LOT pour..." = CRÉER un nouveau lot
+       
+       AVANT DE CRÉER UN LOT, vérifie qu'un lot similaire n'existe pas déjà.
+       Si le bricoleur vient de créer un lot et parle de budget/description, il veut MODIFIER ce lot.
+    
+    6. AJOUT DE LOT = RESPECTER LE PHASAGE.
+       - Analyser le type de travail
        - Déterminer sa position LOGIQUE selon les dépendances
        - NE PAS ajouter à la fin par défaut
        
        Exemples :
        - "Ajoute un lot équipements sanitaires" → position APRÈS carrelage
        - "Ajoute un lot VMC" → position APRÈS électricité, AVANT placo
-       - "Ajoute un lot menuiserie extérieure" → position APRÈS démolition
     
-    6. COMPLÉTER UN LOT = CONSERVER + AJOUTER (ne jamais écraser)
-       Quand le bricoleur dit "ajoute X au lot Y" :
-       - Tu CONSERVES la description existante
+    7. COMPLÉTER UN LOT = CONSERVER + AJOUTER.
+       - Tu CONSERVES la description/points_attention existants
        - Tu AJOUTES le nouvel élément à la suite
-       
-       Idem pour points_attention : CONCATÉNER, pas remplacer.
+       - Ne jamais écraser le contenu existant
     
-    7. CONTEXTE DE CONVERSATION :
-       - Si le bricoleur vient de créer/modifier un lot et dit "change le budget", il parle DE CE LOT
-       - "Change le budget à 800€" après création d'un lot = modifier_lot sur ce lot
+    8. CONTEXTE DE CONVERSATION :
+       - Après création d'un lot, toute demande de modification concerne CE LOT
+       - "Change le budget à 800€" = modifier le lot dont on vient de parler
        - "Je veux un budget TOTAL de 800€" = ajuster_budget_global
     
+    9. SUPPRESSION = VÉRIFIER LE NUMÉRO DE LOT.
+       - Utiliser le lot_ordre EXACT demandé par le bricoleur
+       - Ne pas confondre avec un autre lot
+    
     EXEMPLES :
-    - "Supprime le lot 5" → supprimer_lot, lot_ordre: 5
-    - "Ajoute un lot équipements" → ajouter_lot à la position correcte selon le phasage
-    - "Ajoute X au lot 9" → modifier_lot avec description conservée + ajout
+    - "Ajoute un lot équipements" → ajouter_lot à la bonne position
+    - "Affecte 1000€ à ce lot" → modifier_lot sur le lot récemment discuté
+    - "Supprime le lot 7" → supprimer_lot, lot_ordre: 7
+    - "Ajoute une VMC au lot 3" → modifier_lot, lot_ordre: 3, description enrichie
     `.trim();
 
     return {
