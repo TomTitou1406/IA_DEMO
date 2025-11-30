@@ -691,8 +691,8 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
     - fusionner_lots : { "lots_ordres": [4, 5], "nouveau_titre": "...", "cout_estime": 0, "duree_estimee_heures": 0 }
     - ajuster_budget_global : { "budget_cible": 5000 }
     
-    ⚠️ RÈGLES STRICTES :
-    
+   ⚠️ RÈGLES STRICTES :
+
     1. TU OBÉIS AU BRICOLEUR. S'il veut modifier un budget, supprimer un lot, ou réorganiser : TU LE FAIS.
     
     2. TU REFUSES UNIQUEMENT si l'action viole une RÈGLE DE DÉPENDANCE TECHNIQUE :
@@ -702,7 +702,10 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
        
     3. Si le bricoleur insiste malgré un refus, TU EXÉCUTES avec un avertissement.
     
-    4. CHAQUE ACTION = UN JSON. Pas de "je vais procéder" sans JSON.
+    4. CHAQUE ACTION = UN JSON IMMÉDIAT. 
+       ❌ INTERDIT : "Voici le JSON correspondant" puis rien
+       ❌ INTERDIT : "Je vais procéder" sans JSON
+       ✅ OBLIGATOIRE : Tu écris le bloc \`\`\`json {...} \`\`\` DANS ta réponse, TOUJOURS.
     
     5. Pour DOCUMENTER un lot existant, utilise modifier_lot avec une nouvelle description. NE CRÉE PAS un nouveau lot.
     
@@ -710,6 +713,12 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
     - "Réduis le budget du lot 1 à 300€" → modifier_lot, lot_ordre: 1, modifications: { cout_estime: 300 }
     - "Supprime le lot 9" → supprimer_lot, lot_ordre: 9
     - "Documente le lot 9" → modifier_lot, lot_ordre: 9, modifications: { description: "..." }
+
+    6. STRUCTURE DE RÉPONSE OBLIGATOIRE :
+   - Une phrase d'explication (1-2 lignes max)
+   - Le bloc JSON complet
+   - Rien après le JSON
+   
     `.trim();
 
     return {
