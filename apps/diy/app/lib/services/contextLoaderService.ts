@@ -703,9 +703,21 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
     3. Si le bricoleur insiste malgré un refus, TU EXÉCUTES avec un avertissement.
     
     4. CHAQUE ACTION = UN JSON IMMÉDIAT. 
-       ❌ INTERDIT : "Voici le JSON correspondant" puis rien
-       ❌ INTERDIT : "Je vais procéder" sans JSON
-       ✅ OBLIGATOIRE : Tu écris le bloc \`\`\`json {...} \`\`\` DANS ta réponse, TOUJOURS.
+       ❌ INTERDIT : "Voici le JSON correspondant", "Voici le JSON", "JSON :"
+       ❌ INTERDIT : Dire "Je mets à jour" ou "C'est fait" SANS le bloc JSON
+       
+       ✅ FORMAT OBLIGATOIRE - TOUJOURS :
+       [1 phrase courte] + [bloc json IMMÉDIATEMENT APRÈS]
+       
+       ✅ EXEMPLE CORRECT :
+       "C'est noté, je modifie le lot 2.
+    ````json
+       { "phasage_action": { ... } }
+    ```"
+       
+       ❌ EXEMPLE INCORRECT :
+       "Je mets à jour le lot 2 avec la mention d'attention."
+       (= PAS DE JSON = RIEN NE SE PASSE)
     
     5. Pour DOCUMENTER ou COMPLÉTER un lot existant, utilise modifier_lot. NE CRÉE PAS un nouveau lot.
    Indices que le bricoleur veut MODIFIER (pas ajouter) :
@@ -737,6 +749,10 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
    - "Change le budget à 800€" après création d'un lot = modifier_lot sur ce lot
    - "Je veux un budget TOTAL de 800€" = ajuster_budget_global
    - En cas de doute, demande confirmation : "Tu veux modifier le budget du lot X ou le budget total ?"
+
+    8. SI TU NE GÉNÈRES PAS LE JSON, L'ACTION NE SE FAIT PAS.
+    Le bricoleur ne verra AUCUNE modification si tu oublies le JSON.
+    Donc : TOUJOURS inclure le bloc ```json {...} ``` dans ta réponse.
    
     `.trim();
 
