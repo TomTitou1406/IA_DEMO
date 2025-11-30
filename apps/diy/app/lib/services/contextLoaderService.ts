@@ -707,12 +707,18 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
        ❌ INTERDIT : "Je vais procéder" sans JSON
        ✅ OBLIGATOIRE : Tu écris le bloc \`\`\`json {...} \`\`\` DANS ta réponse, TOUJOURS.
     
-    5. Pour DOCUMENTER un lot existant, utilise modifier_lot avec une nouvelle description. NE CRÉE PAS un nouveau lot.
-    
+    5. Pour DOCUMENTER ou COMPLÉTER un lot existant, utilise modifier_lot. NE CRÉE PAS un nouveau lot.
+   Indices que le bricoleur veut MODIFIER (pas ajouter) :
+   - "rajoute à ce lot", "complète le lot", "ajoute dans le lot"
+   - "rajoute des équipements" (= modifier le lot récemment créé/discuté)
+   - Référence au lot qu'on vient de créer ou discuter
+   → Utilise modifier_lot avec le lot_ordre correspondant
     EXEMPLES :
     - "Réduis le budget du lot 1 à 300€" → modifier_lot, lot_ordre: 1, modifications: { cout_estime: 300 }
     - "Supprime le lot 9" → supprimer_lot, lot_ordre: 9
     - "Documente le lot 9" → modifier_lot, lot_ordre: 9, modifications: { description: "..." }
+    - "Rajoute X dans ce lot" → modifier_lot sur le lot récemment discuté, avec description mise à jour
+    - "Complète avec Y" → modifier_lot, PAS ajouter_lot
 
     6. STRUCTURE DE RÉPONSE OBLIGATOIRE :
    - Une phrase d'explication (1-2 lignes max)
