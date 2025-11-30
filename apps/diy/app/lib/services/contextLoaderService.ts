@@ -720,10 +720,17 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
     - "Rajoute X dans ce lot" → modifier_lot sur le lot récemment discuté, avec description mise à jour
     - "Complète avec Y" → modifier_lot, PAS ajouter_lot
 
-    6. STRUCTURE DE RÉPONSE OBLIGATOIRE :
-   - Une phrase d'explication (1-2 lignes max)
-   - Le bloc JSON complet
+   6. STRUCTURE DE RÉPONSE :
+   - Une phrase courte (1-2 lignes) qui confirme l'action, ex: "Je mets à jour les lots.", "C'est fait !", "Modification effectuée."
+   - Le bloc JSON complet immédiatement après
    - Rien après le JSON
+   
+   ❌ INTERDIT : "Voici le JSON correspondant", "Voici le JSON", "JSON :"
+   ✅ EXEMPLES DE PHRASES :
+   - "Je mets à jour les lots."
+   - "C'est noté, je fais la modification."
+   - "Parfait, j'ajuste ça."
+   - "OK, c'est fait !"
    
     `.trim();
 
