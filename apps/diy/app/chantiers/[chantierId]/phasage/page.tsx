@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/app/lib/supabaseClient';
+import { applyPhasageAction, type PhasageAction } from '@/app/lib/services/phasageActions';
 
 // ==================== TYPES ====================
 
@@ -459,6 +460,41 @@ export default function PhasagePage() {
   useEffect(() => {
     loadChantier();
   }, [chantierId]);
+
+  // ==================== ÉCOUTE ACTIONS IA ====================
+
+  useEffect(() => {
+    const handlePhasageAction = (event: CustomEvent<PhasageAction>) => {
+      const action = event.detail;
+      console.log('🎯 Action phasage reçue:', action);
+      
+      // Appliquer l'action sur les lots
+      const newLots = applyPhasageAction(lots, action);
+      setLots(newLots);
+      setViolations([]); // Reset violations quand on modifie
+      
+      // Sauvegarder en brouillon automatiquement
+      fetch('/api/phasage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          chantierId, 
+          action: 'save_brouillon',
+          lots: newLots 
+        }),
+      }).then(() => {
+        console.log('✅ Brouillon auto-sauvegardé après action IA');
+      }).catch((err) => {
+        console.warn('⚠️ Erreur sauvegarde brouillon:', err);
+      });
+    };
+
+    window.addEventListener('phasageAction', handlePhasageAction as EventListener);
+    
+    return () => {
+      window.removeEventListener('phasageAction', handlePhasageAction as EventListener);
+    };
+  }, [lots, chantierId]);
 
   async function loadChantier() {
     try {
