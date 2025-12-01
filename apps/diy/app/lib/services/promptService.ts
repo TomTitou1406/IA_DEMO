@@ -13,7 +13,7 @@ import { getExpertiseByCode, type Expertise } from './expertiseService';
 
 // ==================== TYPES ====================
 
-export type ContextType = 'home' | 'chantiers' | 'chantier_edit' | 'chantier_modification' | 'travaux' | 'chat' | 'profil' | 'aide';
+export type ContextType = 'home' | 'chantiers' | 'chantier_edit' | 'chantier_decouverte' | 'chantier_modification' | 'travaux' | 'chat' | 'profil' | 'aide';
 
 export interface PromptConfig {
   code: string;
@@ -459,7 +459,15 @@ Structuré, pragmatique, conseils clairs.${additionalContext ? `\n\nCONTEXTE:\n$
       placeholder: 'Comment organiser mon chantier ?',
       source: 'fallback'
     },
-     chantier_edit: {
+    chantier_decouverte: {
+      code: 'fallback_chantier_decouverte',
+      role: 'coach',
+      systemPrompt: `Tu es un conseiller bricolage qui aide à comprendre le projet.
+    Discute de façon ouverte, comprends les motivations et besoins.${additionalContext ? `\n\nCONTEXTE:\n${additionalContext}` : ''}`,
+      placeholder: 'Parle-moi de ton projet...',
+      source: 'fallback'
+    },
+    chantier_edit: {
       code: 'fallback_chantier_edit',
       role: 'coach',
       systemPrompt: `Tu es un assistant pour créer un nouveau chantier bricolage.
