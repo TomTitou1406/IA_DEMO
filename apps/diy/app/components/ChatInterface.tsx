@@ -28,7 +28,7 @@ import { addNote, type NoteLevel } from '../lib/services/notesService';
 import RecapModal, { type RecapData } from './RecapModal';
 import { loadContextForPath } from '../lib/services/contextLoaderService';
 import { usePathname } from 'next/navigation';
-import { extractPhasageAction, dispatchPhasageAction } from '../lib/services/phasageActions';
+import { extractPhasageActions, dispatchPhasageAction } from '../lib/services/phasageActions';
 
 // ==================== TYPES ====================
 
@@ -469,15 +469,21 @@ export default function ChatInterface({
       // Vérifier si la réponse contient un recap JSON (création chantier)
       const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
       
-      // Vérifier si la réponse contient une action phasage
-      const { hasAction, action, cleanContent: actionCleanContent } = extractPhasageAction(cleanContent);
+      // Vérifier si la réponse contient des actions phasage (peut y en avoir plusieurs)
+      const { hasActions, actions, cleanContent: actionCleanContent } = extractPhasageActions(cleanContent);
       
-      // Utiliser le contenu le plus nettoyé
-      const finalContent = hasAction ? actionCleanContent : cleanContent;
+      // Utiliser le contenu nettoyé
+      const finalContent = hasActions ? actionCleanContent : cleanContent;
       
-      // Si action phasage détectée, dispatcher l'événement
-      if (hasAction && action) {
-        dispatchPhasageAction(action);
+      // Dispatcher toutes les actions si présentes
+      if (hasActions && actions.length > 0) {
+        console.log(`🚀 Dispatch de ${actions.length} action(s) phasage`);
+        actions.forEach((action, index) => {
+          // Petit délai entre chaque action pour éviter les conflits de state
+          setTimeout(() => {
+            dispatchPhasageAction(action);
+          }, index * 100);
+        });
       }
       
       // Message assistant (sans le JSON)
