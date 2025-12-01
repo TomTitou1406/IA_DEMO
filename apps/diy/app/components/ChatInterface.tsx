@@ -1078,42 +1078,6 @@ export default function ChatInterface({
           />
         )}
 
-        {/* Bandeau transition Phase 1 → Phase 2 */}
-        {showPhase1Transition && phase1Synthese && (
-          <div style={{
-            padding: '1rem',
-            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-            color: 'white',
-            borderRadius: '12px',
-            margin: '0.5rem',
-            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-              <span style={{ fontSize: '1.25rem' }}>✅</span>
-              <span style={{ fontWeight: '700' }}>Projet compris !</span>
-            </div>
-            <div style={{ fontSize: '0.9rem', opacity: 0.95, marginBottom: '0.75rem' }}>
-              <strong>{phase1Synthese.description_courte}</strong>
-              <br />
-              Taille : {phase1Synthese.taille_projet === 'petit' ? '📦 Petit projet' : 
-                        phase1Synthese.taille_projet === 'moyen' ? '📦📦 Projet moyen' : '📦📦📦 Gros projet'}
-            </div>
-            {phase1Synthese.points_vigilance && phase1Synthese.points_vigilance.length > 0 && (
-              <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>
-                ⚠️ Points de vigilance : {phase1Synthese.points_vigilance.join(', ')}
-              </div>
-            )}
-            <div style={{ 
-              marginTop: '0.75rem', 
-              fontSize: '0.85rem',
-              fontStyle: 'italic',
-              opacity: 0.9
-            }}>
-              Réponds "OK" ou "vas-y" pour passer aux détails techniques !
-            </div>
-          </div>
-        )}
-
         {/* Message transition expertise */}
         {showTransition && transitionExpertise && (
           <ExpertiseTransitionMessage
@@ -1232,6 +1196,42 @@ export default function ChatInterface({
 
         <div ref={messagesEndRef} />
       </div>
+
+      {/* Bandeau transition Phase 1 → Phase 2 */}
+        {showPhase1Transition && phase1Synthese && (
+          <div style={{
+            padding: '1rem',
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            borderRadius: '12px',
+            margin: '0.5rem',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '1.25rem' }}>✅</span>
+              <span style={{ fontWeight: '700' }}>Projet compris !</span>
+            </div>
+            <div style={{ fontSize: '0.9rem', opacity: 0.95, marginBottom: '0.75rem' }}>
+              <strong>{phase1Synthese.description_courte}</strong>
+              <br />
+              Taille : {phase1Synthese.taille_projet === 'petit' ? '📦 Petit projet' : 
+                        phase1Synthese.taille_projet === 'moyen' ? '📦📦 Projet moyen' : '📦📦📦 Gros projet'}
+            </div>
+            {phase1Synthese.points_vigilance && phase1Synthese.points_vigilance.length > 0 && (
+              <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>
+                ⚠️ Points de vigilance : {phase1Synthese.points_vigilance.join(', ')}
+              </div>
+            )}
+            <div style={{ 
+              marginTop: '0.75rem', 
+              fontSize: '0.85rem',
+              fontStyle: 'italic',
+              opacity: 0.9
+            }}>
+              Réponds "OK" ou "vas-y" pour passer aux détails techniques !
+            </div>
+          </div>
+        )}
 
       {/* Zone input */}
       <div style={{
