@@ -47,11 +47,42 @@ export async function POST(request: NextRequest) {
 
     // Déterminer le bon pageContext selon la phase de création
     let effectivePageContext = pageContext || 'chat';
+    let typeConfigContext = ''; // Contexte enrichi avec config type
     
     if (pageContext === 'chantier_edit') {
       if (promptContext?.creationPhase === 'details') {
         effectivePageContext = 'chantier_edit';  // Phase 2 = prompt system_chantier_edit
         console.log('📝 Phase 2 détectée: collecte détaillée');
+        
+        // Charger la config du type de chantier si disponible
+        if (promptContext?.typeProjet) {
+          const { data: typeConfig } = await supabase
+            .from('chantier_types_config')
+            .select('*')
+            .eq('code', promptContext.typeProjet)
+            .eq('est_actif', true)
+            .single();
+          
+          if (typeConfig) {
+            console.log('🏠 Config type chargée:', typeConfig.nom);
+            typeConfigContext = `
+    
+    ## TYPE DE CHANTIER : ${typeConfig.icone} ${typeConfig.nom.toUpperCase()}
+    
+    ### Équipements à suggérer pour ce type :
+    ${(typeConfig.equipements_suggestibles || []).join(', ')}
+    
+    ### Questions spécifiques à poser :
+    ${(typeConfig.questions_specifiques || []).map((q: string) => `- ${q}`).join('\n')}
+    
+    ### Points de vigilance :
+    ${(typeConfig.risques_courants || []).map((r: string) => `- ⚠️ ${r}`).join('\n')}
+    
+    ### Points d'attention :
+    ${(typeConfig.points_attention || []).map((p: string) => `- 💡 ${p}`).join('\n')}
+    `;
+          }
+        }
       } else {
         effectivePageContext = 'chantier_decouverte';  // Phase 1 = prompt system_chantier_decouverte
         console.log('💬 Phase 1 détectée: découverte projet');
@@ -68,11 +99,16 @@ export async function POST(request: NextRequest) {
     // Assembler : Prompt BDD + Contexte données
     let finalPrompt = promptConfig.systemPrompt;
     
-    // Remplacer {{CHANTIER_CONTEXT}} par les données (additionalContext)
-    if (context) {
+   // Remplacer {{CHANTIER_CONTEXT}} par les données (additionalContext)
+   if (context) {
       finalPrompt = finalPrompt.replace('{{CHANTIER_CONTEXT}}', context);
     } else {
       finalPrompt = finalPrompt.replace('{{CHANTIER_CONTEXT}}', '(Aucune donnée de chantier disponible)');
+    }
+    
+    // Ajouter la config type si disponible (Phase 2)
+    if (typeConfigContext) {
+      finalPrompt += typeConfigContext;
     }
 
     // Valeurs par défaut depuis app_settings
