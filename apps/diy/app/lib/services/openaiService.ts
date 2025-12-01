@@ -26,6 +26,7 @@ export interface PromptContext {
   tacheTitre?: string;
   userLevel?: 'debutant' | 'intermediaire' | 'expert';
   additionalContext?: string;
+  creationPhase?: 'discovery' | 'details' | 'done';
 }
 
 export interface ChatOptions {
