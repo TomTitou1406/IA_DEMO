@@ -556,12 +556,7 @@ export default function ChatInterface({
         }
         
         setLoading(false);
-        
-        // Envoyer un message automatique pour démarrer Phase 2
-        setTimeout(() => {
-          sendMessage("Commençons la collecte des détails.");
-        }, 500);
-        
+              
         return; // Stop ici, ne pas appeler l'API
       }
       
@@ -1241,8 +1236,8 @@ export default function ChatInterface({
             <div style={{ fontSize: '0.9rem', opacity: 0.95, marginBottom: '0.75rem' }}>
               <strong>{phase1Synthese.description_courte}</strong>
               <br />
-              Taille : {phase1Synthese.taille_projet === 'petit' ? '📦 Petit projet' : 
-                        phase1Synthese.taille_projet === 'moyen' ? '📦📦 Projet moyen' : '📦📦📦 Gros projet'}
+              Taille : {phase1Synthese.taille_projet === 'petit' ? '📦 Projet rapide' : 
+                        phase1Synthese.taille_projet === 'moyen' ? '📦📦 Projet standard' : '📦📦📦 Grand projet'}
             </div>
             {phase1Synthese.points_vigilance && phase1Synthese.points_vigilance.length > 0 && (
               <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>
