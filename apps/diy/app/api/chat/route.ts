@@ -71,11 +71,19 @@ export async function POST(request: NextRequest) {
       content: finalPrompt
     };
 
+   // Contextes critiques qui nécessitent GPT-4o (plus fiable)
+    const CRITICAL_CONTEXTS = ['phasage', 'chantier_edit', 'creation_chantier'];
+    const isCritical = CRITICAL_CONTEXTS.includes(pageContext);
+    const model = isCritical ? 'gpt-4o' : 'gpt-4o-mini';
+    const temperature = isCritical ? 0.2 : 0.4;
+    
+    console.log(`🤖 Modèle: ${model} | Temp: ${temperature} (contexte: ${pageContext || 'default'})`);
+
     // Appel OpenAI
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model,
       messages: [systemMessage, ...messages],
-      temperature: 0.4,
+      temperature,
       max_tokens: maxTokens
     });
 
