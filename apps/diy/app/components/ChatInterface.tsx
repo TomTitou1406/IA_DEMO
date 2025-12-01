@@ -29,6 +29,7 @@ import RecapModal, { type RecapData } from './RecapModal';
 import { loadContextForPath } from '../lib/services/contextLoaderService';
 import { usePathname } from 'next/navigation';
 import { extractPhasageActions, dispatchPhasageAction } from '../lib/services/phasageActions';
+import { detectChantierType, getChantierTypeConfig, formatTypeConfigForAI, type Phase1Synthese } from '../lib/services/chantierTypeService';
 
 // ==================== TYPES ====================
 
@@ -101,6 +102,10 @@ export default function ChatInterface({
   const [showRecapModal, setShowRecapModal] = useState(false);
   const [recapData, setRecapData] = useState<RecapData | null>(null);
   const [isCreatingChantier, setIsCreatingChantier] = useState(false);
+  const [creationPhase, setCreationPhase] = useState<'discovery' | 'details' | 'done'>('discovery');
+  const [phase1Synthese, setPhase1Synthese] = useState<Phase1Synthese | null>(null);
+  const [showPhase1Transition, setShowPhase1Transition] = useState(false);
+  const [typeConfig, setTypeConfig] = useState<any>(null);
   
   // ==================== REFS ====================
   
@@ -312,7 +317,74 @@ export default function ChatInterface({
       return { hasRecap: false, recap: null, cleanContent: content };
     }
   };
-  
+
+  /**
+   * Extrait la synthèse Phase 1 si présente dans la réponse
+   */
+  const extractPhase1FromResponse = (content: string): {
+    hasPhase1: boolean;
+    synthese: Phase1Synthese | null;
+    messageTransition: string | null;
+    cleanContent: string;
+  } => {
+    try {
+      // Pattern: ```json ... ``` avec phase1_complete
+      let jsonMatch = content.match(/```json\s*([\s\S]*?)```/);
+      
+      // Pattern 2: JSON brut avec phase1_complete
+      if (!jsonMatch) {
+        jsonMatch = content.match(/(\{[\s\S]*"phase1_complete"\s*:\s*true[\s\S]*\})/);
+      }
+      
+      if (jsonMatch && jsonMatch[1]) {
+        let jsonStr = jsonMatch[1].trim();
+        jsonStr = jsonStr.replace(/\s+/g, ' ');
+        
+        const parsed = JSON.parse(jsonStr);
+        
+        if (parsed.phase1_complete && parsed.synthese) {
+          // Extraire le contenu AVANT le JSON
+          let cleanContent = content.split('```json')[0].split('{"phase1_complete"')[0].trim();
+          
+          // Si vide, utiliser le message de transition
+          if (!cleanContent || cleanContent.length < 10) {
+            cleanContent = parsed.message_transition || "J'ai bien compris ton projet !";
+          }
+          
+          console.log('✅ Phase 1 complète détectée:', parsed.synthese);
+          
+          return {
+            hasPhase1: true,
+            synthese: parsed.synthese as Phase1Synthese,
+            messageTransition: parsed.message_transition,
+            cleanContent
+          };
+        }
+      }
+      
+      return { hasPhase1: false, synthese: null, messageTransition: null, cleanContent: content };
+    } catch (error) {
+      console.error('Erreur parsing Phase 1 JSON:', error);
+      return { hasPhase1: false, synthese: null, messageTransition: null, cleanContent: content };
+    }
+  };
+
+  /**
+   * Détecte si le message utilisateur est une confirmation pour passer à Phase 2
+   */
+  const isUserConfirmingPhase2 = (message: string): boolean => {
+    const confirmPatterns = [
+      /^(ok|okay|oui|yes|go|vas-y|allons-y|c'est bon|parfait|on y va|passons|continue|continuons)$/i,
+      /pas (d'|de )?(autre|plus de) question/i,
+      /on (peut|va) passer/i,
+      /je suis prêt/i,
+      /c'est parti/i,
+    ];
+    
+    const msg = message.toLowerCase().trim();
+    return confirmPatterns.some(pattern => pattern.test(msg));
+  };
+
   // Auto-scroll
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -449,24 +521,100 @@ export default function ChatInterface({
         content: m.content
       }));
 
+      // Construire le contexte enrichi pour Phase 2
+      let enrichedContext = freshContext;
+      if (creationPhase === 'details' && typeConfig && phase1Synthese) {
+        const typeContextStr = formatTypeConfigForAI(typeConfig);
+        enrichedContext = `${freshContext}\n\n## SYNTHÈSE PHASE 1\nType: ${phase1Synthese.type_projet}\nTaille: ${phase1Synthese.taille_projet}\nDescription: ${phase1Synthese.description_courte}\n${typeContextStr}`;
+      }
+      
       // Appel API avec expertise si active
-     const response: ChatResponse = await sendChat({
+      const response: ChatResponse = await sendChat({
         messages: apiMessages,
-        context: freshContext,
+        context: enrichedContext,  // ← Contexte enrichi
         isVoiceMode: voiceMode,
         pageContext,
         expertiseCode: activeExpertise?.code,
         promptContext: {
           ...promptContext,
           chantierId,
-          travailId
+          travailId,
+          creationPhase,  // ← Ajouter la phase
         }
       });
 
      // DEBUG : Voir la réponse brute de l'IA
       console.log('🤖 RÉPONSE BRUTE IA:', response.message);
       
-      // Vérifier si la réponse contient un recap JSON (création chantier)
+      // === PHASE 1 : Vérifier si Phase 1 complète ===
+      if (creationPhase === 'discovery' && pageContext === 'chantier_edit') {
+        const { hasPhase1, synthese, messageTransition, cleanContent: phase1Clean } = extractPhase1FromResponse(response.message);
+        
+        if (hasPhase1 && synthese) {
+          // Vérifier si hors scope
+          if (synthese.est_hors_scope) {
+            // Afficher le message d'erreur et ne pas continuer
+            const errorMessage: Message = {
+              role: 'assistant',
+              content: `⚠️ ${synthese.raison_hors_scope}\n\nJe ne peux malheureusement pas t'accompagner sur ce type de projet. N'hésite pas à me parler d'un autre projet !`,
+              timestamp: new Date().toISOString()
+            };
+            
+            if (disablePersistence) {
+              setLocalMessages(prev => [...prev, errorMessage]);
+            } else {
+              await persistMessage(errorMessage);
+            }
+            setLoading(false);
+            return;
+          }
+          
+          // Sauvegarder la synthèse et afficher la transition
+          setPhase1Synthese(synthese);
+          setShowPhase1Transition(true);
+          
+          // Charger la config du type de chantier
+          if (synthese.type_projet) {
+            const config = await getChantierTypeConfig(synthese.type_projet);
+            if (config) {
+              setTypeConfig(config);
+              console.log('✅ Config type chargée:', config.nom);
+            }
+          }
+          
+          // Message avec la transition
+          const assistantMessage: Message = {
+            role: 'assistant',
+            content: phase1Clean,
+            timestamp: new Date().toISOString(),
+            metadata: {
+              phase1_complete: true,
+              synthese: synthese
+            }
+          };
+          
+          if (disablePersistence) {
+            setLocalMessages(prev => [...prev, assistantMessage]);
+          } else {
+            await persistMessage(assistantMessage);
+          }
+          
+          setLoading(false);
+          return;
+        }
+      }
+      
+      // === VÉRIFIER CONFIRMATION UTILISATEUR POUR PHASE 2 ===
+      if (showPhase1Transition && phase1Synthese && isUserConfirmingPhase2(content)) {
+        console.log('✅ Utilisateur confirme passage Phase 2');
+        setCreationPhase('details');
+        setShowPhase1Transition(false);
+        
+        // Le message sera traité avec le nouveau contexte Phase 2
+        // On continue le flow normal mais avec le contexte enrichi
+      }
+ 
+       // Vérifier si la réponse contient un recap JSON (création chantier)
       const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
       
       // Vérifier si la réponse contient des actions phasage (peut y en avoir plusieurs)
@@ -664,6 +812,14 @@ export default function ChatInterface({
     const newMetadata: Record<string, any> = {
       ...existingMetadata,
       
+      // === CHAMPS PHASE 1 ===
+      ...(phase1Synthese && {
+        type_projet: phase1Synthese.type_projet,
+        taille_projet: phase1Synthese.taille_projet,
+        motivations: phase1Synthese.motivations,
+        points_vigilance_initiaux: phase1Synthese.points_vigilance,
+      }),
+      
       // === CHAMPS SIMPLES : écraser SEULEMENT si valeur non vide ===
       ...(!isEmptyValue(recap.budget_inclut_materiaux) && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
       ...(!isEmptyValue(recap.disponibilite_heures_semaine) && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
@@ -718,6 +874,7 @@ export default function ChatInterface({
           titre: titreShort || 'Mon chantier',
           description: recap.projet,
           budget_initial: recap.budget_max,
+          taille_projet: phase1Synthese?.taille_projet || 'moyen',
           duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
             ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
             : undefined,
@@ -919,6 +1076,42 @@ export default function ChatInterface({
             themeColor={contextColor}
             compact={compact}
           />
+        )}
+
+        {/* Bandeau transition Phase 1 → Phase 2 */}
+        {showPhase1Transition && phase1Synthese && (
+          <div style={{
+            padding: '1rem',
+            background: 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
+            color: 'white',
+            borderRadius: '12px',
+            margin: '0.5rem',
+            boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+              <span style={{ fontSize: '1.25rem' }}>✅</span>
+              <span style={{ fontWeight: '700' }}>Projet compris !</span>
+            </div>
+            <div style={{ fontSize: '0.9rem', opacity: 0.95, marginBottom: '0.75rem' }}>
+              <strong>{phase1Synthese.description_courte}</strong>
+              <br />
+              Taille : {phase1Synthese.taille_projet === 'petit' ? '📦 Petit projet' : 
+                        phase1Synthese.taille_projet === 'moyen' ? '📦📦 Projet moyen' : '📦📦📦 Gros projet'}
+            </div>
+            {phase1Synthese.points_vigilance && phase1Synthese.points_vigilance.length > 0 && (
+              <div style={{ fontSize: '0.8rem', opacity: 0.9 }}>
+                ⚠️ Points de vigilance : {phase1Synthese.points_vigilance.join(', ')}
+              </div>
+            )}
+            <div style={{ 
+              marginTop: '0.75rem', 
+              fontSize: '0.85rem',
+              fontStyle: 'italic',
+              opacity: 0.9
+            }}>
+              Réponds "OK" ou "vas-y" pour passer aux détails techniques !
+            </div>
+          </div>
         )}
 
         {/* Message transition expertise */}
