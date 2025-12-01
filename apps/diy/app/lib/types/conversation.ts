@@ -41,6 +41,8 @@ export interface Message {
     isVoiceMode?: boolean;        // Message vocal ou texte
     promptSource?: string;        // Source du prompt utilisé
     tokens_used?: number;         // Tokens consommés
+    phase1_complete?: boolean;    // ← AJOUTER
+    synthese?: any;               // ← AJOUTER
   };
 }
 
