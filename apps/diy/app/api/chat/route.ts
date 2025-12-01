@@ -45,13 +45,17 @@ export async function POST(request: NextRequest) {
       additionalContext: context
     };
 
-    // Récupérer le prompt depuis BDD via promptService
     // Déterminer le bon pageContext selon la phase de création
     let effectivePageContext = pageContext || 'chat';
     
-    if (pageContext === 'chantier_edit' && promptContext?.creationPhase === 'details') {
-      effectivePageContext = 'chantier_edit_details';
-      console.log('📝 Phase 2 détectée: passage au prompt de collecte détaillée');
+    if (pageContext === 'chantier_edit') {
+      if (promptContext?.creationPhase === 'details') {
+        effectivePageContext = 'chantier_edit';  // Phase 2 = prompt system_chantier_edit
+        console.log('📝 Phase 2 détectée: collecte détaillée');
+      } else {
+        effectivePageContext = 'chantier_decouverte';  // Phase 1 = prompt system_chantier_decouverte
+        console.log('💬 Phase 1 détectée: découverte projet');
+      }
     }
     
     const promptConfig = await getPrompt({
