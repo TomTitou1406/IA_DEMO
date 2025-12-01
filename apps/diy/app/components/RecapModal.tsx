@@ -13,38 +13,59 @@
 import { useState } from 'react';
 
 export interface RecapData {
-  // Infos de base
+  // === INFOS DE BASE ===
   projet: string;
-  surface_m2?: number;
+  type_piece?: string;
   
-  // Budget et timing
-  budget_max: number;
-  budget_inclut_materiaux: boolean;
-  disponibilite_heures_semaine: number;
-  deadline_semaines: number;
+  // === DIMENSIONS & SURFACES ===
+  dimensions?: {
+    longueur_m: number;
+    largeur_m: number;
+    hauteur_m: number;
+  };
+  surface_m2?: number;        // Rétrocompat (ancien champ)
+  surface_sol_m2?: number;    // Nouveau (calculé)
+  surface_murs_m2?: number;   // Nouveau (calculé)
   
-  // État existant (nouveau)
+  // === ÉTAT ACTUEL ===
   etat_existant?: string;
+  sol_actuel?: string;
+  murs_actuels?: string;
   elements_a_deposer?: string[];
   elements_a_conserver?: string[];
   
-  // Résultat souhaité (nouveau)
+  // === RÉSULTAT SOUHAITÉ ===
   equipements_souhaites?: string[];
   style_souhaite?: string;
   
-  // Réseaux (nouveau)
+  // === RÉSEAUX ===
   reseaux?: {
     electricite_a_refaire: boolean;
     plomberie_a_refaire: boolean;
     ventilation_a_prevoir: boolean;
   };
   
-  // Compétences
+  // === POINTS TECHNIQUES ===
+  points_techniques?: {
+    nb_prises?: number;
+    nb_interrupteurs?: number;
+    nb_points_eau?: number;
+    nb_evacuations?: number;
+  };
+  
+  // === BUDGET & PLANNING ===
+  budget_max: number;
+  budget_inclut_materiaux: boolean;
+  disponibilite_heures_semaine: number;
+  deadline_semaines: number;
+  
+  // === COMPÉTENCES ===
   competences_ok: string[];
   competences_faibles: string[];
   travaux_pro_suggeres: string[];
   
-  // Contraintes
+  // === LOGISTIQUE ===
+  acces_chantier?: string;
   contraintes: string;
 }
 
@@ -188,9 +209,21 @@ export default function RecapModal({
             value={recap.projet}
           />
           
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-            {recap.surface_m2 && (
-              <RecapChip icon="📐" value={`${recap.surface_m2} m²`} />
+         <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {recap.type_piece && (
+              <RecapChip icon="🏠" value={recap.type_piece} />
+            )}
+            {(recap.surface_sol_m2 || recap.surface_m2) && (
+              <RecapChip icon="📐" value={`${recap.surface_sol_m2 || recap.surface_m2} m²`} />
+            )}
+            {recap.dimensions && (
+              <RecapChip 
+                icon="📏" 
+                value={`${recap.dimensions.longueur_m}×${recap.dimensions.largeur_m}×${recap.dimensions.hauteur_m}m`} 
+              />
+            )}
+            {recap.surface_murs_m2 && (
+              <RecapChip icon="🧱" value={`${recap.surface_murs_m2} m² murs`} />
             )}
             {recap.style_souhaite && (
               <RecapChip icon="🎨" value={recap.style_souhaite} />
@@ -202,12 +235,15 @@ export default function RecapModal({
             <>
               <SectionTitle icon="🔨" title="Existant / Démolition" />
               
-              {recap.etat_existant && (
-                <RecapItem 
-                  icon="🏚️" 
-                  label="État actuel" 
-                  value={recap.etat_existant}
-                />
+              {(recap.sol_actuel || recap.murs_actuels) && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.5rem' }}>
+                  {recap.sol_actuel && (
+                    <RecapChip icon="🟫" value={`Sol: ${recap.sol_actuel}`} />
+                  )}
+                  {recap.murs_actuels && (
+                    <RecapChip icon="🧱" value={`Murs: ${recap.murs_actuels}`} />
+                  )}
+                </div>
               )}
               
               {recap.elements_a_deposer && recap.elements_a_deposer.length > 0 && (
@@ -256,6 +292,27 @@ export default function RecapModal({
             </>
           )}
 
+          {/* SECTION : Points techniques */}
+          {recap.points_techniques && (
+            <>
+              <SectionTitle icon="🔧" title="Points techniques" />
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+                {recap.points_techniques.nb_prises && (
+                  <RecapChip icon="🔌" value={`${recap.points_techniques.nb_prises} prises`} />
+                )}
+                {recap.points_techniques.nb_interrupteurs && (
+                  <RecapChip icon="💡" value={`${recap.points_techniques.nb_interrupteurs} interrupteurs`} />
+                )}
+                {recap.points_techniques.nb_points_eau && (
+                  <RecapChip icon="💧" value={`${recap.points_techniques.nb_points_eau} pts eau`} />
+                )}
+                {recap.points_techniques.nb_evacuations && (
+                  <RecapChip icon="🚿" value={`${recap.points_techniques.nb_evacuations} évacuations`} />
+                )}
+              </div>
+            </>
+          )}
+
           {/* SECTION 5 : Budget & Planning */}
           {(recap.budget_max || recap.disponibilite_heures_semaine || recap.deadline_semaines) && (
             <>
@@ -274,6 +331,9 @@ export default function RecapModal({
                 )}
                 {recap.deadline_semaines && (
                   <RecapChip icon="📅" value={`${recap.deadline_semaines} semaines`} />
+                )}
+                {recap.acces_chantier && (
+                  <RecapChip icon="🚚" value={recap.acces_chantier} />
                 )}
               </div>
             </>
