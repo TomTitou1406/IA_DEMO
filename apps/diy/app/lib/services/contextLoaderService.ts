@@ -58,6 +58,10 @@ export interface ContextData {
   // Journal de chantier (si disponible)
   journal?: Journal;
   
+  // Source du prompt (pour afficher warning si fallback)
+  promptSource?: 'database' | 'fallback';
+  promptError?: string;
+  
   // Données brutes (si besoin)
   raw?: {
     chantier?: any;
@@ -593,7 +597,7 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
     // Charger les lots brouillon existants
     const { data: lotsBrouillon } = await supabase
       .from('travaux')
-      .select('id, titre, ordre, statut, code_expertise, cout_estime, duree_estimee_heures')
+      .select('id, titre, ordre, statut, code_expertise, cout_estime, duree_estimee_heures, description, points_attention')
       .eq('chantier_id', chantierId)
       .eq('statut', 'brouillon')
       .order('ordre', { ascending: true });
@@ -604,6 +608,14 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
       .select('code, titre, type_regle, message_ia')
       .eq('est_active', true)
       .order('priorite', { ascending: true });
+
+    // Charger le prompt depuis prompts_library
+    const { data: promptData } = await supabase
+      .from('prompts_library')
+      .select('prompt_text, temperature, max_tokens, model')
+      .eq('code', 'phasage_assistant_actions')
+      .eq('est_actif', true)
+      .single();
 
     const meta = chantier.metadata || {};
     const nbLotsBrouillon = lotsBrouillon?.length || 0;
@@ -642,11 +654,14 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
       chantierInfo += `   Compétences faibles : ${meta.competences_faibles.join(', ')}\n`;
     }
 
-    // Formater les lots brouillon actuels
+    // Formater les lots brouillon actuels (avec description et points_attention)
     let lotsBrouillonInfo = '';
     if (nbLotsBrouillon > 0) {
       const lotsFormatted = (lotsBrouillon || []).map((lot: any) => {
-        return `   ${lot.ordre}. ${lot.titre} (${lot.code_expertise || 'général'}) - ${lot.cout_estime || 0}€ - ${lot.duree_estimee_heures || 0}h`;
+        let line = `   ${lot.ordre}. ${lot.titre} (${lot.code_expertise || 'général'}) - ${lot.cout_estime || 0}€ - ${lot.duree_estimee_heures || 0}h`;
+        if (lot.description) line += `\n      Description: ${lot.description}`;
+        if (lot.points_attention) line += `\n      ⚠️ ${lot.points_attention}`;
+        return line;
       }).join('\n');
       lotsBrouillonInfo = `\n📦 LOTS PROPOSÉS (${nbLotsBrouillon}) :\n${lotsFormatted}`;
     }
@@ -662,47 +677,15 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
       reglesInfo = `\n📏 RÈGLES DE PHASAGE À RESPECTER :\n${reglesFormatted}`;
     }
 
-   const contextForAI = `
+    // Construire le contexte : données chantier + prompt instructions
+    const promptInstructions = promptData?.prompt_text || getDefaultPhasagePrompt();
+    
+    const contextForAI = `
 ${chantierInfo}
 ${lotsBrouillonInfo}
 ${reglesInfo}
 
-TU ES L'ASSISTANT PHASAGE. Tu modifies les lots quand le bricoleur le demande.
-
-⛔ RÈGLE ABSOLUE - AUCUNE EXCEPTION :
-Quand tu fais une action (modifier, ajouter, supprimer, déplacer), tu DOIS OBLIGATOIREMENT inclure ce bloc dans ta réponse :
-\`\`\`json
-{"phasage_action":{"action":"...","params":{...},"message":"..."}}
-\`\`\`
-
-SI TU N'INCLUS PAS CE BLOC JSON, L'ACTION NE SE FAIT PAS. LE BRICOLEUR NE VOIT RIEN.
-
-❌ RÉPONSES INTERDITES (= rien ne se passe) :
-- "Lot supprimé." (sans JSON)
-- "C'est fait !" (sans JSON)
-- "Voici le JSON." (sans JSON après)
-- "Je vais procéder..." (sans JSON)
-
-✅ RÉPONSE CORRECTE (= action effectuée) :
-Lot supprimé.
-\`\`\`json
-{"phasage_action":{"action":"supprimer_lot","params":{"lot_ordre":2},"message":"Lot 2 supprimé"}}
-\`\`\`
-
-ACTIONS :
-- supprimer_lot : {"lot_ordre": 2}
-- modifier_lot : {"lot_ordre": 3, "modifications": {"cout_estime": 850}}
-- ajouter_lot : {"position": 5, "titre": "...", "code_expertise": "...", "cout_estime": 0, "duree_estimee_heures": 0, "description": "..."}
-- deplacer_lot : {"lot_ordre": 3, "nouvelle_position": 1}
-
-RÈGLES :
-1. OBÉIS au bricoleur. Pas de refus sauf violation technique grave.
-2. MODIFIER vs AJOUTER : "affecte un budget au lot X" = modifier_lot, PAS ajouter_lot.
-3. Après création d'un lot, toute modification concerne CE LOT.
-4. AJOUT = respecter le phasage (équipements APRÈS carrelage, etc.)
-5. COMPLÉTER un lot = conserver l'existant + ajouter.
-
-RAPPEL : SANS LE BLOC JSON, RIEN NE SE PASSE.
+${promptInstructions}
 `.trim();
 
     return {
@@ -728,6 +711,19 @@ RAPPEL : SANS LE BLOC JSON, RIEN NE SE PASSE.
     console.error('Erreur chargement contexte phasage:', error);
     return loadChantiersContext(); // Fallback
   }
+}
+
+/**
+ * Prompt par défaut si non trouvé en BDD
+ */
+function getDefaultPhasagePrompt(): string {
+  return `TU ES L'ASSISTANT PHASAGE. Tu modifies les lots quand le bricoleur le demande.
+
+⛔ RÈGLE ABSOLUE : Quand tu fais une action, tu DOIS inclure le bloc JSON.
+SI TU N'INCLUS PAS LE JSON, L'ACTION NE SE FAIT PAS.
+
+ACTIONS : supprimer_lot, modifier_lot, ajouter_lot, deplacer_lot
+RAPPEL : SANS LE BLOC JSON, RIEN NE SE PASSE.`;
 }
 
 /**
