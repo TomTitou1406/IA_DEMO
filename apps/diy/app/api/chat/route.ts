@@ -23,6 +23,8 @@ const CRITICAL_CONTEXTS = ['phasage', 'chantier_edit', 'creation_chantier'];
 // Mapping pageContext -> code prompt dans prompts_library
 const PAGE_CONTEXT_TO_PROMPT_CODE: Record<string, string> = {
   'phasage': 'phasage_assistant_actions',
+  'chantier_edit': 'system_chantier_decouverte',
+  'chantier_edit_details': 'system_chantier_edit',
   // Ajouter d'autres mappings ici au fur et à mesure
 };
 
@@ -44,9 +46,17 @@ export async function POST(request: NextRequest) {
     };
 
     // Récupérer le prompt depuis BDD via promptService
+    // Déterminer le bon pageContext selon la phase de création
+    let effectivePageContext = pageContext || 'chat';
+    
+    if (pageContext === 'chantier_edit' && promptContext?.creationPhase === 'details') {
+      effectivePageContext = 'chantier_edit_details';
+      console.log('📝 Phase 2 détectée: passage au prompt de collecte détaillée');
+    }
+    
     const promptConfig = await getPrompt({
       expertiseCode,
-      pageContext: pageContext || 'chat',
+      pageContext: effectivePageContext,  // ← Utiliser effectivePageContext
       context: structuredContext,
       additionalContext: context
     });
@@ -68,7 +78,7 @@ export async function POST(request: NextRequest) {
     let model = defaultSettings.model;
 
     // Vérifier si on a un prompt spécifique dans prompts_library pour ce pageContext
-    const promptCode = PAGE_CONTEXT_TO_PROMPT_CODE[pageContext];
+    const promptCode = PAGE_CONTEXT_TO_PROMPT_CODE[effectivePageContext];
     if (promptCode) {
       const { data: promptData } = await supabase
         .from('prompts_library')
