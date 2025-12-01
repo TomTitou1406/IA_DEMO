@@ -27,6 +27,7 @@ export interface PromptContext {
   userLevel?: 'debutant' | 'intermediaire' | 'expert';
   additionalContext?: string;
   creationPhase?: 'discovery' | 'details' | 'done';
+  typeProjet?: string;
 }
 
 export interface ChatOptions {
