@@ -11,6 +11,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 import { getPrompt, type PromptContext } from '@/app/lib/services/promptService';
 import { supabase } from '@/app/lib/supabaseClient';
+import { getDefaultIASettings } from '@/app/lib/services/appSettingsService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
@@ -60,10 +61,11 @@ export async function POST(request: NextRequest) {
       finalPrompt = finalPrompt.replace('{{CHANTIER_CONTEXT}}', '(Aucune donnée de chantier disponible)');
     }
 
-    // Valeurs par défaut
-    let maxTokens = 2500;
-    let temperature = 0.4;
-    let model = 'gpt-4o-mini';
+    // Valeurs par défaut depuis app_settings
+    const defaultSettings = await getDefaultIASettings();
+    let maxTokens = defaultSettings.maxTokens;
+    let temperature = defaultSettings.temperature;
+    let model = defaultSettings.model;
 
     // Vérifier si on a un prompt spécifique dans prompts_library pour ce pageContext
     const promptCode = PAGE_CONTEXT_TO_PROMPT_CODE[pageContext];
