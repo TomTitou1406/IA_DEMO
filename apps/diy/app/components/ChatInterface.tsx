@@ -610,8 +610,29 @@ export default function ChatInterface({
         setCreationPhase('details');
         setShowPhase1Transition(false);
         
-        // Le message sera traité avec le nouveau contexte Phase 2
-        // On continue le flow normal mais avec le contexte enrichi
+        // Message de transition automatique
+        const transitionMessage: Message = {
+          role: 'assistant',
+          content: `Parfait ! Passons aux détails techniques de ton projet "${phase1Synthese.description_courte}". Je vais te poser quelques questions pour bien préparer le phasage des travaux.`,
+          timestamp: new Date().toISOString(),
+          metadata: { promptSource: 'phase_transition' }
+        };
+        
+        if (disablePersistence) {
+          setLocalMessages(prev => [...prev, userMessage, transitionMessage]);
+        } else {
+          await persistMessage(userMessage);
+          await persistMessage(transitionMessage);
+        }
+        
+        setLoading(false);
+        
+        // Envoyer un message automatique pour démarrer Phase 2
+        setTimeout(() => {
+          sendMessage("Commençons la collecte des détails.");
+        }, 500);
+        
+        return; // Stop ici, le nouveau message déclenchera Phase 2
       }
  
        // Vérifier si la réponse contient un recap JSON (création chantier)
