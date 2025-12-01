@@ -97,6 +97,87 @@ export function extractPhasageAction(content: string): {
   }
 }
 
+// ==================== EXTRACTION MULTI-ACTIONS ====================
+
+/**
+ * Extrait TOUTES les actions phasage d'une réponse IA
+ * Utilisé quand l'IA génère plusieurs JSON (ex: réordonnancement)
+ */
+export function extractPhasageActions(content: string): {
+  hasActions: boolean;
+  actions: PhasageAction[];
+  cleanContent: string;
+} {
+  const actions: PhasageAction[] = [];
+  let cleanContent = content;
+  
+  try {
+    // Pattern pour trouver TOUS les blocs JSON avec phasage_action
+    const jsonBlockRegex = /```json\s*(\{[\s\S]*?"phasage_action"[\s\S]*?\})\s*```/g;
+    let match;
+    
+    while ((match = jsonBlockRegex.exec(content)) !== null) {
+      try {
+        const parsed = JSON.parse(match[1]);
+        if (parsed.phasage_action) {
+          actions.push(parsed.phasage_action as PhasageAction);
+          console.log('✅ Action phasage détectée:', parsed.phasage_action);
+        }
+      } catch (e) {
+        console.error('Erreur parsing JSON action:', e);
+      }
+    }
+    
+    // Si aucun bloc avec backticks, chercher JSON brut
+    if (actions.length === 0) {
+      const rawJsonRegex = /(\{[\s\S]*?"phasage_action"\s*:\s*\{[\s\S]*?\}\s*\})/g;
+      while ((match = rawJsonRegex.exec(content)) !== null) {
+        try {
+          const parsed = JSON.parse(match[1]);
+          if (parsed.phasage_action) {
+            actions.push(parsed.phasage_action as PhasageAction);
+            console.log('✅ Action phasage détectée (raw):', parsed.phasage_action);
+          }
+        } catch (e) {
+          console.error('Erreur parsing JSON brut:', e);
+        }
+      }
+    }
+    
+    // Nettoyer le contenu (retirer tous les blocs JSON)
+    cleanContent = content
+      .replace(/```json[\s\S]*?```/g, '')
+      .replace(/\{[\s\S]*?"phasage_action"[\s\S]*?\}/g, '')
+      .trim();
+    
+    // Nettoyer les phrases d'introduction du JSON
+    cleanContent = cleanContent
+      .replace(/Voici (le|la|les) (JSON|modification|mise à jour)[^:]*:?/gi, '')
+      .replace(/J'effectue la modification[^:]*:/gi, '')
+      .replace(/Modification effectuée[^:]*:/gi, '')
+      .trim();
+    
+    // Si le contenu est vide, utiliser le message de la dernière action
+    if ((!cleanContent || cleanContent.length < 5) && actions.length > 0) {
+      cleanContent = actions[actions.length - 1].message || "Modifications effectuées !";
+    }
+    
+    if (actions.length > 1) {
+      console.log(`📦 ${actions.length} actions phasage détectées`);
+    }
+    
+    return {
+      hasActions: actions.length > 0,
+      actions,
+      cleanContent
+    };
+    
+  } catch (error) {
+    console.error('Erreur extraction actions phasage:', error);
+    return { hasActions: false, actions: [], cleanContent: content };
+  }
+}
+
 // ==================== APPLICATION ====================
 
 /**
