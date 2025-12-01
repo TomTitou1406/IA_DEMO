@@ -418,6 +418,7 @@ function getPlaceholderForContext(contextType: ContextType): string {
     home: 'Comment fonctionne Papibricole ?',
     chantiers: 'Comment organiser mon chantier ?',
     chantier_edit: 'Décris-moi ton projet...',
+    chantier_decouverte: 'Parle-moi de ton projet...',
     chantier_modification: 'Quelle modification veux-tu apporter ?',
     travaux: 'Comment faire cette étape ?',
     chat: 'Pose ta question bricolage...',
