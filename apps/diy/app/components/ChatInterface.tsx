@@ -663,10 +663,29 @@ export default function ChatInterface({
 // Construire les nouvelles metadata en fusionnant avec l'existant
     const newMetadata: Record<string, any> = {
       ...existingMetadata,
-      // Champs simples : écraser SEULEMENT si valeur non vide
+      
+      // === CHAMPS SIMPLES : écraser SEULEMENT si valeur non vide ===
       ...(!isEmptyValue(recap.budget_inclut_materiaux) && { budget_inclut_materiaux: recap.budget_inclut_materiaux }),
       ...(!isEmptyValue(recap.disponibilite_heures_semaine) && { disponibilite_heures_semaine: recap.disponibilite_heures_semaine }),
       ...(!isEmptyValue(recap.deadline_semaines) && { deadline_semaines: recap.deadline_semaines }),
+      ...(!isEmptyValue(recap.surface_m2) && { surface_m2: recap.surface_m2 }),
+      ...(!isEmptyValue(recap.style_souhaite) && { style_souhaite: recap.style_souhaite }),
+      ...(!isEmptyValue(recap.budget_max) && { budget_max: recap.budget_max }),
+      
+      // === NOUVEAUX CHAMPS (enrichissement pour budget/économies) ===
+      ...(!isEmptyValue(recap.type_piece) && { type_piece: recap.type_piece }),
+      ...(!isEmptyValue(recap.dimensions) && { dimensions: recap.dimensions }),
+      ...(!isEmptyValue(recap.surface_sol_m2) && { surface_sol_m2: recap.surface_sol_m2 }),
+      ...(!isEmptyValue(recap.surface_murs_m2) && { surface_murs_m2: recap.surface_murs_m2 }),
+      ...(!isEmptyValue(recap.sol_actuel) && { sol_actuel: recap.sol_actuel }),
+      ...(!isEmptyValue(recap.murs_actuels) && { murs_actuels: recap.murs_actuels }),
+      ...(!isEmptyValue(recap.points_techniques) && { points_techniques: recap.points_techniques }),
+      ...(!isEmptyValue(recap.acces_chantier) && { acces_chantier: recap.acces_chantier }),
+      
+      // === OBJETS COMPLEXES ===
+      ...(!isEmptyValue(recap.reseaux) && { reseaux: recap.reseaux }),
+      
+      // === CHAMPS TEXTE À CONCATÉNER ===
       ...(!isEmptyValue(recap.contraintes) && { 
         contraintes: existingMetadata.contraintes 
           ? `${existingMetadata.contraintes} ${recap.contraintes}`
@@ -677,12 +696,8 @@ export default function ChatInterface({
           ? `${existingMetadata.etat_existant} ${recap.etat_existant}`
           : recap.etat_existant 
       }),
-      ...(!isEmptyValue(recap.surface_m2) && { surface_m2: recap.surface_m2 }),
-      ...(!isEmptyValue(recap.style_souhaite) && { style_souhaite: recap.style_souhaite }),
-      ...(!isEmptyValue(recap.reseaux) && { reseaux: recap.reseaux }),
-      ...(!isEmptyValue(recap.budget_max) && { budget_max: recap.budget_max }),
       
-      // Tableaux : FUSIONNER au lieu d'écraser
+      // === TABLEAUX : FUSIONNER au lieu d'écraser ===
       competences_ok: mergeArrays(existingMetadata.competences_ok, recap.competences_ok),
       competences_faibles: mergeArrays(existingMetadata.competences_faibles, recap.competences_faibles),
       travaux_pro_suggeres: mergeArrays(existingMetadata.travaux_pro_suggeres, recap.travaux_pro_suggeres),
