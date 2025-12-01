@@ -561,9 +561,9 @@ export default function ChatInterface({
       }
       
       // Appel API avec expertise si active
-      const response: ChatResponse = await sendChat({
+       const response: ChatResponse = await sendChat({
         messages: apiMessages,
-        context: enrichedContext,  // ← Contexte enrichi
+        context: enrichedContext,
         isVoiceMode: voiceMode,
         pageContext,
         expertiseCode: activeExpertise?.code,
@@ -571,7 +571,8 @@ export default function ChatInterface({
           ...promptContext,
           chantierId,
           travailId,
-          creationPhase,  // ← Ajouter la phase
+          creationPhase,
+          typeProjet: phase1Synthese?.type_projet,  // ← AJOUTER
         }
       });
 
