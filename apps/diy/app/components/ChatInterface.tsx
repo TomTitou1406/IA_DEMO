@@ -527,6 +527,43 @@ export default function ChatInterface({
         const typeContextStr = formatTypeConfigForAI(typeConfig);
         enrichedContext = `${freshContext}\n\n## SYNTHÈSE PHASE 1\nType: ${phase1Synthese.type_projet}\nTaille: ${phase1Synthese.taille_projet}\nDescription: ${phase1Synthese.description_courte}\n${typeContextStr}`;
       }
+
+      // === VÉRIFIER CONFIRMATION UTILISATEUR POUR PHASE 2 (AVANT appel API) ===
+      if (showPhase1Transition && phase1Synthese && isUserConfirmingPhase2(content)) {
+        console.log('✅ Utilisateur confirme passage Phase 2');
+        setCreationPhase('details');
+        setShowPhase1Transition(false);
+        
+        // Ajouter le message utilisateur
+        if (disablePersistence) {
+          setLocalMessages(prev => [...prev, userMessage]);
+        } else {
+          await persistMessage(userMessage);
+        }
+        
+        // Message de transition automatique
+        const transitionMessage: Message = {
+          role: 'assistant',
+          content: `Parfait ! Passons aux détails techniques de ton projet "${phase1Synthese.description_courte}". Je vais te poser quelques questions pour bien préparer le phasage des travaux.`,
+          timestamp: new Date().toISOString(),
+          metadata: { promptSource: 'phase_transition' }
+        };
+        
+        if (disablePersistence) {
+          setLocalMessages(prev => [...prev, transitionMessage]);
+        } else {
+          await persistMessage(transitionMessage);
+        }
+        
+        setLoading(false);
+        
+        // Envoyer un message automatique pour démarrer Phase 2
+        setTimeout(() => {
+          sendMessage("Commençons la collecte des détails.");
+        }, 500);
+        
+        return; // Stop ici, ne pas appeler l'API
+      }
       
       // Appel API avec expertise si active
       const response: ChatResponse = await sendChat({
@@ -603,39 +640,8 @@ export default function ChatInterface({
           return;
         }
       }
-      
-      // === VÉRIFIER CONFIRMATION UTILISATEUR POUR PHASE 2 ===
-      if (showPhase1Transition && phase1Synthese && isUserConfirmingPhase2(content)) {
-        console.log('✅ Utilisateur confirme passage Phase 2');
-        setCreationPhase('details');
-        setShowPhase1Transition(false);
-        
-        // Message de transition automatique
-        const transitionMessage: Message = {
-          role: 'assistant',
-          content: `Parfait ! Passons aux détails techniques de ton projet "${phase1Synthese.description_courte}". Je vais te poser quelques questions pour bien préparer le phasage des travaux.`,
-          timestamp: new Date().toISOString(),
-          metadata: { promptSource: 'phase_transition' }
-        };
-        
-        if (disablePersistence) {
-          setLocalMessages(prev => [...prev, userMessage, transitionMessage]);
-        } else {
-          await persistMessage(userMessage);
-          await persistMessage(transitionMessage);
-        }
-        
-        setLoading(false);
-        
-        // Envoyer un message automatique pour démarrer Phase 2
-        setTimeout(() => {
-          sendMessage("Commençons la collecte des détails.");
-        }, 500);
-        
-        return; // Stop ici, le nouveau message déclenchera Phase 2
-      }
  
-       // Vérifier si la réponse contient un recap JSON (création chantier)
+      // Vérifier si la réponse contient un recap JSON (création chantier)
       const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
       
       // Vérifier si la réponse contient des actions phasage (peut y en avoir plusieurs)
