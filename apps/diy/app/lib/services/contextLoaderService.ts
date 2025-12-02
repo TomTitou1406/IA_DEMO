@@ -14,7 +14,7 @@ import { getUserId, getConversationByChantier, type Journal } from './conversati
 
 // ==================== TYPES ====================
 
-export type NavigationLevel = 'home' | 'chantiers' | 'chantier_edit' | 'phasage' | 'lots' | 'etapes' | 'taches';
+export type NavigationLevel = 'home' | 'chantiers' | 'chantier_edit' | 'phasage' | 'mise_en_oeuvre' | 'lots' | 'etapes' | 'taches';
 
 export interface NavigationIds {
   chantierId?: string;
@@ -714,6 +714,77 @@ ${promptInstructions}
 }
 
 /**
+ * Charge le contexte pour la page Mise en Oeuvre (génération des étapes)
+ */
+async function loadMiseEnOeuvreContext(chantierId: string, travailId: string): Promise<ContextData> {
+  try {
+    // Charger le chantier
+    const { data: chantier } = await supabase
+      .from('chantiers')
+      .select('id, titre')
+      .eq('id', chantierId)
+      .single();
+
+    // Charger le lot courant
+    const { data: lot } = await supabase
+      .from('travaux')
+      .select('id, titre, description, code_expertise, duree_estimee_heures')
+      .eq('id', travailId)
+      .single();
+
+    // Charger les étapes existantes (brouillon ou validées)
+    const { data: etapes } = await supabase
+      .from('etapes')
+      .select('id, numero, titre, statut, duree_estimee_minutes')
+      .eq('travail_id', travailId)
+      .order('numero', { ascending: true });
+
+    const nbEtapes = etapes?.length || 0;
+    const expertiseCode = lot?.code_expertise || 'generaliste';
+    const expertiseIcon = getExpertiseIcon(expertiseCode);
+
+    // Formater les étapes pour le contexte
+    const etapesFormatted = (etapes || []).map((e: any) => {
+      return `${e.numero}. ${e.titre} (${e.duree_estimee_minutes || 0}min)`;
+    }).join('\n   ');
+
+    const contextForAI = `
+🏗️ CHANTIER : ${chantier?.titre || 'Chantier'}
+
+🔧 LOT EN COURS DE MISE EN ŒUVRE : ${lot?.titre || 'Lot'}
+   ${lot?.description || ''}
+   Expertise : ${expertiseCode}
+   Durée estimée : ${lot?.duree_estimee_heures || 0}h
+
+📋 ÉTAPES ACTUELLES (${nbEtapes}) :
+   ${etapesFormatted || 'Aucune étape générée'}
+
+TON RÔLE : Tu aides le bricoleur à définir les étapes de ce lot. Tu peux ajouter, modifier, supprimer ou réorganiser les étapes. Tu réponds avec des actions JSON pour modifier les étapes en temps réel.
+`.trim();
+
+    return {
+      level: 'mise_en_oeuvre',
+      header: {
+        title: `Mise en œuvre : ${lot?.titre || 'Lot'}`,
+        breadcrumb: `${chantier?.titre || 'Chantier'} >> ${nbEtapes} étapes`,
+        expertiseLine: `${expertiseIcon} ${expertiseCode}`
+      },
+      expertiseCode,
+      expertiseNom: expertiseCode,
+      expertiseIcon,
+      itemCount: nbEtapes,
+      chantierId,
+      travailId,
+      contextForAI
+    };
+
+  } catch (error) {
+    console.error('Erreur chargement contexte mise en oeuvre:', error);
+    return loadLotsContext(chantierId); // Fallback
+  }
+}
+
+/**
  * Prompt par défaut si non trouvé en BDD
  */
 function getDefaultPhasagePrompt(): string {
@@ -886,12 +957,21 @@ export function parseNavigationFromPath(pathname: string): { level: NavigationLe
     };
   }
 
-  // /chantiers/[id]/phasage (PHASAGE)
+// /chantiers/[id]/phasage (PHASAGE)
   const phasageMatch = pathname.match(/^\/chantiers\/([^\/]+)\/phasage$/);
   if (phasageMatch) {
     return {
       level: 'phasage',
       ids: { chantierId: phasageMatch[1] }
+    };
+  }
+
+  // /chantiers/[id]/travaux/[id]/mise-en-oeuvre (MISE EN OEUVRE)
+  const miseEnOeuvreMatch = pathname.match(/^\/chantiers\/([^\/]+)\/travaux\/([^\/]+)\/mise-en-oeuvre$/);
+  if (miseEnOeuvreMatch) {
+    return {
+      level: 'mise_en_oeuvre',
+      ids: { chantierId: miseEnOeuvreMatch[1], travailId: miseEnOeuvreMatch[2] }
     };
   }
 
@@ -960,9 +1040,15 @@ export async function loadContextForPath(pathname: string): Promise<ContextData>
       }
       break;
 
-    case 'phasage':
+   case 'phasage':
       if (ids.chantierId) {
         return loadPhasageContext(ids.chantierId);
+      }
+      break;
+
+    case 'mise_en_oeuvre':
+      if (ids.chantierId && ids.travailId) {
+        return loadMiseEnOeuvreContext(ids.chantierId, ids.travailId);
       }
       break;
 
