@@ -1072,7 +1072,7 @@ export default function ChatInterface({
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      background: 'white',
+      background: 'transparent',
       position: 'relative'
     }}>
       
@@ -1081,7 +1081,7 @@ export default function ChatInterface({
         flex: 1,
         overflowY: 'auto',
         padding: compact ? '1rem' : '1.5rem',
-        background: 'transparent',
+        /* background: 'transparent',*/
       }}>
         
         {/* Message de bienvenue */}
