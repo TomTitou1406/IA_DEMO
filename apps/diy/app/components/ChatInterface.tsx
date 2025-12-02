@@ -87,7 +87,7 @@ export default function ChatInterface({
   
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(true);
+  const [voiceMode, setVoiceMode] = useState(false);
   const [autoPlayAudio, setAutoPlayAudio] = useState(true);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -749,7 +749,9 @@ export default function ChatInterface({
     setInput('');
     await sendMessage(content);
     // Remettre le focus sur l'input après envoi
-    inputRef.current?.focus();
+    setTimeout(() => {
+      inputRef.current?.focus();
+    }, 50);
   };
 
   // Fermer la modal recap
@@ -1302,16 +1304,17 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
-                border: 'none',
-                background: !voiceMode ? 'white' : 'rgba(255,255,255,0.2)',
-                color: !voiceMode ? contextColor : 'rgba(255,255,255,0.8)',
+                border: !voiceMode ? `2px solid ${contextColor}` : '2px solid rgba(255,255,255,0.3)',
+                background: !voiceMode ? 'transparent' : 'transparent',
+                color: !voiceMode ? contextColor : 'rgba(255,255,255,0.6)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: !voiceMode ? `0 0 15px ${contextColor}50` : 'none'
               }}
             >
-              ✍️ Texte
+              ✍️ Mode texte
             </button>
             <button
               onClick={() => setVoiceMode(true)}
@@ -1319,16 +1322,17 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
-                border: 'none',
-                background: voiceMode ? 'white' : 'rgba(255,255,255,0.2)',
-                color: voiceMode ? contextColor : 'rgba(255,255,255,0.8)',
+                border: voiceMode ? `2px solid ${contextColor}` : '2px solid rgba(255,255,255,0.3)',
+                background: voiceMode ? 'transparent' : 'transparent',
+                color: voiceMode ? contextColor : 'rgba(255,255,255,0.6)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: voiceMode ? `0 0 15px ${contextColor}50` : 'none'
               }}
             >
-              🎤 Vocal
+              🎤 Mode vocal
             </button>
           </div>
 
@@ -1437,13 +1441,26 @@ export default function ChatInterface({
               style={{
                 padding: compact ? '0.6rem 1.25rem' : '0.75rem 1.5rem',
                 borderRadius: '12px',
-                border: 'none',
-                background: 'white',
+                border: `2px solid ${contextColor}`,
+                background: 'transparent',
                 color: contextColor,
                 fontSize: compact ? '1.1rem' : '1.25rem',
                 cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
                 opacity: !input.trim() || loading ? 0.5 : 1,
-                transition: 'all 0.2s'
+                transition: 'all 0.2s',
+                boxShadow: (!input.trim() || loading) ? 'none' : `0 0 15px ${contextColor}50`
+              }}
+              onMouseEnter={(e) => {
+                if (input.trim() && !loading) {
+                  e.currentTarget.style.boxShadow = `0 0 25px ${contextColor}80`;
+                  e.currentTarget.style.background = contextColor;
+                  e.currentTarget.style.color = 'white';
+                }
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.boxShadow = `0 0 15px ${contextColor}50`;
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = contextColor;
               }}
             >
               ➤
