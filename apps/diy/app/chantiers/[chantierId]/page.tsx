@@ -494,6 +494,32 @@ export default function ChantierEditPage() {
                 />
               )}
 
+              {/* Budget + Dispo + Deadline */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {chantier.budget_initial && (
+                  <CompactItem 
+                    icon="💰" 
+                    label="Budget" 
+                    value={`${chantier.budget_initial.toLocaleString()} €`}
+                    subValue={meta.budget_inclut_materiaux ? '(matériaux inclus)' : ''}
+                  />
+                )}
+                {meta.disponibilite_heures_semaine && (
+                  <CompactItem 
+                    icon="⏰" 
+                    label="Dispo" 
+                    value={`${meta.disponibilite_heures_semaine}h/sem`}
+                  />
+                )}
+                {meta.deadline_semaines && (
+                  <CompactItem 
+                    icon="📅" 
+                    label="Objectif" 
+                    value={`${meta.deadline_semaines} sem`}
+                  />
+                )}
+              </div>
+
               {/* Type + Dimensions + Surfaces */}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {meta.type_piece && (
@@ -535,32 +561,6 @@ export default function ChantierEditPage() {
                   fullWidth
                 />
               )}
-
-              {/* Budget + Dispo + Deadline */}
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {chantier.budget_initial && (
-                  <CompactItem 
-                    icon="💰" 
-                    label="Budget" 
-                    value={`${chantier.budget_initial.toLocaleString()} €`}
-                    subValue={meta.budget_inclut_materiaux ? '(matériaux inclus)' : ''}
-                  />
-                )}
-                {meta.disponibilite_heures_semaine && (
-                  <CompactItem 
-                    icon="⏰" 
-                    label="Dispo" 
-                    value={`${meta.disponibilite_heures_semaine}h/sem`}
-                  />
-                )}
-                {meta.deadline_semaines && (
-                  <CompactItem 
-                    icon="📅" 
-                    label="Objectif" 
-                    value={`${meta.deadline_semaines} sem`}
-                  />
-                )}
-              </div>
 
               {/* Accès chantier */}
               {meta.acces_chantier && (
@@ -629,16 +629,6 @@ export default function ChantierEditPage() {
                 </div>
               )}
 
-              {/* Éléments à déposer */}
-              {meta.elements_a_deposer && meta.elements_a_deposer.length > 0 && (
-                <TagsItem 
-                  icon="🗑️" 
-                  label="À déposer"
-                  tags={meta.elements_a_deposer}
-                  color="#ef4444"
-                />
-              )}
-
               {/* Contraintes */}
               {meta.contraintes && (
                 <CompactItem 
@@ -653,6 +643,16 @@ export default function ChantierEditPage() {
             {/* COLONNE DROITE */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
 
+              {/* Éléments à déposer */}
+              {meta.elements_a_deposer && meta.elements_a_deposer.length > 0 && (
+                <TagsItem 
+                  icon="🗑️" 
+                  label="À déposer"
+                  tags={meta.elements_a_deposer}
+                  color="#ef4444"
+                />
+              )}
+              
               {/* Équipements souhaités */}
               {meta.equipements_souhaites && meta.equipements_souhaites.length > 0 && (
                 <TagsItem 
@@ -760,15 +760,13 @@ export default function ChantierEditPage() {
                 />
               )}
 
-              {/* Travaux pro */}
-              {meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 && (
-                <TagsItem 
-                  icon="👷" 
-                  label="Pro suggéré"
-                  tags={meta.travaux_pro_suggeres}
-                  color="#818cf8"
-                />
-              )}
+              {/* Pro suggéré - Toujours affiché */}
+              <TagsItem 
+                icon="👷" 
+                label="Pro suggéré"
+                tags={meta.travaux_pro_suggeres?.length > 0 ? meta.travaux_pro_suggeres : ['Aucun']}
+                color={meta.travaux_pro_suggeres?.length > 0 ? '#818cf8' : '#6b7280'}
+              />
             </div>
           </div>
         </div>
