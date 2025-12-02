@@ -44,13 +44,11 @@ interface ChantierInfo {
 }
 
 // ==================== COMPOSANTS ====================
-
 function EtapeCard({ 
   etape, 
   index,
   onMove,
   onDelete,
-  onEdit,
   isFirst,
   isLast
 }: { 
@@ -58,7 +56,6 @@ function EtapeCard({
   index: number;
   onMove: (index: number, direction: 'up' | 'down') => void;
   onDelete: (index: number) => void;
-  onEdit: (index: number) => void;
   isFirst: boolean;
   isLast: boolean;
 }) {
@@ -149,20 +146,6 @@ function EtapeCard({
             ↓
           </button>
           <button
-            onClick={() => onEdit(index)}
-            style={{
-              padding: '0.3rem 0.5rem',
-              background: 'rgba(59, 130, 246, 0.2)',
-              border: 'none',
-              borderRadius: '4px',
-              color: '#3b82f6',
-              cursor: 'pointer',
-              fontSize: '0.8rem'
-            }}
-          >
-            ✏️
-          </button>
-          <button
             onClick={() => onDelete(index)}
             style={{
               padding: '0.3rem 0.5rem',
@@ -232,7 +215,6 @@ export default function MiseEnOeuvrePage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
-  const [editingIndex, setEditingIndex] = useState<number | null>(null);
 
   // Charger les infos du lot et du chantier
   useEffect(() => {
@@ -380,13 +362,6 @@ export default function MiseEnOeuvrePage() {
     setHasChanges(true);
   };
 
-  // Éditer une étape (ouvre modal - à implémenter)
-  const handleEdit = (index: number) => {
-    setEditingIndex(index);
-    // TODO: Modal d'édition
-    alert('Édition à implémenter - pour l\'instant, utilisez l\'assistant IA');
-  };
-
   // Calculer les totaux
   const totaux = calculerTotaux(etapes);
   const materiaux = aggregerMateriaux(etapes);
@@ -420,15 +395,44 @@ export default function MiseEnOeuvrePage() {
           <span style={{ color: 'var(--gray-light)' }}>Mise en œuvre</span>
         </div>
 
-        {/* Titre */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--gray-light)' }}>
-            🔧 Mise en œuvre : {travail?.titre}
-          </h1>
-          {travail?.description && (
-            <p style={{ margin: '0.5rem 0 0', color: 'var(--gray)', fontSize: '0.9rem' }}>
-              {travail.description}
-            </p>
+        {/* Titre + Bouton Régénérer */}
+        <div style={{ 
+          marginBottom: '1.5rem',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '1rem'
+        }}>
+          <div>
+            <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--gray-light)' }}>
+              🔧 Mise en œuvre : {travail?.titre}
+            </h1>
+            {travail?.description && (
+              <p style={{ margin: '0.5rem 0 0', color: 'var(--gray)', fontSize: '0.9rem' }}>
+                {travail.description}
+              </p>
+            )}
+          </div>
+          
+          {/* Bouton Régénérer en haut à droite */}
+          {viewMode === 'preview' && (
+            <button
+              onClick={handleRegenerate}
+              disabled={isSaving}
+              style={{
+                padding: '0.5rem 1rem',
+                background: 'transparent',
+                border: '1px solid var(--gray)',
+                borderRadius: '8px',
+                color: 'var(--gray-light)',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+                opacity: isSaving ? 0.5 : 1
+              }}
+            >
+              🔄 Régénérer
+            </button>
           )}
         </div>
 
@@ -585,7 +589,6 @@ export default function MiseEnOeuvrePage() {
                   index={index}
                   onMove={handleMove}
                   onDelete={handleDelete}
-                  onEdit={handleEdit}
                   isFirst={index === 0}
                   isLast={index === etapes.length - 1}
                 />
@@ -648,65 +651,55 @@ export default function MiseEnOeuvrePage() {
               </div>
             )}
 
-            {/* Actions */}
+            {/* Actions - Footer sticky */}
             <div style={{
               display: 'flex',
               gap: '0.75rem',
               flexWrap: 'wrap',
               justifyContent: 'space-between',
-              padding: '1rem',
-              background: 'rgba(255,255,255,0.03)',
+              alignItems: 'center',
+              padding: '1rem 1.5rem',
+              background: 'rgba(0, 0, 0, 0.9)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.1)',
               position: 'sticky',
-              bottom: '1rem'
+              bottom: '1rem',
+              marginTop: '1rem'
             }}>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  onClick={handleRegenerate}
-                  disabled={isSaving}
-                  style={{
-                    padding: '0.6rem 1rem',
-                    background: 'transparent',
-                    border: '1px solid var(--gray)',
-                    borderRadius: '8px',
-                    color: 'var(--gray-light)',
-                    fontSize: '0.85rem',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🔄 Régénérer
-                </button>
-                <button
-                  onClick={handleSaveBrouillon}
-                  disabled={isSaving || !hasChanges}
-                  style={{
-                    padding: '0.6rem 1rem',
-                    background: 'transparent',
-                    border: '1px solid var(--blue)',
-                    borderRadius: '8px',
-                    color: 'var(--blue)',
-                    fontSize: '0.85rem',
-                    cursor: isSaving || !hasChanges ? 'not-allowed' : 'pointer',
-                    opacity: isSaving || !hasChanges ? 0.5 : 1
-                  }}
-                >
-                  💾 Sauvegarder brouillon
-                </button>
-              </div>
+              <button
+                onClick={handleSaveBrouillon}
+                disabled={isSaving || !hasChanges}
+                style={{
+                  padding: '0.6rem 1.25rem',
+                  background: 'transparent',
+                  border: '1px solid var(--blue)',
+                  borderRadius: '8px',
+                  color: 'var(--blue)',
+                  fontSize: '0.85rem',
+                  fontWeight: '600',
+                  cursor: isSaving || !hasChanges ? 'not-allowed' : 'pointer',
+                  opacity: isSaving || !hasChanges ? 0.5 : 1
+                }}
+              >
+                💾 Sauvegarder brouillon
+              </button>
+              
               <button
                 onClick={handleValidate}
                 disabled={isSaving || etapes.length === 0}
                 style={{
-                  padding: '0.75rem 1.5rem',
+                  padding: '0.75rem 2rem',
                   background: 'var(--green)',
                   border: 'none',
                   borderRadius: '8px',
                   color: 'white',
-                  fontSize: '0.95rem',
+                  fontSize: '1rem',
                   fontWeight: '700',
                   cursor: isSaving || etapes.length === 0 ? 'not-allowed' : 'pointer',
                   opacity: isSaving || etapes.length === 0 ? 0.5 : 1,
-                  boxShadow: '0 0 15px rgba(16, 185, 129, 0.4)'
+                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
                 }}
               >
                 ✓ Valider les étapes
