@@ -1081,7 +1081,7 @@ export default function ChatInterface({
         flex: 1,
         overflowY: 'auto',
         padding: compact ? '1rem' : '1.5rem',
-        background: 'var(--gray-dark)',
+        background: 'transparent',
       }}>
         
         {/* Message de bienvenue */}
