@@ -1285,7 +1285,6 @@ export default function ChatInterface({
       {/* Zone input */}
         <div style={{
           padding: compact ? '0.75rem' : '1rem',
-          borderTop: 'none',
           background: 'rgba(0,0,0,0.8)',
           borderTop: `1px solid ${contextColor}40`,
           borderRadius: '0 0 16px 16px'
