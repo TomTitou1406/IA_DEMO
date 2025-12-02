@@ -1143,8 +1143,8 @@ export default function ChatInterface({
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  background: message.role === 'user' ? contextColor : 'white',
-                  color: message.role === 'user' ? 'white' : '#1f2937',
+                  background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.08)',
+                  color: message.role === 'user' ? 'white' : 'var(--gray-light)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
                   lineHeight: '1.5',
@@ -1200,12 +1200,20 @@ export default function ChatInterface({
         {loading && !isGeneratingAudio && (
           <div style={{ display: 'flex', justifyContent: 'flex-start', marginBottom: '0.75rem' }}>
             <div style={{
-              padding: '0.75rem',
+              padding: '0.75rem 1rem',
               borderRadius: '16px',
-              background: contextColor,
-              boxShadow: '0 2px 8px rgba(0,0,0,0.08)'
+              background: 'rgba(255,255,255,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}>
-              <div className="spinner" style={{ width: '20px', height: '20px' }}></div>
+              <div className="spinner" style={{ 
+                width: '20px', 
+                height: '20px',
+                borderColor: 'rgba(255,255,255,0.2)',
+                borderTopColor: contextColor
+              }}></div>
+              <span style={{ color: 'var(--gray)', fontSize: '0.85rem' }}>Réflexion...</span>
             </div>
           </div>
         )}
