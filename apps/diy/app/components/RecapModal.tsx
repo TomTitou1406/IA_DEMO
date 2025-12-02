@@ -47,10 +47,12 @@ export interface RecapData {
   
   // === POINTS TECHNIQUES ===
   points_techniques?: {
-    nb_prises?: number;
-    nb_interrupteurs?: number;
-    nb_points_eau?: number;
-    nb_evacuations?: number;
+    nb_prises_a_ajouter?: number;
+    nb_interrupteurs_a_ajouter?: number;
+    nb_points_eau_a_ajouter?: number;
+    nb_evacuations_a_ajouter?: number;
+    nb_points_lumineux_a_ajouter?: number;
+    nb_spots_led?: number;
   };
   
   // === BUDGET & PLANNING ===
@@ -297,17 +299,23 @@ export default function RecapModal({
             <>
               <SectionTitle icon="🔧" title="Points techniques" />
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
-                {recap.points_techniques.nb_prises && (
-                  <RecapChip icon="🔌" value={`${recap.points_techniques.nb_prises} prises`} />
+                {recap.points_techniques.nb_prises_a_ajouter !== undefined && recap.points_techniques.nb_prises_a_ajouter > 0 && (
+                  <RecapChip icon="🔌" value={`${recap.points_techniques.nb_prises_a_ajouter} prises`} />
                 )}
-                {recap.points_techniques.nb_interrupteurs && (
-                  <RecapChip icon="💡" value={`${recap.points_techniques.nb_interrupteurs} interrupteurs`} />
+                {recap.points_techniques.nb_interrupteurs_a_ajouter !== undefined && recap.points_techniques.nb_interrupteurs_a_ajouter > 0 && (
+                  <RecapChip icon="💡" value={`${recap.points_techniques.nb_interrupteurs_a_ajouter} interrupteurs`} />
                 )}
-                {recap.points_techniques.nb_points_eau && (
-                  <RecapChip icon="💧" value={`${recap.points_techniques.nb_points_eau} pts eau`} />
+                {recap.points_techniques.nb_points_lumineux_a_ajouter !== undefined && recap.points_techniques.nb_points_lumineux_a_ajouter > 0 && (
+                  <RecapChip icon="💡" value={`${recap.points_techniques.nb_points_lumineux_a_ajouter} pts lumineux`} />
                 )}
-                {recap.points_techniques.nb_evacuations && (
-                  <RecapChip icon="🚿" value={`${recap.points_techniques.nb_evacuations} évacuations`} />
+                {recap.points_techniques.nb_spots_led !== undefined && recap.points_techniques.nb_spots_led > 0 && (
+                  <RecapChip icon="💡" value={`${recap.points_techniques.nb_spots_led} spots LED`} />
+                )}
+                {recap.points_techniques.nb_points_eau_a_ajouter !== undefined && recap.points_techniques.nb_points_eau_a_ajouter > 0 && (
+                  <RecapChip icon="💧" value={`${recap.points_techniques.nb_points_eau_a_ajouter} pts eau`} />
+                )}
+                {recap.points_techniques.nb_evacuations_a_ajouter !== undefined && recap.points_techniques.nb_evacuations_a_ajouter > 0 && (
+                  <RecapChip icon="🚿" value={`${recap.points_techniques.nb_evacuations_a_ajouter} évacuations`} />
                 )}
               </div>
             </>
