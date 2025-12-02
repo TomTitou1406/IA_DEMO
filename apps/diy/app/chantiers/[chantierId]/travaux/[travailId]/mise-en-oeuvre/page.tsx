@@ -11,6 +11,7 @@
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
+import { supabase } from '@/app/lib/supabaseClient';
 import Link from 'next/link';
 import {
   loadEtapesBrouillon,
@@ -237,18 +238,24 @@ export default function MiseEnOeuvrePage() {
   useEffect(() => {
     async function loadData() {
       try {
-        // Charger le lot
-        const travailRes = await fetch(`/api/travaux/${travailId}`);
-        if (!travailRes.ok) throw new Error('Lot non trouvé');
-        const travailData = await travailRes.json();
+        // Charger le lot via Supabase
+        const { data: travailData, error: travailError } = await supabase
+          .from('travaux')
+          .select('*')
+          .eq('id', travailId)
+          .single();
+
+        if (travailError || !travailData) throw new Error('Lot non trouvé');
         setTravail(travailData);
 
-        // Charger le chantier
-        const chantierRes = await fetch(`/api/chantiers/${travailData.chantier_id}`);
-        if (chantierRes.ok) {
-          const chantierData = await chantierRes.json();
-          setChantier(chantierData);
-        }
+        // Charger le chantier via Supabase
+        const { data: chantierData } = await supabase
+          .from('chantiers')
+          .select('id, titre')
+          .eq('id', travailData.chantier_id)
+          .single();
+
+        if (chantierData) setChantier(chantierData);
 
         // Vérifier si des étapes existent déjà
         const etapesValidees = await loadEtapesValidees(travailId);
