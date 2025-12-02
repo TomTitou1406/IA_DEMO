@@ -322,8 +322,8 @@ export default function TravauxPage() {
                 />
               )}
 
-              {/* Bouton COMMENCER pour À VENIR */}
-              {travail.statut === 'à_venir' && (
+              {/* Bouton COMMENCER pour À VENIR (seulement si a des étapes) */}
+              {travail.statut === 'à_venir' && travail.nombre_etapes && travail.nombre_etapes > 0 && (
                 <CardButton
                   variant="primary"
                   color="var(--purple)"
