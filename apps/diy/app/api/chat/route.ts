@@ -23,6 +23,7 @@ const CRITICAL_CONTEXTS = ['phasage', 'chantier_edit', 'creation_chantier'];
 // Mapping pageContext -> code prompt dans prompts_library
 const PAGE_CONTEXT_TO_PROMPT_CODE: Record<string, string> = {
   'phasage': 'phasage_assistant_actions',
+  'mise_en_oeuvre': 'etapes_assistant_actions',
   'chantier_edit': 'system_chantier_decouverte',
   'chantier_edit_details': 'system_chantier_edit',
   // Ajouter d'autres mappings ici au fur et à mesure
