@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getChantierById, getChantierStats } from '@/app/lib/services/chantierService';
 import ConfirmModal from '@/app/components/ConfirmModal';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesEtapes } from '@/app/lib/services/etapesService';
 import { getTravauxByChantier, annulerTravail, reactiverTravail, commencerTravail, reporterTravail, terminerTravail } from '@/app/lib/services/travauxService';
@@ -48,6 +48,7 @@ interface Travail {
 
 export default function TravauxPage() {
   const params = useParams();
+  const router = useRouter();
   const chantierId = params.chantierId as string;
   const [chantier, setChantier] = useState<Chantier | null>(null);
   const [stats, setStats] = useState<any>(null);
@@ -304,6 +305,19 @@ export default function TravauxPage() {
                   onClick={() => {
                     // TODO: Implémenter debloquerTravail()
                     console.log('Débloquer travail:', travail.id);
+                  }}
+                />
+              )}
+
+              {/* Bouton METTRE EN ŒUVRE pour À VENIR sans étapes */}
+              {travail.statut === 'à_venir' && (!travail.nombre_etapes || travail.nombre_etapes === 0) && (
+                <CardButton
+                  variant="primary"
+                  color="var(--green)"
+                  icon="🔧"
+                  label="Mettre en œuvre"
+                  onClick={() => {
+                    router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`);
                   }}
                 />
               )}
