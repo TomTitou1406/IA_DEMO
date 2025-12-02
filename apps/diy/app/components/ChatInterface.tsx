@@ -87,8 +87,19 @@ export default function ChatInterface({
   
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
-  const [voiceMode, setVoiceMode] = useState(false);
-  const [autoPlayAudio, setAutoPlayAudio] = useState(false);
+  const [voiceMode, setVoiceMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return sessionStorage.getItem('papibricole_voice_mode') === 'true';
+    }
+    return false;
+  });
+  const [autoPlayAudio, setAutoPlayAudio] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const stored = sessionStorage.getItem('papibricole_auto_play');
+      return stored === null ? false : stored === 'true';
+    }
+    return false;
+  });
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -232,6 +243,20 @@ export default function ChatInterface({
     setNoteText(message.content);
     setShowNoteModal(true);
   };
+
+  // Persister voiceMode
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('papibricole_voice_mode', voiceMode.toString());
+      }
+    }, [voiceMode]);
+    
+    // Persister autoPlayAudio
+    useEffect(() => {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('papibricole_auto_play', autoPlayAudio.toString());
+      }
+    }, [autoPlayAudio]);
 
   // Sync expertise depuis conversation
   useEffect(() => {
