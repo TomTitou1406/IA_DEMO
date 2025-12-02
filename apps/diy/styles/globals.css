@@ -110,6 +110,7 @@ ul {
 .header {
   background: var(--header-bg);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-bottom: 1px solid var(--header-border);
   position: sticky;
   top: 0;
@@ -238,6 +239,7 @@ ul {
 .main-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
   border-radius: var(--card-radius);
   box-shadow: 0 4px 14px 1px rgba(0, 0, 0, 0.3);
   padding: 1.5rem;
