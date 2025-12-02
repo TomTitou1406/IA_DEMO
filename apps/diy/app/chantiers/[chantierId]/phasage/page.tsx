@@ -801,6 +801,7 @@ export default function PhasagePage() {
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.98)',
         backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(255,255,255,0.08)'
       }}>
         <div style={{
@@ -1150,6 +1151,7 @@ export default function PhasagePage() {
         right: 0,
         background: 'rgba(0, 0, 0, 0.95)',
         backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         borderTop: '1px solid rgba(255,255,255,0.1)',
         padding: '1rem'
       }}>
