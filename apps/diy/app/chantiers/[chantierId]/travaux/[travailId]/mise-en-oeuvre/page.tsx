@@ -24,6 +24,10 @@ import {
   aggregerOutils,
   type EtapeGeneree
 } from '@/app/lib/services/etapesGeneratorService';
+import {
+  applyEtapesAction,
+  type EtapesAction
+} from '@/app/lib/services/etapesActions';
 
 // ==================== COMPOSANT LOADING ====================
 
@@ -401,6 +405,22 @@ export default function MiseEnOeuvrePage() {
   const [error, setError] = useState<string | null>(null);
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
+
+  // Écouter les actions de l'assistant IA
+  useEffect(() => {
+    const handleEtapesAction = (event: CustomEvent<EtapesAction>) => {
+      console.log('🎯 Action étapes reçue:', event.detail);
+      const newEtapes = applyEtapesAction(etapes, event.detail);
+      setEtapes(newEtapes);
+      setHasChanges(true);
+    };
+
+    window.addEventListener('etapesAction', handleEtapesAction as EventListener);
+    
+    return () => {
+      window.removeEventListener('etapesAction', handleEtapesAction as EventListener);
+    };
+  }, [etapes]);
 
   // Charger les infos du lot et du chantier
   useEffect(() => {
