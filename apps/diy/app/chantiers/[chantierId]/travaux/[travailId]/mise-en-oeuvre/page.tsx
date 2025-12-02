@@ -845,78 +845,58 @@ export default function MiseEnOeuvrePage() {
             )}
 
             {/* Actions - Footer sticky */}
+            <div style={{
+              position: 'fixed',
+              bottom: 0,
+              left: 0,
+              right: 0,
+              background: 'rgba(0, 0, 0, 0.95)',
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              padding: '1rem'
+            }}>
               <div style={{
-                position: 'fixed',
-                bottom: 0,
-                left: 0,
-                right: 0,
-                background: 'rgba(0, 0, 0, 0.95)',
-                backdropFilter: 'blur(10px)',
-                WebkitBackdropFilter: 'blur(10px)',
-                borderTop: '1px solid rgba(255,255,255,0.1)',
-                padding: '1rem'
+                maxWidth: '900px',
+                margin: '0 auto',
+                display: 'flex',
+                gap: '0.75rem'
               }}>
-                <div style={{
-                  maxWidth: '900px',
-                  margin: '0 auto',
-                  display: 'flex',
-                  gap: '0.75rem'
-                }}>
-                  <button
-                    onClick={handleQuit}
-                    style={{
-                      flex: 1,
-                      padding: '0.875rem',
-                      background: 'rgba(255,255,255,0.05)',
-                      border: '1px solid rgba(255,255,255,0.15)',
-                      borderRadius: '10px',
-                      color: 'var(--gray-light)',
-                      fontSize: '0.95rem',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    Annuler
-                  </button>
-                  <button
-                    onClick={handleValidate}
-                    disabled={isSaving || etapes.length === 0}
-                    style={{
-                      flex: 1,
-                      padding: '0.875rem',
-                      background: etapes.length === 0 ? 'rgba(255,255,255,0.1)' : 'var(--green)',
-                      border: 'none',
-                      borderRadius: '10px',
-                      color: 'white',
-                      fontSize: '0.95rem',
-                      fontWeight: '700',
-                      cursor: etapes.length === 0 ? 'not-allowed' : 'pointer',
-                      opacity: isSaving ? 0.7 : 1
-                    }}
-                  >
-                    {isSaving ? 'Sauvegarde...' : `✓ Valider ${etapes.length} étapes`}
-                  </button>
-                </div>
+                <button
+                  onClick={handleQuit}
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    background: 'rgba(255,255,255,0.05)',
+                    border: '1px solid rgba(255,255,255,0.15)',
+                    borderRadius: '10px',
+                    color: 'var(--gray-light)',
+                    fontSize: '0.95rem',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                >
+                  Annuler
+                </button>
+                <button
+                  onClick={handleValidate}
+                  disabled={isSaving || etapes.length === 0}
+                  style={{
+                    flex: 1,
+                    padding: '0.875rem',
+                    background: etapes.length === 0 ? 'rgba(255,255,255,0.1)' : 'var(--green)',
+                    border: 'none',
+                    borderRadius: '10px',
+                    color: 'white',
+                    fontSize: '0.95rem',
+                    fontWeight: '700',
+                    cursor: etapes.length === 0 ? 'not-allowed' : 'pointer',
+                    opacity: isSaving ? 0.7 : 1
+                  }}
+                >
+                  {isSaving ? 'Sauvegarde...' : `✓ Valider ${etapes.length} étapes`}
+                </button>
               </div>
-              
-              <button
-                onClick={handleValidate}
-                disabled={isSaving || etapes.length === 0}
-                style={{
-                  padding: '0.75rem 2rem',
-                  background: 'var(--green)',
-                  border: 'none',
-                  borderRadius: '8px',
-                  color: 'white',
-                  fontSize: '1rem',
-                  fontWeight: '700',
-                  cursor: isSaving || etapes.length === 0 ? 'not-allowed' : 'pointer',
-                  opacity: isSaving || etapes.length === 0 ? 0.5 : 1,
-                  boxShadow: '0 0 20px rgba(16, 185, 129, 0.4)'
-                }}
-              >
-                ✓ Valider les étapes
-              </button>
             </div>
           </>
         )}
