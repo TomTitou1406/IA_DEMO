@@ -1101,8 +1101,8 @@ export default function ChatInterface({
           </div>
         )}
 
-        {/* Banner détection expertise */}
-        {suggestionShown && detectedExpertise && !activeExpertise?.code && (
+        {/* Banner détection expertise - DÉSACTIVÉ TEMPORAIREMENT */}
+        {/* {suggestionShown && detectedExpertise && !activeExpertise?.code && (
           <ExpertiseBanner
             expertise={detectedExpertise}
             confidence={confidence}
@@ -1112,7 +1112,7 @@ export default function ChatInterface({
             themeColor={contextColor}
             compact={compact}
           />
-        )}
+        )} */}
 
         {/* Message transition expertise */}
         {showTransition && transitionExpertise && (
@@ -1143,8 +1143,8 @@ export default function ChatInterface({
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.08)',
-                  color: message.role === 'user' ? 'white' : 'var(--gray-light)',
+                  background: message.role === 'user' ? contextColor : '#2a2a2a',
+                  color: message.role === 'user' ? 'white' : '#e5e7eb',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
                   lineHeight: '1.5',
