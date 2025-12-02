@@ -25,6 +25,192 @@ import {
   type EtapeGeneree
 } from '@/app/lib/services/etapesGeneratorService';
 
+// ==================== COMPOSANT LOADING ====================
+
+function LoadingMiseEnOeuvre() {
+  const [step, setStep] = useState(0);
+  const [completed, setCompleted] = useState<number[]>([]);
+  const [progress, setProgress] = useState(0);
+  
+  const steps = [
+    { icon: '📋', text: 'Analyse du lot de travaux...' },
+    { icon: '🔍', text: 'Identification des étapes nécessaires...' },
+    { icon: '🔧', text: 'Sélection des outils et matériaux...' },
+    { icon: '⏱️', text: 'Estimation des durées...' },
+    { icon: '💡', text: 'Ajout des conseils de pro...' },
+  ];
+
+  const TOTAL_DURATION = 20000; // 20 secondes
+  const STEP_DURATION = TOTAL_DURATION / steps.length; 
+
+  useEffect(() => {
+    const startTime = Date.now();
+    
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / TOTAL_DURATION) * 100, 100);
+      setProgress(newProgress);
+      
+      const newStep = Math.min(Math.floor(elapsed / STEP_DURATION), steps.length - 1);
+      
+      if (newStep !== step) {
+        const completedSteps = [];
+        for (let i = 0; i < newStep; i++) {
+          completedSteps.push(i);
+        }
+        setCompleted(completedSteps);
+        setStep(newStep);
+      }
+      
+      if (newProgress >= 100) {
+        clearInterval(progressInterval);
+      }
+    }, 100);
+    
+    return () => clearInterval(progressInterval);
+  }, []);
+
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
+  return (
+    <div style={{
+      minHeight: '100vh',
+      background: 'var(--body-bg)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '2rem'
+    }}>
+      <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+        {/* Progress bar circulaire */}
+        <div style={{
+          width: '120px',
+          height: '120px',
+          margin: '0 auto 1.5rem',
+          position: 'relative'
+        }}>
+          <svg
+            width="120"
+            height="120"
+            style={{
+              transform: 'rotate(-90deg)',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          >
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke="rgba(16, 185, 129, 0.2)"
+              strokeWidth="8"
+            />
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke="var(--green)"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              style={{
+                transition: 'stroke-dashoffset 0.1s linear'
+              }}
+            />
+          </svg>
+          
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '2.5rem'
+          }}>
+            🔧
+          </div>
+          
+          <div style={{
+            position: 'absolute',
+            bottom: '-8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: 'var(--body-bg)',
+            padding: '0 0.5rem',
+            fontSize: '0.75rem',
+            color: 'var(--green)',
+            fontWeight: '700'
+          }}>
+            {Math.round(progress)}%
+          </div>
+        </div>
+
+        <h2 style={{
+          fontSize: '1.3rem',
+          fontWeight: '700',
+          color: 'var(--gray-light)',
+          marginBottom: '0.5rem'
+        }}>
+          Génération des étapes...
+        </h2>
+
+        <p style={{
+          fontSize: '0.95rem',
+          color: 'var(--gray)',
+          marginBottom: '1.5rem'
+        }}>
+          L'assistant analyse le lot et prépare les étapes détaillées.
+        </p>
+
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '1rem'
+        }}>
+          {steps.map((s, idx) => (
+            <div
+              key={idx}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem',
+                borderRadius: '8px',
+                background: idx === step ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                transition: 'all 0.3s'
+              }}
+            >
+              <span style={{ fontSize: '1.1rem' }}>{s.icon}</span>
+              <span style={{
+                fontSize: '0.85rem',
+                color: idx === step ? 'var(--green)' : completed.includes(idx) ? '#10b981' : 'var(--gray)',
+                fontWeight: idx === step ? '600' : '400',
+                flex: 1,
+                textAlign: 'left'
+              }}>
+                {s.text}
+              </span>
+              {completed.includes(idx) && <span style={{ color: '#10b981' }}>✓</span>}
+              {idx === step && <span style={{ color: 'var(--green)' }}>...</span>}
+            </div>
+          ))}
+        </div>
+
+        <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
+          Cela peut prendre quelques secondes...
+        </p>
+      </div>
+    </div>
+  );
+}
+
 // ==================== TYPES ====================
 
 type ViewMode = 'loading' | 'empty' | 'generating' | 'preview' | 'error';
@@ -482,17 +668,7 @@ export default function MiseEnOeuvrePage() {
         )}
 
         {/* GENERATING */}
-        {viewMode === 'generating' && (
-          <div style={{ textAlign: 'center', padding: '3rem' }}>
-            <div className="spinner" style={{ margin: '0 auto 1rem', width: '48px', height: '48px' }}></div>
-            <h2 style={{ margin: '0 0 0.5rem', color: 'var(--gray-light)' }}>
-              Génération en cours...
-            </h2>
-            <p style={{ color: 'var(--gray)' }}>
-              L'IA analyse le lot et prépare les étapes détaillées
-            </p>
-          </div>
-        )}
+        {viewMode === 'generating' && <LoadingMiseEnOeuvre />}
 
         {/* ERROR */}
         {viewMode === 'error' && (
