@@ -1072,7 +1072,7 @@ export default function ChatInterface({
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      background: 'var(--body-bg)',
+      background: 'transparent',
       position: 'relative'
     }}>
       
@@ -1082,7 +1082,7 @@ export default function ChatInterface({
        overflowY: 'auto',
        padding: compact ? '1rem' : '1.5rem',
        background: 'rgba(0,0,0,0.85)',
-     }}>>
+     }}>
         
         {/* Message de bienvenue */}
         {displayMessages.length === 0 && !conversationLoading && (
