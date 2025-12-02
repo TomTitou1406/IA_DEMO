@@ -241,6 +241,19 @@ export default function ChatInterface({
   }, [currentExpertise]);
 
   // ==================== EFFETS ====================
+  // Reset conversation quand on arrive sur un nouveau chantier
+  useEffect(() => {
+    if (chantierId === 'nouveau' || !chantierId) {
+      setLocalMessages([]);
+      setCreationPhase('discovery');
+      setPhase1Synthese(null);
+      setShowPhase1Transition(false);
+      setTypeConfig(null);
+      setRecapData(null);
+      setShowRecapModal(false);
+      console.log('🔄 Reset conversation pour nouveau chantier');
+    }
+  }, [chantierId]);
 
   // Notifier parent du changement d'état
   useEffect(() => {
@@ -544,7 +557,7 @@ export default function ChatInterface({
         // Message de transition automatique
         const transitionMessage: Message = {
           role: 'assistant',
-          content: `Parfait ! Passons aux détails techniques de ton projet "${phase1Synthese.description_courte}". Je vais te poser quelques questions pour bien préparer le phasage des travaux.`,
+          content: `Parfait ! Passons aux détails de ton projet "${phase1Synthese.description_courte}".\n\nCommençons : quelles sont les dimensions de l'espace ? (longueur × largeur × hauteur en mètres)`,
           timestamp: new Date().toISOString(),
           metadata: { promptSource: 'phase_transition' }
         };
@@ -1232,7 +1245,7 @@ export default function ChatInterface({
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
               <span style={{ fontSize: '1.25rem' }}>✅</span>
-              <span style={{ fontWeight: '700' }}>Projet compris !</span>
+              <span style={{ fontWeight: '700' }}>Voici ce que j'ai compris de ton projet :</span>
             </div>
             <div style={{ fontSize: '0.9rem', opacity: 0.95, marginBottom: '0.75rem' }}>
               <strong>{phase1Synthese.description_courte}</strong>
@@ -1246,12 +1259,15 @@ export default function ChatInterface({
               </div>
             )}
             <div style={{ 
-              marginTop: '0.75rem', 
-              fontSize: '0.85rem',
-              fontStyle: 'italic',
-              opacity: 0.9
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              marginTop: '0.5rem',
+              padding: '0.5rem 0.75rem',
+              background: 'rgba(255,255,255,0.2)',
+              borderRadius: '8px',
+              textAlign: 'center'
             }}>
-              Réponds "OK" ou "vas-y" pour passer aux détails techniques !
+              👉 Réponds "OK" ou "vas-y" pour passer aux détails !
             </div>
           </div>
         )}
