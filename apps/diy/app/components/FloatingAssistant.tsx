@@ -226,7 +226,7 @@ export default function FloatingAssistant() {
             borderRadius: '20px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
           }),
-          background: #000000,
+          background: 'var(--body-bg)',
           border: `2px solid ${contextColor}`,
           boxShadow: `0 0 30px ${contextColor}40, 0 8px 32px rgba(0,0,0,0.4)`,
           zIndex: 1000,
