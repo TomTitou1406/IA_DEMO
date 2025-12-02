@@ -437,6 +437,7 @@ export default function ChantiersPage() {
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.98)',
         backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         <div style={{ 
