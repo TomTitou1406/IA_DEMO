@@ -764,8 +764,8 @@ export default function ChantierEditPage() {
               <TagsItem 
                 icon="👷" 
                 label="Pro suggéré"
-                tags={meta.travaux_pro_suggeres?.length ? meta.travaux_pro_suggeres : ['Aucun']}
-                color={meta.travaux_pro_suggeres?.length > 0 ? '#818cf8' : '#6b7280'}
+                tags={meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 ? meta.travaux_pro_suggeres : ['Aucun']}
+                color={meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 ? '#818cf8' : '#6b7280'}
               />
             </div>
           </div>
