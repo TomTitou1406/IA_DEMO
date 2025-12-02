@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * Page Mise en Œuvre - Génération et gestion des étapes d'un lot
  * 
@@ -6,8 +8,6 @@
  * @version 1.0
  * @date 02 décembre 2025
  */
-
-'use client';
 
 import { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
