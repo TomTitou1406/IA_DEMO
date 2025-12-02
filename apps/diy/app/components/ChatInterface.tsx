@@ -88,7 +88,7 @@ export default function ChatInterface({
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
-  const [autoPlayAudio, setAutoPlayAudio] = useState(true);
+  const [autoPlayAudio, setAutoPlayAudio] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isGeneratingAudio, setIsGeneratingAudio] = useState(false);
@@ -1356,45 +1356,52 @@ export default function ChatInterface({
         {/* Input zone */}
         {voiceMode ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', alignItems: 'center' }}>
-            {isRecording && (
-              <div style={{
-                fontSize: compact ? '0.85rem' : '0.9rem',
-                color: 'var(--red)',
-                fontWeight: '700'
-              }}>
-                🔴 {formatTime(recordingTime)}
-              </div>
-            )}
+            
+            {/* Indication textuelle */}
+            <div style={{
+              fontSize: compact ? '0.85rem' : '0.9rem',
+              color: isRecording ? 'var(--red)' : 'rgba(255,255,255,0.7)',
+              fontWeight: '600',
+              textAlign: 'center'
+            }}>
+              {isRecording 
+                ? `🔴 Enregistrement... ${formatTime(recordingTime)}`
+                : '🎤 Appuie sur le bouton pour parler'
+              }
+            </div>
             
             <div style={{ display: 'flex', gap: '0.75rem' }}>
               <button
                 onClick={handleVoiceAction}
                 disabled={loading}
                 style={{
-                  padding: compact ? '0.75rem 1.5rem' : '0.875rem 2rem',
+                  padding: compact ? '0.75rem 2rem' : '0.875rem 2.5rem',
                   borderRadius: '12px',
                   border: 'none',
-                  background: isRecording ? 'var(--blue)' : 'var(--green)',
+                  background: isRecording ? 'var(--red)' : 'var(--green)',
                   color: 'white',
                   fontSize: compact ? '0.9rem' : '1rem',
                   fontWeight: '700',
                   cursor: loading ? 'not-allowed' : 'pointer',
                   opacity: loading ? 0.6 : 1,
-                  transition: 'all 0.2s'
+                  transition: 'all 0.2s',
+                  boxShadow: isRecording 
+                    ? '0 0 20px rgba(239, 68, 68, 0.5)' 
+                    : '0 0 20px rgba(16, 185, 129, 0.5)'
                 }}
               >
                 {isRecording ? '📤 Envoyer' : '🎤 Parler'}
               </button>
-
+        
               {(isGeneratingAudio || isPlaying) && (
                 <button
                   onClick={stopAudio}
                   style={{
                     padding: compact ? '0.75rem 1.25rem' : '0.875rem 1.5rem',
                     borderRadius: '12px',
-                    border: 'none',
-                    background: 'var(--red)',
-                    color: 'white',
+                    border: '2px solid var(--red)',
+                    background: 'transparent',
+                    color: 'var(--red)',
                     fontSize: compact ? '0.9rem' : '1rem',
                     fontWeight: '700',
                     cursor: 'pointer',
