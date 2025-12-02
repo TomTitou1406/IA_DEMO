@@ -23,6 +23,7 @@ export type PageContext =
   | 'chantier_edit'
   | 'chantier_modification'
   | 'phasage'
+  | 'mise_en_oeuvre'
   | 'lots'
   | 'etapes'
   | 'taches'
@@ -106,6 +107,8 @@ function getWelcomeMessage(level: NavigationLevel): string {
       return 'Salut ! Je peux t\'aider à gérer tes projets ?';
     case 'phasage':
       return "Je t'aide à comprendre et organiser les lots de travaux. Tu as des questions ? 📋";
+    case 'mise_en_oeuvre':
+      return "Je t'aide à définir les étapes de ce lot. Tu veux ajouter, modifier ou supprimer une étape ? 🔧";
     case 'lots':
       return 'Salut ! Je connais ce chantier. Comment puis-je t\'aider ?';
     case 'etapes':
@@ -127,6 +130,8 @@ function getPlaceholder(level: NavigationLevel): string {
       return 'Une question sur tes projets ?';
     case 'phasage':
       return 'Une question sur les lots proposés ?';
+    case 'mise_en_oeuvre':
+      return 'Modifier une étape, en ajouter une ?';
     case 'lots':
       return 'Une question sur ce lot ?';
     case 'etapes':
@@ -142,6 +147,9 @@ function mapLevelToPageContext(level: NavigationLevel, pathname: string): PageCo
   if (pathname === '/') return 'home';
   if (pathname.startsWith('/aide')) return 'aide';
   if (pathname.startsWith('/profil')) return 'profil';
+  
+  // Détection spécifique pour mise-en-oeuvre
+  if (pathname.includes('/mise-en-oeuvre')) return 'mise_en_oeuvre';
   
   switch (level) {
     case 'chantier_edit':
