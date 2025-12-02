@@ -520,56 +520,40 @@ export default function ChantierEditPage() {
                 )}
               </div>
 
-              {/* Type + Dimensions + Surfaces */}
+              {/* Type + Dimensions + Surfaces - TOUT SUR UNE LIGNE */}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
                 {meta.type_piece && (
-                  <CompactItem 
-                    icon="🏠" 
-                    label="Type" 
-                    value={meta.type_piece}
-                  />
+                  <CompactItem icon="🏠" label="Type" value={meta.type_piece} />
                 )}
                 {meta.dimensions && (
-                  <CompactItem 
-                    icon="📏" 
-                    label="Dimensions" 
-                    value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`}
-                  />
+                  <CompactItem icon="📏" label="Dimensions" value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`} />
                 )}
                 {(meta.surface_sol_m2 || meta.surface_m2) && (
-                  <CompactItem 
-                    icon="📐" 
-                    label="Surface sol" 
-                    value={`${meta.surface_sol_m2 || meta.surface_m2} m²`}
-                  />
+                  <CompactItem icon="📐" label="Surface sol" value={`${meta.surface_sol_m2 || meta.surface_m2} m²`} />
                 )}
                 {meta.surface_murs_m2 && (
-                  <CompactItem 
-                    icon="🧱" 
-                    label="Surface murs" 
-                    value={`${meta.surface_murs_m2} m²`}
-                  />
+                  <CompactItem icon="🧱" label="Surface murs" value={`${meta.surface_murs_m2} m²`} />
                 )}
               </div>
               
-              {/* Style */}
-              {meta.style_souhaite && (
-                <CompactItem 
-                  icon="🎨" 
-                  label="Style" 
-                  value={meta.style_souhaite}
-                  fullWidth
-                />
-              )}
-
-              {/* Accès chantier */}
-              {meta.acces_chantier && (
-                <CompactItem 
-                  icon="🚚" 
-                  label="Accès" 
-                  value={meta.acces_chantier}
-                  fullWidth
-                />
+              {/* Accès + Contraintes sur même ligne */}
+              {(meta.acces_chantier || meta.contraintes) && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {meta.acces_chantier && (
+                    <CompactItem 
+                      icon="🚚" 
+                      label="Accès" 
+                      value={meta.acces_chantier}
+                    />
+                  )}
+                  {meta.contraintes && (
+                    <CompactItem 
+                      icon="📝" 
+                      label="Contraintes" 
+                      value={meta.contraintes}
+                    />
+                  )}
+                </div>
               )}
 
               {/* État existant */}
@@ -628,16 +612,7 @@ export default function ChantierEditPage() {
                   )}
                 </div>
               )}
-
-              {/* Contraintes */}
-              {meta.contraintes && (
-                <CompactItem 
-                  icon="📝" 
-                  label="Contraintes" 
-                  value={meta.contraintes}
-                  fullWidth
-                />
-              )}
+              
             </div>
 
             {/* COLONNE DROITE */}
