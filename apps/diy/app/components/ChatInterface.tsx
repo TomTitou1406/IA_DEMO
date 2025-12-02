@@ -1072,7 +1072,7 @@ export default function ChatInterface({
       display: 'flex',
       flexDirection: 'column',
       height: '100%',
-      background: 'transparent',
+      background: 'var(--body-bg)',
       position: 'relative'
     }}>
       
@@ -1081,7 +1081,7 @@ export default function ChatInterface({
         flex: 1,
         overflowY: 'auto',
         padding: compact ? '1rem' : '1.5rem',
-        /* background: 'transparent',*/
+        background: 'var(--body-bg)',
       }}>
         
         {/* Message de bienvenue */}
@@ -1145,7 +1145,7 @@ export default function ChatInterface({
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.1)',
+                  background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.15)',
                   color: message.role === 'user' ? 'white' : 'var(--gray-light)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
@@ -1171,7 +1171,7 @@ export default function ChatInterface({
                     height: '28px',
                     borderRadius: '50%',
                     border: '2px solid #e5e7eb',
-                    background: 'white',
+                    background: 'var(--body-bg)',
                     fontSize: '0.9rem',
                     cursor: 'pointer',
                     display: 'flex',
@@ -1285,8 +1285,8 @@ export default function ChatInterface({
       {/* Zone input */}
         <div style={{
           padding: compact ? '0.75rem' : '1rem',
-          background: 'rgba(0,0,0,0.8)',
-          borderTop: `1px solid ${contextColor}40`,
+          background: contextColor,
+          borderTop: 'none',
           borderRadius: '0 0 16px 16px'
         }}>
         
@@ -1429,8 +1429,8 @@ export default function ChatInterface({
                 fontSize: compact ? '0.85rem' : '0.95rem',
                 outline: 'none',
                 transition: 'border-color 0.2s',
-                color: 'var(--gray-dark)',
-                backgroundColor: 'rgba(255,255,255,0.95)'
+                color: 'var(--gray-light)',
+                backgroundColor: 'var(--body-bg)'
               }}
               onFocus={(e) => e.target.style.borderColor = 'white'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.3)'}
@@ -1441,26 +1441,27 @@ export default function ChatInterface({
               style={{
                 padding: compact ? '0.6rem 1.25rem' : '0.75rem 1.5rem',
                 borderRadius: '12px',
-                border: `2px solid ${contextColor}`,
-                background: 'transparent',
-                color: contextColor,
+                border: 'none',
+                background: contextColor,
+                color: 'white',
                 fontSize: compact ? '1.1rem' : '1.25rem',
                 cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
                 opacity: !input.trim() || loading ? 0.5 : 1,
-                transition: 'all 0.2s',
-                boxShadow: (!input.trim() || loading) ? 'none' : `0 0 15px ${contextColor}50`
+                transition: 'all 0.2s'
               }}
               onMouseEnter={(e) => {
                 if (input.trim() && !loading) {
-                  e.currentTarget.style.boxShadow = `0 0 25px ${contextColor}80`;
-                  e.currentTarget.style.background = contextColor;
-                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.background = 'var(--body-bg)';
+                  e.currentTarget.style.color = contextColor;
+                  e.currentTarget.style.border = `2px solid ${contextColor}`;
+                  e.currentTarget.style.boxShadow = `0 0 20px ${contextColor}60`;
                 }
               }}
               onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = `0 0 15px ${contextColor}50`;
-                e.currentTarget.style.background = 'transparent';
-                e.currentTarget.style.color = contextColor;
+                e.currentTarget.style.background = contextColor;
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.border = 'none';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
               ➤
