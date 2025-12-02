@@ -1286,7 +1286,8 @@ export default function ChatInterface({
         <div style={{
           padding: compact ? '0.75rem' : '1rem',
           borderTop: 'none',
-          background: contextColor,
+          background: 'rgba(0,0,0,0.8)',
+          borderTop: `1px solid ${contextColor}40`,
           borderRadius: '0 0 16px 16px'
         }}>
         
@@ -1304,9 +1305,9 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
-                border: !voiceMode ? `2px solid ${contextColor}` : '2px solid rgba(255,255,255,0.3)',
-                background: !voiceMode ? 'transparent' : 'transparent',
-                color: !voiceMode ? contextColor : 'rgba(255,255,255,0.6)',
+                border: `2px solid ${!voiceMode ? contextColor : 'rgba(255,255,255,0.2)'}`,
+                background: !voiceMode ? contextColor : 'transparent',
+                color: !voiceMode ? 'white' : 'rgba(255,255,255,0.6)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -1322,9 +1323,9 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
-                border: voiceMode ? `2px solid ${contextColor}` : '2px solid rgba(255,255,255,0.3)',
-                background: voiceMode ? 'transparent' : 'transparent',
-                color: voiceMode ? contextColor : 'rgba(255,255,255,0.6)',
+                border: `2px solid ${voiceMode ? contextColor : 'rgba(255,255,255,0.2)'}`,
+                background: voiceMode ? contextColor : 'transparent',
+                color: voiceMode ? 'white' : 'rgba(255,255,255,0.6)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
