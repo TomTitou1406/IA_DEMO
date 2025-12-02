@@ -1143,8 +1143,8 @@ export default function ChatInterface({
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  background: message.role === 'user' ? contextColor : 'white',
-                  color: message.role === 'user' ? 'white' : '#1f2937',
+                  background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.1)',
+                  color: message.role === 'user' ? 'white' : 'var(--gray-light)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
                   lineHeight: '1.5',
@@ -1281,11 +1281,12 @@ export default function ChatInterface({
         )}
 
       {/* Zone input */}
-      <div style={{
-        padding: compact ? '0.75rem' : '1rem',
-        borderTop: '1px solid var(--gray-light)',
-        background: 'white'
-      }}>
+        <div style={{
+          padding: compact ? '0.75rem' : '1rem',
+          borderTop: 'none',
+          background: contextColor,
+          borderRadius: '0 0 16px 16px'
+        }}>
         
         {/* Toggles mode */}
         <div style={{ 
@@ -1302,8 +1303,8 @@ export default function ChatInterface({
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
                 border: 'none',
-                background: !voiceMode ? contextColor : 'var(--gray-light)',
-                color: !voiceMode ? 'white' : 'var(--gray)',
+                background: !voiceMode ? 'white' : 'rgba(255,255,255,0.2)',
+                color: !voiceMode ? contextColor : 'rgba(255,255,255,0.8)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -1319,8 +1320,8 @@ export default function ChatInterface({
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
                 border: 'none',
-                background: voiceMode ? contextColor : 'var(--gray-light)',
-                color: voiceMode ? 'white' : 'var(--gray)',
+                background: voiceMode ? 'white' : 'rgba(255,255,255,0.2)',
+                color: voiceMode ? contextColor : 'rgba(255,255,255,0.8)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
@@ -1338,8 +1339,8 @@ export default function ChatInterface({
                 padding: compact ? '0.4rem 0.6rem' : '0.5rem 0.75rem',
                 borderRadius: '8px',
                 border: 'none',
-                background: autoPlayAudio ? 'var(--green)' : 'var(--gray-light)',
-                color: autoPlayAudio ? 'white' : 'var(--gray)',
+                background: autoPlayAudio ? 'white' : 'rgba(255,255,255,0.2)',
+                color: autoPlayAudio ? contextColor : 'rgba(255,255,255,0.8)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 cursor: 'pointer',
                 transition: 'all 0.2s'
@@ -1420,15 +1421,15 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.6rem' : '0.75rem',
                 borderRadius: '12px',
-                border: `2px solid ${contextColor}30`,
+                border: '2px solid rgba(255,255,255,0.3)',
                 fontSize: compact ? '0.85rem' : '0.95rem',
                 outline: 'none',
                 transition: 'border-color 0.2s',
                 color: 'var(--gray-dark)',
-                backgroundColor: 'var(--white)'
+                backgroundColor: 'rgba(255,255,255,0.95)'
               }}
-              onFocus={(e) => e.target.style.borderColor = contextColor}
-              onBlur={(e) => e.target.style.borderColor = `${contextColor}30`}
+              onFocus={(e) => e.target.style.borderColor = 'white'}
+              onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.3)'}
             />
             <button
               onClick={handleSend}
@@ -1437,8 +1438,8 @@ export default function ChatInterface({
                 padding: compact ? '0.6rem 1.25rem' : '0.75rem 1.5rem',
                 borderRadius: '12px',
                 border: 'none',
-                background: contextColor,
-                color: 'white',
+                background: 'white',
+                color: contextColor,
                 fontSize: compact ? '1.1rem' : '1.25rem',
                 cursor: !input.trim() || loading ? 'not-allowed' : 'pointer',
                 opacity: !input.trim() || loading ? 0.5 : 1,
