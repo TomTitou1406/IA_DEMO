@@ -27,26 +27,59 @@ interface ChantierData {
   statut: string;
   progression: number;
   metadata?: {
-    // Budget & Planning
-    budget_inclut_materiaux?: boolean;
-    disponibilite_heures_semaine?: number;
-    deadline_semaines?: number;
-    // Infos enrichies
+    // Type & Dimensions
+    type_piece?: string;
+    dimensions?: {
+      longueur_m: number;
+      largeur_m: number;
+      hauteur_m: number;
+    };
     surface_m2?: number;
-    style_souhaite?: string;
+    surface_sol_m2?: number;
+    surface_murs_m2?: number;
+    
+    // État actuel
+    sol_actuel?: string;
+    murs_actuels?: string;
     etat_existant?: string;
     elements_a_deposer?: string[];
     elements_a_conserver?: string[];
+    
+    // Travaux prévus
+    travaux_sol?: string;
+    travaux_murs?: string;
+    travaux_plafond?: string;
+    
+    // Équipements & Réseaux
     equipements_souhaites?: string[];
+    style_souhaite?: string;
     reseaux?: {
       electricite_a_refaire: boolean;
       plomberie_a_refaire: boolean;
       ventilation_a_prevoir: boolean;
     };
+    points_techniques?: {
+      nb_prises_a_ajouter?: number;
+      nb_interrupteurs_a_ajouter?: number;
+      nb_points_eau_a_ajouter?: number;
+      nb_evacuations_a_ajouter?: number;
+      nb_points_lumineux_a_ajouter?: number;
+      nb_spots_led?: number;
+    };
+    
+    // Budget & Planning
+    budget_inclut_materiaux?: boolean;
+    disponibilite_heures_semaine?: number;
+    deadline_semaines?: number;
+    
     // Compétences
     competences_ok?: string[];
     competences_faibles?: string[];
     travaux_pro_suggeres?: string[];
+    
+    // Logistique
+    acces_chantier?: string;
+    disponibilite_piece?: string;
     contraintes?: string;
   };
   created_at: string;
@@ -461,23 +494,47 @@ export default function ChantierEditPage() {
                 />
               )}
 
-              {/* Surface + Style sur même ligne */}
+              {/* Type + Dimensions + Surfaces */}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {meta.surface_m2 && (
+                {meta.type_piece && (
                   <CompactItem 
-                    icon="📐" 
-                    label="Surface" 
-                    value={`${meta.surface_m2} m²`}
+                    icon="🏠" 
+                    label="Type" 
+                    value={meta.type_piece}
                   />
                 )}
-                {meta.style_souhaite && (
+                {meta.dimensions && (
                   <CompactItem 
-                    icon="🎨" 
-                    label="Style" 
-                    value={meta.style_souhaite}
+                    icon="📏" 
+                    label="Dimensions" 
+                    value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`}
+                  />
+                )}
+                {(meta.surface_sol_m2 || meta.surface_m2) && (
+                  <CompactItem 
+                    icon="📐" 
+                    label="Surface sol" 
+                    value={`${meta.surface_sol_m2 || meta.surface_m2} m²`}
+                  />
+                )}
+                {meta.surface_murs_m2 && (
+                  <CompactItem 
+                    icon="🧱" 
+                    label="Surface murs" 
+                    value={`${meta.surface_murs_m2} m²`}
                   />
                 )}
               </div>
+              
+              {/* Style */}
+              {meta.style_souhaite && (
+                <CompactItem 
+                  icon="🎨" 
+                  label="Style" 
+                  value={meta.style_souhaite}
+                  fullWidth
+                />
+              )}
 
               {/* Budget + Dispo + Deadline */}
               <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
@@ -505,6 +562,16 @@ export default function ChantierEditPage() {
                 )}
               </div>
 
+              {/* Accès chantier */}
+              {meta.acces_chantier && (
+                <CompactItem 
+                  icon="🚚" 
+                  label="Accès" 
+                  value={meta.acces_chantier}
+                  fullWidth
+                />
+              )}
+
               {/* État existant */}
               {meta.etat_existant && (
                 <CompactItem 
@@ -513,6 +580,53 @@ export default function ChantierEditPage() {
                   value={meta.etat_existant}
                   fullWidth
                 />
+              )}
+
+              {/* Sol et murs actuels */}
+              {(meta.sol_actuel || meta.murs_actuels) && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {meta.sol_actuel && (
+                    <CompactItem 
+                      icon="🟫" 
+                      label="Sol actuel" 
+                      value={meta.sol_actuel}
+                    />
+                  )}
+                  {meta.murs_actuels && (
+                    <CompactItem 
+                      icon="🧱" 
+                      label="Murs actuels" 
+                      value={meta.murs_actuels}
+                    />
+                  )}
+                </div>
+              )}
+              
+              {/* Travaux prévus */}
+              {(meta.travaux_sol || meta.travaux_murs || meta.travaux_plafond) && (
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {meta.travaux_sol && (
+                    <CompactItem 
+                      icon="🔨" 
+                      label="Travaux sol" 
+                      value={meta.travaux_sol}
+                    />
+                  )}
+                  {meta.travaux_murs && (
+                    <CompactItem 
+                      icon="🔨" 
+                      label="Travaux murs" 
+                      value={meta.travaux_murs}
+                    />
+                  )}
+                  {meta.travaux_plafond && (
+                    <CompactItem 
+                      icon="🔨" 
+                      label="Travaux plafond" 
+                      value={meta.travaux_plafond}
+                    />
+                  )}
+                </div>
               )}
 
               {/* Éléments à déposer */}
@@ -579,6 +693,52 @@ export default function ChantierEditPage() {
                   </div>
                 </div>
               )}
+
+              {/* Points techniques */}
+              {meta.points_techniques && (
+                <div style={{
+                  padding: '0.6rem 0.75rem',
+                  background: 'rgba(0,0,0,0.25)',
+                  borderRadius: '8px'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    marginBottom: '0.4rem'
+                  }}>
+                    <span style={{ fontSize: '0.85rem' }}>🔧</span>
+                    <span style={{
+                      fontSize: '0.65rem',
+                      color: 'var(--gray)',
+                      textTransform: 'uppercase',
+                      letterSpacing: '0.3px'
+                    }}>
+                      Points techniques
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                    {meta.points_techniques.nb_prises_a_ajouter !== undefined && meta.points_techniques.nb_prises_a_ajouter > 0 && (
+                      <TechChip icon="🔌" value={`${meta.points_techniques.nb_prises_a_ajouter} prises`} />
+                    )}
+                    {meta.points_techniques.nb_interrupteurs_a_ajouter !== undefined && meta.points_techniques.nb_interrupteurs_a_ajouter > 0 && (
+                      <TechChip icon="💡" value={`${meta.points_techniques.nb_interrupteurs_a_ajouter} inter.`} />
+                    )}
+                    {meta.points_techniques.nb_points_lumineux_a_ajouter !== undefined && meta.points_techniques.nb_points_lumineux_a_ajouter > 0 && (
+                      <TechChip icon="💡" value={`${meta.points_techniques.nb_points_lumineux_a_ajouter} pts lum.`} />
+                    )}
+                    {meta.points_techniques.nb_spots_led !== undefined && meta.points_techniques.nb_spots_led > 0 && (
+                      <TechChip icon="💡" value={`${meta.points_techniques.nb_spots_led} spots`} />
+                    )}
+                    {meta.points_techniques.nb_points_eau_a_ajouter !== undefined && meta.points_techniques.nb_points_eau_a_ajouter > 0 && (
+                      <TechChip icon="💧" value={`${meta.points_techniques.nb_points_eau_a_ajouter} pts eau`} />
+                    )}
+                    {meta.points_techniques.nb_evacuations_a_ajouter !== undefined && meta.points_techniques.nb_evacuations_a_ajouter > 0 && (
+                      <TechChip icon="🚿" value={`${meta.points_techniques.nb_evacuations_a_ajouter} évac.`} />
+                    )}
+                  </div>
+                </div>
+              )}
               
               {/* Compétences OK */}
               {meta.competences_ok && meta.competences_ok.length > 0 && (
@@ -640,6 +800,30 @@ export default function ChantierEditPage() {
 }
 
 // ==================== COMPOSANTS COMPACTS ====================
+function TechChip({ 
+  icon, 
+  value 
+}: { 
+  icon: string; 
+  value: string;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.25rem',
+      padding: '0.2rem 0.5rem',
+      background: 'rgba(59, 130, 246, 0.15)',
+      border: '1px solid rgba(59, 130, 246, 0.3)',
+      borderRadius: '12px',
+      fontSize: '0.7rem',
+      color: '#3b82f6'
+    }}>
+      <span>{icon}</span>
+      <span>{value}</span>
+    </span>
+  );
+}
 
 function CompactItem({ 
   icon, 
