@@ -477,8 +477,8 @@ export default function ChantierEditPage() {
           <div style={{
             padding: '1rem 1.25rem',
             display: 'grid',
-            gridTemplateColumns: 'minmax(280px, 1fr) minmax(250px, auto)',
-            gap: '0.75rem'
+            gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))',
+            gap: '1rem'
           }}>
             
             {/* COLONNE GAUCHE */}
