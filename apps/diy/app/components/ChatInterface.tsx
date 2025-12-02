@@ -1076,13 +1076,13 @@ export default function ChatInterface({
       position: 'relative'
     }}>
       
-      {/* Zone messages */}
-      <div style={{
-        flex: 1,
-        overflowY: 'auto',
-        padding: compact ? '1rem' : '1.5rem',
-        background: 'var(--body-bg)',
-      }}>
+     {/* Zone messages */}
+     <div style={{
+       flex: 1,
+       overflowY: 'auto',
+       padding: compact ? '1rem' : '1.5rem',
+       background: 'rgba(0,0,0,0.85)',
+     }}>>
         
         {/* Message de bienvenue */}
         {displayMessages.length === 0 && !conversationLoading && (
@@ -1304,14 +1304,13 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
-                border: `2px solid ${!voiceMode ? contextColor : 'rgba(255,255,255,0.2)'}`,
-                background: !voiceMode ? contextColor : 'transparent',
-                color: !voiceMode ? 'white' : 'rgba(255,255,255,0.6)',
+                border: '2px solid rgba(255,255,255,0.4)',
+                background: !voiceMode ? 'white' : 'transparent',
+                color: !voiceMode ? contextColor : 'rgba(255,255,255,0.8)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: !voiceMode ? `0 0 15px ${contextColor}50` : 'none'
+                transition: 'all 0.2s'
               }}
             >
               ✍️ Mode texte
@@ -1322,14 +1321,13 @@ export default function ChatInterface({
                 flex: 1,
                 padding: compact ? '0.4rem' : '0.5rem',
                 borderRadius: '8px',
-                border: `2px solid ${voiceMode ? contextColor : 'rgba(255,255,255,0.2)'}`,
-                background: voiceMode ? contextColor : 'transparent',
-                color: voiceMode ? 'white' : 'rgba(255,255,255,0.6)',
+                border: '2px solid rgba(255,255,255,0.4)',
+                background: voiceMode ? 'white' : 'transparent',
+                color: voiceMode ? contextColor : 'rgba(255,255,255,0.8)',
                 fontSize: compact ? '0.75rem' : '0.85rem',
                 fontWeight: '600',
                 cursor: 'pointer',
-                transition: 'all 0.2s',
-                boxShadow: voiceMode ? `0 0 15px ${contextColor}50` : 'none'
+                transition: 'all 0.2s'
               }}
             >
               🎤 Mode vocal
@@ -1418,7 +1416,7 @@ export default function ChatInterface({
               onKeyPress={(e) => e.key === 'Enter' && handleSend()}
               placeholder={activeExpertise?.nom 
                 ? `Question pour l'expert ${activeExpertise.nom}...`
-                : placeholder
+                : 'Écris tes instructions ici...'
               }
               disabled={loading}
               style={{
@@ -1430,8 +1428,8 @@ export default function ChatInterface({
                 outline: 'none',
                 transition: 'border-color 0.2s',
                 color: 'var(--gray-light)',
-                backgroundColor: 'var(--body-bg)'
-              }}
+                backgroundColor: 'var(--body-bg)',
+             }}
               onFocus={(e) => e.target.style.borderColor = 'white'}
               onBlur={(e) => e.target.style.borderColor = 'rgba(255,255,255,0.3)'}
             />
