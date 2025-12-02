@@ -521,6 +521,23 @@ export default function MiseEnOeuvrePage() {
     }
   };
 
+  // Quitter (avec option de sauvegarder)
+  const handleQuit = () => {
+    if (hasChanges) {
+      const choice = window.confirm(
+        'Vous avez des modifications non sauvegardées.\n\nCliquez OK pour sauvegarder en brouillon avant de quitter.\nCliquez Annuler pour quitter sans sauvegarder.'
+      );
+      if (choice) {
+        // Sauvegarder puis quitter
+        saveEtapesBrouillon(travailId, etapes).then(() => {
+          router.push(`/chantiers/${chantierId}/travaux`);
+        });
+        return;
+      }
+    }
+    router.push(`/chantiers/${chantierId}/travaux`);
+  };
+
   // Déplacer une étape
   const handleMove = (index: number, direction: 'up' | 'down') => {
     const newEtapes = [...etapes];
@@ -828,39 +845,59 @@ export default function MiseEnOeuvrePage() {
             )}
 
             {/* Actions - Footer sticky */}
-            <div style={{
-              display: 'flex',
-              gap: '0.75rem',
-              flexWrap: 'wrap',
-              justifyContent: 'space-between',
-              alignItems: 'center',
-              padding: '1rem 1.5rem',
-              background: 'rgba(0, 0, 0, 0.9)',
-              backdropFilter: 'blur(10px)',
-              WebkitBackdropFilter: 'blur(10px)',
-              borderRadius: '12px',
-              border: '1px solid rgba(255,255,255,0.1)',
-              position: 'sticky',
-              bottom: '1rem',
-              marginTop: '1rem'
-            }}>
-              <button
-                onClick={handleSaveBrouillon}
-                disabled={isSaving || !hasChanges}
-                style={{
-                  padding: '0.6rem 1.25rem',
-                  background: 'transparent',
-                  border: '1px solid var(--blue)',
-                  borderRadius: '8px',
-                  color: 'var(--blue)',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  cursor: isSaving || !hasChanges ? 'not-allowed' : 'pointer',
-                  opacity: isSaving || !hasChanges ? 0.5 : 1
-                }}
-              >
-                💾 Sauvegarder brouillon
-              </button>
+              <div style={{
+                position: 'fixed',
+                bottom: 0,
+                left: 0,
+                right: 0,
+                background: 'rgba(0, 0, 0, 0.95)',
+                backdropFilter: 'blur(10px)',
+                WebkitBackdropFilter: 'blur(10px)',
+                borderTop: '1px solid rgba(255,255,255,0.1)',
+                padding: '1rem'
+              }}>
+                <div style={{
+                  maxWidth: '900px',
+                  margin: '0 auto',
+                  display: 'flex',
+                  gap: '0.75rem'
+                }}>
+                  <button
+                    onClick={handleQuit}
+                    style={{
+                      flex: 1,
+                      padding: '0.875rem',
+                      background: 'rgba(255,255,255,0.05)',
+                      border: '1px solid rgba(255,255,255,0.15)',
+                      borderRadius: '10px',
+                      color: 'var(--gray-light)',
+                      fontSize: '0.95rem',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    onClick={handleValidate}
+                    disabled={isSaving || etapes.length === 0}
+                    style={{
+                      flex: 1,
+                      padding: '0.875rem',
+                      background: etapes.length === 0 ? 'rgba(255,255,255,0.1)' : 'var(--green)',
+                      border: 'none',
+                      borderRadius: '10px',
+                      color: 'white',
+                      fontSize: '0.95rem',
+                      fontWeight: '700',
+                      cursor: etapes.length === 0 ? 'not-allowed' : 'pointer',
+                      opacity: isSaving ? 0.7 : 1
+                    }}
+                  >
+                    {isSaving ? 'Sauvegarde...' : `✓ Valider ${etapes.length} étapes`}
+                  </button>
+                </div>
+              </div>
               
               <button
                 onClick={handleValidate}
@@ -884,8 +921,8 @@ export default function MiseEnOeuvrePage() {
           </>
         )}
 
-        {/* Retour */}
-        <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+       {/* Retour - avec padding pour footer fixe */}
+        <div style={{ marginTop: '2rem', paddingBottom: '5rem', textAlign: 'center' }}>
           <Link
             href={`/chantiers/${chantierId}/travaux`}
             style={{
