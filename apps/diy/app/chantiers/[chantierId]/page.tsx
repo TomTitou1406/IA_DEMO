@@ -552,8 +552,7 @@ export default function ChantierEditPage() {
                   value={meta.contraintes || 'Aucune'}
                 />
               </div>
-              )}
-
+              
               {/* État existant */}
               {meta.etat_existant && (
                 <CompactItem 
