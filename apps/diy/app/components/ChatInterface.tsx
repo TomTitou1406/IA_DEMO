@@ -1079,7 +1079,7 @@ export default function ChatInterface({
         flex: 1,
         overflowY: 'auto',
         padding: compact ? '1rem' : '1.5rem',
-        background: '#f8f9fa'
+        background: 'var(--gray-dark)',
       }}>
         
         {/* Message de bienvenue */}
@@ -1143,8 +1143,8 @@ export default function ChatInterface({
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  background: message.role === 'user' ? contextColor : '#2a2a2a',
-                  color: message.role === 'user' ? 'white' : '#e5e7eb',
+                  background: message.role === 'user' ? contextColor : 'white',
+                  color: message.role === 'user' ? 'white' : '#1f2937',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
                   lineHeight: '1.5',
