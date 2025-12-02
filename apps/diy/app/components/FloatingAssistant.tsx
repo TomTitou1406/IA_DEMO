@@ -175,7 +175,7 @@ export default function FloatingAssistant() {
             width: '80px',
             height: '80px',
             borderRadius: '50%',
-            background: 'var(--white)',
+            background: 'var(--gray-dark)',
             border: `3px solid ${contextColor}`,
             cursor: 'pointer',
             boxShadow: '0 4px 20px rgba(0,0,0,0.15)',
