@@ -477,7 +477,7 @@ export default function ChantierEditPage() {
           <div style={{
             padding: '1rem 1.25rem',
             display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gridTemplateColumns: 'minmax(280px, 1fr) minmax(250px, auto)',
             gap: '0.75rem'
           }}>
             
@@ -528,32 +528,30 @@ export default function ChantierEditPage() {
                 {meta.dimensions && (
                   <CompactItem icon="📏" label="Dimensions" value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`} />
                 )}
-                {(meta.surface_sol_m2 || meta.surface_m2) && (
-                  <CompactItem icon="📐" label="Surface sol" value={`${meta.surface_sol_m2 || meta.surface_m2} m²`} />
-                )}
-                {meta.surface_murs_m2 && (
-                  <CompactItem icon="🧱" label="Surface murs" value={`${meta.surface_murs_m2} m²`} />
+                {(meta.surface_sol_m2 || meta.surface_m2 || meta.surface_murs_m2) && (
+                  <CompactItem 
+                    icon="📐" 
+                    label="Surfaces sol / murs" 
+                    value={`${meta.surface_sol_m2 || meta.surface_m2 || '?'} m² / ${meta.surface_murs_m2 || '?'} m²`}
+                  />
                 )}
               </div>
               
-              {/* Accès + Contraintes sur même ligne */}
-              {(meta.acces_chantier || meta.contraintes) && (
-                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                  {meta.acces_chantier && (
-                    <CompactItem 
-                      icon="🚚" 
-                      label="Accès" 
-                      value={meta.acces_chantier}
-                    />
-                  )}
-                  {meta.contraintes && (
-                    <CompactItem 
-                      icon="📝" 
-                      label="Contraintes" 
-                      value={meta.contraintes}
-                    />
-                  )}
-                </div>
+              {/* Accès + Contraintes sur même ligne - Toujours affichés */}
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                {meta.acces_chantier && (
+                  <CompactItem 
+                    icon="🚚" 
+                    label="Accès" 
+                    value={meta.acces_chantier}
+                  />
+                )}
+                <CompactItem 
+                  icon="📝" 
+                  label="Contraintes" 
+                  value={meta.contraintes || 'Aucune'}
+                />
+              </div>
               )}
 
               {/* État existant */}
