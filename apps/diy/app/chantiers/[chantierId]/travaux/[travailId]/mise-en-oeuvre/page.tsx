@@ -408,11 +408,20 @@ export default function MiseEnOeuvrePage() {
 
   // Écouter les actions de l'assistant IA
   useEffect(() => {
-    const handleEtapesAction = (event: CustomEvent<EtapesAction>) => {
+    const handleEtapesAction = async (event: CustomEvent<EtapesAction>) => {
       console.log('🎯 Action étapes reçue:', event.detail);
       const newEtapes = applyEtapesAction(etapes, event.detail);
       setEtapes(newEtapes);
       setHasChanges(true);
+      
+      // Sauvegarder automatiquement en brouillon
+      const saveResult = await saveEtapesBrouillon(travailId, newEtapes);
+      if (saveResult.success) {
+        console.log('✅ Étapes mises à jour en BDD');
+        setHasChanges(false);
+        // Rafraîchir le contexte pour que l'assistant voie les changements
+        window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
+      }
     };
 
     window.addEventListener('etapesAction', handleEtapesAction as EventListener);
@@ -420,7 +429,7 @@ export default function MiseEnOeuvrePage() {
     return () => {
       window.removeEventListener('etapesAction', handleEtapesAction as EventListener);
     };
-  }, [etapes]);
+  }, [etapes, travailId]);
 
   // Charger les infos du lot et du chantier
   useEffect(() => {
@@ -489,12 +498,24 @@ export default function MiseEnOeuvrePage() {
         throw new Error(errData.error || 'Erreur génération');
       }
       const data = await res.json();
-      setEtapes(data.etapes || []);
+      const generatedEtapes = data.etapes || [];
+      
+      setEtapes(generatedEtapes);
       setViewMode('preview');
       setHasChanges(true);
       
-      // Rafraîchir le contexte de l'assistant pour qu'il voie les nouvelles étapes
+      // Sauvegarder automatiquement en brouillon pour que l'assistant les voie
+      if (generatedEtapes.length > 0) {
+        const saveResult = await saveEtapesBrouillon(travailId, generatedEtapes);
+        if (saveResult.success) {
+          console.log('✅ Étapes sauvegardées en brouillon');
+          setHasChanges(false); // Plus de changements non sauvegardés
+        }
+      }
+      
+      // Rafraîchir le contexte de l'assistant
       window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
+      
     } catch (err) {
       console.error('Erreur génération:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
