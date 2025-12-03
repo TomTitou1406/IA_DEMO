@@ -422,8 +422,11 @@ export default function MiseEnOeuvrePage() {
         if (saveResult.success) {
           console.log('✅ Étapes mises à jour en BDD');
           setHasChanges(false);
-          // Rafraîchir le contexte pour que l'assistant voie les changements
+          // Rafraîchir le contexte de l'assistant
           window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
+          
+          // Réinitialiser la conversation de l'assistant (nouveau contexte = nouvelle discussion)
+          window.dispatchEvent(new CustomEvent('resetAssistantChat'));
         }
       })();
     };
