@@ -29,6 +29,7 @@ import RecapModal, { type RecapData } from './RecapModal';
 import { loadContextForPath } from '../lib/services/contextLoaderService';
 import { usePathname } from 'next/navigation';
 import { extractPhasageActions, dispatchPhasageAction } from '../lib/services/phasageActions';
+import { extractEtapesActions, dispatchEtapesAction } from '../lib/services/etapesActions';
 import { detectChantierType, getChantierTypeConfig, formatTypeConfigForAI, type Phase1Synthese } from '../lib/services/chantierTypeService';
 
 // ==================== TYPES ====================
@@ -684,13 +685,28 @@ export default function ChatInterface({
       // Utiliser le contenu nettoyé
       const finalContent = hasActions ? actionCleanContent : cleanContent;
       
-      // Dispatcher toutes les actions si présentes
+      // Dispatcher toutes les actions PHASAGE si présentes
       if (hasActions && actions.length > 0) {
         console.log(`🚀 Dispatch de ${actions.length} action(s) phasage`);
         actions.forEach((action, index) => {
-          // Petit délai entre chaque action pour éviter les conflits de state
           setTimeout(() => {
             dispatchPhasageAction(action);
+          }, index * 100);
+        });
+      }
+
+      // Vérifier si la réponse contient des actions ÉTAPES
+      const { hasActions: hasEtapesActions, actions: etapesActions, cleanContent: etapesCleanContent } = extractEtapesActions(actionCleanContent);
+      
+      // Mettre à jour le contenu final si actions étapes trouvées
+      const finalContentWithEtapes = hasEtapesActions ? etapesCleanContent : finalContent;
+
+      // Dispatcher toutes les actions ÉTAPES si présentes
+      if (hasEtapesActions && etapesActions.length > 0) {
+        console.log(`🔧 Dispatch de ${etapesActions.length} action(s) étapes`);
+        etapesActions.forEach((action, index) => {
+          setTimeout(() => {
+            dispatchEtapesAction(action);
           }, index * 100);
         });
       }
@@ -698,7 +714,7 @@ export default function ChatInterface({
       // Message assistant (sans le JSON)
       const assistantMessage: Message = {
         role: 'assistant',
-        content: finalContent,
+        content: hasEtapesActions ? finalContentWithEtapes : finalContent,
         timestamp: new Date().toISOString(),
         expertise_code: activeExpertise?.code,
         expertise_nom: response.expertiseNom || activeExpertise?.nom,
