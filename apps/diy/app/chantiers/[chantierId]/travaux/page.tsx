@@ -237,9 +237,10 @@ export default function TravauxPage() {
               alignItems: 'flex-start'
             }}>
 
-              {/* Bouton VOIR LES ÉTAPES (pour en_cours ET à_venir AVEC étapes) */}
+              {/* Bouton VOIR LES ÉTAPES (seulement si étapes VALIDÉES, pas brouillon) */}
               {(travail.statut === 'en_cours' || travail.statut === 'à_venir') && 
-               travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && (
+               travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && 
+               (!travail.etapes_brouillon || travail.etapes_brouillon === 0) && (
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
