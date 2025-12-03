@@ -236,14 +236,14 @@ export default function TravauxPage() {
               alignItems: 'flex-start'
             }}>
 
-              {/* Bouton X ÉTAPES (pour tous sauf annulés) */}
-              {travail.etapes?.etapes && travail.etapes.etapes.length > 0 && (
+              {/* Bouton VOIR LES ÉTAPES (seulement pour en_cours avec étapes) */}
+              {travail.statut === 'en_cours' && travail.nombre_etapes && travail.nombre_etapes > 0 && (
                 <CardButton
                   variant="primary"
-                  color="var(--blue)"
+                  color="var(--orange)"
                   icon="🎯"
                   label="Voir les étapes"
-                  count={travail.etapes?.etapes?.length || 0}
+                  count={travail.nombre_etapes}
                   href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
                 />
               )}
