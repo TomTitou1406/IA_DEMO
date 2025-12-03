@@ -540,9 +540,13 @@ export default function MiseEnOeuvrePage() {
     }
   };
 
-  // Régénérer les étapes
+// Régénérer les étapes
   const handleRegenerate = async () => {
     if (!confirm('Régénérer les étapes ? Les modifications actuelles seront perdues.')) return;
+    
+    // Reset la conversation avant de régénérer
+    window.dispatchEvent(new CustomEvent('resetAssistantChat'));
+    
     await handleGenerate();
   };
 
@@ -563,6 +567,16 @@ export default function MiseEnOeuvrePage() {
 
   // Valider les étapes
   const handleValidate = async () => {
+    // Vérifier les règles avant validation
+    const { warnings } = verifierReglesEtapes(etapes);
+    
+    if (warnings.length > 0) {
+      const continuer = confirm(
+        `⚠️ Attention, certaines règles ne sont pas respectées :\n\n${warnings.join('\n')}\n\nValider quand même ?`
+      );
+      if (!continuer) return;
+    }
+    
     if (!confirm('Valider ces étapes ? Le lot passera en statut "à venir".')) return;
     
     setIsSaving(true);
@@ -609,6 +623,70 @@ export default function MiseEnOeuvrePage() {
     router.push(`/chantiers/${chantierId}/travaux`);
   };
 
+  // Vérifier les règles métier sur les étapes
+  const verifierReglesEtapes = (etapesToCheck: EtapeGeneree[]): { valid: boolean; warnings: string[] } => {
+    const warnings: string[] = [];
+    
+    if (etapesToCheck.length === 0) return { valid: true, warnings };
+    
+    const titresLower = etapesToCheck.map(e => e.titre.toLowerCase());
+    const premiereTitre = titresLower[0];
+    const derniereTitre = titresLower[titresLower.length - 1];
+    
+    // Règle : Préparation doit être en premier
+    const indexPreparation = titresLower.findIndex(t => 
+      t.includes('préparation') || t.includes('preparation') || t.includes('protection')
+    );
+    if (indexPreparation > 0) {
+      warnings.push(`⚠️ L'étape de préparation "${etapesToCheck[indexPreparation].titre}" devrait être en premier`);
+    }
+    
+    // Règle : Nettoyage/Finitions doit être en dernier
+    const indexNettoyage = titresLower.findIndex(t => 
+      t.includes('nettoyage') || t.includes('finition') || t.includes('remise en état')
+    );
+    if (indexNettoyage !== -1 && indexNettoyage < etapesToCheck.length - 1) {
+      warnings.push(`⚠️ L'étape "${etapesToCheck[indexNettoyage].titre}" devrait être en dernier`);
+    }
+    
+    // Règle : Vérification/Test avant nettoyage
+    const indexVerification = titresLower.findIndex(t => 
+      t.includes('vérification') || t.includes('test') || t.includes('contrôle')
+    );
+    if (indexVerification !== -1 && indexNettoyage !== -1 && indexVerification > indexNettoyage) {
+      warnings.push(`⚠️ L'étape de vérification devrait être avant le nettoyage`);
+    }
+    
+    // Règles spécifiques selon expertise (si disponible)
+    const expertise = travail?.code_expertise?.toLowerCase();
+    
+    if (expertise === 'plaquiste') {
+      const indexOssature = titresLower.findIndex(t => t.includes('ossature') || t.includes('rail'));
+      const indexPlaques = titresLower.findIndex(t => t.includes('plaque') || t.includes('pose'));
+      if (indexOssature !== -1 && indexPlaques !== -1 && indexOssature > indexPlaques) {
+        warnings.push(`⚠️ L'ossature doit être posée AVANT les plaques`);
+      }
+    }
+    
+    if (expertise === 'carreleur') {
+      const indexCalepinage = titresLower.findIndex(t => t.includes('calepinage') || t.includes('traçage'));
+      const indexPose = titresLower.findIndex(t => t.includes('pose') && !t.includes('dépose'));
+      if (indexCalepinage !== -1 && indexPose !== -1 && indexCalepinage > indexPose) {
+        warnings.push(`⚠️ Le calepinage doit être fait AVANT la pose`);
+      }
+    }
+    
+    if (expertise === 'peintre') {
+      const indexSousCouche = titresLower.findIndex(t => t.includes('sous-couche') || t.includes('primaire'));
+      const indexPeinture = titresLower.findIndex(t => t.includes('peinture') && !t.includes('sous'));
+      if (indexSousCouche !== -1 && indexPeinture !== -1 && indexSousCouche > indexPeinture) {
+        warnings.push(`⚠️ La sous-couche doit être appliquée AVANT la peinture de finition`);
+      }
+    }
+    
+    return { valid: warnings.length === 0, warnings };
+  };
+
   // Déplacer une étape
   const handleMove = async (index: number, direction: 'up' | 'down') => {
     const newEtapes = [...etapes];
@@ -621,10 +699,19 @@ export default function MiseEnOeuvrePage() {
     // Renuméroter
     newEtapes.forEach((e, i) => { e.numero = i + 1; });
     
+    // Vérifier les règles
+    const { warnings } = verifierReglesEtapes(newEtapes);
+    if (warnings.length > 0) {
+      const continuer = confirm(
+        `Attention, ce déplacement peut poser problème :\n\n${warnings.join('\n')}\n\nContinuer quand même ?`
+      );
+      if (!continuer) return;
+    }
+    
     setEtapes(newEtapes);
     setHasChanges(true);
     
-    // Sauvegarder en brouillon et rafraîchir le contexte de l'assistant
+    // Sauvegarder en brouillon et rafraîchir le contexte
     await saveEtapesBrouillon(travailId, newEtapes);
     window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
   };
