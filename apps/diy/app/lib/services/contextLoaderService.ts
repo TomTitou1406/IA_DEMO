@@ -721,45 +721,72 @@ async function loadMiseEnOeuvreContext(chantierId: string, travailId: string): P
     // Charger le chantier
     const { data: chantier } = await supabase
       .from('chantiers')
-      .select('id, titre')
+      .select('id, titre, metadata')
       .eq('id', chantierId)
       .single();
 
     // Charger le lot courant
     const { data: lot } = await supabase
       .from('travaux')
-      .select('id, titre, description, code_expertise, duree_estimee_heures')
+      .select('id, titre, description, code_expertise, duree_estimee_heures, points_attention')
       .eq('id', travailId)
       .single();
 
     // Charger les étapes existantes (brouillon ou validées)
     const { data: etapes } = await supabase
       .from('etapes')
-      .select('id, numero, titre, statut, duree_estimee_minutes')
+      .select('id, numero, titre, statut, duree_estimee_minutes, difficulte')
       .eq('travail_id', travailId)
       .order('numero', { ascending: true });
+
+    // Charger le prompt depuis prompts_library
+    const { data: promptData } = await supabase
+      .from('prompts_library')
+      .select('prompt_text, temperature, max_tokens, model')
+      .eq('code', 'etapes_assistant_actions')
+      .eq('est_actif', true)
+      .single();
 
     const nbEtapes = etapes?.length || 0;
     const expertiseCode = lot?.code_expertise || 'generaliste';
     const expertiseIcon = getExpertiseIcon(expertiseCode);
+    const meta = chantier?.metadata || {};
 
-    // Formater les étapes pour le contexte
-    const etapesFormatted = (etapes || []).map((e: any) => {
-      return `${e.numero}. ${e.titre} (${e.duree_estimee_minutes || 0}min)`;
-    }).join('\n   ');
+    // Formater les infos du chantier (compact)
+    let chantierInfo = `🏗️ CHANTIER : ${chantier?.titre || 'Chantier'}`;
+    if (meta.surface_m2) chantierInfo += ` (${meta.surface_m2} m²)`;
+
+    // Formater les infos du lot
+    let lotInfo = `\n🔧 LOT : ${lot?.titre || 'Lot'}`;
+    lotInfo += `\n   ${lot?.description || ''}`;
+    lotInfo += `\n   Expertise : ${expertiseCode}`;
+    lotInfo += `\n   Durée estimée : ${lot?.duree_estimee_heures || 0}h`;
+    if (lot?.points_attention) {
+      lotInfo += `\n   ⚠️ ${lot.points_attention}`;
+    }
+
+    // Formater les étapes actuelles
+    let etapesInfo = '';
+    if (nbEtapes > 0) {
+      const etapesFormatted = (etapes || []).map((e: any) => {
+        const duree = e.duree_estimee_minutes ? `${e.duree_estimee_minutes}min` : '';
+        const diff = e.difficulte ? `[${e.difficulte}]` : '';
+        return `   ${e.numero}. ${e.titre} ${duree} ${diff}`;
+      }).join('\n');
+      etapesInfo = `\n📋 ÉTAPES ACTUELLES (${nbEtapes}) :\n${etapesFormatted}`;
+    } else {
+      etapesInfo = '\n📋 ÉTAPES ACTUELLES (0) :\n   Aucune étape générée';
+    }
+
+    // Construire le contexte : données + prompt instructions
+    const promptInstructions = promptData?.prompt_text || getDefaultMiseEnOeuvrePrompt();
 
     const contextForAI = `
-🏗️ CHANTIER : ${chantier?.titre || 'Chantier'}
+${chantierInfo}
+${lotInfo}
+${etapesInfo}
 
-🔧 LOT EN COURS DE MISE EN ŒUVRE : ${lot?.titre || 'Lot'}
-   ${lot?.description || ''}
-   Expertise : ${expertiseCode}
-   Durée estimée : ${lot?.duree_estimee_heures || 0}h
-
-📋 ÉTAPES ACTUELLES (${nbEtapes}) :
-   ${etapesFormatted || 'Aucune étape générée'}
-
-TON RÔLE : Tu aides le bricoleur à définir les étapes de ce lot. Tu peux ajouter, modifier, supprimer ou réorganiser les étapes. Tu réponds avec des actions JSON pour modifier les étapes en temps réel.
+${promptInstructions}
 `.trim();
 
     return {
@@ -785,7 +812,14 @@ TON RÔLE : Tu aides le bricoleur à définir les étapes de ce lot. Tu peux ajo
 }
 
 /**
- * Prompt par défaut si non trouvé en BDD
+ * Prompt par défaut si non trouvé en BDD pour meo étapes
+ */
+function getDefaultMiseEnOeuvrePrompt(): string {
+  return `Tu aides le bricoleur à définir les étapes de ce lot. Tu peux ajouter, modifier, supprimer ou réorganiser les étapes.`;
+}
+
+/**
+ * Prompt par défaut si non trouvé en BDD pour phasage
  */
 function getDefaultPhasagePrompt(): string {
   return `TU ES L'ASSISTANT PHASAGE. Tu modifies les lots quand le bricoleur le demande.
