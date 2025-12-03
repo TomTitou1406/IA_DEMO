@@ -561,7 +561,7 @@ export default function MiseEnOeuvrePage() {
       if (!result.success) throw new Error(result.error);
       
       // Rediriger vers la page du lot
-      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes`);
+      router.push(`/chantiers/${chantierId}/travaux`);
     } catch (err) {
       alert('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
     } finally {
