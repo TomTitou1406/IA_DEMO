@@ -478,23 +478,23 @@ export default function MiseEnOeuvrePage() {
   const handleGenerate = async () => {
     setViewMode('generating');
     setError(null);
-
     try {
       const res = await fetch('/api/etapes/generate', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ travailId })
       });
-
       if (!res.ok) {
         const errData = await res.json();
         throw new Error(errData.error || 'Erreur génération');
       }
-
       const data = await res.json();
       setEtapes(data.etapes || []);
       setViewMode('preview');
       setHasChanges(true);
+      
+      // Rafraîchir le contexte de l'assistant pour qu'il voie les nouvelles étapes
+      window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
     } catch (err) {
       console.error('Erreur génération:', err);
       setError(err instanceof Error ? err.message : 'Erreur inconnue');
