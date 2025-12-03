@@ -31,7 +31,8 @@ interface Travail {
   duree_estimee_heures?: number;
   nombre_etapes?: number;        
   etapes_terminees?: number;     
-  etapes_en_cours?: number;       
+  etapes_en_cours?: number;
+  etapes_brouillon?: number;
   etapes_bloquees?: number;       
   etapes?: {
     etapes: Array<{
@@ -307,8 +308,22 @@ export default function TravauxPage() {
                 />
               )}
 
-              {/* Bouton METTRE EN ŒUVRE pour À VENIR SANS étapes */}
-              {travail.statut === 'à_venir' && (!travail.nombre_etapes || travail.nombre_etapes === 0) && (
+              {/* Bouton REPRENDRE MISE EN ŒUVRE (si étapes brouillon) */}
+              {travail.etapes_brouillon && travail.etapes_brouillon > 0 && (
+                <CardButton
+                  variant="primary"
+                  color="var(--orange)"
+                  icon="🔧"
+                  label="Reprendre mise en œuvre"
+                  count={travail.etapes_brouillon}
+                  onClick={() => {
+                    router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`);
+                  }}
+                />
+              )}
+
+              {/* Bouton METTRE EN ŒUVRE pour À VENIR SANS étapes ET sans brouillon */}
+              {travail.statut === 'à_venir' && (!travail.nombre_etapes || travail.nombre_etapes === 0) && (!travail.etapes_brouillon || travail.etapes_brouillon === 0) && (
                 <CardButton
                   variant="primary"
                   color="var(--green)"
