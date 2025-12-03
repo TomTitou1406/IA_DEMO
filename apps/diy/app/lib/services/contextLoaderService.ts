@@ -749,12 +749,26 @@ async function loadMiseEnOeuvreContext(chantierId: string, travailId: string): P
 
     // Charger les règles d'étapes (générales + spécifiques à l'expertise)
     const expertiseCode = lot?.code_expertise || 'generaliste';
-    const { data: regles } = await supabase
+    
+    // Charger les règles générales (code_expertise = NULL)
+    const { data: reglesGenerales } = await supabase
       .from('regles_etapes')
-      .select('code, titre, type_regle, message_ia')
+      .select('code, titre, type_regle, message_ia, priorite')
       .eq('est_active', true)
-      .or(`code_expertise.is.null,code_expertise.eq.${expertiseCode}`)
-      .order('priorite', { ascending: true });
+      .is('code_expertise', null);
+
+    // Charger les règles spécifiques à l'expertise
+    const { data: reglesExpertise } = await supabase
+      .from('regles_etapes')
+      .select('code, titre, type_regle, message_ia, priorite')
+      .eq('est_active', true)
+      .eq('code_expertise', expertiseCode);
+
+    // Fusionner et trier par priorité
+    const regles = [...(reglesGenerales || []), ...(reglesExpertise || [])]
+      .sort((a, b) => (a.priorite || 100) - (b.priorite || 100));
+    
+    console.log(`📏 ${regles.length} règles chargées pour expertise: ${expertiseCode}`);
 
     const nbEtapes = etapes?.length || 0;
     const expertiseIcon = getExpertiseIcon(expertiseCode);
