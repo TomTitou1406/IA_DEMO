@@ -438,6 +438,16 @@ export default function MiseEnOeuvrePage() {
     };
   }, [etapes, travailId]);
 
+  // Reset la conversation de l'assistant quand on arrive sur un nouveau lot
+  useEffect(() => {
+    // Reset la conversation
+    window.dispatchEvent(new CustomEvent('resetAssistantChat'));
+    // Rafraîchir le contexte
+    window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
+    
+    console.log('🔄 Reset conversation pour nouveau lot:', travailId);
+  }, [travailId]);
+
   // Charger les infos du lot et du chantier
   useEffect(() => {
     async function loadData() {
@@ -600,7 +610,7 @@ export default function MiseEnOeuvrePage() {
   };
 
   // Déplacer une étape
-  const handleMove = (index: number, direction: 'up' | 'down') => {
+  const handleMove = async (index: number, direction: 'up' | 'down') => {
     const newEtapes = [...etapes];
     const targetIndex = direction === 'up' ? index - 1 : index + 1;
     
@@ -613,10 +623,14 @@ export default function MiseEnOeuvrePage() {
     
     setEtapes(newEtapes);
     setHasChanges(true);
+    
+    // Sauvegarder en brouillon et rafraîchir le contexte de l'assistant
+    await saveEtapesBrouillon(travailId, newEtapes);
+    window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
   };
 
   // Supprimer une étape
-  const handleDelete = (index: number) => {
+  const handleDelete = async (index: number) => {
     if (!confirm(`Supprimer l'étape "${etapes[index].titre}" ?`)) return;
     
     const newEtapes = etapes.filter((_, i) => i !== index);
@@ -624,6 +638,10 @@ export default function MiseEnOeuvrePage() {
     
     setEtapes(newEtapes);
     setHasChanges(true);
+    
+    // Sauvegarder en brouillon et rafraîchir le contexte de l'assistant
+    await saveEtapesBrouillon(travailId, newEtapes);
+    window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
   };
 
   // Calculer les totaux
