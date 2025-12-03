@@ -43,6 +43,13 @@ export async function getTravauxByChantier(chantierId: string) {
           .eq('travail_id', travail.id)
           .eq('statut', 'bloqué');
 
+        // Compter les étapes brouillon
+        const { count: etapesBrouillon } = await supabase
+          .from('etapes')
+          .select('*', { count: 'exact', head: true })
+          .eq('travail_id', travail.id)
+          .eq('statut', 'brouillon');
+
         // Calculer la progression auto
         const progressionAuto = totalEtapes && totalEtapes > 0
           ? Math.round(((etapesTerminees || 0) / totalEtapes) * 100)
@@ -54,6 +61,7 @@ export async function getTravauxByChantier(chantierId: string) {
           etapes_terminees: etapesTerminees || 0,
           etapes_en_cours: etapesEnCours || 0,
           etapes_bloquees: etapesBloquees || 0,
+          etapes_brouillon: etapesBrouillon || 0,
           progression: progressionAuto
         };
       })
