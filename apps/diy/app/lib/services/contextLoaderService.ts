@@ -747,8 +747,16 @@ async function loadMiseEnOeuvreContext(chantierId: string, travailId: string): P
       .eq('est_actif', true)
       .single();
 
-    const nbEtapes = etapes?.length || 0;
+    // Charger les règles d'étapes (générales + spécifiques à l'expertise)
     const expertiseCode = lot?.code_expertise || 'generaliste';
+    const { data: regles } = await supabase
+      .from('regles_etapes')
+      .select('code, titre, type_regle, message_ia')
+      .eq('est_active', true)
+      .or(`code_expertise.is.null,code_expertise.eq.${expertiseCode}`)
+      .order('priorite', { ascending: true });
+
+    const nbEtapes = etapes?.length || 0;
     const expertiseIcon = getExpertiseIcon(expertiseCode);
     const meta = chantier?.metadata || {};
 
@@ -778,13 +786,53 @@ async function loadMiseEnOeuvreContext(chantierId: string, travailId: string): P
       etapesInfo = '\n📋 ÉTAPES ACTUELLES (0) :\n   Aucune étape générée';
     }
 
-    // Construire le contexte : données + prompt instructions
+    // Formater les règles métier
+    let reglesInfo = '';
+    if (regles && regles.length > 0) {
+      const reglesSecurite = regles.filter((r: any) => r.type_regle === 'securite');
+      const reglesOrdre = regles.filter((r: any) => r.type_regle === 'ordre');
+      const reglesInterdit = regles.filter((r: any) => r.type_regle === 'interdit');
+      const reglesConseil = regles.filter((r: any) => r.type_regle === 'conseil');
+
+      reglesInfo = '\n\n📏 RÈGLES MÉTIER À RESPECTER :';
+      
+      if (reglesSecurite.length > 0) {
+        reglesInfo += '\n🔴 SÉCURITÉ (obligatoire) :';
+        reglesSecurite.forEach((r: any) => {
+          reglesInfo += `\n   • ${r.message_ia}`;
+        });
+      }
+      
+      if (reglesInterdit.length > 0) {
+        reglesInfo += '\n⛔ INTERDICTIONS :';
+        reglesInterdit.forEach((r: any) => {
+          reglesInfo += `\n   • ${r.message_ia}`;
+        });
+      }
+      
+      if (reglesOrdre.length > 0) {
+        reglesInfo += '\n🔢 ORDRE DES ÉTAPES :';
+        reglesOrdre.forEach((r: any) => {
+          reglesInfo += `\n   • ${r.message_ia}`;
+        });
+      }
+      
+      if (reglesConseil.length > 0) {
+        reglesInfo += '\n💡 CONSEILS PRO :';
+        reglesConseil.forEach((r: any) => {
+          reglesInfo += `\n   • ${r.message_ia}`;
+        });
+      }
+    }
+
+    // Construire le contexte : données + règles + prompt instructions
     const promptInstructions = promptData?.prompt_text || getDefaultMiseEnOeuvrePrompt();
 
     const contextForAI = `
 ${chantierInfo}
 ${lotInfo}
 ${etapesInfo}
+${reglesInfo}
 
 ${promptInstructions}
 `.trim();
