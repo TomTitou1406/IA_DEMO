@@ -236,8 +236,9 @@ export default function TravauxPage() {
               alignItems: 'flex-start'
             }}>
 
-              {/* Bouton VOIR LES ÉTAPES (pour en_cours ET à_venir avec étapes) */}
-              {(travail.statut === 'en_cours' || travail.statut === 'à_venir') && travail.nombre_etapes && travail.nombre_etapes > 0 && (
+              {/* Bouton VOIR LES ÉTAPES (pour en_cours ET à_venir AVEC étapes) */}
+              {(travail.statut === 'en_cours' || travail.statut === 'à_venir') && 
+               travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && (
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
@@ -270,7 +271,7 @@ export default function TravauxPage() {
                 />
               )}
               
-              {/* Bouton TOUT TERMINER pour EN COURS - REMPLACE AJUSTER */}
+              {/* Bouton TOUT TERMINER pour EN COURS */}
               {travail.statut === 'en_cours' && (
                 <CardButton
                   variant="secondary"
@@ -283,9 +284,7 @@ export default function TravauxPage() {
                       title: 'Tout terminer ?',
                       message: `Toutes les étapes et tâches de "${travail.titre}" seront marquées comme terminées.`,
                       onConfirm: async () => {
-                        // 1. Terminer toutes les étapes (et leurs tâches)
                         await terminerToutesLesEtapes(travail.id);
-                        // 2. Terminer le travail
                         await terminerTravail(travail.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
                         window.location.reload();
@@ -303,13 +302,12 @@ export default function TravauxPage() {
                   icon="🔓"
                   label="Débloquer"
                   onClick={() => {
-                    // TODO: Implémenter debloquerTravail()
                     console.log('Débloquer travail:', travail.id);
                   }}
                 />
               )}
 
-              {/* Bouton METTRE EN ŒUVRE pour À VENIR sans étapes */}
+              {/* Bouton METTRE EN ŒUVRE pour À VENIR SANS étapes */}
               {travail.statut === 'à_venir' && (!travail.nombre_etapes || travail.nombre_etapes === 0) && (
                 <CardButton
                   variant="primary"
@@ -322,8 +320,8 @@ export default function TravauxPage() {
                 />
               )}
 
-              {/* Bouton COMMENCER pour À VENIR (seulement si a des étapes) */}
-              {travail.statut === 'à_venir' && travail.nombre_etapes && travail.nombre_etapes > 0 && (
+              {/* Bouton COMMENCER pour À VENIR AVEC étapes */}
+              {travail.statut === 'à_venir' && travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && (
                 <CardButton
                   variant="primary"
                   color="var(--purple)"
@@ -336,6 +334,27 @@ export default function TravauxPage() {
                       message: `"${travail.titre}" passera en cours et vous pourrez suivre sa progression.`,
                       onConfirm: async () => {
                         await commencerTravail(travail.id);
+                        setModalConfig({ ...modalConfig, isOpen: false });
+                        window.location.reload();
+                      }
+                    });
+                  }}
+                />
+              )}
+              
+              {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
+              {travail.statut !== 'terminé' && (
+                <CardButton
+                  variant="danger"
+                  icon="🗑️"
+                  label="Annuler"
+                  onClick={() => {
+                    setModalConfig({
+                      isOpen: true,
+                      title: 'Annuler cette tâche ?',
+                      message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
+                      onConfirm: async () => {
+                        await annulerTravail(travail.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
                         window.location.reload();
                       }
