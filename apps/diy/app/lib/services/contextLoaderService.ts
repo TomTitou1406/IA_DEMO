@@ -718,6 +718,7 @@ ${promptInstructions}
  */
 async function loadMiseEnOeuvreContext(chantierId: string, travailId: string): Promise<ContextData> {
   try {
+    console.log('🔧 loadMiseEnOeuvreContext APPELÉE - chantierId:', chantierId, 'travailId:', travailId);
     // Charger le chantier
     const { data: chantier } = await supabase
       .from('chantiers')
