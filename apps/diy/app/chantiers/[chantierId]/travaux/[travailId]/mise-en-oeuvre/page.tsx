@@ -699,15 +699,6 @@ export default function MiseEnOeuvrePage() {
     // Renuméroter
     newEtapes.forEach((e, i) => { e.numero = i + 1; });
     
-    // Vérifier les règles
-    const { warnings } = verifierReglesEtapes(newEtapes);
-    if (warnings.length > 0) {
-      const continuer = confirm(
-        `Attention, ce déplacement peut poser problème :\n\n${warnings.join('\n')}\n\nContinuer quand même ?`
-      );
-      if (!continuer) return;
-    }
-    
     setEtapes(newEtapes);
     setHasChanges(true);
     
