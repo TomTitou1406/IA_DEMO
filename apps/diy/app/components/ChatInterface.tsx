@@ -707,8 +707,8 @@ export default function ChatInterface({
         });
       }
 
-      // Vérifier si la réponse contient des actions ÉTAPES
-      const { hasActions: hasEtapesActions, actions: etapesActions, cleanContent: etapesCleanContent } = extractEtapesActions(actionCleanContent);
+      // Vérifier si la réponse contient des actions ÉTAPES (sur le contenu original, pas nettoyé)
+      const { hasActions: hasEtapesActions, actions: etapesActions, cleanContent: etapesCleanContent } = extractEtapesActions(cleanContent);
       
       // Mettre à jour le contenu final si actions étapes trouvées
       const finalContentWithEtapes = hasEtapesActions ? etapesCleanContent : finalContent;
