@@ -281,6 +281,18 @@ export default function ChatInterface({
     }
   }, [chantierId]);
 
+  // Reset conversation quand demandé (ex: après génération d'étapes)
+  useEffect(() => {
+    const handleResetChat = () => {
+      setLocalMessages([]);
+      console.log('🔄 Reset conversation demandé');
+    };
+    window.addEventListener('resetAssistantChat', handleResetChat);
+    return () => {
+      window.removeEventListener('resetAssistantChat', handleResetChat);
+    };
+  }, []);
+
   // Notifier parent du changement d'état
   useEffect(() => {
     if (onStateChange) {
@@ -702,6 +714,8 @@ export default function ChatInterface({
       const finalContentWithEtapes = hasEtapesActions ? etapesCleanContent : finalContent;
 
       // Dispatcher toutes les actions ÉTAPES si présentes
+      console.log('🔍 DEBUG: hasEtapesActions=', hasEtapesActions, 'etapesActions=', etapesActions);
+      
       if (hasEtapesActions && etapesActions.length > 0) {
         console.log(`🔧 Dispatch de ${etapesActions.length} action(s) étapes`);
         etapesActions.forEach((action, index) => {
