@@ -435,13 +435,6 @@ export default function MiseEnOeuvrePage() {
     };
   }, [etapes, travailId]);
 
-    window.addEventListener('etapesAction', handleEtapesAction as EventListener);
-    
-    return () => {
-      window.removeEventListener('etapesAction', handleEtapesAction as EventListener);
-    };
-  }, [etapes, travailId]);
-
   // Charger les infos du lot et du chantier
   useEffect(() => {
     async function loadData() {
