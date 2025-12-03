@@ -236,8 +236,8 @@ export default function TravauxPage() {
               alignItems: 'flex-start'
             }}>
 
-              {/* Bouton VOIR LES ÉTAPES (seulement pour en_cours avec étapes) */}
-              {travail.statut === 'en_cours' && travail.nombre_etapes && travail.nombre_etapes > 0 && (
+              {/* Bouton VOIR LES ÉTAPES (pour en_cours ET à_venir avec étapes) */}
+              {(travail.statut === 'en_cours' || travail.statut === 'à_venir') && travail.nombre_etapes && travail.nombre_etapes > 0 && (
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
