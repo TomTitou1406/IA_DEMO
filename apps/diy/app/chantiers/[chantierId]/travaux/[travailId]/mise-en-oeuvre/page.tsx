@@ -408,21 +408,32 @@ export default function MiseEnOeuvrePage() {
 
   // Écouter les actions de l'assistant IA
   useEffect(() => {
-    const handleEtapesAction = async (event: CustomEvent<EtapesAction>) => {
-      console.log('🎯 Action étapes reçue:', event.detail);
-      const newEtapes = applyEtapesAction(etapes, event.detail);
+    const handleEtapesAction = (event: Event) => {
+      const customEvent = event as CustomEvent<EtapesAction>;
+      console.log('🎯 Action étapes reçue:', customEvent.detail);
+      
+      const newEtapes = applyEtapesAction(etapes, customEvent.detail);
       setEtapes(newEtapes);
       setHasChanges(true);
       
-      // Sauvegarder automatiquement en brouillon
-      const saveResult = await saveEtapesBrouillon(travailId, newEtapes);
-      if (saveResult.success) {
-        console.log('✅ Étapes mises à jour en BDD');
-        setHasChanges(false);
-        // Rafraîchir le contexte pour que l'assistant voie les changements
-        window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
-      }
+      // Sauvegarder automatiquement en brouillon (async dans une IIFE)
+      (async () => {
+        const saveResult = await saveEtapesBrouillon(travailId, newEtapes);
+        if (saveResult.success) {
+          console.log('✅ Étapes mises à jour en BDD');
+          setHasChanges(false);
+          // Rafraîchir le contexte pour que l'assistant voie les changements
+          window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
+        }
+      })();
     };
+
+    window.addEventListener('etapesAction', handleEtapesAction);
+    
+    return () => {
+      window.removeEventListener('etapesAction', handleEtapesAction);
+    };
+  }, [etapes, travailId]);
 
     window.addEventListener('etapesAction', handleEtapesAction as EventListener);
     
@@ -562,20 +573,33 @@ export default function MiseEnOeuvrePage() {
     }
   };
 
-  // Quitter (avec option de sauvegarder)
-  const handleQuit = () => {
-    if (hasChanges) {
-      const choice = window.confirm(
-        'Vous avez des modifications non sauvegardées.\n\nCliquez OK pour sauvegarder en brouillon avant de quitter.\nCliquez Annuler pour quitter sans sauvegarder.'
+  // Quitter - Option C (Hybride)
+  const handleQuit = async () => {
+    // Vérifier s'il y a des étapes brouillon en BDD
+    const { data: brouillonExistant } = await supabase
+      .from('etapes')
+      .select('id')
+      .eq('travail_id', travailId)
+      .eq('statut', 'brouillon')
+      .limit(1);
+    
+    const hasBrouillonEnBDD = brouillonExistant && brouillonExistant.length > 0;
+    
+    if (hasBrouillonEnBDD || hasChanges) {
+      // Proposer 3 choix via une série de confirms
+      const garderBrouillon = window.confirm(
+        'Des étapes brouillon existent pour ce lot.\n\n' +
+        '• OK = Garder le brouillon (vous pourrez reprendre plus tard)\n' +
+        '• Annuler = Supprimer le brouillon et quitter'
       );
-      if (choice) {
-        // Sauvegarder puis quitter
-        saveEtapesBrouillon(travailId, etapes).then(() => {
-          router.push(`/chantiers/${chantierId}/travaux`);
-        });
-        return;
+      
+      if (!garderBrouillon) {
+        // Supprimer les étapes brouillon
+        await deleteEtapes(travailId, 'brouillon');
+        console.log('🗑️ Brouillon supprimé');
       }
     }
+    
     router.push(`/chantiers/${chantierId}/travaux`);
   };
 
