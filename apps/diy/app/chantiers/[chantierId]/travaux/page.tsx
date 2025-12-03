@@ -362,27 +362,6 @@ export default function TravauxPage() {
                   }}
                 />
               )}
-              
-              {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
-              {travail.statut !== 'terminé' && (
-                <CardButton
-                  variant="danger"
-                  icon="🗑️"
-                  label="Annuler"
-                  onClick={() => {
-                    setModalConfig({
-                      isOpen: true,
-                      title: 'Annuler cette tâche ?',
-                      message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
-                      onConfirm: async () => {
-                        await annulerTravail(travail.id);
-                        setModalConfig({ ...modalConfig, isOpen: false });
-                        window.location.reload();
-                      }
-                    });
-                  }}
-                />
-              )}
             </div>
           )}
 
