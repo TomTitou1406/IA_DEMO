@@ -1387,7 +1387,6 @@ export default function ChatInterface({
                 </div>
               )}
 
-              // Bouton recherche vidéo dans le rendu
               {pendingVideoSearch && index === displayMessages.length - 1 && (
                 <div style={{
                   marginTop: '0.75rem',
