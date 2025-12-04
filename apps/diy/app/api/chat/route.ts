@@ -107,6 +107,11 @@ export async function POST(request: NextRequest) {
     } else {
       finalPrompt = finalPrompt.replace('{{CHANTIER_CONTEXT}}', '(Aucune donnée de chantier disponible)');
     }
+
+    // Ajouter le contexte pour les pages qui n'utilisent pas {{CHANTIER_CONTEXT}}
+    if (context && !finalPrompt.includes(context)) {
+      finalPrompt += `\n\n---\nCONTEXTE ACTUEL :\n${context}`;
+    }
     
     // Ajouter la config type si disponible (Phase 2)
     if (typeConfigContext) {
