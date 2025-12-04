@@ -589,7 +589,7 @@ export default function TravauxPage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              🏗️ {chantier?.titre || 'Chantier'}
+              🏗️ Chantier : {chantier?.titre || 'Chantier'}
             </h1>
             
             {/* Bouton Notes du chantier */}
