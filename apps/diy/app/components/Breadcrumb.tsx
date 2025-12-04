@@ -60,12 +60,14 @@ export default function Breadcrumb({
   return (
     <div style={{
       position: 'fixed',
-      top: 110,
+      top: 105,
       left: 0,
       right: 0,
-      background: 'linear-gradient(180deg, rgba(13,13,13,0.98) 0%, rgba(13,13,13,0.95) 100%)',
+      background: 'rgba(0, 0, 0, 0.7)',
       backdropFilter: 'blur(10px)',
-      borderBottom: '1px solid rgba(255,255,255,0.08)',
+      WebkitBackdropFilter: 'blur(10px)',
+      borderTop: '1px solid rgba(255,255,255,0.05)',  
+      borderBottom: '1px solid rgba(255,255,255,0.05)',
       zIndex: 100
     }}>
       <div style={{ 
