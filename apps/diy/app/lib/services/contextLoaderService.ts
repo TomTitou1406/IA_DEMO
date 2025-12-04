@@ -260,7 +260,6 @@ TON RÔLE : Tu es le Chef de chantier de l'utilisateur. Tu l'aides à :
       expertiseIcon: '📋',
       itemCount: nbChantiers,
       contextForAI,
-      raw: { chantiers: chantiers || [] }
     };
 
   } catch (error) {
