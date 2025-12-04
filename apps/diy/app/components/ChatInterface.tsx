@@ -1314,7 +1314,8 @@ const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.15)',
+                  // background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.15)',
+                  background: message.role === 'user' ? contextColor : 'rgba(30, 30, 30, 0.95)',
                   color: message.role === 'user' ? 'white' : 'var(--gray-light)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
                   fontSize: compact ? '0.85rem' : '0.95rem',
