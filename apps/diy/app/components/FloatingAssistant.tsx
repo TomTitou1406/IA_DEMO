@@ -482,6 +482,7 @@ export default function FloatingAssistant() {
               chantierId={chantierId}
               travailId={travailId}
               noteContext={getNoteContext()}
+              disablePersistence={true}
             />
           </div>
         </div>
