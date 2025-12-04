@@ -738,7 +738,7 @@ export default function TravailDetailPage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              🔨 {travail.titre}
+              🔨 Lot : {travail.titre}
             </h1>
             
             {/* Bouton Notes du lot */}
