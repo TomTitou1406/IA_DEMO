@@ -9,6 +9,9 @@ import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesEtapes } from '@/app/lib/services/etapesService';
 import { getTravauxByChantier, annulerTravail, reactiverTravail, commencerTravail, reporterTravail, terminerTravail } from '@/app/lib/services/travauxService';
 import NotesButton from '@/app/components/NotesButton';
+// NOUVEAUX IMPORTS
+import Breadcrumb from '@/app/components/Breadcrumb';
+import ParentContext from '@/app/components/ParentContext';
 
 interface Chantier {
   id: string;
@@ -93,7 +96,7 @@ export default function TravauxPage() {
     }
 
     loadData();
-  }, []);
+  }, [chantierId]);
 
   if (loading) {
     return (
@@ -155,7 +158,7 @@ export default function TravauxPage() {
                      statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
                      statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
                      statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
-                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :  // ← AJOUTE
+                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :
                      'rgba(107, 114, 128, 0.25)';
         e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
       }}
@@ -546,57 +549,23 @@ export default function TravauxPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED */}
-      <div style={{ 
-        position: 'fixed',
-        top: '100px',  // Ajuster selon la hauteur du header
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: 'rgba(0, 0, 0, 0.85)',    // Noir avec 85% opacité
-        backdropFilter: 'blur(10px)',         // Effet flou moderne
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-        paddingTop: '1rem',
-        paddingBottom: '1rem'
-      }}>
-        <div style={{ 
-          maxWidth: '1100px', 
-          margin: '0 auto', 
-          padding: '0 1rem',
-          display: 'flex', 
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '1rem'
-        }}>
-          <Link href="/chantiers" style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            ← Chantiers
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-            🏗️ {chantier?.titre || 'Chantier'}
-          </span>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <span style={{ color: 'var(--gray-light)', fontWeight: '500' }}>
-            Lots ({travaux.length})
-          </span>
-        </div>
-      </div>
+      {/* ========== NOUVEAU BREADCRUMB ========== */}
+      <Breadcrumb 
+        currentLevel="lots" 
+        chantierId={chantierId} 
+      />
 
       {/* CONTENU PRINCIPAL avec padding-top pour breadcrumb */}
-        <div style={{ 
-          maxWidth: '1100px', 
-          margin: '0 auto', 
-          padding: '0.75rem 0.75rem',
-          paddingTop: '70px'  // Padding pour éviter chevauchement avec breadcrumb
-        }}>
+      <div style={{ 
+        maxWidth: '1100px', 
+        margin: '0 auto', 
+        padding: '0.75rem 0.75rem',
+        paddingTop: '70px'
+      }}>
+        {/* ========== NOUVEAU PARENT CONTEXT ========== */}
+        {/* Note: Ici on a déjà le chantier chargé, pas besoin de ParentContext 
+            car on est au niveau Lots et le chantier est affiché dans l'état des lieux */}
+
         {/* État d'avancement du chantier - PLUS VISIBLE */}
         <div style={{
           marginBottom: '2rem',
