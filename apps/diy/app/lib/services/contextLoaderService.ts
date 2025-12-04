@@ -487,10 +487,10 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       .eq('chantier_id', chantierId)
       .order('ordre', { ascending: true });
 
-    // Charger le lot courant (détaillé)
-   const { data: lotCourant } = await supabase
+   // Charger le lot courant
+    const { data: lotCourant } = await supabase
       .from('travaux')
-      .select(`id, titre, description, progression, statut, expertise:expertises(code, nom)`)
+      .select('id, titre, description, ordre, statut, progression, code_expertise')
       .eq('id', travailId)
       .single();
 
@@ -530,10 +530,10 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
       return line;
     }).join('\n   ');
 
-    const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
-    const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
+    const expertiseCode = lotCourant?.code_expertise || 'generaliste';
+    const expertiseNom = expertiseCode.charAt(0).toUpperCase() + expertiseCode.slice(1).replace('_', ' ');
     const expertiseIcon = getExpertiseIcon(expertiseCode);
-
+    
     const journalText = formatJournalForAI(journal);
 
     const contextForAI = `
