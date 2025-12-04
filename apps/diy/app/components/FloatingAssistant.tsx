@@ -366,7 +366,7 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  ✨ Expert : {expertise.nom}
+                  ✨ Expert IA : {expertise.nom}
                 </div>
               </div>
             </div>
