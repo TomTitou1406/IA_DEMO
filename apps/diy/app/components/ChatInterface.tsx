@@ -885,7 +885,6 @@ const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
       timestamp: new Date().toISOString(),
       metadata: { 
         promptSource: 'expert_transition',
-        expertiseCode: expertise.specialite 
       }
     };
     
