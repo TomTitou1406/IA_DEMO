@@ -1011,14 +1011,11 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       .order('ordre', { ascending: true });
 
     // Charger le lot courant
-    const { data: lotCourant } = await supabase
-      .from('travaux')
-      .select(`
-        id, titre, description, ordre, statut, progression,
-        expertise:expertises(code, nom)
-      `)
-      .eq('id', travailId)
-      .single();
+   const { data: lotCourant } = await supabase
+    .from('travaux')
+    .select('id, titre, description, ordre, statut, progression, code_expertise')
+    .eq('id', travailId)
+    .single();
 
     // Charger toutes les étapes du lot (compact) - utilise "numero"
     const { data: etapes } = await supabase
