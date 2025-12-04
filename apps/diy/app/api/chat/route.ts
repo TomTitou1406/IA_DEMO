@@ -27,6 +27,7 @@ const PAGE_CONTEXT_TO_PROMPT_CODE: Record<string, string> = {
   'taches': 'taches_assistant',
   'chantier_edit': 'system_chantier_decouverte',
   'chantier_edit_details': 'system_chantier_edit',
+  'aide_decouverte': 'system_aide_decouverte',
   // Ajouter d'autres mappings ici au fur et à mesure
 };
 
