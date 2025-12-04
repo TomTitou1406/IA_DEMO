@@ -292,16 +292,29 @@ export default function TravailDetailPage() {
                     });
                   }}
                 />
-                {/* Bouton Tâches - TOUJOURS VISIBLE sans count */}
-                <CardButton
-                  variant="secondary"
-                  color="var(--purple)"
-                  icon="📋"
-                  label="Tâches"
-                  onClick={() => {
-                    router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`);
-                  }}
-                />
+               {/* Bouton Tâches - conditionnel selon existence */}
+                {etape.nombre_taches && etape.nombre_taches > 0 ? (
+                  <CardButton
+                    variant="secondary"
+                    color="var(--purple)"
+                    icon="📋"
+                    label="Voir tâches"
+                    count={etape.nombre_taches}
+                    onClick={() => {
+                      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`);
+                    }}
+                  />
+                ) : (
+                  <CardButton
+                    variant="secondary"
+                    color="var(--purple)"
+                    icon="✨"
+                    label="Générer tâches"
+                    onClick={() => {
+                      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/mise-en-oeuvre`);
+                    }}
+                  />
+                )}
                 <CardButton
                   variant="danger"
                   icon="🗑️"
@@ -325,8 +338,8 @@ export default function TravailDetailPage() {
             {/* Boutons en_cours */}
             {etape.statut === 'en_cours' && (
               <>
-                {/* Bouton TÂCHES */}
-                {etape.nombre_taches && etape.nombre_taches > 0 && (
+                {/* Bouton TÂCHES - conditionnel selon existence */}
+                {etape.nombre_taches && etape.nombre_taches > 0 ? (
                   <CardButton
                     variant="primary"
                     color="var(--blue)"
@@ -334,7 +347,17 @@ export default function TravailDetailPage() {
                     label="Tâches"
                     count={etape.nombre_taches}
                     onClick={() => {
-                      window.location.href = `/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`;
+                      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`);
+                    }}
+                  />
+                ) : (
+                  <CardButton
+                    variant="primary"
+                    color="var(--blue)"
+                    icon="✨"
+                    label="Générer tâches"
+                    onClick={() => {
+                      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/mise-en-oeuvre`);
                     }}
                   />
                 )}
