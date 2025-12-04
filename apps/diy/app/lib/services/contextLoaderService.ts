@@ -490,7 +490,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
    // Charger le lot courant
     const { data: lotCourant } = await supabase
       .from('travaux')
-      .select('id, titre, description, ordre, statut, progression, code_expertise')
+      .select('id, titre, description, progression, statut, code_expertise')
       .eq('id', travailId)
       .single();
 
