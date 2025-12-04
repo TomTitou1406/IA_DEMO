@@ -9,6 +9,10 @@ import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesTaches } from '@/app/lib/services/tachesService';
 import { useRouter } from 'next/navigation';
 import NotesButton from '@/app/components/NotesButton';
+// NOUVEAUX IMPORTS
+import Breadcrumb from '@/app/components/Breadcrumb';
+import ParentContext from '@/app/components/ParentContext';
+import { getChantierMinimal } from '@/app/lib/services/parentContextService';
 
 interface Etape {
   id: string;
@@ -68,13 +72,24 @@ export default function TravailDetailPage() {
     onConfirm: () => {}
   });
 
+  // NOUVEAU : État pour le chantier parent
+  const [chantierParent, setChantierParent] = useState<{ titre: string } | null>(null);
+
   useEffect(() => {
     async function loadData() {
       try {
-        const data = await getEtapesByTravail(travailId);
+        // Charger en parallèle les étapes ET le chantier parent
+        const [data, chantierData] = await Promise.all([
+          getEtapesByTravail(travailId),
+          getChantierMinimal(chantierId)
+        ]);
+        
         if (data) {
           setTravail(data.travail);
           setEtapes(data.etapes);
+        }
+        if (chantierData) {
+          setChantierParent(chantierData);
         }
       } catch (error) {
         console.error('Error loading travail detail:', error);
@@ -84,7 +99,7 @@ export default function TravailDetailPage() {
     }
 
     loadData();
-  }, [travailId]);
+  }, [travailId, chantierId]);
 
   if (loading) {
     return (
@@ -99,7 +114,7 @@ export default function TravailDetailPage() {
     return (
       <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
         <h2>❌ Lot introuvable</h2>
-        <Link href="/chantiers/travaux" className="main-btn btn-blue" style={{ marginTop: '2rem' }}>
+        <Link href={`/chantiers/${chantierId}/travaux`} className="main-btn btn-blue" style={{ marginTop: '2rem' }}>
           ← Retour aux lots
         </Link>
       </div>
@@ -681,66 +696,25 @@ export default function TravailDetailPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED */}
-      <div style={{ 
-        position: 'fixed',
-        top: '100px',
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: 'rgba(0, 0, 0, 0.98)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)'
-      }}>
-        <div style={{ 
-          maxWidth: '1100px', 
-          margin: '0 auto', 
-          padding: '1rem',
-          display: 'flex', 
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '1rem'
-        }}>
-          <Link href="/chantiers" style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            ← Chantiers
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <Link href="/chantiers/travaux" style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            🏗️ Création nouvelle chambre
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-            Lots
-          </span>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <span style={{ color: 'var(--gray-light)', fontWeight: '500' }}>
-            Étapes ({etapes.length})
-          </span>
-        </div>
-      </div>
+      {/* ========== NOUVEAU BREADCRUMB ========== */}
+      <Breadcrumb 
+        currentLevel="etapes" 
+        chantierId={chantierId}
+        travailId={travailId}
+      />
 
       {/* CONTENU PRINCIPAL */}
       <div style={{ 
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '85px'
+        paddingTop: '70px'
       }}>
+        {/* ========== NOUVEAU PARENT CONTEXT ========== */}
+        <ParentContext 
+          chantier={chantierParent || undefined}
+        />
+
         {/* ÉTAT DES LIEUX DU LOT */}
         <div style={{
           marginBottom: '2rem',
