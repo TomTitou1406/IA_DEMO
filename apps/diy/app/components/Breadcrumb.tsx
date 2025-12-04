@@ -60,7 +60,7 @@ export default function Breadcrumb({
   return (
     <div style={{
       position: 'fixed',
-      top: 0,
+      top: 60,
       left: 0,
       right: 0,
       background: 'linear-gradient(180deg, rgba(13,13,13,0.98) 0%, rgba(13,13,13,0.95) 100%)',
