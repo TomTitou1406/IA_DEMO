@@ -239,6 +239,7 @@ async function loadJournalForChantier(chantierId: string): Promise<Journal | und
  */
 async function loadChantiersContext(): Promise<ContextData> {
   try {
+    console.log('🏗️ loadChantiersContext APPELÉE');
     // Charger tous les chantiers de l'utilisateur
     const { data: chantiers, error } = await supabase
       .from('chantiers')
