@@ -4,12 +4,10 @@
  * Assistant flottant avec :
  * - Header 3 lignes : Titre / Arborescence / Expertise
  * - Bouton "Nouvelle discussion"
- * - Couleur selon le contexte fonctionnel
- * - Persistence de l'état ouvert/fermé (sessionStorage)
- * - RESET AUTOMATIQUE quand on change de PAGE (basé sur pathname)
  * - Support contexte "aide_decouverte" pour aide ponctuelle
+ * - Support MODE EXPERT dynamique (transition Phase 2)
  * 
- * @version 5.3
+ * @version 5.4
  * @date 04 décembre 2025
  */
 
@@ -28,7 +26,6 @@ const STORAGE_KEY = 'papibricole_assistant_open';
 export default function FloatingAssistant() {
   const pathname = usePathname();
   
-  // Initialiser depuis sessionStorage
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window !== 'undefined') {
       return sessionStorage.getItem(STORAGE_KEY) === 'true';
@@ -40,12 +37,23 @@ export default function FloatingAssistant() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [chatKey, setChatKey] = useState(0);
   
-  // ==================== NOUVEAU : Override contexte pour aide ponctuelle ====================
+  // Override contexte pour aide ponctuelle
   const [overrideContext, setOverrideContext] = useState<{
     pageContext?: string;
     welcomeMessage?: string;
   } | null>(null);
-  // ==========================================================================================
+  
+  // ==================== NOUVEAU : Mode Expert ====================
+  const [expertMode, setExpertMode] = useState<{
+    header: {
+      title: string;
+      breadcrumb: string;
+      expertiseLine: string;
+      contextColor: string;
+      expertiseNom: string;
+    };
+  } | null>(null);
+  // ==============================================================
   
   const { 
     pageContext: defaultPageContext, 
@@ -61,23 +69,29 @@ export default function FloatingAssistant() {
     etapeId
   } = useAssistantContext();
   
-  // Appliquer l'override si présent
+  // Priorité : expertMode > overrideContext > default
   const pageContext = overrideContext?.pageContext || defaultPageContext;
   const welcomeMessage = overrideContext?.welcomeMessage || defaultWelcomeMessage;
-  const contextColor = overrideContext?.pageContext === 'aide_decouverte' ? 'var(--blue)' : defaultContextColor;
-  const header = overrideContext?.pageContext === 'aide_decouverte' 
-    ? { title: "Aide Express", breadcrumb: "Diagnostic en cours...", expertiseLine: "🔍 Diagnosticien" }
-    : defaultHeader;
-  const expertise = overrideContext?.pageContext === 'aide_decouverte'
-    ? { code: 'diagnosticien', nom: 'Diagnosticien', icon: '🔍' }
-    : defaultExpertise;
+  
+  const contextColor = expertMode?.header.contextColor 
+    || (overrideContext?.pageContext === 'aide_decouverte' ? 'var(--blue)' : defaultContextColor);
+  
+  const header = expertMode?.header 
+    || (overrideContext?.pageContext === 'aide_decouverte' 
+        ? { title: "Aide Express", breadcrumb: "Diagnostic en cours...", expertiseLine: "🔍 Diagnosticien" }
+        : defaultHeader);
+  
+  const expertise = expertMode 
+    ? { code: 'expert', nom: expertMode.header.expertiseNom, icon: '🎯' }
+    : (overrideContext?.pageContext === 'aide_decouverte'
+        ? { code: 'diagnosticien', nom: 'Diagnosticien', icon: '🔍' }
+        : defaultExpertise);
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
-  
-  // Reset auto basé sur pathname
   const prevPathnameRef = useRef<string>(pathname);
   const isManualResetRef = useRef<boolean>(false);
   
+  // Reset auto basé sur pathname
   useEffect(() => {
     if (isManualResetRef.current) {
       isManualResetRef.current = false;
@@ -85,9 +99,10 @@ export default function FloatingAssistant() {
     }
     
     if (prevPathnameRef.current !== pathname) {
-      console.log('🔄 Navigation détectée, reset conversation:', prevPathnameRef.current, '→', pathname);
+      console.log('🔄 Navigation détectée, reset conversation');
       setChatKey(prev => prev + 1);
-      setOverrideContext(null); // Reset l'override quand on navigue
+      setOverrideContext(null);
+      setExpertMode(null); // Reset expert mode aussi
       prevPathnameRef.current = pathname;
     }
   }, [pathname]);
@@ -117,7 +132,6 @@ export default function FloatingAssistant() {
     window.addEventListener('mousemove', resetInactivityTimer);
     window.addEventListener('keydown', resetInactivityTimer);
     window.addEventListener('click', resetInactivityTimer);
-
     resetInactivityTimer();
 
     return () => {
@@ -140,45 +154,45 @@ export default function FloatingAssistant() {
     const handleCloseAssistant = () => {
       setIsOpen(false);
       setOverrideContext(null);
+      setExpertMode(null);
     };
     
-    // ==================== NOUVEAU : Event avec contexte ====================
     const handleOpenAssistantWithContext = (event: CustomEvent) => {
       const { pageContext, welcomeMessage } = event.detail || {};
       console.log('🎯 Ouverture assistant avec contexte:', pageContext);
       
       setOverrideContext({ pageContext, welcomeMessage });
-      setChatKey(prev => prev + 1); // Reset la conversation
+      setExpertMode(null); // Reset expert mode
+      setChatKey(prev => prev + 1);
       setIsOpen(true);
       setAssistantState('idle');
     };
-    // ======================================================================
+    
+    // ==================== NOUVEAU : Event mode expert ====================
+    const handleExpertModeActivated = (event: CustomEvent) => {
+      const { header } = event.detail || {};
+      console.log('🎓 Mode expert activé:', header?.title);
+      
+      if (header) {
+        setExpertMode({ header });
+      }
+    };
+    // ===================================================================
     
     window.addEventListener('openAssistant', handleOpenAssistant);
     window.addEventListener('closeAssistant', handleCloseAssistant);
     window.addEventListener('openAssistantWithContext', handleOpenAssistantWithContext as EventListener);
+    window.addEventListener('expertModeActivated', handleExpertModeActivated as EventListener);
     
     return () => {
       window.removeEventListener('openAssistant', handleOpenAssistant);
       window.removeEventListener('closeAssistant', handleCloseAssistant);
       window.removeEventListener('openAssistantWithContext', handleOpenAssistantWithContext as EventListener);
+      window.removeEventListener('expertModeActivated', handleExpertModeActivated as EventListener);
     };
   }, []);
 
-  // GIF selon état
-  const getAssistantGif = () => {
-    switch (assistantState) {
-      case 'thinking':
-        return '/gif/papibricole_loop_attente_1.gif';
-      case 'speaking':
-        return '/gif/papibricole_loop_attente_1.gif';
-      case 'pulse':
-        return '/gif/papibricole_loop_attente_1.gif';
-      case 'idle':
-      default:
-        return '/gif/papibricole_loop_attente_1.gif';
-    }
-  };
+  const getAssistantGif = () => '/gif/papibricole_loop_attente_1.gif';
 
   const handleStateChange = (state: 'idle' | 'thinking' | 'speaking') => {
     setAssistantState(state);
@@ -187,7 +201,8 @@ export default function FloatingAssistant() {
   const handleNewChat = () => {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
       isManualResetRef.current = true;
-      setOverrideContext(null); // Reset l'override aussi
+      setOverrideContext(null);
+      setExpertMode(null);
       setChatKey(prev => prev + 1);
     }
   };
@@ -202,12 +217,9 @@ export default function FloatingAssistant() {
   const getStatusIndicator = () => {
     if (isLoading) return '⏳';
     switch (assistantState) {
-      case 'thinking':
-        return '🤔';
-      case 'speaking':
-        return '🗣️';
-      default:
-        return '✅';
+      case 'thinking': return '🤔';
+      case 'speaking': return '🗣️';
+      default: return '✅';
     }
   };
 
@@ -245,11 +257,7 @@ export default function FloatingAssistant() {
           <img 
             src={getAssistantGif()}
             alt="Assistant"
-            style={{
-              width: '100%',
-              height: '100%',
-              objectFit: 'cover'
-            }}
+            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
           />
         </button>
       )}
@@ -269,10 +277,7 @@ export default function FloatingAssistant() {
             maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100vh - 100px)' : '900px',
             borderRadius: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '16px',
             boxShadow: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-            background: 'rgba(0,0,0,0.9)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-         } : {
+          } : {
             position: 'fixed',
             bottom: '1rem',
             right: '1rem',
@@ -294,7 +299,7 @@ export default function FloatingAssistant() {
           transition: 'all 0.3s ease'
         }}>
           
-          {/* Header 3 lignes */}
+          {/* Header */}
           <div style={{
             background: contextColor,
             color: 'var(--white)',
@@ -329,11 +334,7 @@ export default function FloatingAssistant() {
                 <img 
                   src={getAssistantGif()}
                   alt="Assistant"
-                  style={{
-                    width: '100%',
-                    height: '100%',
-                    objectFit: 'cover'
-                  }}
+                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                 />
                 <div style={{
                   position: 'absolute',
@@ -456,6 +457,7 @@ export default function FloatingAssistant() {
                   } else {
                     setIsOpen(false);
                     setOverrideContext(null);
+                    setExpertMode(null);
                   }
                 }}
                 title={isFullscreen ? 'Réduire' : 'Fermer'}
@@ -487,9 +489,11 @@ export default function FloatingAssistant() {
               key={chatKey}
               pageContext={pageContext}
               contextColor={contextColor}
-              placeholder={overrideContext?.pageContext === 'aide_decouverte' 
-                ? "Décris ton problème ou ta question..." 
-                : placeholder}
+              placeholder={expertMode 
+                ? `Question pour ${expertMode.header.title}...`
+                : (overrideContext?.pageContext === 'aide_decouverte' 
+                    ? "Décris ton problème ou ta question..." 
+                    : placeholder)}
               welcomeMessage={welcomeMessage}
               additionalContext={additionalContext}
               promptContext={{
@@ -510,16 +514,9 @@ export default function FloatingAssistant() {
 
       <style jsx>{`
         @keyframes fabPulse {
-          0%, 100% {
-            transform: scale(1);
-            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-          }
-          50% {
-            transform: scale(1.1);
-            box-shadow: 0 6px 30px rgba(0,0,0,0.25);
-          }
+          0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+          50% { transform: scale(1.1); box-shadow: 0 6px 30px rgba(0,0,0,0.25); }
         }
-
         @media (max-width: 768px) {
           .floating-assistant-btn {
             bottom: 1rem !important;
