@@ -199,7 +199,7 @@ async function loadJournalForChantier(chantierId: string): Promise<Journal | und
 
 // ==================== LOADERS ====================
 
-**
+/**
  * Charge le contexte pour la page Liste Chantiers
  * AMÉLIORÉ : Charge maintenant la liste des chantiers avec leurs stats
  */
