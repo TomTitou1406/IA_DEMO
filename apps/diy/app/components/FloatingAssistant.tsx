@@ -73,18 +73,25 @@ export default function FloatingAssistant() {
   const pageContext = overrideContext?.pageContext || defaultPageContext;
   const welcomeMessage = overrideContext?.welcomeMessage || defaultWelcomeMessage;
   
-  const contextColor = expertMode?.header.contextColor 
-    || (overrideContext?.pageContext === 'aide_decouverte' ? 'var(--blue)' : defaultContextColor);
+  // Couleur : toujours bleu pour aide_decouverte et mode expert
+  const contextColor = (overrideContext?.pageContext === 'aide_decouverte' || expertMode) 
+    ? 'var(--blue)' 
+    : defaultContextColor;
   
-  const header = expertMode?.header 
-    || (overrideContext?.pageContext === 'aide_decouverte' 
-        ? { title: "Aide Express", breadcrumb: "Diagnostic en cours...", expertiseLine: "🔍 Diagnosticien" }
+  const header = expertMode 
+    ? { 
+        title: "Assistance Expert", 
+        breadcrumb: "", 
+        expertiseLine: `🎯 ${expertMode.header.expertiseNom}` 
+      }
+    : (overrideContext?.pageContext === 'aide_decouverte' 
+        ? { title: "Demande d'assistance", breadcrumb: "", expertiseLine: "🔍 Diagnostic en cours..." }
         : defaultHeader);
   
   const expertise = expertMode 
     ? { code: 'expert', nom: expertMode.header.expertiseNom, icon: '🎯' }
     : (overrideContext?.pageContext === 'aide_decouverte'
-        ? { code: 'diagnosticien', nom: 'Diagnosticien', icon: '🔍' }
+        ? { code: 'diagnosticien', nom: 'Diagnostic', icon: '🔍' }
         : defaultExpertise);
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
