@@ -86,3 +86,53 @@ function VideosContent() {
                 style={{
                   background: 'rgba(255,255,255,0.1)',
                   borderRadius: '12px',
+                  overflow: 'hidden',
+                  cursor: 'pointer',
+                  border: selectedVideo === video.id ? '2px solid var(--green)' : '2px solid transparent',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <img 
+                  src={video.thumbnail} 
+                  alt={video.title}
+                  style={{ width: '100%', height: '180px', objectFit: 'cover' }}
+                />
+                <div style={{ padding: '1rem' }}>
+                  <h3 style={{ 
+                    color: 'white', 
+                    fontSize: '0.95rem', 
+                    marginBottom: '0.5rem',
+                    lineHeight: '1.3'
+                  }}>
+                    {video.title}
+                  </h3>
+                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
+                    {video.channelTitle}
+                  </p>
+                  <div style={{ 
+                    display: 'flex', 
+                    gap: '1rem', 
+                    marginTop: '0.5rem',
+                    fontSize: '0.75rem',
+                    color: 'rgba(255,255,255,0.5)'
+                  }}>
+                    <span>👁️ {(video.viewCount / 1000).toFixed(0)}k</span>
+                    <span>⏱️ {video.duration}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default function VideosPage() {
+  return (
+    <Suspense fallback={<div style={{ padding: '2rem', color: 'white' }}>⏳ Chargement...</div>}>
+      <VideosContent />
+    </Suspense>
+  );
+}
