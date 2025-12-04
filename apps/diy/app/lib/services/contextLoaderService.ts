@@ -127,6 +127,40 @@ function formatDuree(minutes?: number): string {
 }
 
 /**
+ * Formate le nom d'expertise proprement
+ * electricien -> Électricien
+ * plombier -> Plombier
+ * generaliste -> Généraliste
+ */
+function formatExpertiseName(code: string): string {
+  if (!code) return 'Généraliste';
+  
+  const EXPERTISE_NAMES: Record<string, string> = {
+    'generaliste': 'Généraliste',
+    'chef_chantier': 'Chef de chantier',
+    'electricien': 'Électricien',
+    'plombier': 'Plombier',
+    'plaquiste': 'Plaquiste',
+    'peintre': 'Peintre',
+    'menuisier': 'Menuisier',
+    'carreleur': 'Carreleur',
+    'macon': 'Maçon',
+    'couvreur': 'Couvreur',
+    'chauffagiste': 'Chauffagiste',
+    'climaticien': 'Climaticien',
+    'serrurier': 'Serrurier',
+    'vitrier': 'Vitrier',
+    'isolation': 'Spécialiste isolation',
+    'demolition': 'Spécialiste démolition',
+    'formateur': 'Formateur',
+    'economiste': 'Économiste'
+  };
+  
+  return EXPERTISE_NAMES[code.toLowerCase()] || 
+         code.charAt(0).toUpperCase() + code.slice(1).replace(/_/g, ' ');
+}
+
+/**
  * Formate le journal pour l'inclure dans le contexte IA
  */
 function formatJournalForAI(journal?: Journal): string {
@@ -596,41 +630,6 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     const expertiseCode = lotCourant?.code_expertise || 'generaliste';
     const expertiseNom = formatExpertiseName(expertiseCode);
     const expertiseIcon = getExpertiseIcon(expertiseCode);
-
-    /**
- * Formate le nom d'expertise proprement
- * electricien -> Électricien
- * plombier -> Plombier
- * generaliste -> Généraliste
- */
-function formatExpertiseName(code: string): string {
-  if (!code) return 'Généraliste';
-  
-  const EXPERTISE_NAMES: Record<string, string> = {
-    'generaliste': 'Généraliste',
-    'chef_chantier': 'Chef de chantier',
-    'electricien': 'Électricien',
-    'plombier': 'Plombier',
-    'plaquiste': 'Plaquiste',
-    'peintre': 'Peintre',
-    'menuisier': 'Menuisier',
-    'carreleur': 'Carreleur',
-    'macon': 'Maçon',
-    'couvreur': 'Couvreur',
-    'chauffagiste': 'Chauffagiste',
-    'climaticien': 'Climaticien',
-    'serrurier': 'Serrurier',
-    'vitrier': 'Vitrier',
-    'isolation': 'Spécialiste isolation',
-    'demolition': 'Spécialiste démolition',
-    'formateur': 'Formateur',
-    'economiste': 'Économiste'
-  };
-  
-  return EXPERTISE_NAMES[code.toLowerCase()] || 
-         code.charAt(0).toUpperCase() + code.slice(1).replace(/_/g, ' ');
-}
-
     
     const journalText = formatJournalForAI(journal);
 
