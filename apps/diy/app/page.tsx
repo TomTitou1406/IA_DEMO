@@ -63,10 +63,10 @@ export default function HomePage() {
           style={{ cursor: 'pointer' }}
         >
           <div className="card-illu">
-            <img src="/images/tutoriels.webp" alt="Tutoriels" />
+            <img src="/images/tutos.webp" alt="Tous les tutos utiles" />
           </div>
-          <h3>Trouver un tuto</h3>
-          <p>Vidéos pour apprendre</p>
+          <h3>Tutos & Astuces</h3>
+          <p>Guides vidéos illustrés</p>
           <button className="main-btn btn-green">
             Chercher une vidéo
           </button>
