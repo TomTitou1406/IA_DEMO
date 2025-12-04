@@ -6,15 +6,16 @@
  * - Bouton "Nouvelle discussion"
  * - Couleur selon le contexte fonctionnel
  * - Persistence de l'état ouvert/fermé (sessionStorage)
- * - RESET AUTOMATIQUE quand le contexte change (navigation)
+ * - RESET AUTOMATIQUE quand on change de PAGE (basé sur pathname)
  * 
- * @version 5.1
+ * @version 5.2
  * @date 04 décembre 2025
  */
 
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
+import { usePathname } from 'next/navigation';
 import { useAssistantContext } from '../hooks/useAssistantContext';
 import ChatInterface from './ChatInterface';
 import { type NoteLevel } from '../lib/services/notesService';
@@ -24,6 +25,8 @@ type AssistantState = 'idle' | 'pulse' | 'thinking' | 'speaking';
 const STORAGE_KEY = 'papibricole_assistant_open';
 
 export default function FloatingAssistant() {
+  const pathname = usePathname(); // ← Utiliser pathname directement
+  
   // Initialiser depuis sessionStorage
   const [isOpen, setIsOpen] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -53,24 +56,25 @@ export default function FloatingAssistant() {
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // ==================== NOUVEAU : Reset auto quand contexte change ====================
-  // Stocker le contexte précédent pour détecter les changements
-  const prevContextRef = useRef<string>('');
+  // ==================== RESET AUTO BASÉ SUR PATHNAME ====================
+  const prevPathnameRef = useRef<string>(pathname);
+  const isManualResetRef = useRef<boolean>(false); // Protection reset manuel
   
   useEffect(() => {
-    // Construire une clé unique basée sur le contexte actuel
-    const currentContextKey = `${pageContext}-${chantierId || ''}-${travailId || ''}-${etapeId || ''}`;
-    
-    // Si le contexte a changé (navigation vers autre page/niveau)
-    if (prevContextRef.current && prevContextRef.current !== currentContextKey) {
-      console.log('🔄 Contexte changé, reset conversation:', prevContextRef.current, '→', currentContextKey);
-      setChatKey(prev => prev + 1); // Reset la conversation
+    // Si c'est un reset manuel, on ne fait rien
+    if (isManualResetRef.current) {
+      isManualResetRef.current = false;
+      return;
     }
     
-    // Mettre à jour la référence
-    prevContextRef.current = currentContextKey;
-  }, [pageContext, chantierId, travailId, etapeId]);
-  // ==================== FIN NOUVEAU ====================
+    // Si le pathname a changé (navigation vers autre page)
+    if (prevPathnameRef.current !== pathname) {
+      console.log('🔄 Navigation détectée, reset conversation:', prevPathnameRef.current, '→', pathname);
+      setChatKey(prev => prev + 1); // Reset la conversation
+      prevPathnameRef.current = pathname;
+    }
+  }, [pathname]);
+  // ==================== FIN RESET AUTO ====================
 
   // Persister l'état isOpen
   useEffect(() => {
@@ -153,6 +157,7 @@ export default function FloatingAssistant() {
   // Nouvelle discussion (manuelle)
   const handleNewChat = () => {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
+      isManualResetRef.current = true; // Marquer comme reset manuel
       setChatKey(prev => prev + 1);
     }
   };
@@ -366,7 +371,7 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  ✨ Expert IA : {expertise.nom}
+                  ✨ Expert : {expertise.nom}
                 </div>
               </div>
             </div>
