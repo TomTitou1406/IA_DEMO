@@ -45,7 +45,7 @@ export default function HomePage() {
           <h3>J'ai besoin d'aide</h3>
           <p>Coup de pouce précis et rapide</p>
           <button className="main-btn btn-blue">
-            Discuter avec l'expert 💡
+            Discuter avec l'expert
           </button>
         </div>
 
