@@ -7,8 +7,9 @@
  * - Couleur selon le contexte fonctionnel
  * - Persistence de l'état ouvert/fermé (sessionStorage)
  * - RESET AUTOMATIQUE quand on change de PAGE (basé sur pathname)
+ * - Support contexte "aide_decouverte" pour aide ponctuelle
  * 
- * @version 5.2
+ * @version 5.3
  * @date 04 décembre 2025
  */
 
@@ -25,7 +26,7 @@ type AssistantState = 'idle' | 'pulse' | 'thinking' | 'speaking';
 const STORAGE_KEY = 'papibricole_assistant_open';
 
 export default function FloatingAssistant() {
-  const pathname = usePathname(); // ← Utiliser pathname directement
+  const pathname = usePathname();
   
   // Initialiser depuis sessionStorage
   const [isOpen, setIsOpen] = useState(() => {
@@ -37,44 +38,59 @@ export default function FloatingAssistant() {
   
   const [assistantState, setAssistantState] = useState<AssistantState>('idle');
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [chatKey, setChatKey] = useState(0); // Pour forcer le reset du chat
+  const [chatKey, setChatKey] = useState(0);
+  
+  // ==================== NOUVEAU : Override contexte pour aide ponctuelle ====================
+  const [overrideContext, setOverrideContext] = useState<{
+    pageContext?: string;
+    welcomeMessage?: string;
+  } | null>(null);
+  // ==========================================================================================
   
   const { 
-    pageContext, 
-    contextColor, 
-    welcomeMessage, 
+    pageContext: defaultPageContext, 
+    contextColor: defaultContextColor, 
+    welcomeMessage: defaultWelcomeMessage, 
     placeholder, 
     additionalContext,
-    header,
-    expertise,
+    header: defaultHeader,
+    expertise: defaultExpertise,
     isLoading,
-    // IDs pour les notes
     chantierId,
     travailId,
     etapeId
   } = useAssistantContext();
   
+  // Appliquer l'override si présent
+  const pageContext = overrideContext?.pageContext || defaultPageContext;
+  const welcomeMessage = overrideContext?.welcomeMessage || defaultWelcomeMessage;
+  const contextColor = overrideContext?.pageContext === 'aide_decouverte' ? 'var(--blue)' : defaultContextColor;
+  const header = overrideContext?.pageContext === 'aide_decouverte' 
+    ? { title: "Aide Express", breadcrumb: "Diagnostic en cours...", expertiseLine: "🔍 Diagnosticien" }
+    : defaultHeader;
+  const expertise = overrideContext?.pageContext === 'aide_decouverte'
+    ? { code: 'diagnosticien', nom: 'Diagnosticien', icon: '🔍' }
+    : defaultExpertise;
+  
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
   
-  // ==================== RESET AUTO BASÉ SUR PATHNAME ====================
+  // Reset auto basé sur pathname
   const prevPathnameRef = useRef<string>(pathname);
-  const isManualResetRef = useRef<boolean>(false); // Protection reset manuel
+  const isManualResetRef = useRef<boolean>(false);
   
   useEffect(() => {
-    // Si c'est un reset manuel, on ne fait rien
     if (isManualResetRef.current) {
       isManualResetRef.current = false;
       return;
     }
     
-    // Si le pathname a changé (navigation vers autre page)
     if (prevPathnameRef.current !== pathname) {
       console.log('🔄 Navigation détectée, reset conversation:', prevPathnameRef.current, '→', pathname);
-      setChatKey(prev => prev + 1); // Reset la conversation
+      setChatKey(prev => prev + 1);
+      setOverrideContext(null); // Reset l'override quand on navigue
       prevPathnameRef.current = pathname;
     }
   }, [pathname]);
-  // ==================== FIN RESET AUTO ====================
 
   // Persister l'état isOpen
   useEffect(() => {
@@ -114,8 +130,8 @@ export default function FloatingAssistant() {
     };
   }, [isOpen]);
 
-  // Écouter l'événement custom pour ouvrir l'assistant
-   useEffect(() => {
+  // Écouter les événements custom
+  useEffect(() => {
     const handleOpenAssistant = () => {
       setIsOpen(true);
       setAssistantState('idle');
@@ -123,14 +139,29 @@ export default function FloatingAssistant() {
     
     const handleCloseAssistant = () => {
       setIsOpen(false);
+      setOverrideContext(null);
     };
+    
+    // ==================== NOUVEAU : Event avec contexte ====================
+    const handleOpenAssistantWithContext = (event: CustomEvent) => {
+      const { pageContext, welcomeMessage } = event.detail || {};
+      console.log('🎯 Ouverture assistant avec contexte:', pageContext);
+      
+      setOverrideContext({ pageContext, welcomeMessage });
+      setChatKey(prev => prev + 1); // Reset la conversation
+      setIsOpen(true);
+      setAssistantState('idle');
+    };
+    // ======================================================================
     
     window.addEventListener('openAssistant', handleOpenAssistant);
     window.addEventListener('closeAssistant', handleCloseAssistant);
+    window.addEventListener('openAssistantWithContext', handleOpenAssistantWithContext as EventListener);
     
     return () => {
       window.removeEventListener('openAssistant', handleOpenAssistant);
       window.removeEventListener('closeAssistant', handleCloseAssistant);
+      window.removeEventListener('openAssistantWithContext', handleOpenAssistantWithContext as EventListener);
     };
   }, []);
 
@@ -149,20 +180,18 @@ export default function FloatingAssistant() {
     }
   };
 
-  // Gérer les changements d'état du chat
   const handleStateChange = (state: 'idle' | 'thinking' | 'speaking') => {
     setAssistantState(state);
   };
 
-  // Nouvelle discussion (manuelle)
   const handleNewChat = () => {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
-      isManualResetRef.current = true; // Marquer comme reset manuel
+      isManualResetRef.current = true;
+      setOverrideContext(null); // Reset l'override aussi
       setChatKey(prev => prev + 1);
     }
   };
 
-  // Contexte pour les notes (niveau et ID où attacher)
   const getNoteContext = (): { level: NoteLevel; id: string } | undefined => {
     if (etapeId) return { level: 'etape', id: etapeId };
     if (travailId) return { level: 'travail', id: travailId };
@@ -170,7 +199,6 @@ export default function FloatingAssistant() {
     return undefined;
   };
 
-  // Indicateur d'état
   const getStatusIndicator = () => {
     if (isLoading) return '⏳';
     switch (assistantState) {
@@ -266,7 +294,7 @@ export default function FloatingAssistant() {
           transition: 'all 0.3s ease'
         }}>
           
-          {/* ==================== HEADER 3 LIGNES ==================== */}
+          {/* Header 3 lignes */}
           <div style={{
             background: contextColor,
             color: 'var(--white)',
@@ -277,7 +305,6 @@ export default function FloatingAssistant() {
             gap: '0.5rem'
           }}>
             
-            {/* Partie gauche : Avatar + Textes */}
             <div style={{ 
               display: 'flex', 
               alignItems: 'flex-start', 
@@ -286,7 +313,6 @@ export default function FloatingAssistant() {
               minWidth: 0
             }}>
               
-              {/* Avatar */}
               <div style={{
                 width: '48px',
                 height: '48px',
@@ -309,7 +335,6 @@ export default function FloatingAssistant() {
                     objectFit: 'cover'
                   }}
                 />
-                {/* Badge état */}
                 <div style={{
                   position: 'absolute',
                   bottom: '-2px',
@@ -327,7 +352,6 @@ export default function FloatingAssistant() {
                 </div>
               </div>
               
-              {/* Textes 3 lignes */}
               <div style={{ 
                 flex: 1, 
                 minWidth: 0,
@@ -335,7 +359,6 @@ export default function FloatingAssistant() {
                 flexDirection: 'column',
                 gap: '0.1rem'
               }}>
-                {/* Ligne 1 : Titre (gras) */}
                 <div style={{ 
                   fontWeight: '700', 
                   fontSize: '0.95rem',
@@ -347,7 +370,6 @@ export default function FloatingAssistant() {
                   {header.title}
                 </div>
                 
-                {/* Ligne 2 : Arborescence */}
                 {header.breadcrumb && (
                   <div style={{ 
                     fontSize: '0.8rem', 
@@ -362,7 +384,6 @@ export default function FloatingAssistant() {
                   </div>
                 )}
                 
-                {/* Ligne 3 : Expertise */}
                 <div style={{ 
                   fontSize: '0.75rem', 
                   opacity: 0.9,
@@ -376,14 +397,12 @@ export default function FloatingAssistant() {
               </div>
             </div>
 
-            {/* Partie droite : Actions */}
             <div style={{ 
               display: 'flex', 
               gap: '0.3rem', 
               alignItems: 'center',
               marginTop: '0.1rem'
             }}>
-              {/* Bouton Nouvelle discussion */}
               <button
                 onClick={handleNewChat}
                 title="Nouvelle discussion"
@@ -407,7 +426,6 @@ export default function FloatingAssistant() {
                 ➕
               </button>
 
-              {/* Bouton Fullscreen */}
               <button
                 onClick={() => setIsFullscreen(!isFullscreen)}
                 title={isFullscreen ? 'Réduire' : 'Agrandir'}
@@ -431,13 +449,13 @@ export default function FloatingAssistant() {
                 {isFullscreen ? '◱' : '⛶'}
               </button>
 
-              {/* Bouton Fermer */}
               <button
                 onClick={() => {
                   if (isFullscreen) {
                     setIsFullscreen(false);
                   } else {
                     setIsOpen(false);
+                    setOverrideContext(null);
                   }
                 }}
                 title={isFullscreen ? 'Réduire' : 'Fermer'}
@@ -463,13 +481,15 @@ export default function FloatingAssistant() {
             </div>
           </div>
 
-          {/* Chat Interface - key force le remount */}
+          {/* Chat Interface */}
           <div style={{ flex: 1, overflow: 'hidden' }}>
             <ChatInterface
               key={chatKey}
               pageContext={pageContext}
               contextColor={contextColor}
-              placeholder={placeholder}
+              placeholder={overrideContext?.pageContext === 'aide_decouverte' 
+                ? "Décris ton problème ou ta question..." 
+                : placeholder}
               welcomeMessage={welcomeMessage}
               additionalContext={additionalContext}
               promptContext={{
@@ -488,7 +508,6 @@ export default function FloatingAssistant() {
         </div>
       )}
 
-      {/* Animations */}
       <style jsx>{`
         @keyframes fabPulse {
           0%, 100% {
