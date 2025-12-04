@@ -131,6 +131,7 @@ export default function ChatInterface({
   const [expertPrompt, setExpertPrompt] = useState<string | null>(null);
   const [conversationContext, setConversationContext] = useState<string>('');
   const [isTransitioningToExpert, setIsTransitioningToExpert] = useState(false);
+  const [pendingVideoSearch, setPendingVideoSearch] = useState<{query: string; description: string} | null>(null);
   
   // ==================== REFS ====================
   
@@ -655,6 +656,17 @@ export default function ChatInterface({
         if (expertTransition) {
           console.log('🎯 Expert identifié:', expertTransition.expertise_identifiee.nom_affichage);
           setPendingExpertise(expertTransition.expertise_identifiee);
+        }
+      }
+
+      // Détection dans handleSend après réponse IA
+      if (pageContext === 'video_decouverte') {
+        const videoMatch = response.message.match(/```json[\s\S]*?"ready_for_search"\s*:\s*true[\s\S]*?```/);
+        if (videoMatch) {
+          try {
+            const json = JSON.parse(videoMatch[0].replace(/```json|```/g, ''));
+            setPendingVideoSearch(json.video_search);
+          } catch {}
         }
       }
       
@@ -1305,7 +1317,6 @@ export default function ChatInterface({
                 style={{
                   padding: compact ? '0.6rem 0.9rem' : '0.75rem 1rem',
                   borderRadius: compact ? '12px' : '16px',
-                  // background: message.role === 'user' ? contextColor : 'rgba(255,255,255,0.15)',
                   background: message.role === 'user' ? contextColor : 'rgba(30, 30, 30, 0.95)',
                   color: message.role === 'user' ? 'white' : 'var(--gray-light)',
                   boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
@@ -1372,6 +1383,39 @@ export default function ChatInterface({
                     ) : (
                       <>💬 Parler avec l'expert</>
                     )}
+                  </button>
+                </div>
+              )}
+
+              // Bouton recherche vidéo dans le rendu
+              {pendingVideoSearch && index === displayMessages.length - 1 && (
+                <div style={{
+                  marginTop: '0.75rem',
+                  padding: '1rem',
+                  background: 'linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(16, 185, 129, 0.2))',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(34, 197, 94, 0.3)'
+                }}>
+                  <div style={{ fontSize: '0.9rem', fontWeight: '600', color: 'white', marginBottom: '0.5rem' }}>
+                    🎬 {pendingVideoSearch.description}
+                  </div>
+                  <button
+                    onClick={async () => {
+                      // Naviguer vers page vidéos avec query
+                      window.location.href = `/videos?q=${encodeURIComponent(pendingVideoSearch.query)}`;
+                    }}
+                    style={{
+                      padding: '0.6rem 1.25rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: 'linear-gradient(135deg, #22c55e, #10b981)',
+                      color: 'white',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    🎬 Rechercher des vidéos
                   </button>
                 </div>
               )}
