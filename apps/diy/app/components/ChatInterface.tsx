@@ -33,7 +33,6 @@ import { extractEtapesActions, dispatchEtapesAction } from '../lib/services/etap
 import { detectChantierType, getChantierTypeConfig, formatTypeConfigForAI, type Phase1Synthese } from '../lib/services/chantierTypeService';
 import { 
   extractExpertTransition, 
-  isUserConfirmingExpert, 
   getOrCreateExpertPrompt,
   getExpertHeaderInfo,
   type ExpertiseIdentifiee,
@@ -131,6 +130,7 @@ export default function ChatInterface({
   const [expertHeader, setExpertHeader] = useState<ExpertHeaderInfo | null>(null);
   const [expertPrompt, setExpertPrompt] = useState<string | null>(null);
   const [conversationContext, setConversationContext] = useState<string>('');
+  const [isTransitioningToExpert, setIsTransitioningToExpert] = useState(false);
   
   // ==================== REFS ====================
   
@@ -295,6 +295,7 @@ export default function ChatInterface({
       setExpertHeader(null);
       setExpertPrompt(null);
       setConversationContext('');
+      setIsTransitioningToExpert(false);
       console.log('🔄 Reset conversation pour nouveau chantier');
     }
   }, [chantierId]);
@@ -652,7 +653,7 @@ export default function ChatInterface({
         const expertTransition = extractExpertTransition(response.message);
         
         if (expertTransition) {
-          console.log('🎯 Expert identifié, en attente de confirmation');
+          console.log('🎯 Expert identifié:', expertTransition.expertise_identifiee.nom_affichage);
           setPendingExpertise(expertTransition.expertise_identifiee);
         }
       }
@@ -846,70 +847,75 @@ export default function ChatInterface({
   // ==================== HANDLERS ====================
 
  /**
- * Gère la transition vers le mode expert
- */
-const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
-  console.log('🚀 Transition vers expert:', expertise.nom_affichage);
-  
-  try {
-    // Construire le contexte de conversation
-    const context = displayMessages
-      .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
-      .join('\n');
-    setConversationContext(context);
+   * Gère la transition vers le mode expert (appelée au clic sur le bouton)
+   */
+  const handleExpertTransition = async () => {
+    if (!pendingExpertise) return;
     
-    // Chercher ou créer le prompt expert
-    const prompt = await getOrCreateExpertPrompt(expertise, context);
+    console.log('🚀 Transition vers expert:', pendingExpertise.nom_affichage);
+    setIsTransitioningToExpert(true);
     
-    console.log(`✅ Prompt expert ${prompt.isNew ? 'créé' : 'trouvé'}: ${prompt.code}`);
-    
-    // Mettre à jour le header
-    const headerInfo = getExpertHeaderInfo(expertise);
-    setExpertHeader(headerInfo);
-    setExpertPrompt(prompt.prompt_text);
-    setIsExpertMode(true);
-    setPendingExpertise(null);
-    
-    // Envoyer un event pour mettre à jour le FloatingAssistant
-    window.dispatchEvent(new CustomEvent('expertModeActivated', {
-      detail: {
-        header: headerInfo,
-        expertise: expertise
+    try {
+      // Construire le contexte de conversation
+      const context = displayMessages
+        .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+        .join('\n');
+      setConversationContext(context);
+      
+      // Chercher ou créer le prompt expert
+      const prompt = await getOrCreateExpertPrompt(pendingExpertise, context);
+      
+      console.log(`✅ Prompt expert ${prompt.isNew ? 'créé' : 'trouvé'}: ${prompt.code}`);
+      
+      // Mettre à jour le header
+      const headerInfo = getExpertHeaderInfo(pendingExpertise);
+      setExpertHeader(headerInfo);
+      setExpertPrompt(prompt.prompt_text);
+      setIsExpertMode(true);
+      
+      // Envoyer un event pour mettre à jour le FloatingAssistant
+      window.dispatchEvent(new CustomEvent('expertModeActivated', {
+        detail: {
+          header: headerInfo,
+          expertise: pendingExpertise
+        }
+      }));
+      
+      // Message de transition
+      const transitionMessage: Message = {
+        role: 'assistant',
+        content: `🎯 ${pendingExpertise.nom_affichage} à ton service !\n\n${pendingExpertise.contexte_resume}\n\nPose-moi tes questions, je suis là pour t'aider ! 💪`,
+        timestamp: new Date().toISOString(),
+        metadata: { promptSource: 'expert_transition' }
+      };
+      
+      if (disablePersistence) {
+        setLocalMessages(prev => [...prev, transitionMessage]);
+      } else {
+        await persistMessage(transitionMessage);
       }
-    }));
-    
-    // Message de transition
-    const transitionMessage: Message = {
-      role: 'assistant',
-      content: `🎯 **${expertise.nom_affichage}** à ton service !\n\nJ'ai bien compris : ${expertise.contexte_resume}\n\nPose-moi tes questions, je suis là pour t'aider ! 💪`,
-      timestamp: new Date().toISOString(),
-      metadata: { 
-        promptSource: 'expert_transition',
+      
+      // Reset pending
+      setPendingExpertise(null);
+      
+    } catch (error) {
+      console.error('Erreur transition expert:', error);
+      const errorMessage: Message = {
+        role: 'assistant',
+        content: "Désolé, j'ai eu un souci technique. Mais je peux quand même t'aider ! Pose ta question. 😊",
+        timestamp: new Date().toISOString()
+      };
+      
+      if (disablePersistence) {
+        setLocalMessages(prev => [...prev, errorMessage]);
+      } else {
+        await persistMessage(errorMessage);
       }
-    };
-    
-    if (disablePersistence) {
-      setLocalMessages(prev => [...prev, transitionMessage]);
-    } else {
-      await persistMessage(transitionMessage);
+    } finally {
+      setIsTransitioningToExpert(false);
     }
-    
-  } catch (error) {
-    console.error('Erreur transition expert:', error);
-    // Message d'erreur gracieux
-    const errorMessage: Message = {
-      role: 'assistant',
-      content: "Désolé, j'ai eu un souci pour charger l'expert. Mais pas de panique, je peux quand même t'aider ! Pose ta question. 😊",
-      timestamp: new Date().toISOString()
-    };
-    
-    if (disablePersistence) {
-      setLocalMessages(prev => [...prev, errorMessage]);
-    } else {
-      await persistMessage(errorMessage);
-    }
-  }
-};
+  };
+
   
   // Envoi texte
   const handleSend = async () => {
@@ -1234,6 +1240,22 @@ const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
   const existingChantierId = getExistingChantierId();
   const isModification = !!existingChantierId;
 
+  /**
+   * Retire le bloc JSON de la réponse pour l'affichage
+   */
+  const cleanMessageContent = (content: string): string => {
+    // Retirer le bloc ```json ... ```
+    let cleaned = content.replace(/```json[\s\S]*?```/g, '').trim();
+    
+    // Retirer aussi le JSON brut si présent
+    cleaned = cleaned.replace(/\{[\s\S]*"ready_for_expert"[\s\S]*?\}/g, '').trim();
+    
+    // Nettoyer les lignes vides multiples
+    cleaned = cleaned.replace(/\n{3,}/g, '\n\n').trim();
+    
+    return cleaned || content;
+  };
+
   // ==================== RENDU ====================
 
   return (
@@ -1271,19 +1293,6 @@ const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
             )}
           </div>
         )}
-
-        {/* Banner détection expertise - DÉSACTIVÉ TEMPORAIREMENT */}
-        {/* {suggestionShown && detectedExpertise && !activeExpertise?.code && (
-          <ExpertiseBanner
-            expertise={detectedExpertise}
-            confidence={confidence}
-            matchedKeywords={matchedKeywords}
-            onConfirm={handleConfirmExpertise}
-            onDismiss={dismissSuggestion}
-            themeColor={contextColor}
-            compact={compact}
-          />
-        )} */}
 
         {/* Message transition expertise */}
         {showTransition && transitionExpertise && (
@@ -1324,8 +1333,66 @@ const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
                   wordBreak: 'break-word'
                 }}
               >
-                {message.content}
+                {cleanMessageContent(message.content)}
               </div>
+
+              {/* Bouton "Parler avec l'expert" si expertise détectée */}
+              {message.role === 'assistant' && 
+               pendingExpertise && 
+               index === displayMessages.length - 1 && (
+                <div style={{
+                  marginTop: '0.75rem',
+                  padding: '1rem',
+                  background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 51, 234, 0.2))',
+                  borderRadius: '12px',
+                  border: '1px solid rgba(59, 130, 246, 0.3)'
+                }}>
+                  <div style={{
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'white',
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem'
+                  }}>
+                    🎯 Expert identifié : {pendingExpertise.nom_affichage}
+                  </div>
+                  <div style={{
+                    fontSize: '0.8rem',
+                    color: 'rgba(255,255,255,0.8)',
+                    marginBottom: '0.75rem'
+                  }}>
+                    {pendingExpertise.contexte_resume}
+                  </div>
+                  <button
+                    onClick={handleExpertTransition}
+                    disabled={isTransitioningToExpert}
+                    style={{
+                      padding: '0.6rem 1.25rem',
+                      borderRadius: '8px',
+                      border: 'none',
+                      background: isTransitioningToExpert 
+                        ? 'rgba(255,255,255,0.3)' 
+                        : 'linear-gradient(135deg, #3b82f6, #8b5cf6)',
+                      color: 'white',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
+                      cursor: isTransitioningToExpert ? 'wait' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    {isTransitioningToExpert ? (
+                      <>⏳ Connexion en cours...</>
+                    ) : (
+                      <>💬 Parler avec l'expert</>
+                    )}
+                  </button>
+                </div>
+              )}
               
               {/* Bouton 📌 toujours visible (seulement pour messages IA) */}
               {message.role === 'assistant' && noteContext && (
