@@ -208,8 +208,7 @@ export default function FloatingAssistant() {
   const handleNewChat = () => {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
       isManualResetRef.current = true;
-      setOverrideContext(null);
-      setExpertMode(null);
+      setExpertMode(null); // Reset expert mais GARDE overrideContext (aide_decouverte)
       setChatKey(prev => prev + 1);
     }
   };
