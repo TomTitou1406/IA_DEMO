@@ -73,20 +73,20 @@ export default function FloatingAssistant() {
   const pageContext = overrideContext?.pageContext || defaultPageContext;
   const welcomeMessage = overrideContext?.welcomeMessage || defaultWelcomeMessage;
   
-  // Couleur : toujours bleu pour aide_decouverte et mode expert
+  // Couleur : toujours bleu pour aide_decouverte et mode expert, vert pour les vidéos
   const contextColor = (overrideContext?.pageContext === 'aide_decouverte' || expertMode) 
     ? 'var(--blue)' 
-    : defaultContextColor;
+    : overrideContext?.pageContext === 'video_decouverte'
+      ? 'var(--green)'
+      : defaultContextColor;
   
   const header = expertMode 
-    ? { 
-        title: "Assistance Expert", 
-        breadcrumb: "", 
-        expertiseLine: `🎯 ${expertMode.header.expertiseNom}` 
-      }
-    : (overrideContext?.pageContext === 'aide_decouverte' 
-        ? { title: "Demande d'assistance", breadcrumb: "", expertiseLine: "🔍 Diagnostic en cours..." }
-        : defaultHeader);
+    ? { title: "Assistance Expert", breadcrumb: "", expertiseLine: `🎯 ${expertMode.header.expertiseNom}` }
+    : overrideContext?.pageContext === 'aide_decouverte' 
+      ? { title: "Demande d'assistance", breadcrumb: "", expertiseLine: "🔍 Diagnostic en cours..." }
+      : overrideContext?.pageContext === 'video_decouverte'
+        ? { title: "Trouver un tuto", breadcrumb: "", expertiseLine: "🎬 Recherche vidéo" }
+        : defaultHeader;
   
   const expertise = expertMode 
     ? { code: 'expert', nom: expertMode.header.expertiseNom, icon: '🎯' }
