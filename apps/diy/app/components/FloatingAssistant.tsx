@@ -6,9 +6,10 @@
  * - Bouton "Nouvelle discussion"
  * - Couleur selon le contexte fonctionnel
  * - Persistence de l'état ouvert/fermé (sessionStorage)
+ * - RESET AUTOMATIQUE quand le contexte change (navigation)
  * 
- * @version 5.0
- * @date 26 novembre 2025
+ * @version 5.1
+ * @date 04 décembre 2025
  */
 
 'use client';
@@ -51,6 +52,25 @@ export default function FloatingAssistant() {
   } = useAssistantContext();
   
   const inactivityTimerRef = useRef<NodeJS.Timeout | null>(null);
+  
+  // ==================== NOUVEAU : Reset auto quand contexte change ====================
+  // Stocker le contexte précédent pour détecter les changements
+  const prevContextRef = useRef<string>('');
+  
+  useEffect(() => {
+    // Construire une clé unique basée sur le contexte actuel
+    const currentContextKey = `${pageContext}-${chantierId || ''}-${travailId || ''}-${etapeId || ''}`;
+    
+    // Si le contexte a changé (navigation vers autre page/niveau)
+    if (prevContextRef.current && prevContextRef.current !== currentContextKey) {
+      console.log('🔄 Contexte changé, reset conversation:', prevContextRef.current, '→', currentContextKey);
+      setChatKey(prev => prev + 1); // Reset la conversation
+    }
+    
+    // Mettre à jour la référence
+    prevContextRef.current = currentContextKey;
+  }, [pageContext, chantierId, travailId, etapeId]);
+  // ==================== FIN NOUVEAU ====================
 
   // Persister l'état isOpen
   useEffect(() => {
@@ -130,7 +150,7 @@ export default function FloatingAssistant() {
     setAssistantState(state);
   };
 
-  // Nouvelle discussion
+  // Nouvelle discussion (manuelle)
   const handleNewChat = () => {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
       setChatKey(prev => prev + 1);
@@ -346,7 +366,7 @@ export default function FloatingAssistant() {
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  ✨ Assistant IA : {expertise.nom}
+                  ✨ Expert : {expertise.nom}
                 </div>
               </div>
             </div>
