@@ -49,15 +49,26 @@ export default function HomePage() {
           </button>
         </div>
 
-        {/* Card 3 : Tutos - DISABLED */}
-        <div className="main-card card-green">
+        {/* Card 3 : Tutos - ACTIVE */}
+        <div 
+          className="main-card card-green"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('openAssistantWithContext', { 
+              detail: { 
+                pageContext: 'video_decouverte',
+                welcomeMessage: "Salut ! Tu cherches un tutoriel vidéo ? Dis-moi ce que tu veux apprendre à faire ! 🎬"
+              } 
+            }));
+          }}
+          style={{ cursor: 'pointer' }}
+        >
           <div className="card-illu">
-            <img src="/images/tutos.webp" alt="Tous les tutos utiles" />
+            <img src="/images/tutoriels.webp" alt="Tutoriels" />
           </div>
-          <h3>Tutos & Astuces</h3>
-          <p>Guides vidéos illustrés</p>
-          <button className="main-btn btn-disabled" disabled>
-            Bientôt disponible 🔒
+          <h3>Trouver un tuto</h3>
+          <p>Vidéos pour apprendre</p>
+          <button className="main-btn btn-green">
+            Chercher une vidéo
           </button>
         </div>
       </div>
