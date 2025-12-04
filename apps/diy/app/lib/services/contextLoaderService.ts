@@ -244,7 +244,6 @@ async function loadChantiersContext(): Promise<ContextData> {
     const { data: chantiers, error } = await supabase
       .from('chantiers')
       .select('id, titre, description, statut, progression, budget_initial, duree_estimee_heures')
-      .eq('est_supprime', false)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
