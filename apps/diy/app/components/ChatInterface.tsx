@@ -31,6 +31,14 @@ import { usePathname } from 'next/navigation';
 import { extractPhasageActions, dispatchPhasageAction } from '../lib/services/phasageActions';
 import { extractEtapesActions, dispatchEtapesAction } from '../lib/services/etapesActions';
 import { detectChantierType, getChantierTypeConfig, formatTypeConfigForAI, type Phase1Synthese } from '../lib/services/chantierTypeService';
+import { 
+  extractExpertTransition, 
+  isUserConfirmingExpert, 
+  getOrCreateExpertPrompt,
+  getExpertHeaderInfo,
+  type ExpertiseIdentifiee,
+  type ExpertHeaderInfo
+} from '../lib/services/expertiseDynamicService';
 
 // ==================== TYPES ====================
 
@@ -118,6 +126,11 @@ export default function ChatInterface({
   const [phase1Synthese, setPhase1Synthese] = useState<Phase1Synthese | null>(null);
   const [showPhase1Transition, setShowPhase1Transition] = useState(false);
   const [typeConfig, setTypeConfig] = useState<any>(null);
+  const [pendingExpertise, setPendingExpertise] = useState<ExpertiseIdentifiee | null>(null);
+  const [isExpertMode, setIsExpertMode] = useState(false);
+  const [expertHeader, setExpertHeader] = useState<ExpertHeaderInfo | null>(null);
+  const [expertPrompt, setExpertPrompt] = useState<string | null>(null);
+  const [conversationContext, setConversationContext] = useState<string>('');
   
   // ==================== REFS ====================
   
@@ -277,6 +290,11 @@ export default function ChatInterface({
       setTypeConfig(null);
       setRecapData(null);
       setShowRecapModal(false);
+      setPendingExpertise(null);
+      setIsExpertMode(false);
+      setExpertHeader(null);
+      setExpertPrompt(null);
+      setConversationContext('');
       console.log('🔄 Reset conversation pour nouveau chantier');
     }
   }, [chantierId]);
@@ -612,20 +630,50 @@ export default function ChatInterface({
       }
       
       // Appel API avec expertise si active
-       const response: ChatResponse = await sendChat({
+      const response: ChatResponse = await sendChat({
         messages: apiMessages,
-        context: enrichedContext,
+        context: isExpertMode && expertPrompt 
+          ? `${expertPrompt}\n\n---\nCONTEXTE CONVERSATION:\n${conversationContext}\n\n---\nNOUVELLE QUESTION:`
+          : enrichedContext,
         isVoiceMode: voiceMode,
-        pageContext,
-        expertiseCode: activeExpertise?.code,
+        pageContext: isExpertMode ? 'expert' : pageContext,
+        expertiseCode: isExpertMode ? expertHeader?.expertiseCode : activeExpertise?.code,
         promptContext: {
           ...promptContext,
           chantierId,
           travailId,
           creationPhase,
-          typeProjet: phase1Synthese?.type_projet,  // ← AJOUTER
+          typeProjet: phase1Synthese?.type_projet,
         }
       });
+
+      // === DÉTECTION EXPERTISE (aide ponctuelle) ===
+      if (pageContext === 'aide_decouverte' && !isExpertMode) {
+        const expertTransition = extractExpertTransition(response.message);
+        
+        if (expertTransition) {
+          console.log('🎯 Expert identifié, en attente de confirmation');
+          setPendingExpertise(expertTransition.expertise_identifiee);
+        }
+      }
+      
+      // === VÉRIFIER CONFIRMATION EXPERT ===
+      if (pendingExpertise && isUserConfirmingExpert(content)) {
+        console.log('✅ Confirmation reçue, transition vers expert');
+        
+        // Ajouter le message user d'abord
+        if (disablePersistence) {
+          setLocalMessages(prev => [...prev, userMessage]);
+        } else {
+          await persistMessage(userMessage);
+        }
+        
+        // Lancer la transition
+        await handleExpertTransition(pendingExpertise);
+        
+        setLoading(false);
+        return; // Stop ici
+      }
 
      // DEBUG : Voir la réponse brute de l'IA
       console.log('🤖 RÉPONSE BRUTE IA:', response.message);
@@ -797,6 +845,73 @@ export default function ChatInterface({
 
   // ==================== HANDLERS ====================
 
+ /**
+ * Gère la transition vers le mode expert
+ */
+const handleExpertTransition = async (expertise: ExpertiseIdentifiee) => {
+  console.log('🚀 Transition vers expert:', expertise.nom_affichage);
+  
+  try {
+    // Construire le contexte de conversation
+    const context = displayMessages
+      .map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`)
+      .join('\n');
+    setConversationContext(context);
+    
+    // Chercher ou créer le prompt expert
+    const prompt = await getOrCreateExpertPrompt(expertise, context);
+    
+    console.log(`✅ Prompt expert ${prompt.isNew ? 'créé' : 'trouvé'}: ${prompt.code}`);
+    
+    // Mettre à jour le header
+    const headerInfo = getExpertHeaderInfo(expertise);
+    setExpertHeader(headerInfo);
+    setExpertPrompt(prompt.prompt_text);
+    setIsExpertMode(true);
+    setPendingExpertise(null);
+    
+    // Envoyer un event pour mettre à jour le FloatingAssistant
+    window.dispatchEvent(new CustomEvent('expertModeActivated', {
+      detail: {
+        header: headerInfo,
+        expertise: expertise
+      }
+    }));
+    
+    // Message de transition
+    const transitionMessage: Message = {
+      role: 'assistant',
+      content: `🎯 **${expertise.nom_affichage}** à ton service !\n\nJ'ai bien compris : ${expertise.contexte_resume}\n\nPose-moi tes questions, je suis là pour t'aider ! 💪`,
+      timestamp: new Date().toISOString(),
+      metadata: { 
+        promptSource: 'expert_transition',
+        expertiseCode: expertise.specialite 
+      }
+    };
+    
+    if (disablePersistence) {
+      setLocalMessages(prev => [...prev, transitionMessage]);
+    } else {
+      await persistMessage(transitionMessage);
+    }
+    
+  } catch (error) {
+    console.error('Erreur transition expert:', error);
+    // Message d'erreur gracieux
+    const errorMessage: Message = {
+      role: 'assistant',
+      content: "Désolé, j'ai eu un souci pour charger l'expert. Mais pas de panique, je peux quand même t'aider ! Pose ta question. 😊",
+      timestamp: new Date().toISOString()
+    };
+    
+    if (disablePersistence) {
+      setLocalMessages(prev => [...prev, errorMessage]);
+    } else {
+      await persistMessage(errorMessage);
+    }
+  }
+};
+  
   // Envoi texte
   const handleSend = async () => {
     if (!input.trim() || loading) return;
