@@ -199,23 +199,87 @@ async function loadJournalForChantier(chantierId: string): Promise<Journal | und
 
 // ==================== LOADERS ====================
 
-/**
+**
  * Charge le contexte pour la page Liste Chantiers
+ * AMÉLIORÉ : Charge maintenant la liste des chantiers avec leurs stats
  */
 async function loadChantiersContext(): Promise<ContextData> {
-  return {
-    level: 'chantiers',
-    header: {
-      title: 'Mes projets',
-      breadcrumb: '',
-      expertiseLine: '📋 Chef de chantier'
-    },
-    expertiseCode: 'chef_chantier',
-    expertiseNom: 'Chef de chantier',
-    expertiseIcon: '📋',
-    itemCount: 0,
-    contextForAI: `Tu es le Chef de chantier de l'utilisateur. Tu l'aides à gérer ses projets de bricolage : création de chantiers, organisation, priorisation. Tu as une vision globale de tous ses projets.`
-  };
+  try {
+    // Charger tous les chantiers de l'utilisateur
+    const { data: chantiers, error } = await supabase
+      .from('chantiers')
+      .select('id, titre, description, statut, progression, budget_initial, duree_estimee_heures')
+      .eq('est_supprime', false)
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+
+    const nbChantiers = chantiers?.length || 0;
+    
+    // Compter par statut
+    const nouveaux = chantiers?.filter(c => c.statut === 'nouveau').length || 0;
+    const enCours = chantiers?.filter(c => c.statut === 'en_cours' || c.statut === 'actif' || !c.statut).length || 0;
+    const termines = chantiers?.filter(c => c.statut === 'terminé').length || 0;
+
+    // Formater les chantiers pour l'IA
+    const chantiersFormatted = (chantiers || []).map((c: any, idx: number) => {
+      const statut = c.statut === 'nouveau' ? '✨' : 
+                     c.statut === 'terminé' ? '✅' : '🔨';
+      const progression = c.progression || 0;
+      const budget = c.budget_initial ? `${c.budget_initial.toLocaleString()}€` : '';
+      return `${idx + 1}. ${statut} ${c.titre} - ${progression}% ${budget}`;
+    }).join('\n   ');
+
+    const contextForAI = `
+📊 VUE D'ENSEMBLE DE TES CHANTIERS
+
+Tu as ${nbChantiers} chantier${nbChantiers > 1 ? 's' : ''} :
+- ${nouveaux} nouveau${nouveaux > 1 ? 'x' : ''} (à configurer)
+- ${enCours} en cours
+- ${termines} terminé${termines > 1 ? 's' : ''}
+
+📋 LISTE DES CHANTIERS :
+   ${chantiersFormatted || 'Aucun chantier créé'}
+
+TON RÔLE : Tu es le Chef de chantier de l'utilisateur. Tu l'aides à :
+- Choisir quel chantier prioriser
+- Comprendre l'état d'avancement global
+- Créer un nouveau chantier si besoin
+- Naviguer vers le bon chantier selon ses besoins
+`.trim();
+
+    return {
+      level: 'chantiers',
+      header: {
+        title: 'Mes chantiers',
+        breadcrumb: `${nbChantiers} chantier${nbChantiers > 1 ? 's' : ''} • ${enCours} en cours`,
+        expertiseLine: '📋 Chef de chantier'
+      },
+      expertiseCode: 'chef_chantier',
+      expertiseNom: 'Chef de chantier',
+      expertiseIcon: '📋',
+      itemCount: nbChantiers,
+      contextForAI,
+      raw: { chantiers: chantiers || [] }
+    };
+
+  } catch (error) {
+    console.error('Erreur chargement contexte chantiers:', error);
+    // Fallback minimal
+    return {
+      level: 'chantiers',
+      header: {
+        title: 'Mes chantiers',
+        breadcrumb: '',
+        expertiseLine: '📋 Chef de chantier'
+      },
+      expertiseCode: 'chef_chantier',
+      expertiseNom: 'Chef de chantier',
+      expertiseIcon: '📋',
+      itemCount: 0,
+      contextForAI: `Tu es le Chef de chantier. Tu aides l'utilisateur à gérer ses projets de bricolage.`
+    };
+  }
 }
 
 /**
@@ -490,7 +554,7 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
    // Charger le lot courant
     const { data: lotCourant } = await supabase
       .from('travaux')
-      .select('id, titre, description, progression, statut, code_expertise')
+      .select('id, titre, description, ordre, statut, progression, code_expertise')
       .eq('id', travailId)
       .single();
 
@@ -531,8 +595,43 @@ async function loadEtapesContext(chantierId: string, travailId: string): Promise
     }).join('\n   ');
 
     const expertiseCode = lotCourant?.code_expertise || 'generaliste';
-    const expertiseNom = expertiseCode.charAt(0).toUpperCase() + expertiseCode.slice(1).replace('_', ' ');
+    const expertiseNom = formatExpertiseName(expertiseCode);
     const expertiseIcon = getExpertiseIcon(expertiseCode);
+
+    /**
+ * Formate le nom d'expertise proprement
+ * electricien -> Électricien
+ * plombier -> Plombier
+ * generaliste -> Généraliste
+ */
+function formatExpertiseName(code: string): string {
+  if (!code) return 'Généraliste';
+  
+  const EXPERTISE_NAMES: Record<string, string> = {
+    'generaliste': 'Généraliste',
+    'chef_chantier': 'Chef de chantier',
+    'electricien': 'Électricien',
+    'plombier': 'Plombier',
+    'plaquiste': 'Plaquiste',
+    'peintre': 'Peintre',
+    'menuisier': 'Menuisier',
+    'carreleur': 'Carreleur',
+    'macon': 'Maçon',
+    'couvreur': 'Couvreur',
+    'chauffagiste': 'Chauffagiste',
+    'climaticien': 'Climaticien',
+    'serrurier': 'Serrurier',
+    'vitrier': 'Vitrier',
+    'isolation': 'Spécialiste isolation',
+    'demolition': 'Spécialiste démolition',
+    'formateur': 'Formateur',
+    'economiste': 'Économiste'
+  };
+  
+  return EXPERTISE_NAMES[code.toLowerCase()] || 
+         code.charAt(0).toUpperCase() + code.slice(1).replace(/_/g, ' ');
+}
+
     
     const journalText = formatJournalForAI(journal);
 
@@ -984,8 +1083,8 @@ async function loadTachesContext(chantierId: string, travailId: string, etapeId:
       return line;
     }).join('\n   ');
 
-    const expertiseCode = lotCourant?.expertise?.[0]?.code || 'generaliste';
-    const expertiseNom = lotCourant?.expertise?.[0]?.nom || 'Généraliste';
+    const expertiseCode = lotCourant?.code_expertise || 'generaliste';
+    const expertiseNom = formatExpertiseName(expertiseCode);
     const expertiseIcon = getExpertiseIcon(expertiseCode);
 
     const journalText = formatJournalForAI(journal);
