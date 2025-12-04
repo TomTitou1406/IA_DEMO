@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAllChantiers, getChantierStats, deleteChantier } from '../lib/services/chantierService';
 import CardButton from '@/app/components/CardButton';
+// NOUVEL IMPORT
+import Breadcrumb from '@/app/components/Breadcrumb';
 
 interface Chantier {
   id: string;
@@ -248,12 +250,12 @@ export default function ChantiersPage() {
           </div>
         </div>
 
-        {/* BARRE DE PROGRESSION (si en cours ou terminé) */}
-        {chantier.statut !== 'nouveau' && stats && (
+        {/* Barre progression pour EN_COURS */}
+        {chantier.statut !== 'nouveau' && (
           <div style={{ marginBottom: '1rem' }}>
             <div style={{
               width: '100%',
-              height: '16px',
+              height: '8px',
               background: 'rgba(255,255,255,0.08)',
               borderRadius: '10px',
               overflow: 'hidden'
@@ -261,38 +263,33 @@ export default function ChantiersPage() {
               <div style={{
                 width: `${progressionChantier}%`,
                 height: '100%',
-                background: 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+                background: `linear-gradient(90deg, ${statusColor} 0%, var(--green) 100%)`,
                 transition: 'width 0.5s ease'
               }}></div>
             </div>
           </div>
         )}
 
-        {/* Stats inline - COMPLÈTES COMME PAGE TRAVAUX */}
+        {/* Stats inline */}
         <div style={{ 
           display: 'flex',
           flexWrap: 'wrap',
           alignItems: 'center',
-          gap: '2rem',
-          fontSize: '0.85rem',
-          color: 'var(--gray)',
-          paddingTop: '0.75rem',
-          borderTop: '1px solid rgba(255,255,255,0.08)'
+          gap: '1.5rem',
+          fontSize: '0.9rem',
+          color: 'var(--gray)'
         }}>
           {/* Progression */}
-          {chantier.statut !== 'nouveau' && stats && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1rem' }}>📊</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {progressionChantier}%
-                </strong>
-                <span style={{ opacity: 0.8, marginLeft: '0.3rem' }}>complété</span>
-              </span>
-            </div>
+          {chantier.statut !== 'nouveau' && (
+            <span style={{ 
+              color: 'var(--gray-light)', 
+              fontWeight: '700' 
+            }}>
+              {progressionChantier}% complété
+            </span>
           )}
 
-          {/* Heures */}
+          {/* Durée */}
           {chantier.statut !== 'nouveau' && stats && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <span style={{ fontSize: '1rem' }}>⏱️</span>
@@ -428,50 +425,15 @@ export default function ChantiersPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED - PADDING COHÉRENT */}
-      <div style={{ 
-        position: 'fixed',
-        top: '100px',
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: 'rgba(0, 0, 0, 0.98)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)',
-      }}>
-        <div style={{ 
-          maxWidth: '1100px', 
-          margin: '0 auto', 
-          padding: '1rem',
-          display: 'flex', 
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '1rem'
-        }}>
-          <Link href="/" style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            ← Accueil
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-            🏗️ Mes chantiers ({chantiers.length})
-          </span>
-        </div>
-      </div>
+      {/* ========== NOUVEAU BREADCRUMB ========== */}
+      <Breadcrumb currentLevel="chantiers" />
 
       {/* CONTENU PRINCIPAL */}
       <div style={{ 
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '85px'
+        paddingTop: '70px'
       }}>
     
         {/* BOUTON NOUVEAU CHANTIER - AU DESSUS DES SECTIONS */}
