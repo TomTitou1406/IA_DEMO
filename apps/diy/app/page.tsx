@@ -24,15 +24,26 @@ export default function HomePage() {
           </Link>
         </div>
 
-        {/* Card 2 : Assistance - DISABLED */}
-        <div className="main-card card-blue">
+        {/* Card 2 : Assistance - ACTIVE */}
+        <div 
+          className="main-card card-blue"
+          onClick={() => {
+            window.dispatchEvent(new CustomEvent('openAssistantWithContext', { 
+              detail: { 
+                pageContext: 'aide_decouverte',
+                welcomeMessage: "Salut ! Dis-moi ce qui te bloque ou ce que tu veux savoir faire. Je vais comprendre ton besoin et te mettre en relation avec le bon expert ! 🔧"
+              } 
+            }));
+          }}
+          style={{ cursor: 'pointer' }}
+        >
           <div className="card-illu">
             <img src="/images/assistance.webp" alt="Besoin d'aide" />
           </div>
           <h3>J'ai besoin d'aide</h3>
           <p>Coup de pouce précis et rapide</p>
-          <button className="main-btn btn-disabled" disabled>
-            Bientôt disponible 🔒
+          <button className="main-btn btn-blue">
+            Discuter avec l'expert 💡
           </button>
         </div>
 
