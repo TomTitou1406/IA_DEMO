@@ -7,6 +7,10 @@ import { getTachesByEtape, demarrerTache, terminerTache } from '@/app/lib/servic
 import ConfirmModal from '@/app/components/ConfirmModal';
 import CardButton from '@/app/components/CardButton';
 import NotesButton from '@/app/components/NotesButton';
+// NOUVEAUX IMPORTS
+import Breadcrumb from '@/app/components/Breadcrumb';
+import ParentContext from '@/app/components/ParentContext';
+import { getParentsContext } from '@/app/lib/services/parentContextService';
 
 interface Tache {
   id: string;
@@ -56,17 +60,29 @@ export default function TachesPage() {
     onConfirm: () => {}
   });
 
+  // NOUVEAU : État pour les parents (chantier + lot)
+  const [parents, setParents] = useState<{
+    chantier?: { titre: string };
+    lot?: { titre: string };
+  }>({});
+
   useEffect(() => {
     loadData();
-  }, [etapeId]);
+  }, [etapeId, chantierId, travailId]);
 
   async function loadData() {
     try {
-      const data = await getTachesByEtape(etapeId);
+      // Charger en parallèle les tâches ET les parents
+      const [data, parentsData] = await Promise.all([
+        getTachesByEtape(etapeId),
+        getParentsContext({ chantierId, travailId })
+      ]);
+      
       if (data) {
         setEtape(data.etape);
         setTaches(data.taches);
       }
+      setParents(parentsData);
     } catch (error) {
       console.error('Error loading taches:', error);
     } finally {
@@ -319,9 +335,9 @@ export default function TachesPage() {
                     <span
                       key={idx}
                       style={{
-                        background: `color-mix(in srgb, ${statusColor} 20%, transparent)`,  // ← color-mix
+                        background: `color-mix(in srgb, ${statusColor} 20%, transparent)`,
                         color: 'var(--gray-light)',
-                        border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`,  // ← color-mix
+                        border: `1px solid color-mix(in srgb, ${statusColor} 50%, transparent)`,
                         padding: '0.4rem 0.8rem',
                         borderRadius: '6px',
                         fontSize: '0.85rem',
@@ -336,7 +352,7 @@ export default function TachesPage() {
 
             {tache.conseils_pro && (
               <div style={{
-                background: `color-mix(in srgb, ${statusColor} 15%, transparent)`,  // ← color-mix
+                background: `color-mix(in srgb, ${statusColor} 15%, transparent)`,
                 border: `1px solid ${statusColor}`,
                 borderRadius: '8px',
                 padding: '0.75rem 1rem',
@@ -463,84 +479,27 @@ export default function TachesPage() {
 
   return (
     <>
-      {/* BREADCRUMB FIXED */}
-      <div style={{ 
-        position: 'fixed',
-        top: '100px',
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: 'rgba(0, 0, 0, 0.98)',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.08)'
-      }}>
-        <div style={{ 
-          maxWidth: '1100px', 
-          margin: '0 auto', 
-          padding: '1rem',
-          display: 'flex', 
-          alignItems: 'center',
-          gap: '0.5rem',
-          fontSize: '1rem'
-        }}>
-          <Link href="/chantiers" style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            ← Chantiers
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <Link href={`/chantiers/${chantierId}/travaux`} style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            🏗️ Chantier
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <Link href={`/chantiers/${chantierId}/travaux`} style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            Lots
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <Link href={`/chantiers/${chantierId}/travaux/${travailId}/etapes`} style={{ 
-            color: 'var(--gray)', 
-            transition: 'color 0.2s',
-            fontWeight: '500'
-          }}
-          onMouseEnter={(e) => e.currentTarget.style.color = 'var(--gray-light)'}
-          onMouseLeave={(e) => e.currentTarget.style.color = 'var(--gray)'}
-          >
-            Étapes
-          </Link>
-          <span style={{ color: 'var(--gray)' }}>/</span>
-          <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
-            Tâches ({taches.length})
-          </span>
-        </div>
-      </div>
+      {/* ========== NOUVEAU BREADCRUMB ========== */}
+      <Breadcrumb 
+        currentLevel="taches" 
+        chantierId={chantierId}
+        travailId={travailId}
+        etapeId={etapeId}
+      />
 
       {/* CONTENU PRINCIPAL */}
       <div style={{ 
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '85px'
+        paddingTop: '70px'
       }}>
+        {/* ========== NOUVEAU PARENT CONTEXT ========== */}
+        <ParentContext 
+          chantier={parents.chantier}
+          lot={parents.lot}
+        />
+
         {/* ÉTAT DES LIEUX DE L'ÉTAPE */}
         <div style={{
           marginBottom: '2rem',
