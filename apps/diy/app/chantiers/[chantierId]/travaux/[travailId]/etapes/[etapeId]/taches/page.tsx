@@ -523,7 +523,7 @@ export default function TachesPage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              🎯 {etape.titre}
+              🎯 Etape : {etape.titre}
             </h1>
             
             {/* Bouton Notes */}
