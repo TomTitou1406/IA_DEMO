@@ -1,7 +1,7 @@
 'use client';
 
 import { useSearchParams } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 
 interface Video {
   id: string;
@@ -13,7 +13,7 @@ interface Video {
   duration: string;
 }
 
-export default function VideosPage() {
+function VideosContent() {
   const searchParams = useSearchParams();
   const query = searchParams.get('q') || '';
   
@@ -24,6 +24,8 @@ export default function VideosPage() {
   useEffect(() => {
     if (query) {
       searchVideos();
+    } else {
+      setLoading(false);
     }
   }, [query]);
 
@@ -59,7 +61,6 @@ export default function VideosPage() {
         <p style={{ color: 'rgba(255,255,255,0.7)' }}>Aucune vidéo trouvée</p>
       ) : (
         <>
-          {/* Player si vidéo sélectionnée */}
           {selectedVideo && (
             <div style={{ marginBottom: '2rem', borderRadius: '12px', overflow: 'hidden' }}>
               <iframe
@@ -73,7 +74,6 @@ export default function VideosPage() {
             </div>
           )}
 
-          {/* Grille vidéos */}
           <div style={{
             display: 'grid',
             gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
@@ -86,45 +86,3 @@ export default function VideosPage() {
                 style={{
                   background: 'rgba(255,255,255,0.1)',
                   borderRadius: '12px',
-                  overflow: 'hidden',
-                  cursor: 'pointer',
-                  border: selectedVideo === video.id ? '2px solid var(--green)' : '2px solid transparent',
-                  transition: 'all 0.2s'
-                }}
-              >
-                <img 
-                  src={video.thumbnail} 
-                  alt={video.title}
-                  style={{ width: '100%', height: '180px', objectFit: 'cover' }}
-                />
-                <div style={{ padding: '1rem' }}>
-                  <h3 style={{ 
-                    color: 'white', 
-                    fontSize: '0.95rem', 
-                    marginBottom: '0.5rem',
-                    lineHeight: '1.3'
-                  }}>
-                    {video.title}
-                  </h3>
-                  <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.8rem' }}>
-                    {video.channelTitle}
-                  </p>
-                  <div style={{ 
-                    display: 'flex', 
-                    gap: '1rem', 
-                    marginTop: '0.5rem',
-                    fontSize: '0.75rem',
-                    color: 'rgba(255,255,255,0.5)'
-                  }}>
-                    <span>👁️ {(video.viewCount / 1000).toFixed(0)}k</span>
-                    <span>⏱️ {video.duration}</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </>
-      )}
-    </div>
-  );
-}
