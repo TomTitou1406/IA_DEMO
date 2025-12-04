@@ -1080,6 +1080,15 @@ export function parseNavigationFromPath(pathname: string): { level: NavigationLe
       ids: { chantierId: editMatch[1] }
     };
   }
+
+  // /chantiers/[id]/travaux/[id]/etapes/[id]/mise-en-oeuvre (MISE EN OEUVRE TÂCHES)
+  const miseEnOeuvreTachesMatch = pathname.match(/^\/chantiers\/([^\/]+)\/travaux\/([^\/]+)\/etapes\/([^\/]+)\/mise-en-oeuvre$/);
+  if (miseEnOeuvreTachesMatch) {
+    return {
+      level: 'taches',  // On réutilise le même niveau
+      ids: { chantierId: miseEnOeuvreTachesMatch[1], travailId: miseEnOeuvreTachesMatch[2], etapeId: miseEnOeuvreTachesMatch[3] }
+    };
+  }
   
   // /chantiers/[id]/travaux/[id]/etapes/[id]/taches
   const tachesMatch = pathname.match(/^\/chantiers\/([^\/]+)\/travaux\/([^\/]+)\/etapes\/([^\/]+)\/taches$/);
