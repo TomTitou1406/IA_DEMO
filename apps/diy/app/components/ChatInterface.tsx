@@ -658,25 +658,7 @@ export default function ChatInterface({
         }
       }
       
-      // === VÉRIFIER CONFIRMATION EXPERT ===
-      if (pendingExpertise && isUserConfirmingExpert(content)) {
-        console.log('✅ Confirmation reçue, transition vers expert');
-        
-        // Ajouter le message user d'abord
-        if (disablePersistence) {
-          setLocalMessages(prev => [...prev, userMessage]);
-        } else {
-          await persistMessage(userMessage);
-        }
-        
-        // Lancer la transition
-        await handleExpertTransition(pendingExpertise);
-        
-        setLoading(false);
-        return; // Stop ici
-      }
-
-     // DEBUG : Voir la réponse brute de l'IA
+      // DEBUG : Voir la réponse brute de l'IA
       console.log('🤖 RÉPONSE BRUTE IA:', response.message);
       
       // === PHASE 1 : Vérifier si Phase 1 complète ===
