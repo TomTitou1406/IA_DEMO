@@ -6,9 +6,9 @@
  * - Bouton "Nouvelle discussion"
  * - Support contexte "aide_decouverte" pour aide ponctuelle
  * - Support MODE EXPERT dynamique (transition Phase 2)
- * - Conservation du contexte à la fermeture (fix v5.5)
+ * - Conservation du contexte et messages à la fermeture (fix v5.6)
  * 
- * @version 5.5
+ * @version 5.6
  * @date 05 décembre 2025
  */
 
@@ -158,10 +158,8 @@ export default function FloatingAssistant() {
       setAssistantState('idle');
     };
     
-    // CORRIGÉ v5.5 : Ne plus reset le contexte à la fermeture
     const handleCloseAssistant = () => {
       setIsOpen(false);
-      // On garde le contexte pour pouvoir rouvrir et continuer
     };
     
     const handleOpenAssistantWithContext = (event: CustomEvent) => {
@@ -229,7 +227,7 @@ export default function FloatingAssistant() {
 
   return (
     <>
-      {/* Floating Button */}
+      {/* Floating Button - visible uniquement si fermé */}
       {!isOpen && (
         <button
           onClick={() => {
@@ -266,257 +264,253 @@ export default function FloatingAssistant() {
         </button>
       )}
 
-      {/* Modal Chat */}
-      {isOpen && (
+      {/* Modal Chat - TOUJOURS MONTÉ, juste caché quand fermé */}
+      <div style={{
+        ...(isFullscreen ? {
+          position: 'fixed',
+          top: typeof window !== 'undefined' && window.innerWidth < 768 ? '100px' : '2rem',
+          left: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '50%',
+          right: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 'auto',
+          bottom: 0,
+          transform: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : 'translateX(-50%)',
+          width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100vw' : 'min(95vw, 1200px)',
+          height: typeof window !== 'undefined' && window.innerWidth < 768 ? 'auto' : 'calc(100vh - 4rem)',
+          maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100vh - 100px)' : '900px',
+          borderRadius: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '16px',
+          boxShadow: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+        } : {
+          position: 'fixed',
+          bottom: '1rem',
+          right: '1rem',
+          width: 'min(400px, calc(100vw - 2rem))',
+          height: 'min(600px, calc(100vh - 120px))',
+          maxHeight: 'calc(100vh - 120px)',
+          borderRadius: '20px',
+          boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+        }),
+        background: 'rgba(0, 0, 0, 0.9)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        border: `2px solid ${contextColor}`,
+        boxShadow: `0 0 30px ${contextColor}40, 0 8px 32px rgba(0,0,0,0.4)`,
+        zIndex: 1000,
+        display: isOpen ? 'flex' : 'none',  // ← CACHÉ au lieu de démonté
+        flexDirection: 'column',
+        overflow: 'hidden',
+        transition: 'all 0.3s ease'
+      }}>
+        
+        {/* Header */}
         <div style={{
-          ...(isFullscreen ? {
-            position: 'fixed',
-            top: typeof window !== 'undefined' && window.innerWidth < 768 ? '100px' : '2rem',
-            left: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '50%',
-            right: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : 'auto',
-            bottom: 0,
-            transform: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : 'translateX(-50%)',
-            width: typeof window !== 'undefined' && window.innerWidth < 768 ? '100vw' : 'min(95vw, 1200px)',
-            height: typeof window !== 'undefined' && window.innerWidth < 768 ? 'auto' : 'calc(100vh - 4rem)',
-            maxHeight: typeof window !== 'undefined' && window.innerWidth < 768 ? 'calc(100vh - 100px)' : '900px',
-            borderRadius: typeof window !== 'undefined' && window.innerWidth < 768 ? 0 : '16px',
-            boxShadow: typeof window !== 'undefined' && window.innerWidth < 768 ? 'none' : '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
-          } : {
-            position: 'fixed',
-            bottom: '1rem',
-            right: '1rem',
-            width: 'min(400px, calc(100vw - 2rem))',
-            height: 'min(600px, calc(100vh - 120px))',
-            maxHeight: 'calc(100vh - 120px)',
-            borderRadius: '20px',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
-          }),
-          background: 'rgba(0, 0, 0, 0.9)',
-          backdropFilter: 'blur(10px)',
-          WebkitBackdropFilter: 'blur(10px)',
-          border: `2px solid ${contextColor}`,
-          boxShadow: `0 0 30px ${contextColor}40, 0 8px 32px rgba(0,0,0,0.4)`,
-          zIndex: 1000,
+          background: contextColor,
+          color: 'var(--white)',
+          padding: '0.6rem 0.75rem',
           display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease'
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '0.5rem'
         }}>
           
-          {/* Header */}
-          <div style={{
-            background: contextColor,
-            color: 'var(--white)',
-            padding: '0.6rem 0.75rem',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'flex-start',
-            gap: '0.5rem'
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'flex-start', 
+            gap: '0.6rem',
+            flex: 1,
+            minWidth: 0
           }}>
             
-            <div style={{ 
-              display: 'flex', 
-              alignItems: 'flex-start', 
-              gap: '0.6rem',
-              flex: 1,
-              minWidth: 0
+            <div style={{
+              width: '48px',
+              height: '48px',
+              minWidth: '48px',
+              borderRadius: '50%',
+              overflow: 'hidden',
+              background: 'var(--white)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              position: 'relative',
+              marginTop: '0.1rem'
             }}>
-              
+              <img 
+                src={getAssistantGif()}
+                alt="Assistant"
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
               <div style={{
-                width: '48px',
-                height: '48px',
-                minWidth: '48px',
-                borderRadius: '50%',
-                overflow: 'hidden',
+                position: 'absolute',
+                bottom: '-2px',
+                right: '-2px',
+                fontSize: '0.7rem',
                 background: 'var(--white)',
+                borderRadius: '50%',
+                width: '16px',
+                height: '16px',
                 display: 'flex',
                 alignItems: 'center',
-                justifyContent: 'center',
-                position: 'relative',
-                marginTop: '0.1rem'
+                justifyContent: 'center'
               }}>
-                <img 
-                  src={getAssistantGif()}
-                  alt="Assistant"
-                  style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-                />
-                <div style={{
-                  position: 'absolute',
-                  bottom: '-2px',
-                  right: '-2px',
-                  fontSize: '0.7rem',
-                  background: 'var(--white)',
-                  borderRadius: '50%',
-                  width: '16px',
-                  height: '16px',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center'
-                }}>
-                  {getStatusIndicator()}
-                </div>
+                {getStatusIndicator()}
+              </div>
+            </div>
+            
+            <div style={{ 
+              flex: 1, 
+              minWidth: 0,
+              display: 'flex',
+              flexDirection: 'column',
+              gap: '0.1rem'
+            }}>
+              <div style={{ 
+                fontWeight: '700', 
+                fontSize: '0.95rem',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: '1.2'
+              }}>
+                {header.title}
               </div>
               
-              <div style={{ 
-                flex: 1, 
-                minWidth: 0,
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.1rem'
-              }}>
+              {header.breadcrumb && (
                 <div style={{ 
-                  fontWeight: '700', 
-                  fontSize: '0.95rem',
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  lineHeight: '1.2'
-                }}>
-                  {header.title}
-                </div>
-                
-                {header.breadcrumb && (
-                  <div style={{ 
-                    fontSize: '0.8rem', 
-                    fontWeight: '600',
-                    opacity: 0.9,
-                    whiteSpace: 'nowrap',
-                    overflow: 'hidden',
-                    textOverflow: 'ellipsis',
-                    lineHeight: '1.2'
-                  }}>
-                    {header.breadcrumb}
-                  </div>
-                )}
-                
-                <div style={{ 
-                  fontSize: '0.75rem', 
+                  fontSize: '0.8rem', 
+                  fontWeight: '600',
                   opacity: 0.9,
                   whiteSpace: 'nowrap',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   lineHeight: '1.2'
                 }}>
-                  ✨ Expert : {expertise.nom}
+                  {header.breadcrumb}
                 </div>
+              )}
+              
+              <div style={{ 
+                fontSize: '0.75rem', 
+                opacity: 0.9,
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: '1.2'
+              }}>
+                ✨ Expert : {expertise.nom}
               </div>
             </div>
-
-            <div style={{ 
-              display: 'flex', 
-              gap: '0.3rem', 
-              alignItems: 'center',
-              marginTop: '0.1rem'
-            }}>
-              <button
-                onClick={handleNewChat}
-                title="Nouvelle discussion"
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: 'none',
-                  color: 'var(--white)',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-              >
-                ➕
-              </button>
-
-              <button
-                onClick={() => setIsFullscreen(!isFullscreen)}
-                title={isFullscreen ? 'Réduire' : 'Agrandir'}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: 'none',
-                  color: 'var(--white)',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  fontSize: '0.85rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-              >
-                {isFullscreen ? '◱' : '⛶'}
-              </button>
-
-              {/* CORRIGÉ v5.5 : Ne plus reset le contexte à la fermeture */}
-              <button
-                onClick={() => {
-                  if (isFullscreen) {
-                    setIsFullscreen(false);
-                  } else {
-                    setIsOpen(false);
-                    // On garde le contexte pour pouvoir rouvrir et continuer
-                  }
-                }}
-                title={isFullscreen ? 'Réduire' : 'Fermer'}
-                style={{
-                  background: 'rgba(255,255,255,0.2)',
-                  border: 'none',
-                  color: 'var(--white)',
-                  width: '28px',
-                  height: '28px',
-                  borderRadius: '50%',
-                  fontSize: '1rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  transition: 'background 0.2s'
-                }}
-                onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
-                onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
-              >
-                ✕
-              </button>
-            </div>
           </div>
 
-          {/* Chat Interface */}
-          <div style={{ flex: 1, overflow: 'hidden' }}>
-            <ChatInterface
-              key={chatKey}
-              pageContext={pageContext}
-              contextColor={contextColor}
-              placeholder={expertMode 
-                ? `Question pour ${expertMode.header.title}...`
-                : (overrideContext?.pageContext === 'aide_decouverte' 
-                    ? "Décris ton problème ou ta question..." 
-                    : overrideContext?.pageContext === 'video_decouverte'
-                      ? "Quel tutoriel cherches-tu ?"
-                      : placeholder)}
-              welcomeMessage={welcomeMessage}
-              additionalContext={additionalContext}
-              promptContext={{
-                chantierId,
-                travailId,
-                etapeId
+          <div style={{ 
+            display: 'flex', 
+            gap: '0.3rem', 
+            alignItems: 'center',
+            marginTop: '0.1rem'
+          }}>
+            <button
+              onClick={handleNewChat}
+              title="Nouvelle discussion"
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: 'none',
+                color: 'var(--white)',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
               }}
-              onStateChange={handleStateChange}
-              compact={true}
-              chantierId={chantierId}
-              travailId={travailId}
-              noteContext={getNoteContext()}
-              disablePersistence={true}
-            />
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            >
+              ➕
+            </button>
+
+            <button
+              onClick={() => setIsFullscreen(!isFullscreen)}
+              title={isFullscreen ? 'Réduire' : 'Agrandir'}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: 'none',
+                color: 'var(--white)',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                fontSize: '0.85rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            >
+              {isFullscreen ? '◱' : '⛶'}
+            </button>
+
+            <button
+              onClick={() => {
+                if (isFullscreen) {
+                  setIsFullscreen(false);
+                } else {
+                  setIsOpen(false);
+                }
+              }}
+              title={isFullscreen ? 'Réduire' : 'Fermer'}
+              style={{
+                background: 'rgba(255,255,255,0.2)',
+                border: 'none',
+                color: 'var(--white)',
+                width: '28px',
+                height: '28px',
+                borderRadius: '50%',
+                fontSize: '1rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                transition: 'background 0.2s'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.3)'}
+              onMouseLeave={(e) => e.currentTarget.style.background = 'rgba(255,255,255,0.2)'}
+            >
+              ✕
+            </button>
           </div>
         </div>
-      )}
+
+        {/* Chat Interface - TOUJOURS MONTÉ */}
+        <div style={{ flex: 1, overflow: 'hidden' }}>
+          <ChatInterface
+            key={chatKey}
+            pageContext={pageContext}
+            contextColor={contextColor}
+            placeholder={expertMode 
+              ? `Question pour ${expertMode.header.title}...`
+              : (overrideContext?.pageContext === 'aide_decouverte' 
+                  ? "Décris ton problème ou ta question..." 
+                  : overrideContext?.pageContext === 'video_decouverte'
+                    ? "Quel tutoriel cherches-tu ?"
+                    : placeholder)}
+            welcomeMessage={welcomeMessage}
+            additionalContext={additionalContext}
+            promptContext={{
+              chantierId,
+              travailId,
+              etapeId
+            }}
+            onStateChange={handleStateChange}
+            compact={true}
+            chantierId={chantierId}
+            travailId={travailId}
+            noteContext={getNoteContext()}
+            disablePersistence={true}
+          />
+        </div>
+      </div>
 
       <style jsx>{`
         @keyframes fabPulse {
