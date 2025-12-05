@@ -6,9 +6,10 @@
  * - Bouton "Nouvelle discussion"
  * - Support contexte "aide_decouverte" pour aide ponctuelle
  * - Support MODE EXPERT dynamique (transition Phase 2)
+ * - Conservation du contexte à la fermeture (fix v5.5)
  * 
- * @version 5.4
- * @date 04 décembre 2025
+ * @version 5.5
+ * @date 05 décembre 2025
  */
 
 'use client';
@@ -43,7 +44,7 @@ export default function FloatingAssistant() {
     welcomeMessage?: string;
   } | null>(null);
   
-  // ==================== NOUVEAU : Mode Expert ====================
+  // Mode Expert (transition Phase 2)
   const [expertMode, setExpertMode] = useState<{
     header: {
       title: string;
@@ -53,7 +54,6 @@ export default function FloatingAssistant() {
       expertiseNom: string;
     };
   } | null>(null);
-  // ==============================================================
   
   const { 
     pageContext: defaultPageContext, 
@@ -98,7 +98,7 @@ export default function FloatingAssistant() {
   const prevPathnameRef = useRef<string>(pathname);
   const isManualResetRef = useRef<boolean>(false);
   
-  // Reset auto basé sur pathname
+  // Reset auto basé sur pathname UNIQUEMENT
   useEffect(() => {
     if (isManualResetRef.current) {
       isManualResetRef.current = false;
@@ -109,7 +109,7 @@ export default function FloatingAssistant() {
       console.log('🔄 Navigation détectée, reset conversation');
       setChatKey(prev => prev + 1);
       setOverrideContext(null);
-      setExpertMode(null); // Reset expert mode aussi
+      setExpertMode(null);
       prevPathnameRef.current = pathname;
     }
   }, [pathname]);
@@ -158,10 +158,10 @@ export default function FloatingAssistant() {
       setAssistantState('idle');
     };
     
+    // CORRIGÉ v5.5 : Ne plus reset le contexte à la fermeture
     const handleCloseAssistant = () => {
       setIsOpen(false);
-      setOverrideContext(null);
-      setExpertMode(null);
+      // On garde le contexte pour pouvoir rouvrir et continuer
     };
     
     const handleOpenAssistantWithContext = (event: CustomEvent) => {
@@ -169,13 +169,12 @@ export default function FloatingAssistant() {
       console.log('🎯 Ouverture assistant avec contexte:', pageContext);
       
       setOverrideContext({ pageContext, welcomeMessage });
-      setExpertMode(null); // Reset expert mode
+      setExpertMode(null);
       setChatKey(prev => prev + 1);
       setIsOpen(true);
       setAssistantState('idle');
     };
     
-    // ==================== NOUVEAU : Event mode expert ====================
     const handleExpertModeActivated = (event: CustomEvent) => {
       const { header } = event.detail || {};
       console.log('🎓 Mode expert activé:', header?.title);
@@ -184,7 +183,6 @@ export default function FloatingAssistant() {
         setExpertMode({ header });
       }
     };
-    // ===================================================================
     
     window.addEventListener('openAssistant', handleOpenAssistant);
     window.addEventListener('closeAssistant', handleCloseAssistant);
@@ -208,7 +206,7 @@ export default function FloatingAssistant() {
   const handleNewChat = () => {
     if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
       isManualResetRef.current = true;
-      setExpertMode(null); // Reset expert mais GARDE overrideContext (aide_decouverte)
+      setExpertMode(null);
       setChatKey(prev => prev + 1);
     }
   };
@@ -456,14 +454,14 @@ export default function FloatingAssistant() {
                 {isFullscreen ? '◱' : '⛶'}
               </button>
 
+              {/* CORRIGÉ v5.5 : Ne plus reset le contexte à la fermeture */}
               <button
                 onClick={() => {
                   if (isFullscreen) {
                     setIsFullscreen(false);
                   } else {
                     setIsOpen(false);
-                    setOverrideContext(null);
-                    setExpertMode(null);
+                    // On garde le contexte pour pouvoir rouvrir et continuer
                   }
                 }}
                 title={isFullscreen ? 'Réduire' : 'Fermer'}
@@ -499,7 +497,9 @@ export default function FloatingAssistant() {
                 ? `Question pour ${expertMode.header.title}...`
                 : (overrideContext?.pageContext === 'aide_decouverte' 
                     ? "Décris ton problème ou ta question..." 
-                    : placeholder)}
+                    : overrideContext?.pageContext === 'video_decouverte'
+                      ? "Quel tutoriel cherches-tu ?"
+                      : placeholder)}
               welcomeMessage={welcomeMessage}
               additionalContext={additionalContext}
               promptContext={{
