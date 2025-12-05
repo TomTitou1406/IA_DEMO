@@ -1400,7 +1400,9 @@ export default function ChatInterface({
                   </div>
                   <button
                     onClick={async () => {
-                      // Naviguer vers page vidéos avec query
+                      // Fermer l'assistant
+                      window.dispatchEvent(new Event('closeAssistant'));
+                      // Naviguer vers page vidéos
                       window.location.href = `/videos?q=${encodeURIComponent(pendingVideoSearch.query)}`;
                     }}
                     style={{
