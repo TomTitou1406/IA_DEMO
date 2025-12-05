@@ -19,7 +19,7 @@ export default function HomePage() {
           <div className="card-illu">
             <img src="/images/chantiers.webp" alt="Mes projets" />
           </div>
-          <h3>Tous mes projets</h3>
+          <h3>Mode Chantiers</h3>
           <p>Crée et pilote tes chantiers</p>
           <Link href="/chantiers" className="main-btn btn-orange">
             Accéder à mes projets
@@ -45,7 +45,7 @@ export default function HomePage() {
           <h3>J'ai besoin d'aide</h3>
           <p>Coup de pouce précis et rapide</p>
           <button className="main-btn btn-blue">
-            Discuter avec l'expert
+            Bricolons ensemble
           </button>
         </div>
 
