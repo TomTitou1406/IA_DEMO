@@ -92,13 +92,12 @@ export async function POST(request: NextRequest) {
         let bonusScore = 1;
         let isTrusted = false;
         
-        for (const [name, bonus] of channelMap) {
+        channelMap.forEach((bonus, name) => {
           if (channelLower.includes(name)) {
             bonusScore = bonus;
             isTrusted = true;
-            break;
           }
-        }
+        });
         
         const score = viewCount * bonusScore;
         
