@@ -681,6 +681,8 @@ export default function ChatInterface({
             if (json.travail_simple) {
               console.log('🔧 Travail simple détecté:', json.travail_simple.titre);
               setPendingTravailSimple(json.travail_simple);
+              // Nettoyer le JSON du message
+              response.message = response.message.replace(/```json[\s\S]*?```/g, '').trim();
             }
           } catch (e) {
             console.error('Erreur parsing travail simple:', e);
@@ -1469,8 +1471,8 @@ export default function ChatInterface({
                 </div>
               )}
 
-              {/* Bouton création travail simple */}
-              {pendingTravailSimple && (
+              {/* Bouton création travail simple - affiché UNE SEULE FOIS en bas */}
+              {pendingTravailSimple && !loading && (
                 <div style={{
                   padding: '1rem',
                   margin: '0.5rem 0',
