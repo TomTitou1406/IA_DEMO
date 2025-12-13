@@ -240,7 +240,8 @@ export default function FloatingAssistant() {
           style={{
             position: 'fixed',
             bottom: '2rem',
-            right: '2rem',
+            left: '50%',
+            transform: 'translateX(-50%)',
             width: '80px',
             height: '80px',
             borderRadius: '50%',
@@ -283,7 +284,8 @@ export default function FloatingAssistant() {
         } : {
           position: 'fixed',
           bottom: '1rem',
-          right: '1rem',
+          left: '50%',
+          transform: 'translateX(-50%)',
           width: 'min(400px, calc(100vw - 2rem))',
           height: 'min(600px, calc(100vh - 120px))',
           maxHeight: 'calc(100vh - 120px)',
