@@ -387,7 +387,7 @@ function TravailSimpleCard({
     }}>
       {/* Header */}
       <Link 
-        href={`/chantiers/${travail.id}/simple`}
+        href={`/chantiers/${travail.id}/travaux`}
         style={{
           display: 'block',
           padding: '1rem',
@@ -477,7 +477,7 @@ function TravailSimpleCard({
         borderTop: '1px solid rgba(255,255,255,0.05)'
       }}>
         <Link
-          href={`/chantiers/${travail.id}/simple`}
+           href={`/chantiers/${travail.id}/travaux`}
           style={{
             flex: 1,
             padding: '0.75rem',
