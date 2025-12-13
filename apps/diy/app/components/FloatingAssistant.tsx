@@ -75,17 +75,19 @@ export default function FloatingAssistant() {
   
   // Couleur : toujours bleu pour aide_decouverte et mode expert, vert pour les vidéos
   const contextColor = (overrideContext?.pageContext === 'aide_decouverte' || expertMode) 
-    ? 'var(--blue)' 
-    : overrideContext?.pageContext === 'video_decouverte'
-      ? 'var(--green)'
-      : defaultContextColor;
+  ? 'var(--blue)' 
+  : (overrideContext?.pageContext === 'video_decouverte' || overrideContext?.pageContext === 'travaux_simple_decouverte')
+    ? 'var(--green)'
+    : defaultContextColor;
   
   const header = expertMode 
-    ? { title: "Assistance Expert", breadcrumb: "", expertiseLine: `🎯 ${expertMode.header.expertiseNom}` }
-    : overrideContext?.pageContext === 'aide_decouverte' 
-      ? { title: "Demande d'assistance", breadcrumb: "", expertiseLine: "🔍 Diagnostic en cours..." }
-      : overrideContext?.pageContext === 'video_decouverte'
-        ? { title: "Trouver un tuto", breadcrumb: "", expertiseLine: "🎬 Recherche vidéo" }
+  ? { title: "Assistance Expert", breadcrumb: "", expertiseLine: `🎯 ${expertMode.header.expertiseNom}` }
+  : overrideContext?.pageContext === 'aide_decouverte' 
+    ? { title: "Demande d'assistance", breadcrumb: "", expertiseLine: "🔍 Diagnostic en cours..." }
+    : overrideContext?.pageContext === 'video_decouverte'
+      ? { title: "Trouver un tuto", breadcrumb: "", expertiseLine: "🎬 Recherche vidéo" }
+      : overrideContext?.pageContext === 'travaux_simple_decouverte'
+        ? { title: "Nouveau travail simple", breadcrumb: "", expertiseLine: "🔧 Création guidée" }
         : defaultHeader;
   
   const expertise = expertMode 
