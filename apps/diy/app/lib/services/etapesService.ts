@@ -28,11 +28,20 @@ export async function getEtapesByTravail(travailId: string) {
     // ← AJOUTE ICI : Enrichir avec comptage des tâches
     const etapesWithStats = await Promise.all(
       (etapes || []).map(async (etape) => {
-        // Compter le total de tâches
+        
+        // Compter le total de tâches (hors brouillon)
         const { count: totalTaches } = await supabase
           .from('taches')
           .select('*', { count: 'exact', head: true })
-          .eq('etape_id', etape.id);
+          .eq('etape_id', etape.id)
+          .neq('statut', 'brouillon');
+        
+        // Compter les tâches brouillon
+        const { count: tachesBrouillon } = await supabase
+          .from('taches')
+          .select('*', { count: 'exact', head: true })
+          .eq('etape_id', etape.id)
+          .eq('statut', 'brouillon');
         
         // Compter les tâches terminées
         const { count: tachesTerminees } = await supabase
@@ -45,7 +54,8 @@ export async function getEtapesByTravail(travailId: string) {
         return {
           ...etape,
           nombre_taches: totalTaches || 0,
-          taches_terminees: tachesTerminees || 0
+          taches_terminees: tachesTerminees || 0,
+          taches_brouillon: tachesBrouillon || 0
         };
       })
     );
