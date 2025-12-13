@@ -618,14 +618,31 @@ export default function MiseEnOeuvreTachesPage() {
 
   // Régénérer les tâches
   const handleRegenerate = async () => {
-    if (!confirm('Régénérer les tâches ? Les modifications actuelles seront perdues.')) return;
+    const confirmed = await showConfirm({
+      title: 'Régénérer les tâches',
+      message: 'Régénérer les tâches ? Les modifications actuelles seront perdues.',
+      confirmText: 'Régénérer',
+      cancelText: 'Annuler',
+      type: 'warning'
+    });
+    
+    if (!confirmed) return;
+    
     window.dispatchEvent(new CustomEvent('resetAssistantChat'));
     await handleGenerate();
   };
-
+  
   // Valider les tâches
   const handleValidate = async () => {
-    if (!confirm('Valider ces tâches ?')) return;
+    const confirmed = await showConfirm({
+      title: 'Valider les tâches',
+      message: 'Valider ces tâches ?',
+      confirmText: 'Valider',
+      cancelText: 'Annuler',
+      type: 'info'
+    });
+    
+    if (!confirmed) return;
     
     setIsSaving(true);
     try {
@@ -635,7 +652,7 @@ export default function MiseEnOeuvreTachesPage() {
       // Rediriger vers la page des tâches
       router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etapeId}/taches`);
     } catch (err) {
-      showWarning('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
+      showError('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
     } finally {
       setIsSaving(false);
     }
