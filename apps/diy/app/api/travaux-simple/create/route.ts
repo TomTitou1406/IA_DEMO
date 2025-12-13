@@ -89,7 +89,7 @@ export async function POST(request: NextRequest) {
         titre: etape.titre,
         description: etape.description || '',
         duree_estimee_minutes: etape.duree_minutes || 10,
-        statut: 'a_faire',
+        statut: 'à_venir',
         precautions: etape.points_attention || null
       }));
 
