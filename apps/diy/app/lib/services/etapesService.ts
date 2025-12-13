@@ -41,6 +41,7 @@ export async function getEtapesByTravail(travailId: string) {
           .eq('etape_id', etape.id)
           .eq('statut', 'terminée');
         
+        console.log(`📊 Étape "${etape.titre}" : ${totalTaches || 0} tâches`);
         return {
           ...etape,
           nombre_taches: totalTaches || 0,
