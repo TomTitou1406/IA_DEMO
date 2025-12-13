@@ -29,7 +29,8 @@ interface Etape {
   conseils_pro?: string;
   blocage_raison?: string;
   nombre_taches?: number;        
-  taches_terminees?: number;     
+  taches_terminees?: number;
+  taches_brouillon?: number;
 }
 
 interface Travail {
@@ -307,8 +308,21 @@ export default function TravailDetailPage() {
                     });
                   }}
                 />
-               {/* Bouton Tâches - conditionnel selon existence */}
-                {etape.nombre_taches && etape.nombre_taches > 0 ? (
+               {/* Bouton Tâches - 3 cas : brouillon, validées, aucune */}
+                {etape.taches_brouillon && etape.taches_brouillon > 0 ? (
+                  // Cas 1 : Tâches en brouillon → Finaliser
+                  <CardButton
+                    variant="secondary"
+                    color="var(--orange)"
+                    icon="✏️"
+                    label="Finaliser tâches"
+                    count={etape.taches_brouillon}
+                    onClick={() => {
+                      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/mise-en-oeuvre`);
+                    }}
+                  />
+                ) : etape.nombre_taches && etape.nombre_taches > 0 ? (
+                  // Cas 2 : Tâches validées → Voir
                   <CardButton
                     variant="secondary"
                     color="var(--purple)"
@@ -320,6 +334,7 @@ export default function TravailDetailPage() {
                     }}
                   />
                 ) : (
+                  // Cas 3 : Aucune tâche → Générer
                   <CardButton
                     variant="secondary"
                     color="var(--purple)"
@@ -353,8 +368,21 @@ export default function TravailDetailPage() {
             {/* Boutons en_cours */}
             {etape.statut === 'en_cours' && (
               <>
-                {/* Bouton TÂCHES - conditionnel selon existence */}
-                {etape.nombre_taches && etape.nombre_taches > 0 ? (
+                {/* Bouton TÂCHES - 3 cas : brouillon, validées, aucune */}
+                {etape.taches_brouillon && etape.taches_brouillon > 0 ? (
+                  // Cas 1 : Tâches en brouillon → Finaliser
+                  <CardButton
+                    variant="primary"
+                    color="var(--orange)"
+                    icon="✏️"
+                    label="Finaliser tâches"
+                    count={etape.taches_brouillon}
+                    onClick={() => {
+                      router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/mise-en-oeuvre`);
+                    }}
+                  />
+                ) : etape.nombre_taches && etape.nombre_taches > 0 ? (
+                  // Cas 2 : Tâches validées → Voir
                   <CardButton
                     variant="primary"
                     color="var(--blue)"
@@ -366,6 +394,7 @@ export default function TravailDetailPage() {
                     }}
                   />
                 ) : (
+                  // Cas 3 : Aucune tâche → Générer
                   <CardButton
                     variant="primary"
                     color="var(--blue)"
