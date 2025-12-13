@@ -38,6 +38,7 @@ import {
   type ExpertiseIdentifiee,
   type ExpertHeaderInfo
 } from '../lib/services/expertiseDynamicService';
+import { useToast } from '@/app/components/Toast';
 
 // ==================== TYPES ====================
 
@@ -90,6 +91,9 @@ export default function ChatInterface({
   travailId,
   noteContext
 }: ChatInterfaceProps) {
+
+  // ==================== TOAST ====================
+  const { showError, showSuccess, showWarning } = useToast();
   
   // ==================== ÉTAT LOCAL ====================
   
