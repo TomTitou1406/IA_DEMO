@@ -88,6 +88,12 @@ export default function TravauxPage() {
           ]);
           setStats(statsData);
           setTravaux(allTravaux);
+          
+          // Si travail simple avec un seul lot → rediriger vers les étapes
+          if (chantierData.type_projet === 'simple' && allTravaux.length === 1) {
+            router.push(`/chantiers/${chantierId}/travaux/${allTravaux[0].id}/etapes`);
+            return;
+          }
         }
       } catch (error) {
         console.error('Error loading travaux:', error);
@@ -95,9 +101,9 @@ export default function TravauxPage() {
         setLoading(false);
       }
     }
-
+  
     loadData();
-  }, [chantierId]);
+  }, [chantierId, router]);
 
   if (loading) {
     return (
