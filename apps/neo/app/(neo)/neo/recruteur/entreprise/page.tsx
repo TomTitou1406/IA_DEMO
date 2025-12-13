@@ -22,8 +22,10 @@ import ProgressionChecklist from '@/components/conversation/ProgressionChecklist
 import { useAvatarConfigFromDB } from "@/app/(neo)/neo/hooks/useAvatarConfigFromDB";
 import { useConversationContext } from '@/app/(neo)/neo/hooks/useConversationContext';
 import { getResumeContext, generateResumeMessage } from '@/app/lib/conversation-resume';
+import { useToast } from '@/app/components/Toast';
 
 export default function EntreprisePage() {
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const router = useRouter();
   
   // ============================================
@@ -317,8 +319,16 @@ export default function EntreprisePage() {
     console.log('💾 Sauvegarde manuelle (déjà gérée par auto-save)');
   };
 
-  const handleAbandonner = () => {
-    if (confirm('Abandonner la création de l\'entreprise ?')) {
+  const handleAbandonner = async () => {
+    const confirmed = await showConfirm({
+      title: 'Abandonner',
+      message: 'Abandonner la création de l\'entreprise ?',
+      confirmText: 'Abandonner',
+      cancelText: 'Continuer',
+      type: 'warning'
+    });
+    
+    if (confirmed) {
       router.push('/neo/recruteur');
     }
   };
