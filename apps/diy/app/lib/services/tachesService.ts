@@ -129,9 +129,27 @@ export async function terminerTache(tacheId: string, dureeReelleMinutes?: number
 
     if (error) throw error;
 
-    // 3. Mettre à jour la progression de l'étape (et cascade vers lot et chantier)
+    // 3. Vérifier si l'étape doit passer en "en_cours"
+    const { data: etape } = await supabase
+      .from('etapes')
+      .select('statut')
+      .eq('id', tache.etape_id)
+      .single();
+    
+    if (etape?.statut === 'à_venir') {
+      await supabase
+        .from('etapes')
+        .update({
+          statut: 'en_cours',
+          updated_at: new Date().toISOString()
+        })
+        .eq('id', tache.etape_id);
+      
+      console.log('✅ Étape passée en cours automatiquement');
+    }
+    
+    // 4. Mettre à jour la progression de l'étape (et cascade vers lot et chantier)
     await updateEtapeProgression(tache.etape_id);
-
     return data;
   } catch (error) {
     console.error('Error completing tache:', error);
