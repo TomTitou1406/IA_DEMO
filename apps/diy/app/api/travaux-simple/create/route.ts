@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
         description: etape.description || '',
         duree_estimee_minutes: etape.duree_minutes || 10,
         statut: 'a_faire',
-        points_attention: etape.points_attention || null
+        precautions: etape.points_attention || null
       }));
 
       console.log('📋 Étapes à insérer:', JSON.stringify(etapesInsert, null, 2));
