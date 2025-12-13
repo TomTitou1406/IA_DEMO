@@ -8,6 +8,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { useToast } from '@/app/components/Toast';
 
 interface EntrepriseData {
   histoire: any;
@@ -22,6 +23,7 @@ interface EntrepriseData {
 }
 
 export default function EntrepriseValidationPage() {
+  const { showError, showSuccess, showWarning } = useToast();
   const router = useRouter();
   const [entrepriseData, setEntrepriseData] = useState<EntrepriseData | null>(null);
   const [isSaving, setIsSaving] = useState(false);
@@ -57,7 +59,7 @@ export default function EntrepriseValidationPage() {
       }
     } catch (error) {
       console.error('Erreur sauvegarde:', error);
-      alert('Erreur lors de la sauvegarde');
+      showWarning('Erreur lors de la sauvegarde');
     } finally {
       setIsSaving(false);
     }
