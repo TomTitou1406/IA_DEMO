@@ -589,9 +589,9 @@ export default function TravauxPage() {
               alignItems: 'center',
               gap: '0.5rem'
             }}>
-              {chantier.type_projet === 'simple' ? '🔧' : '🏗️'} 
-              {chantier.type_projet === 'simple' ? '' : 'Chantier : '}
-              {chantier.titre}
+              {chantier?.type_projet === 'simple' ? '🔧' : '🏗️'}
+              {chantier?.type_projet === 'simple' ? '' : 'Chantier : '}
+              {chantier?.titre}
             </h1>
             
             {/* Bouton Notes du chantier */}
