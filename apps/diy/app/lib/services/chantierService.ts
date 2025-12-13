@@ -97,6 +97,55 @@ export async function getChantierStats(chantierId: string) {
 }
 
 /**
+ * Récupère les stats des étapes pour un travail simple
+ * (compte les étapes au lieu des lots)
+ */
+export async function getChantierEtapesStats(chantierId: string) {
+  try {
+    // D'abord récupérer le travail (lot unique) du chantier simple
+    const { data: travaux, error: travailError } = await supabase
+      .from('travaux')
+      .select('id')
+      .eq('chantier_id', chantierId);
+    
+    if (travailError || !travaux || travaux.length === 0) {
+      return null;
+    }
+
+    const travailId = travaux[0].id;
+
+    // Ensuite récupérer les étapes de ce travail
+    const { data: etapes, error: etapesError } = await supabase
+      .from('etapes')
+      .select('statut, duree_estimee_minutes')
+      .eq('travail_id', travailId);
+
+    if (etapesError) {
+      console.error('Error fetching etapes stats:', etapesError);
+      return null;
+    }
+
+    const total = etapes?.length || 0;
+    const termines = etapes?.filter(e => e.statut === 'terminé').length || 0;
+    const enCours = etapes?.filter(e => e.statut === 'en_cours').length || 0;
+    
+    // Durée totale en heures
+    const dureeMinutes = etapes?.reduce((acc, e) => acc + (e.duree_estimee_minutes || 0), 0) || 0;
+    const dureeHeures = Math.ceil(dureeMinutes / 60);
+
+    return {
+      total,
+      termines,
+      enCours,
+      dureeHeures
+    };
+  } catch (err) {
+    console.error('Error in getChantierEtapesStats:', err);
+    return null;
+  }
+}
+
+/**
  * Récupère tous les chantiers de l'utilisateur
  * Avec statistiques des travaux associés
  */
