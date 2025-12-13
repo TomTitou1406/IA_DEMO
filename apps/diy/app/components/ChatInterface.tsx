@@ -132,6 +132,7 @@ export default function ChatInterface({
   const [conversationContext, setConversationContext] = useState<string>('');
   const [isTransitioningToExpert, setIsTransitioningToExpert] = useState(false);
   const [pendingVideoSearch, setPendingVideoSearch] = useState<{query: string; description: string} | null>(null);
+  const [pendingTravailSimple, setPendingTravailSimple] = useState<any>(null);
   const [isCreatingTravailSimple, setIsCreatingTravailSimple] = useState(false);
   
   // ==================== REFS ====================
