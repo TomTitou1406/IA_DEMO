@@ -27,6 +27,7 @@ import {
   applyTachesAction,
   type TachesAction
 } from '@/app/lib/services/tachesActions';
+import { useToast } from '@/app/components/Toast';
 
 // ==================== COMPOSANT LOADING ====================
 
@@ -456,6 +457,7 @@ function TacheCard({
 // ==================== PAGE PRINCIPALE ====================
 
 export default function MiseEnOeuvreTachesPage() {
+  const { showError, showSuccess, showWarning } = useToast();
   const params = useParams();
   const router = useRouter();
   const chantierId = params.chantierId as string;
@@ -633,7 +635,7 @@ export default function MiseEnOeuvreTachesPage() {
       // Rediriger vers la page des tâches
       router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etapeId}/taches`);
     } catch (err) {
-      alert('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
+      showWarning('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
     } finally {
       setIsSaving(false);
     }
