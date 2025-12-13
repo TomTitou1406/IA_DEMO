@@ -144,7 +144,7 @@ export default function NouveauTravailSimplePage() {
   return (
     <>
       <Breadcrumb 
-        currentLevel="chantier" 
+        currentLevel="chantiers" 
       />
 
       <div style={{
