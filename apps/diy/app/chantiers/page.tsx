@@ -1,10 +1,19 @@
+/**
+ * Page Chantiers - Version Mobile-First
+ * 
+ * 2 sections :
+ * - 📦 Travaux simples (type_projet = 'simple')
+ * - 🏗️ Chantiers & travaux complexes (type_projet = 'complexe')
+ * 
+ * @version 2.0
+ * @date 05 décembre 2025
+ */
+
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAllChantiers, getChantierStats, deleteChantier } from '../lib/services/chantierService';
-import CardButton from '@/app/components/CardButton';
-// NOUVEL IMPORT
 import Breadcrumb from '@/app/components/Breadcrumb';
 
 interface Chantier {
@@ -13,34 +22,26 @@ interface Chantier {
   description?: string;
   progression: number;
   duree_estimee_heures: number;
-  duree_reelle_heures?: number;
   budget_initial: number;
-  budget_consomme?: number;
   statut: string;
+  type_projet?: 'simple' | 'complexe';
   created_at: string;
-  date_debut_reelle?: string;
-  date_fin_reelle?: string;
-  nombre_travaux?: number;
-  travaux_termines?: number;
   stats?: {
     progressionMoyenne: number;
     heuresEffectuees: number;
     heuresEstimees: number;
-    progressionHeures: number;
-    budgetReel: number;
-    budgetEstime: number;
-    progressionBudget: number;
     total: number;
     termines: number;
     enCours: number;
-    bloques: number;
-    aVenir: number;
   };
 }
 
 export default function ChantiersPage() {
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
   const [loading, setLoading] = useState(true);
+  
+  // Sections collapsibles
+  const [showSimples, setShowSimples] = useState(true);
   const [showNouveaux, setShowNouveaux] = useState(true);
   const [showEnCours, setShowEnCours] = useState(true);
   const [showTermines, setShowTermines] = useState(false);
@@ -50,14 +51,12 @@ export default function ChantiersPage() {
       try {
         const chantiersData = await getAllChantiers();
         
-        // Charger les stats pour chaque chantier
         const chantiersWithStats = await Promise.all(
           chantiersData.map(async (chantier: any) => {
             try {
               const stats = await getChantierStats(chantier.id);
               return { ...chantier, stats };
-            } catch (error) {
-              console.error(`Error loading stats for chantier ${chantier.id}:`, error);
+            } catch {
               return chantier;
             }
           })
@@ -74,428 +73,604 @@ export default function ChantiersPage() {
     loadData();
   }, []);
 
+  // Séparer simples et complexes
+  const travauxSimples = chantiers.filter(c => c.type_projet === 'simple');
+  const chantiersComplexes = chantiers.filter(c => c.type_projet !== 'simple');
+  
+  // Grouper les complexes par statut
+  const nouveaux = chantiersComplexes.filter(c => c.statut === 'nouveau');
+  const enCours = chantiersComplexes.filter(c => 
+    c.statut === 'en_cours' || c.statut === 'actif' || !c.statut
+  );
+  const termines = chantiersComplexes.filter(c => c.statut === 'terminé');
+
+  const handleDelete = async (id: string, titre: string) => {
+    if (confirm(`Supprimer "${titre}" ?`)) {
+      try {
+        await deleteChantier(id, true);
+        setChantiers(prev => prev.filter(c => c.id !== id));
+      } catch (err: any) {
+        alert('Erreur: ' + err.message);
+      }
+    }
+  };
+
   if (loading) {
     return (
-      <div className="container" style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '1rem'
+      }}>
         <div className="spinner"></div>
-        <p style={{ marginTop: '1rem', color: 'var(--gray)' }}>Chargement...</p>
+        <p style={{ color: 'var(--gray)' }}>Chargement...</p>
       </div>
     );
   }
 
-  // Grouper par statut - GÉRER LES ANCIENS STATUTS
-  const nouveaux = chantiers.filter(c => c.statut === 'nouveau');
-  const enCours = chantiers.filter(c => 
-    c.statut === 'en_cours' || 
-    c.statut === 'actif' || 
-    !c.statut || 
-    c.statut === null
-  );
-  const termines = chantiers.filter(c => c.statut === 'terminé');
+  return (
+    <>
+      <Breadcrumb currentLevel="chantiers" />
 
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'nouveau': return 'var(--purple)';   // En paramétrage (violet)
-      case 'en_cours': return 'var(--blue)';    // Actif/démarré (bleu)
-      case 'terminé': return 'var(--green)';    // Fini (vert)
-      case 'annulé': return 'var(--gray)';      // Abandonné (gris)
-      case null: return 'var(--blue)';          
-      default: return 'var(--gray)';
-    }
-  };
-
-  const getStatusIcon = (statut: string) => {
-    switch (statut) {
-      case 'nouveau': return '✨';
-      case 'en_cours':
-      case 'actif':
-      case null:
-        return '🔨';
-      case 'terminé': return '✅';
-      default: return '🏗️';
-    }
-  };
-
-  const ChantierCard = ({ chantier }: { chantier: Chantier }) => {
-    const statusColor = getStatusColor(chantier.statut);
-    const stats = chantier.stats;
-    const progressionChantier = stats?.total && stats.total > 0
-      ? Math.round((stats.termines / stats.total) * 100)
-      : 0;
-    
-    return (
-      <div style={{
-        background: `linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, ${statusColor} 50%, #1a1a1a) 100%)`,
-        borderRadius: '12px',
-        padding: '1.25rem',
-        marginBottom: '1rem',
-        borderLeft: `4px solid ${statusColor}`,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-        transition: 'all 0.2s'
-      }}
-      onMouseEnter={(e) => {
-        const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
-             statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
-             'rgba(107, 114, 128, 0.25)';
-        e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+      <div style={{ 
+        maxWidth: '800px', 
+        margin: '0 auto', 
+        padding: '1rem',
+        paddingTop: '80px',
+        paddingBottom: '100px' // Espace pour FloatingAssistant
       }}>
-        {/* Header : Titre + Boutons */}
+        
+        {/* ==================== BOUTONS CRÉATION ==================== */}
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'space-between', 
-          alignItems: 'flex-start',
-          marginBottom: '1rem',
-          gap: '1rem'
+          gap: '0.75rem',
+          marginBottom: '1.5rem',
+          flexWrap: 'wrap'
         }}>
-          <div style={{ flex: 1 }}>
-            <h3 style={{ 
-              fontSize: '1.2rem', 
-              margin: 0, 
-              marginBottom: '0.5rem',
-              color: 'var(--gray-light)',
-              fontWeight: '700',
-              lineHeight: '1.2'
-            }}>
-              {getStatusIcon(chantier.statut)} {chantier.titre}
-            </h3>
-            {chantier.description && (
-              <p style={{ 
-                fontSize: '0.9rem', 
-                color: 'var(--gray)', 
-                margin: 0,
-                lineHeight: '1.4'
-              }}>
-                {chantier.description}
-              </p>
-            )}
-          </div>
+          {/* Bouton Travaux simples */}
+          <Link 
+            href="/chantiers/simple/nouveau"
+            style={{
+              flex: 1,
+              minWidth: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.875rem 1rem',
+              background: 'linear-gradient(135deg, var(--green), #059669)',
+              color: 'white',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>🔧</span>
+            <span>Travaux simples</span>
+          </Link>
 
-          {/* BOUTONS SELON STATUT */}
-          <div style={{ 
-            display: 'flex', 
-            gap: '0.5rem', 
-            flexShrink: 0,
-            alignItems: 'flex-start'
-          }}>
-            {/* NOUVEAU - pas encore phasé */}
-            {chantier.statut === 'nouveau' && (
-              <>
-                <CardButton
-                  variant="primary"
-                  color="var(--orange)"
-                  icon="🚀"
-                  label="Configurer / Phaser"
-                  href={`/chantiers/${chantier.id}`}
-                />
-                <CardButton
-                  variant="danger"
-                  icon="🗑️"
-                  label="Supprimer"
-                  onClick={() => {
-                    if (confirm(`Supprimer le chantier "${chantier.titre}" et toutes ses données ?`)) {
-                      deleteChantier(chantier.id, true)
-                        .then(() => {
-                          setChantiers(prev => prev.filter(c => c.id !== chantier.id));
-                        })
-                        .catch(err => alert('Erreur: ' + err.message));
-                    }
-                  }}
-                />
-              </>
-            )}
-          
-            {/* EN COURS (ou ACTIF ou NULL - anciens statuts) */}
-            {(chantier.statut === 'en_cours' || chantier.statut === 'actif' || !chantier.statut) && (
-              <>
-                <CardButton
-                  variant="primary"
-                  color="var(--blue)"
-                  icon="📋"
-                  label="Voir lots"
-                  count={stats?.total || 0}
-                  href={`/chantiers/${chantier.id}/travaux`}
-                />
-                <CardButton
-                  variant="secondary"
-                  color="var(--orange)"
-                  icon="✏️"
-                  label="Modifier"
-                  href={`/chantiers/${chantier.id}`}
-                />
-              </>
-            )}
-          
-            {/* TERMINÉ */}
-            {chantier.statut === 'terminé' && (
-              <>
-                <CardButton
-                  variant="primary"
-                  color="var(--green)"
-                  icon="📋"
-                  label="Voir lots"
-                  href={`/chantiers/${chantier.id}/travaux`}
-                />
-                <CardButton
-                  variant="secondary"
-                  color="var(--blue)"
-                  icon="📊"
-                  label="Rapport"
-                  href={`/chantiers/${chantier.id}`}
-                />
-              </>
-            )}
-          </div>
+          {/* Bouton Nouveau chantier */}
+          <Link 
+            href="/chantiers/nouveau"
+            style={{
+              flex: 1,
+              minWidth: '140px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              gap: '0.5rem',
+              padding: '0.875rem 1rem',
+              background: 'linear-gradient(135deg, var(--orange), #ea580c)',
+              color: 'white',
+              borderRadius: '12px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+              boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)',
+              transition: 'all 0.2s'
+            }}
+          >
+            <span>🏗️</span>
+            <span>Nouveau chantier</span>
+          </Link>
         </div>
 
-        {/* Barre progression pour EN_COURS */}
-        {chantier.statut !== 'nouveau' && (
-          <div style={{ marginBottom: '1rem' }}>
-            <div style={{
-              width: '100%',
-              height: '8px',
-              background: 'rgba(255,255,255,0.08)',
-              borderRadius: '10px',
-              overflow: 'hidden'
-            }}>
-              <div style={{
-                width: `${progressionChantier}%`,
-                height: '100%',
-                background: `linear-gradient(90deg, ${statusColor} 0%, var(--green) 100%)`,
-                transition: 'width 0.5s ease'
-              }}></div>
-            </div>
-          </div>
+        {/* ==================== SECTION TRAVAUX SIMPLES ==================== */}
+        {travauxSimples.length > 0 && (
+          <Section
+            title="Travaux simples"
+            icon="🔧"
+            count={travauxSimples.length}
+            color="var(--green)"
+            isExpanded={showSimples}
+            onToggle={() => setShowSimples(!showSimples)}
+          >
+            {travauxSimples.map(travail => (
+              <TravailSimpleCard 
+                key={travail.id} 
+                travail={travail}
+                onDelete={() => handleDelete(travail.id, travail.titre)}
+              />
+            ))}
+          </Section>
         )}
 
-        {/* Stats inline */}
-        <div style={{ 
-          display: 'flex',
-          flexWrap: 'wrap',
-          alignItems: 'center',
-          gap: '1.5rem',
-          fontSize: '0.9rem',
-          color: 'var(--gray)'
-        }}>
-          {/* Progression */}
-          {chantier.statut !== 'nouveau' && (
-            <span style={{ 
-              color: 'var(--gray-light)', 
-              fontWeight: '700' 
-            }}>
-              {progressionChantier}% complété
-            </span>
+        {/* ==================== SECTION CHANTIERS COMPLEXES ==================== */}
+        <div style={{ marginTop: travauxSimples.length > 0 ? '2rem' : 0 }}>
+          
+          {/* Nouveaux */}
+          {nouveaux.length > 0 && (
+            <Section
+              title="À configurer"
+              icon="✨"
+              count={nouveaux.length}
+              color="var(--purple)"
+              isExpanded={showNouveaux}
+              onToggle={() => setShowNouveaux(!showNouveaux)}
+            >
+              {nouveaux.map(chantier => (
+                <ChantierCard 
+                  key={chantier.id} 
+                  chantier={chantier}
+                  onDelete={() => handleDelete(chantier.id, chantier.titre)}
+                />
+              ))}
+            </Section>
           )}
 
-          {/* Durée */}
-          {chantier.statut !== 'nouveau' && stats && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1rem' }}>⏱️</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats.heuresEffectuees || 0}h
-                </strong>
-                <span style={{ opacity: 0.8 }}> / {stats.heuresEstimees || 0}h</span>
-                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                  {stats.progressionHeures || 0}%
-                </span>
-              </span>
-            </div>
+          {/* En cours */}
+          {enCours.length > 0 && (
+            <Section
+              title="En cours"
+              icon="🏗️"
+              count={enCours.length}
+              color="var(--blue)"
+              isExpanded={showEnCours}
+              onToggle={() => setShowEnCours(!showEnCours)}
+            >
+              {enCours.map(chantier => (
+                <ChantierCard 
+                  key={chantier.id} 
+                  chantier={chantier}
+                  onDelete={() => handleDelete(chantier.id, chantier.titre)}
+                />
+              ))}
+            </Section>
           )}
 
-          {/* Budget */}
-          {chantier.statut !== 'nouveau' && stats && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1rem' }}>💰</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats.budgetReel?.toLocaleString() || 0}€
-                </strong>
-                <span style={{ opacity: 0.8 }}> / {stats.budgetEstime?.toLocaleString() || 0}€</span>
-                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                  {stats.progressionBudget || 0}%
-                </span>
-              </span>
-            </div>
-          )}
-
-          {/* Tâches avec détails */}
-          {chantier.statut !== 'nouveau' && stats && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1rem' }}>✅</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats.termines || 0}
-                </strong>
-                <span style={{ opacity: 0.8 }}> / {stats.total || 0}</span>
-                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats.termines || 0} terminé{stats.termines > 1 ? 's' : ''}
-                </span>
-                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats.enCours || 0} en cours
-                </span>
-                <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {stats.bloques || 0} bloqué{stats.bloques > 1 ? 's' : ''}
-                </span>
-              </span>
-            </div>
-          )}
-
-          {/* Date création pour nouveaux */}
-          {chantier.statut === 'nouveau' && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1rem' }}>📅</span>
-              <span style={{ color: 'var(--gray-light)' }}>
-                Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}
-              </span>
-            </div>
+          {/* Terminés */}
+          {termines.length > 0 && (
+            <Section
+              title="Terminés"
+              icon="✅"
+              count={termines.length}
+              color="var(--green)"
+              isExpanded={showTermines}
+              onToggle={() => setShowTermines(!showTermines)}
+            >
+              {termines.map(chantier => (
+                <ChantierCard 
+                  key={chantier.id} 
+                  chantier={chantier}
+                  onDelete={() => handleDelete(chantier.id, chantier.titre)}
+                />
+              ))}
+            </Section>
           )}
         </div>
-      </div>
-    );
-  };
 
-  const SectionHeader = ({ 
-    title, 
-    count, 
-    color, 
-    icon, 
-    isExpanded, 
-    onToggle 
-  }: { 
-    title: string; 
-    count: number; 
-    color: string; 
-    icon: string;
-    isExpanded: boolean;
-    onToggle: () => void;
-  }) => (
-    <div style={{ marginBottom: '1.5rem' }}>
+        {/* Message si vide */}
+        {chantiers.length === 0 && (
+          <div style={{
+            textAlign: 'center',
+            padding: '3rem 1rem',
+            color: 'var(--gray)'
+          }}>
+            <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🏠</div>
+            <p style={{ fontSize: '1.1rem', marginBottom: '0.5rem' }}>
+              Aucun projet pour le moment
+            </p>
+            <p style={{ fontSize: '0.9rem', opacity: 0.8 }}>
+              Commence par créer un travail simple ou un chantier !
+            </p>
+          </div>
+        )}
+      </div>
+    </>
+  );
+}
+
+// ==================== COMPOSANTS ====================
+
+interface SectionProps {
+  title: string;
+  icon: string;
+  count: number;
+  color: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+function Section({ title, icon, count, color, isExpanded, onToggle, children }: SectionProps) {
+  return (
+    <section style={{ marginBottom: '1.5rem' }}>
+      {/* Header cliquable */}
       <div 
         onClick={onToggle}
-        style={{ 
-          fontSize: '1.15rem', 
-          marginBottom: '0.75rem',
-          color: color,
-          fontWeight: '700',
+        style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
+          gap: '0.75rem',
+          padding: '0.75rem 0',
           cursor: 'pointer',
-          padding: '0.5rem 0',
-          transition: 'all 0.2s'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.opacity = '0.8';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.opacity = '1';
+          userSelect: 'none'
         }}
       >
-        <span style={{ fontSize: '0.9rem' }}>
-          {isExpanded ? '▽' : '▶'}
-        </span>
-        <span>{icon} {title}</span>
         <span style={{ 
-          background: `${color}88`,
-          color: color,
-          border: `2px solid ${color}`,
-          minWidth: '28px',
-          height: '28px',
-          display: 'inline-flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          borderRadius: '50%',
-          fontSize: '0.9rem',
+          fontSize: '0.8rem', 
+          color: 'var(--gray)',
+          transition: 'transform 0.2s',
+          transform: isExpanded ? 'rotate(90deg)' : 'rotate(0deg)'
+        }}>
+          ▶
+        </span>
+        <span style={{ fontSize: '1.1rem' }}>{icon}</span>
+        <span style={{ 
+          color: 'var(--gray-light)', 
+          fontWeight: '600',
+          fontSize: '1rem'
+        }}>
+          {title}
+        </span>
+        <span style={{
+          background: color,
+          color: 'white',
+          fontSize: '0.75rem',
           fontWeight: '700',
-          padding: '0 0.35rem'
+          padding: '0.2rem 0.5rem',
+          borderRadius: '10px',
+          minWidth: '24px',
+          textAlign: 'center'
         }}>
           {count}
         </span>
       </div>
-      <div style={{
-        height: '2px',
-        background: `linear-gradient(90deg, transparent 0%, ${color} 80%)`,
-        marginBottom: '0.75rem'
-      }}></div>
-    </div>
-  );
 
-  return (
-    <>
-      {/* ========== NOUVEAU BREADCRUMB ========== */}
-      <Breadcrumb currentLevel="chantiers" />
-
-      {/* CONTENU PRINCIPAL */}
-      <div style={{ 
-        maxWidth: '1100px', 
-        margin: '0 auto', 
-        padding: '0.75rem 1rem',
-        paddingTop: '70px'
-      }}>
-    
-        {/* BOUTON NOUVEAU CHANTIER - AU DESSUS DES SECTIONS */}
+      {/* Contenu */}
+      {isExpanded && (
         <div style={{ 
           display: 'flex', 
-          justifyContent: 'flex-end', 
-          marginBottom: '1rem',
+          flexDirection: 'column', 
+          gap: '0.75rem',
+          paddingLeft: '0.5rem'
         }}>
-          <CardButton
-            variant="primary"
-            color="var(--orange)"
-            icon="✨"
-            label="Nouveau chantier"
-            href="/chantiers/nouveau"
-          />
+          {children}
+        </div>
+      )}
+    </section>
+  );
+}
+
+// Card pour travaux simples
+function TravailSimpleCard({ 
+  travail, 
+  onDelete 
+}: { 
+  travail: Chantier;
+  onDelete: () => void;
+}) {
+  const progression = travail.stats?.total 
+    ? Math.round((travail.stats.termines / travail.stats.total) * 100) 
+    : 0;
+
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.03)',
+      borderRadius: '12px',
+      border: '1px solid rgba(255,255,255,0.08)',
+      overflow: 'hidden'
+    }}>
+      {/* Header */}
+      <Link 
+        href={`/chantiers/${travail.id}/simple`}
+        style={{
+          display: 'block',
+          padding: '1rem',
+          textDecoration: 'none'
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '1rem'
+        }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{
+              color: 'var(--gray-light)',
+              fontSize: '1rem',
+              fontWeight: '600',
+              margin: 0,
+              marginBottom: '0.25rem'
+            }}>
+              {travail.titre}
+            </h3>
+            {travail.description && (
+              <p style={{
+                color: 'var(--gray)',
+                fontSize: '0.85rem',
+                margin: 0,
+                lineHeight: 1.4
+              }}>
+                {travail.description.substring(0, 80)}
+                {travail.description.length > 80 ? '...' : ''}
+              </p>
+            )}
+          </div>
+
+          {/* Badge progression */}
+          <div style={{
+            background: progression === 100 ? 'var(--green)' : 'rgba(255,255,255,0.1)',
+            color: progression === 100 ? 'white' : 'var(--gray-light)',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '6px',
+            fontSize: '0.8rem',
+            fontWeight: '600'
+          }}>
+            {progression}%
+          </div>
         </div>
 
-        {/* Section NOUVEAUX */}
-        {nouveaux.length > 0 && (
-          <section style={{ marginBottom: '2rem' }}>
-            <SectionHeader 
-              title="Nouveaux" 
-              count={nouveaux.length} 
-              color="var(--gray)" 
-              icon="✨"
-              isExpanded={showNouveaux}
-              onToggle={() => setShowNouveaux(!showNouveaux)}
-            />
-            {showNouveaux && nouveaux.map(chantier => <ChantierCard key={chantier.id} chantier={chantier} />)}
-          </section>
+        {/* Barre de progression */}
+        {travail.stats && travail.stats.total > 0 && (
+          <div style={{
+            marginTop: '0.75rem',
+            height: '4px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '2px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${progression}%`,
+              height: '100%',
+              background: 'var(--green)',
+              transition: 'width 0.3s'
+            }} />
+          </div>
         )}
 
-        {/* Section EN COURS - BLEU */}
-        {enCours.length > 0 && (
-          <section style={{ marginBottom: '2rem' }}>
-            <SectionHeader 
-              title="En cours" 
-              count={enCours.length} 
-              color="var(--blue)" 
-              icon="🏗️"
-              isExpanded={showEnCours}
-              onToggle={() => setShowEnCours(!showEnCours)}
-            />
-            {showEnCours && enCours.map(chantier => <ChantierCard key={chantier.id} chantier={chantier} />)}
-          </section>
+        {/* Stats compactes */}
+        <div style={{
+          display: 'flex',
+          gap: '1rem',
+          marginTop: '0.75rem',
+          fontSize: '0.8rem',
+          color: 'var(--gray)'
+        }}>
+          {travail.stats && (
+            <span>✓ {travail.stats.termines}/{travail.stats.total} étapes</span>
+          )}
+          {travail.duree_estimee_heures > 0 && (
+            <span>⏱ {travail.duree_estimee_heures}h</span>
+          )}
+        </div>
+      </Link>
+
+      {/* Actions */}
+      <div style={{
+        display: 'flex',
+        borderTop: '1px solid rgba(255,255,255,0.05)'
+      }}>
+        <Link
+          href={`/chantiers/${travail.id}/simple`}
+          style={{
+            flex: 1,
+            padding: '0.75rem',
+            textAlign: 'center',
+            color: 'var(--green)',
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            textDecoration: 'none',
+            borderRight: '1px solid rgba(255,255,255,0.05)'
+          }}
+        >
+          Continuer →
+        </Link>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            onDelete();
+          }}
+          style={{
+            padding: '0.75rem 1rem',
+            background: 'none',
+            border: 'none',
+            color: 'var(--gray)',
+            fontSize: '0.85rem',
+            cursor: 'pointer'
+          }}
+        >
+          🗑️
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// Card pour chantiers complexes
+function ChantierCard({ 
+  chantier, 
+  onDelete 
+}: { 
+  chantier: Chantier;
+  onDelete: () => void;
+}) {
+  const stats = chantier.stats;
+  const progression = stats?.total 
+    ? Math.round((stats.termines / stats.total) * 100) 
+    : 0;
+
+  const getStatusConfig = (statut: string) => {
+    switch (statut) {
+      case 'nouveau': return { color: 'var(--purple)', label: 'À configurer', icon: '✨' };
+      case 'terminé': return { color: 'var(--green)', label: 'Terminé', icon: '✅' };
+      default: return { color: 'var(--blue)', label: 'En cours', icon: '🏗️' };
+    }
+  };
+
+  const status = getStatusConfig(chantier.statut);
+  const linkHref = chantier.statut === 'nouveau' 
+    ? `/chantiers/${chantier.id}` 
+    : `/chantiers/${chantier.id}/travaux`;
+
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.03)',
+      borderRadius: '12px',
+      border: '1px solid rgba(255,255,255,0.08)',
+      borderLeft: `3px solid ${status.color}`,
+      overflow: 'hidden'
+    }}>
+      {/* Header */}
+      <Link 
+        href={linkHref}
+        style={{
+          display: 'block',
+          padding: '1rem',
+          textDecoration: 'none'
+        }}
+      >
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'space-between',
+          alignItems: 'flex-start',
+          gap: '1rem'
+        }}>
+          <div style={{ flex: 1 }}>
+            <h3 style={{
+              color: 'var(--gray-light)',
+              fontSize: '1rem',
+              fontWeight: '600',
+              margin: 0,
+              marginBottom: '0.25rem'
+            }}>
+              {status.icon} {chantier.titre}
+            </h3>
+            {chantier.description && (
+              <p style={{
+                color: 'var(--gray)',
+                fontSize: '0.85rem',
+                margin: 0,
+                lineHeight: 1.4
+              }}>
+                {chantier.description.substring(0, 80)}
+                {chantier.description.length > 80 ? '...' : ''}
+              </p>
+            )}
+          </div>
+
+          {/* Badge */}
+          {chantier.statut !== 'nouveau' && (
+            <div style={{
+              background: progression === 100 ? 'var(--green)' : 'rgba(255,255,255,0.1)',
+              color: progression === 100 ? 'white' : 'var(--gray-light)',
+              padding: '0.25rem 0.5rem',
+              borderRadius: '6px',
+              fontSize: '0.8rem',
+              fontWeight: '600'
+            }}>
+              {progression}%
+            </div>
+          )}
+        </div>
+
+        {/* Barre de progression */}
+        {chantier.statut !== 'nouveau' && stats && stats.total > 0 && (
+          <div style={{
+            marginTop: '0.75rem',
+            height: '4px',
+            background: 'rgba(255,255,255,0.1)',
+            borderRadius: '2px',
+            overflow: 'hidden'
+          }}>
+            <div style={{
+              width: `${progression}%`,
+              height: '100%',
+              background: status.color,
+              transition: 'width 0.3s'
+            }} />
+          </div>
         )}
 
-        {/* Section TERMINÉS */}
-        {termines.length > 0 && (
-          <section style={{ marginBottom: '2rem' }}>
-            <SectionHeader 
-              title="Terminés" 
-              count={termines.length} 
-              color="var(--green)" 
-              icon="✅"
-              isExpanded={showTermines}
-              onToggle={() => setShowTermines(!showTermines)}
-            />
-            {showTermines && termines.map(chantier => <ChantierCard key={chantier.id} chantier={chantier} />)}
-          </section>
+        {/* Stats compactes */}
+        <div style={{
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '1rem',
+          marginTop: '0.75rem',
+          fontSize: '0.8rem',
+          color: 'var(--gray)'
+        }}>
+          {chantier.statut === 'nouveau' ? (
+            <span>📅 Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}</span>
+          ) : (
+            <>
+              {stats && <span>📦 {stats.total} lots</span>}
+              {stats && <span>✓ {stats.termines} terminés</span>}
+              {chantier.budget_initial > 0 && (
+                <span>💰 {chantier.budget_initial.toLocaleString()}€</span>
+              )}
+            </>
+          )}
+        </div>
+      </Link>
+
+      {/* Actions */}
+      <div style={{
+        display: 'flex',
+        borderTop: '1px solid rgba(255,255,255,0.05)'
+      }}>
+        <Link
+          href={linkHref}
+          style={{
+            flex: 1,
+            padding: '0.75rem',
+            textAlign: 'center',
+            color: status.color,
+            fontSize: '0.85rem',
+            fontWeight: '500',
+            textDecoration: 'none',
+            borderRight: '1px solid rgba(255,255,255,0.05)'
+          }}
+        >
+          {chantier.statut === 'nouveau' ? 'Configurer →' : 'Voir les lots →'}
+        </Link>
+        {chantier.statut === 'nouveau' && (
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              onDelete();
+            }}
+            style={{
+              padding: '0.75rem 1rem',
+              background: 'none',
+              border: 'none',
+              color: 'var(--gray)',
+              fontSize: '0.85rem',
+              cursor: 'pointer'
+            }}
+          >
+            🗑️
+          </button>
         )}
       </div>
-    </>
+    </div>
   );
 }
