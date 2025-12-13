@@ -16,6 +16,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Breadcrumb from '@/app/components/Breadcrumb';
+import { useToast } from '@/app/components/Toast';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -41,6 +42,7 @@ interface TravailSimpleData {
 }
 
 export default function NouveauTravailSimplePage() {
+  const { showError, showSuccess, showWarning } = useToast();
   const router = useRouter();
   const messagesEndRef = useRef<HTMLDivElement>(null);
   
@@ -131,11 +133,11 @@ export default function NouveauTravailSimplePage() {
       if (data.success && data.chantierId) {
         router.push(`/chantiers/${data.chantierId}/simple`);
       } else {
-        alert('Erreur lors de la création: ' + (data.error || 'Erreur inconnue'));
+        showWarning('Erreur lors de la création: ' + (data.error || 'Erreur inconnue'));
       }
     } catch (error) {
       console.error('Erreur création:', error);
-      alert('Erreur lors de la création');
+      showWarning('Erreur lors de la création');
     } finally {
       setCreating(false);
     }
