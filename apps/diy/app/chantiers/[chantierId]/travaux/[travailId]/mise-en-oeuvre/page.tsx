@@ -28,6 +28,7 @@ import {
   applyEtapesAction,
   type EtapesAction
 } from '@/app/lib/services/etapesActions';
+import { useToast } from '@/app/components/Toast';
 
 // ==================== COMPOSANT LOADING ====================
 
@@ -394,6 +395,7 @@ function EtapeCard({
 export default function MiseEnOeuvrePage() {
   const params = useParams();
   const router = useRouter();
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const chantierId = params.chantierId as string;
   const travailId = params.travailId as string;
 
@@ -540,54 +542,70 @@ export default function MiseEnOeuvrePage() {
     }
   };
 
-// Régénérer les étapes
   const handleRegenerate = async () => {
-    if (!confirm('Régénérer les étapes ? Les modifications actuelles seront perdues.')) return;
+    const confirmed = await showConfirm({
+      title: 'Régénérer les étapes',
+      message: 'Régénérer les étapes ? Les modifications actuelles seront perdues.',
+      confirmText: 'Régénérer',
+      cancelText: 'Annuler',
+      type: 'warning'
+    });
     
-    // Reset la conversation avant de régénérer
+    if (!confirmed) return;
+    
     window.dispatchEvent(new CustomEvent('resetAssistantChat'));
     
     await handleGenerate();
   };
 
-  // Sauvegarder en brouillon
-  const handleSaveBrouillon = async () => {
+    const handleSaveBrouillon = async () => {
     setIsSaving(true);
     try {
       const result = await saveEtapesBrouillon(travailId, etapes);
       if (!result.success) throw new Error(result.error);
       setHasChanges(false);
-      alert('Brouillon sauvegardé !');
+      showSuccess('Brouillon sauvegardé !');
     } catch (err) {
-      alert('Erreur sauvegarde : ' + (err instanceof Error ? err.message : 'Erreur'));
+      showError('Erreur sauvegarde : ' + (err instanceof Error ? err.message : 'Erreur'));
     } finally {
       setIsSaving(false);
     }
   };
 
   // Valider les étapes
-  const handleValidate = async () => {
+    const handleValidate = async () => {
     // Vérifier les règles avant validation
     const { warnings } = verifierReglesEtapes(etapes);
     
     if (warnings.length > 0) {
-      const continuer = confirm(
-        `⚠️ Attention, certaines règles ne sont pas respectées :\n\n${warnings.join('\n')}\n\nValider quand même ?`
-      );
+      const continuer = await showConfirm({
+        title: 'Règles non respectées',
+        message: `⚠️ Attention, certaines règles ne sont pas respectées :\n\n${warnings.join('\n')}\n\nValider quand même ?`,
+        confirmText: 'Valider quand même',
+        cancelText: 'Annuler',
+        type: 'warning'
+      });
       if (!continuer) return;
     }
     
-    if (!confirm('Valider ces étapes ? Le lot passera en statut "à venir".')) return;
+    const confirmed = await showConfirm({
+      title: 'Valider les étapes',
+      message: 'Valider ces étapes ? Le lot passera en statut "à venir".',
+      confirmText: 'Valider',
+      cancelText: 'Annuler',
+      type: 'info'
+    });
+    
+    if (!confirmed) return;
     
     setIsSaving(true);
     try {
       const result = await validerEtapes(travailId, etapes);
       if (!result.success) throw new Error(result.error);
       
-      // Rediriger vers la page du lot
       router.push(`/chantiers/${chantierId}/travaux`);
     } catch (err) {
-      alert('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
+      showError('Erreur validation : ' + (err instanceof Error ? err.message : 'Erreur'));
     } finally {
       setIsSaving(false);
     }
@@ -595,7 +613,6 @@ export default function MiseEnOeuvrePage() {
 
   // Quitter - Option C (Hybride)
   const handleQuit = async () => {
-    // Vérifier s'il y a des étapes brouillon en BDD
     const { data: brouillonExistant } = await supabase
       .from('etapes')
       .select('id')
@@ -606,15 +623,15 @@ export default function MiseEnOeuvrePage() {
     const hasBrouillonEnBDD = brouillonExistant && brouillonExistant.length > 0;
     
     if (hasBrouillonEnBDD || hasChanges) {
-      // Proposer 3 choix via une série de confirms
-      const garderBrouillon = window.confirm(
-        'Des étapes brouillon existent pour ce lot.\n\n' +
-        '• OK = Garder le brouillon (vous pourrez reprendre plus tard)\n' +
-        '• Annuler = Supprimer le brouillon et quitter'
-      );
+      const garderBrouillon = await showConfirm({
+        title: 'Étapes brouillon',
+        message: 'Des étapes brouillon existent pour ce lot.\n\n• OK = Garder le brouillon (vous pourrez reprendre plus tard)\n• Annuler = Supprimer le brouillon et quitter',
+        confirmText: 'Garder',
+        cancelText: 'Supprimer',
+        type: 'warning'
+      });
       
       if (!garderBrouillon) {
-        // Supprimer les étapes brouillon
         await deleteEtapes(travailId, 'brouillon');
         console.log('🗑️ Brouillon supprimé');
       }
@@ -709,7 +726,15 @@ export default function MiseEnOeuvrePage() {
 
   // Supprimer une étape
   const handleDelete = async (index: number) => {
-    if (!confirm(`Supprimer l'étape "${etapes[index].titre}" ?`)) return;
+    const confirmed = await showConfirm({
+      title: 'Supprimer l\'étape',
+      message: `Supprimer l'étape "${etapes[index].titre}" ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger'
+    });
+    
+    if (!confirmed) return;
     
     const newEtapes = etapes.filter((_, i) => i !== index);
     newEtapes.forEach((e, i) => { e.numero = i + 1; });
@@ -717,7 +742,6 @@ export default function MiseEnOeuvrePage() {
     setEtapes(newEtapes);
     setHasChanges(true);
     
-    // Sauvegarder en brouillon et rafraîchir le contexte de l'assistant
     await saveEtapesBrouillon(travailId, newEtapes);
     window.dispatchEvent(new CustomEvent('refreshAssistantContext'));
   };
