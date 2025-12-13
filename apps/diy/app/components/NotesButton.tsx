@@ -12,6 +12,7 @@
 
 import { useState, useEffect } from 'react';
 import { getNotes, deleteNote, type NoteLevel, type Note } from '../lib/services/notesService';
+import { useToast } from '@/app/components/Toast';
 
 // Couleur Post-It
 const POSTIT_COLOR = '#FFFF99';
@@ -22,6 +23,7 @@ interface NotesButtonProps {
 }
 
 export default function NotesButton({ level, id }: NotesButtonProps) {
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const [notes, setNotes] = useState<Note[]>([]);
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -43,7 +45,15 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
 
   // Supprimer une note
   const handleDelete = async (noteId: string) => {
-    if (!confirm('Supprimer cette note ?')) return;
+    const confirmed = await showConfirm({
+      title: 'Supprimer la note',
+      message: 'Supprimer cette note ?',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger'
+    });
+    
+    if (!confirmed) return;
     
     const success = await deleteNote(level, id, noteId);
     if (success) {
