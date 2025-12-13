@@ -16,6 +16,7 @@ import ParentContext from '@/app/components/ParentContext';
 interface Chantier {
   id: string;
   titre: string;
+  type_projet?: 'simple' | 'complexe';
   progression: number;
   duree_estimee_heures: number;
   budget_initial: number;
