@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { sendChatMessage } from '../lib/services/openaiService';
 import { getChantierDemo } from '../lib/services/chantierService';
 import { transcribeAudio, textToSpeech, playAudio } from '../lib/services/audioService';
+import { useToast } from '@/app/components/Toast';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -13,6 +14,7 @@ interface Message {
 }
 
 export default function ChatPage() {
+  const { showError, showSuccess, showWarning } = useToast();
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
@@ -182,7 +184,7 @@ useEffect(() => {
 
           // Vérifier taille minimale
           if (audioBlob.size < 1000) {
-            alert('Enregistrement trop court');
+            showWarning('Enregistrement trop court');
             setRecordingTime(0);
             return;
           }
@@ -195,7 +197,7 @@ useEffect(() => {
             const text = await transcribeAudio(audioBlob);
             
             if (!text.trim()) {
-              alert('Aucun texte détecté');
+              showWarning('Aucun texte détecté');
               setLoading(false);
               setRecordingTime(0);
               return;
@@ -252,7 +254,7 @@ useEffect(() => {
 
           } catch (error) {
             console.error('Error processing audio:', error);
-            alert('Erreur lors du traitement audio');
+            showWarning('Erreur lors du traitement audio');
             setRecordingTime(0);
           } finally {
             setLoading(false);
@@ -263,7 +265,7 @@ useEffect(() => {
         setIsRecording(true);
       } catch (error) {
         console.error('Error starting recording:', error);
-        alert('Impossible d\'accéder au microphone');
+        showWarning('Impossible d\'accéder au microphone');
       }
     }
   };
