@@ -38,7 +38,7 @@ interface Chantier {
 }
 
 export default function ChantiersPage() {
-  const { showError, showSuccess, showWarning } = useToast();
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
   const [loading, setLoading] = useState(true);
   
