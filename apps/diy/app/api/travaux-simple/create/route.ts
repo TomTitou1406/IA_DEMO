@@ -91,15 +91,17 @@ export async function POST(request: NextRequest) {
         points_attention: etape.points_attention || null
       }));
 
-      const { error: etapesError } = await supabase
+      console.log('📋 Étapes à insérer:', JSON.stringify(etapesInsert, null, 2));
+      const { data: etapesData, error: etapesError } = await supabase
         .from('etapes')
-        .insert(etapesInsert);
-
+        .insert(etapesInsert)
+        .select();
+      
       if (etapesError) {
-        console.error('Erreur création étapes:', etapesError);
-        // On continue quand même, les étapes pourront être ajoutées après
+        console.error('❌ Erreur création étapes:', etapesError);
+        console.error('❌ Détails:', etapesError.message, etapesError.details);
       } else {
-        console.log(`✅ ${etapesInsert.length} étapes créées`);
+        console.log(`✅ ${etapesData?.length || 0} étapes créées`);
       }
     }
 
