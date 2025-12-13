@@ -13,7 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAllChantiers, getChantierStats, deleteChantier } from '../lib/services/chantierService';
+import { getAllChantiers, getChantierStats, getChantierEtapesStats, deleteChantier } from '../lib/services/chantierService';
 import Breadcrumb from '@/app/components/Breadcrumb';
 
 interface Chantier {
@@ -52,15 +52,21 @@ export default function ChantiersPage() {
         const chantiersData = await getAllChantiers();
         
         const chantiersWithStats = await Promise.all(
-          chantiersData.map(async (chantier: any) => {
-            try {
-              const stats = await getChantierStats(chantier.id);
-              return { ...chantier, stats };
-            } catch {
-              return chantier;
+        chantiersData.map(async (chantier: any) => {
+          try {
+            // Pour les travaux simples, charger les stats des étapes
+            if (chantier.type_projet === 'simple') {
+              const etapesStats = await getChantierEtapesStats(chantier.id);
+              return { ...chantier, etapesStats };
             }
-          })
-        );
+            // Pour les chantiers complexes, charger les stats des lots
+            const stats = await getChantierStats(chantier.id);
+            return { ...chantier, stats };
+          } catch {
+            return chantier;
+          }
+        })
+      );
         
         setChantiers(chantiersWithStats);
       } catch (error) {
@@ -374,8 +380,10 @@ function TravailSimpleCard({
   travail: Chantier;
   onDelete: () => void;
 }) {
-  const progression = travail.stats?.total 
-    ? Math.round((travail.stats.termines / travail.stats.total) * 100) 
+  // Utiliser etapesStats pour les travaux simples
+  const etapesStats = (travail as any).etapesStats;
+  const progression = etapesStats?.total 
+    ? Math.round((etapesStats.termines / etapesStats.total) * 100) 
     : 0;
 
   return (
@@ -437,7 +445,7 @@ function TravailSimpleCard({
         </div>
 
         {/* Barre de progression */}
-        {travail.stats && travail.stats.total > 0 && (
+        {etapesStats && etapesStats.total > 0 && (
           <div style={{
             marginTop: '0.75rem',
             height: '4px',
@@ -462,11 +470,11 @@ function TravailSimpleCard({
           fontSize: '0.8rem',
           color: 'var(--gray)'
         }}>
-          {travail.stats && (
-            <span>✓ {travail.stats.termines}/{travail.stats.total} étapes</span>
+          {etapesStats && (
+            <span>✓ {etapesStats.termines}/{etapesStats.total} étapes</span>
           )}
-          {travail.duree_estimee_heures > 0 && (
-            <span>⏱ {travail.duree_estimee_heures}h</span>
+          {etapesStats?.dureeHeures > 0 && (
+            <span>⏱ {etapesStats.dureeHeures}h</span>
           )}
         </div>
       </Link>
@@ -477,19 +485,19 @@ function TravailSimpleCard({
         borderTop: '1px solid rgba(255,255,255,0.05)'
       }}>
         <Link
-           href={`/chantiers/${travail.id}/travaux`}
+          href={`/chantiers/${travail.id}/travaux`}
           style={{
             flex: 1,
             padding: '0.75rem',
             textAlign: 'center',
-            color: 'var(--green)',
+            color: 'var(--blue)',
             fontSize: '0.85rem',
             fontWeight: '500',
             textDecoration: 'none',
             borderRight: '1px solid rgba(255,255,255,0.05)'
           }}
         >
-          Continuer →
+          Voir les étapes →
         </Link>
         <button
           onClick={(e) => {
