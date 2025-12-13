@@ -1471,107 +1471,6 @@ export default function ChatInterface({
                 </div>
               )}
 
-              {/* Bouton création travail simple - affiché UNE SEULE FOIS en bas */}
-              {pendingTravailSimple && !loading && (
-                <div style={{
-                  padding: '1rem',
-                  margin: '0.5rem 0',
-                  background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
-                  borderRadius: '12px',
-                  border: '1px solid var(--green)'
-                }}>
-                  <div style={{
-                    fontSize: '0.9rem',
-                    fontWeight: '600',
-                    color: 'var(--green)',
-                    marginBottom: '0.75rem'
-                  }}>
-                    ✅ Travail prêt à créer
-                  </div>
-                  
-                  <div style={{
-                    fontSize: '1rem',
-                    fontWeight: '700',
-                    color: 'var(--gray-light)',
-                    marginBottom: '0.5rem'
-                  }}>
-                    {pendingTravailSimple.titre}
-                  </div>
-                  
-                  <div style={{
-                    display: 'flex',
-                    flexWrap: 'wrap',
-                    gap: '0.75rem',
-                    fontSize: '0.8rem',
-                    color: 'var(--gray)',
-                    marginBottom: '0.75rem'
-                  }}>
-                    <span>⏱ {pendingTravailSimple.duree_estimee_minutes} min</span>
-                    <span>📊 {pendingTravailSimple.difficulte}</span>
-                    <span>📋 {pendingTravailSimple.etapes?.length || 0} étapes</span>
-                  </div>
-                  
-                  {/* Liste étapes preview */}
-                  <div style={{
-                    background: 'rgba(0,0,0,0.2)',
-                    borderRadius: '8px',
-                    padding: '0.75rem',
-                    marginBottom: '0.75rem',
-                    fontSize: '0.85rem'
-                  }}>
-                    {pendingTravailSimple.etapes?.slice(0, 3).map((etape: any, idx: number) => (
-                      <div key={idx} style={{
-                        color: 'var(--gray-light)',
-                        padding: '0.25rem 0',
-                        borderBottom: idx < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none'
-                      }}>
-                        {etape.ordre}. {etape.titre}
-                      </div>
-                    ))}
-                    {pendingTravailSimple.etapes?.length > 3 && (
-                      <div style={{ color: 'var(--gray)', paddingTop: '0.25rem' }}>
-                        + {pendingTravailSimple.etapes.length - 3} autres...
-                      </div>
-                    )}
-                  </div>
-                  
-                  <div style={{ display: 'flex', gap: '0.75rem' }}>
-                    <button
-                      onClick={handleCreateTravailSimple}
-                      disabled={isCreatingTravailSimple}
-                      style={{
-                        flex: 1,
-                        padding: '0.75rem',
-                        background: isCreatingTravailSimple ? 'var(--gray)' : 'var(--green)',
-                        color: 'white',
-                        border: 'none',
-                        borderRadius: '10px',
-                        fontSize: '0.95rem',
-                        fontWeight: '600',
-                        cursor: isCreatingTravailSimple ? 'wait' : 'pointer'
-                      }}
-                    >
-                      {isCreatingTravailSimple ? '⏳ Création...' : '✅ Créer ce travail'}
-                    </button>
-                    
-                    <button
-                      onClick={() => setPendingTravailSimple(null)}
-                      style={{
-                        padding: '0.75rem 1rem',
-                        background: 'transparent',
-                        color: 'var(--gray)',
-                        border: '1px solid var(--gray)',
-                        borderRadius: '10px',
-                        fontSize: '0.85rem',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      ↩ Modifier
-                    </button>
-                  </div>
-                </div>
-              )}
-
               {pendingVideoSearch && index === displayMessages.length - 1 && (
                 <div style={{
                   marginTop: '0.75rem',
@@ -1690,6 +1589,106 @@ export default function ChatInterface({
         )}
 
         <div ref={messagesEndRef} />
+        {/* Bouton création travail simple - UNE SEULE FOIS */}
+        {pendingTravailSimple && !loading && (
+          <div style={{
+            padding: '1rem',
+            margin: '0.5rem 0',
+            background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15), rgba(5, 150, 105, 0.15))',
+            borderRadius: '12px',
+            border: '1px solid var(--green)'
+          }}>
+            <div style={{
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              color: 'var(--green)',
+              marginBottom: '0.75rem'
+            }}>
+              ✅ Travail prêt à créer
+            </div>
+            
+            <div style={{
+              fontSize: '1rem',
+              fontWeight: '700',
+              color: 'var(--gray-light)',
+              marginBottom: '0.5rem'
+            }}>
+              {pendingTravailSimple.titre}
+            </div>
+            
+            <div style={{
+              display: 'flex',
+              flexWrap: 'wrap',
+              gap: '0.75rem',
+              fontSize: '0.8rem',
+              color: 'var(--gray)',
+              marginBottom: '0.75rem'
+            }}>
+              <span>⏱ {pendingTravailSimple.duree_estimee_minutes} min</span>
+              <span>📊 {pendingTravailSimple.difficulte}</span>
+              <span>📋 {pendingTravailSimple.etapes?.length || 0} étapes</span>
+            </div>
+            
+            {/* Liste étapes preview */}
+            <div style={{
+              background: 'rgba(0,0,0,0.2)',
+              borderRadius: '8px',
+              padding: '0.75rem',
+              marginBottom: '0.75rem',
+              fontSize: '0.85rem'
+            }}>
+              {pendingTravailSimple.etapes?.slice(0, 3).map((etape: any, idx: number) => (
+                <div key={idx} style={{
+                  color: 'var(--gray-light)',
+                  padding: '0.25rem 0',
+                  borderBottom: idx < 2 ? '1px solid rgba(255,255,255,0.05)' : 'none'
+                }}>
+                  {etape.ordre}. {etape.titre}
+                </div>
+              ))}
+              {pendingTravailSimple.etapes?.length > 3 && (
+                <div style={{ color: 'var(--gray)', paddingTop: '0.25rem' }}>
+                  + {pendingTravailSimple.etapes.length - 3} autres...
+                </div>
+              )}
+            </div>
+            
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <button
+                onClick={handleCreateTravailSimple}
+                disabled={isCreatingTravailSimple}
+                style={{
+                  flex: 1,
+                  padding: '0.75rem',
+                  background: isCreatingTravailSimple ? 'var(--gray)' : 'var(--green)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '10px',
+                  fontSize: '0.95rem',
+                  fontWeight: '600',
+                  cursor: isCreatingTravailSimple ? 'wait' : 'pointer'
+                }}
+              >
+                {isCreatingTravailSimple ? '⏳ Création...' : '✅ Créer ce travail'}
+              </button>
+              
+              <button
+                onClick={() => setPendingTravailSimple(null)}
+                style={{
+                  padding: '0.75rem 1rem',
+                  background: 'transparent',
+                  color: 'var(--gray)',
+                  border: '1px solid var(--gray)',
+                  borderRadius: '10px',
+                  fontSize: '0.85rem',
+                  cursor: 'pointer'
+                }}
+              >
+                ↩ Modifier
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bandeau transition Phase 1 → Phase 2 */}
