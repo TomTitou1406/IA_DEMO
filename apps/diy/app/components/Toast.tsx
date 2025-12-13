@@ -246,7 +246,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
       )}
 
       {/* Animations CSS */}
-      <style jsx global>{`
+      <style dangerouslySetInnerHTML={{ __html: `
         @keyframes toastSlideIn {
           from {
             opacity: 0;
@@ -257,7 +257,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             transform: translateY(0) scale(1);
           }
         }
-
+      
         @keyframes toastSlideOut {
           from {
             opacity: 1;
@@ -268,7 +268,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             transform: translateY(-10px) scale(0.95);
           }
         }
-      `}</style>
+      `}} />
     </ToastContext.Provider>
   );
 }
