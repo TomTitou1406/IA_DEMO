@@ -1,15 +1,19 @@
 /**
  * Toast.tsx
  * 
- * Système de notifications toast global pour PapiBricole
- * Remplace les alert() natifs par des toasts stylisés
+ * Système de notifications toast + confirmations global pour PapiBricole
+ * Remplace les alert() et confirm() natifs par des modales stylisées
  * 
- * Usage:
+ * Usage Toast:
  * const { showSuccess, showError, showInfo, showWarning } = useToast();
  * showSuccess('Chantier créé avec succès !');
- * showError('Erreur lors de la création');
  * 
- * @version 1.0
+ * Usage Confirm:
+ * const { showConfirm } = useToast();
+ * const confirmed = await showConfirm({ title: 'Supprimer ?', message: '...' });
+ * if (confirmed) { ... }
+ * 
+ * @version 2.0
  * @date 13 décembre 2025
  */
 
@@ -28,11 +32,24 @@ interface Toast {
   duration?: number;
 }
 
+interface ConfirmOptions {
+  title: string;
+  message: string;
+  confirmText?: string;
+  cancelText?: string;
+  type?: 'warning' | 'danger' | 'info';
+}
+
+interface ConfirmState extends ConfirmOptions {
+  resolve: (value: boolean) => void;
+}
+
 interface ToastContextType {
   showSuccess: (message: string, duration?: number) => void;
   showError: (message: string, duration?: number) => void;
   showInfo: (message: string, duration?: number) => void;
   showWarning: (message: string, duration?: number) => void;
+  showConfirm: (options: ConfirmOptions) => Promise<boolean>;
   dismiss: (id: string) => void;
 }
 
@@ -86,6 +103,28 @@ const TOAST_CONFIG: Record<ToastType, {
     bgGradient: 'linear-gradient(135deg, rgba(59, 130, 246, 0.15), rgba(37, 99, 235, 0.1))',
     borderColor: 'var(--blue)',
     buttonBg: 'var(--blue)'
+  }
+};
+
+const CONFIRM_CONFIG: Record<string, {
+  icon: string;
+  color: string;
+  confirmBg: string;
+}> = {
+  warning: {
+    icon: '⚠️',
+    color: 'var(--orange)',
+    confirmBg: 'var(--orange)'
+  },
+  danger: {
+    icon: '🗑️',
+    color: 'var(--red)',
+    confirmBg: 'var(--red)'
+  },
+  info: {
+    icon: 'ℹ️',
+    color: 'var(--blue)',
+    confirmBg: 'var(--blue)'
   }
 };
 
@@ -186,10 +225,150 @@ function ToastItem({
   );
 }
 
+// ==================== CONFIRM MODAL ====================
+
+function ConfirmModal({
+  confirm,
+  onConfirm,
+  onCancel
+}: {
+  confirm: ConfirmState;
+  onConfirm: () => void;
+  onCancel: () => void;
+}) {
+  const config = CONFIRM_CONFIG[confirm.type || 'warning'];
+
+  return (
+    <div
+      style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(4px)',
+        WebkitBackdropFilter: 'blur(4px)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 10001,
+        padding: '1rem',
+        animation: 'fadeIn 0.2s ease-out'
+      }}
+      onClick={onCancel}
+    >
+      <div
+        style={{
+          background: 'rgba(13, 13, 13, 0.98)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          borderRadius: '20px',
+          border: `2px solid ${config.color}`,
+          boxShadow: `0 8px 32px rgba(0, 0, 0, 0.5), 0 0 30px ${config.color}30`,
+          padding: '1.5rem',
+          width: '100%',
+          maxWidth: '400px',
+          animation: 'confirmSlideIn 0.3s ease-out'
+        }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          marginBottom: '1rem'
+        }}>
+          <span style={{ fontSize: '1.75rem' }}>{config.icon}</span>
+          <h3 style={{
+            margin: 0,
+            fontSize: '1.25rem',
+            fontWeight: 700,
+            color: 'var(--gray-light)'
+          }}>
+            {confirm.title}
+          </h3>
+        </div>
+
+        {/* Message */}
+        <p style={{
+          margin: '0 0 1.5rem 0',
+          fontSize: '0.95rem',
+          lineHeight: 1.6,
+          color: 'var(--gray)',
+          whiteSpace: 'pre-line'
+        }}>
+          {confirm.message}
+        </p>
+
+        {/* Boutons */}
+        <div style={{
+          display: 'flex',
+          gap: '0.75rem'
+        }}>
+          {/* Bouton Annuler */}
+          <button
+            onClick={onCancel}
+            style={{
+              flex: 1,
+              padding: '0.875rem 1.5rem',
+              background: 'rgba(255, 255, 255, 0.05)',
+              border: '2px solid rgba(255, 255, 255, 0.2)',
+              borderRadius: '12px',
+              color: 'var(--gray-light)',
+              fontSize: '0.95rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              transition: 'all 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.3)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+              e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+            }}
+          >
+            {confirm.cancelText || 'Annuler'}
+          </button>
+
+          {/* Bouton Confirmer */}
+          <button
+            onClick={onConfirm}
+            style={{
+              flex: 1,
+              padding: '0.875rem 1.5rem',
+              background: config.confirmBg,
+              border: 'none',
+              borderRadius: '12px',
+              color: 'white',
+              fontSize: '0.95rem',
+              fontWeight: 700,
+              cursor: 'pointer',
+              transition: 'all 0.2s',
+              boxShadow: `0 0 20px ${config.confirmBg}50`
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.boxShadow = `0 0 30px ${config.confirmBg}70`;
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.boxShadow = `0 0 20px ${config.confirmBg}50`;
+            }}
+          >
+            {confirm.confirmText || 'Confirmer'}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ==================== PROVIDER ====================
 
 export function ToastProvider({ children }: { children: ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
+  const [confirmState, setConfirmState] = useState<ConfirmState | null>(null);
 
   const addToast = useCallback((type: ToastType, message: string, duration?: number) => {
     const id = `toast-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
@@ -216,8 +395,31 @@ export function ToastProvider({ children }: { children: ReactNode }) {
     addToast('warning', message, duration);
   }, [addToast]);
 
+  const showConfirm = useCallback((options: ConfirmOptions): Promise<boolean> => {
+    return new Promise((resolve) => {
+      setConfirmState({
+        ...options,
+        resolve
+      });
+    });
+  }, []);
+
+  const handleConfirm = useCallback(() => {
+    if (confirmState) {
+      confirmState.resolve(true);
+      setConfirmState(null);
+    }
+  }, [confirmState]);
+
+  const handleCancel = useCallback(() => {
+    if (confirmState) {
+      confirmState.resolve(false);
+      setConfirmState(null);
+    }
+  }, [confirmState]);
+
   return (
-    <ToastContext.Provider value={{ showSuccess, showError, showInfo, showWarning, dismiss }}>
+    <ToastContext.Provider value={{ showSuccess, showError, showInfo, showWarning, showConfirm, dismiss }}>
       {children}
 
       {/* Toast Container */}
@@ -245,6 +447,15 @@ export function ToastProvider({ children }: { children: ReactNode }) {
         </div>
       )}
 
+      {/* Confirm Modal */}
+      {confirmState && (
+        <ConfirmModal
+          confirm={confirmState}
+          onConfirm={handleConfirm}
+          onCancel={handleCancel}
+        />
+      )}
+
       {/* Animations CSS */}
       <style dangerouslySetInnerHTML={{ __html: `
         @keyframes toastSlideIn {
@@ -257,7 +468,7 @@ export function ToastProvider({ children }: { children: ReactNode }) {
             transform: translateY(0) scale(1);
           }
         }
-      
+
         @keyframes toastSlideOut {
           from {
             opacity: 1;
@@ -266,6 +477,26 @@ export function ToastProvider({ children }: { children: ReactNode }) {
           to {
             opacity: 0;
             transform: translateY(-10px) scale(0.95);
+          }
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+          }
+          to {
+            opacity: 1;
+          }
+        }
+
+        @keyframes confirmSlideIn {
+          from {
+            opacity: 0;
+            transform: scale(0.9) translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: scale(1) translateY(0);
           }
         }
       `}} />
