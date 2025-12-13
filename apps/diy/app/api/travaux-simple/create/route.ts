@@ -80,6 +80,8 @@ export async function POST(request: NextRequest) {
     console.log('✅ Travail créé:', travail.id);
 
     // 3. Créer les étapes
+    console.log('📋 travailData reçu:', JSON.stringify(travailData, null, 2));
+    console.log('📋 Nombre d\'étapes:', travailData.etapes?.length || 0);
     if (travailData.etapes && travailData.etapes.length > 0) {
       const etapesInsert = travailData.etapes.map((etape: any) => ({
         travail_id: travail.id,
