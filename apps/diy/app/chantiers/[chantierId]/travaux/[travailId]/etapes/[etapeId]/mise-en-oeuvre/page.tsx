@@ -457,14 +457,13 @@ function TacheCard({
 // ==================== PAGE PRINCIPALE ====================
 
 export default function MiseEnOeuvreTachesPage() {
-  const { showError, showSuccess, showWarning } = useToast();
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const params = useParams();
   const router = useRouter();
   const chantierId = params.chantierId as string;
   const travailId = params.travailId as string;
   const etapeId = params.etapeId as string;
-  const { showError, showSuccess, showWarning, showConfirm } = useToast();
-
+  
   // États
   const [viewMode, setViewMode] = useState<ViewMode>('loading');
   const [taches, setTaches] = useState<TacheGeneree[]>([]);
