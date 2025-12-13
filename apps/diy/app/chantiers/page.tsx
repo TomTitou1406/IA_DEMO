@@ -93,12 +93,20 @@ export default function ChantiersPage() {
   const termines = chantiersComplexes.filter(c => c.statut === 'terminé');
 
   const handleDelete = async (id: string, titre: string) => {
-    if (confirm(`Supprimer "${titre}" ?`)) {
+    const confirmed = await showConfirm({
+      title: 'Supprimer le chantier',
+      message: `Supprimer "${titre}" ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger'
+    });
+    
+    if (confirmed) {
       try {
         await deleteChantier(id, true);
         setChantiers(prev => prev.filter(c => c.id !== id));
       } catch (err: any) {
-        showWarning('Erreur: ' + err.message);
+        showError('Erreur: ' + err.message);
       }
     }
   };
