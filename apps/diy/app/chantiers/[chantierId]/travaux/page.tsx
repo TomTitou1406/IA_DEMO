@@ -81,19 +81,19 @@ export default function TravauxPage() {
       try {
         const chantierData = await getChantierById(chantierId);
         if (chantierData) {
+          const allTravaux = await getTravauxByChantier(chantierData.id);
+          
+          // Si travail simple avec un seul lot → rediriger IMMÉDIATEMENT
+          if (chantierData.type_projet === 'simple' && allTravaux.length === 1) {
+            router.replace(`/chantiers/${chantierId}/travaux/${allTravaux[0].id}/etapes`);
+            return; // Stop ici, ne pas continuer le chargement
+          }
+          
+          // Sinon, charger normalement
           setChantier(chantierData);
-          const [statsData, allTravaux] = await Promise.all([
-            getChantierStats(chantierData.id),
-            getTravauxByChantier(chantierData.id)
-          ]);
+          const statsData = await getChantierStats(chantierData.id);
           setStats(statsData);
           setTravaux(allTravaux);
-          
-          // Si travail simple avec un seul lot → rediriger vers les étapes
-          if (chantierData.type_projet === 'simple' && allTravaux.length === 1) {
-            router.push(`/chantiers/${chantierId}/travaux/${allTravaux[0].id}/etapes`);
-            return;
-          }
         }
       } catch (error) {
         console.error('Error loading travaux:', error);
