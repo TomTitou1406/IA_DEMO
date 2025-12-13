@@ -15,6 +15,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { getAllChantiers, getChantierStats, getChantierEtapesStats, deleteChantier } from '../lib/services/chantierService';
 import Breadcrumb from '@/app/components/Breadcrumb';
+import { useToast } from '@/app/components/Toast';
 
 interface Chantier {
   id: string;
@@ -37,6 +38,7 @@ interface Chantier {
 }
 
 export default function ChantiersPage() {
+  const { showError, showSuccess, showWarning } = useToast();
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -96,7 +98,7 @@ export default function ChantiersPage() {
         await deleteChantier(id, true);
         setChantiers(prev => prev.filter(c => c.id !== id));
       } catch (err: any) {
-        alert('Erreur: ' + err.message);
+        showWarning('Erreur: ' + err.message);
       }
     }
   };
