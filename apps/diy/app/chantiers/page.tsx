@@ -41,9 +41,9 @@ export default function ChantiersPage() {
   const [loading, setLoading] = useState(true);
   
   // Sections collapsibles
-  const [showSimples, setShowSimples] = useState(true);
-  const [showNouveaux, setShowNouveaux] = useState(true);
-  const [showEnCours, setShowEnCours] = useState(true);
+  const [showSimples, setShowSimples] = useState(false);
+  const [showNouveaux, setShowNouveaux] = useState(false);
+  const [showEnCours, setShowEnCours] = useState(false);
   const [showTermines, setShowTermines] = useState(false);
 
   useEffect(() => {
@@ -136,7 +136,7 @@ export default function ChantiersPage() {
           marginBottom: '1.5rem',
           flexWrap: 'wrap'
         }}>
-          {/* Bouton Travaux simples */}
+          {/* Bouton  */}
           <button
             onClick={() => {
               window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
@@ -166,7 +166,7 @@ export default function ChantiersPage() {
             }}
           >
             <span>🔧</span>
-            <span>Travaux simples</span>
+            <span>Travaux simples en cours</span>
           </button>
 
           {/* Bouton Nouveau chantier */}
@@ -215,13 +215,22 @@ export default function ChantiersPage() {
           </Section>
         )}
 
+        {/* ==================== SÉPARATION ==================== */}
+        {travauxSimples.length > 0 && (
+          <div style={{
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            marginTop: '1.5rem',
+            paddingTop: '1.5rem'
+          }} />
+        )}
+
         {/* ==================== SECTION CHANTIERS COMPLEXES ==================== */}
-        <div style={{ marginTop: travauxSimples.length > 0 ? '2rem' : 0 }}>
+        <div>
           
           {/* Nouveaux */}
           {nouveaux.length > 0 && (
             <Section
-              title="À configurer"
+              title="Chantiers à configurer"
               icon="✨"
               count={nouveaux.length}
               color="var(--purple)"
@@ -241,7 +250,7 @@ export default function ChantiersPage() {
           {/* En cours */}
           {enCours.length > 0 && (
             <Section
-              title="En cours"
+              title="Chantiers en cours"
               icon="🏗️"
               count={enCours.length}
               color="var(--blue)"
