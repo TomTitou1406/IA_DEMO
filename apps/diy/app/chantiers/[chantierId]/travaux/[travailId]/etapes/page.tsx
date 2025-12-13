@@ -359,7 +359,7 @@ export default function TravailDetailPage() {
                     variant="primary"
                     color="var(--blue)"
                     icon="📋"
-                    label="Tâches"
+                    label="Voir tâches"
                     count={etape.nombre_taches}
                     onClick={() => {
                       router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/taches`);
