@@ -19,12 +19,14 @@ import { usePathname } from 'next/navigation';
 import { useAssistantContext } from '../hooks/useAssistantContext';
 import ChatInterface from './ChatInterface';
 import { type NoteLevel } from '../lib/services/notesService';
+import { useToast } from '@/app/components/Toast';
 
 type AssistantState = 'idle' | 'pulse' | 'thinking' | 'speaking';
 
 const STORAGE_KEY = 'papibricole_assistant_open';
 
 export default function FloatingAssistant() {
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const pathname = usePathname();
   
   const [isOpen, setIsOpen] = useState(() => {
