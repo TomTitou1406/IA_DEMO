@@ -126,7 +126,12 @@ export default function TachesPage() {
 
   // Grouper par statut
   const terminees = taches.filter(t => t.statut === 'terminée');
-  const aFaire = taches.filter(t => t.statut === 'à_faire' || !t.statut);
+  const aFaire = taches.filter(t => 
+    t.statut === 'à_faire' || 
+    t.statut === 'à_venir' || 
+    t.statut === 'brouillon' ||
+    !t.statut
+  );
 
   // Calculer les stats
   const totalTaches = taches.length;
