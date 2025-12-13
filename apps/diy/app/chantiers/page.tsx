@@ -131,8 +131,15 @@ export default function ChantiersPage() {
           flexWrap: 'wrap'
         }}>
           {/* Bouton Travaux simples */}
-          <Link 
-            href="/chantiers/simple/nouveau"
+          <button
+            onClick={() => {
+              window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
+                detail: {
+                  pageContext: 'travaux_simple_decouverte',
+                  welcomeMessage: "Salut ! 🔧 Quel petit travail veux-tu réaliser ?\n\nExemples : poser une étagère, fixer un miroir, monter un meuble, installer une tringle..."
+                }
+              }));
+            }}
             style={{
               flex: 1,
               minWidth: '140px',
@@ -144,16 +151,17 @@ export default function ChantiersPage() {
               background: 'linear-gradient(135deg, var(--green), #059669)',
               color: 'white',
               borderRadius: '12px',
-              textDecoration: 'none',
+              border: 'none',
               fontWeight: '600',
               fontSize: '0.9rem',
               boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
             <span>🔧</span>
             <span>Travaux simples</span>
-          </Link>
+          </button>
 
           {/* Bouton Nouveau chantier */}
           <Link 
