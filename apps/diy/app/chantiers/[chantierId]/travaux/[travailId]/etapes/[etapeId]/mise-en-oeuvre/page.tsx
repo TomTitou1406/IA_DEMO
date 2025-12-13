@@ -463,6 +463,7 @@ export default function MiseEnOeuvreTachesPage() {
   const chantierId = params.chantierId as string;
   const travailId = params.travailId as string;
   const etapeId = params.etapeId as string;
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
 
   // États
   const [viewMode, setViewMode] = useState<ViewMode>('loading');
