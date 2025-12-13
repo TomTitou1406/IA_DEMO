@@ -145,7 +145,6 @@ export default function NouveauTravailSimplePage() {
     <>
       <Breadcrumb 
         currentLevel="chantier" 
-        chantierTitre="Nouveau travail simple"
       />
 
       <div style={{
