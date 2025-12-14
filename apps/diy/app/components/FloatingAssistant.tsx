@@ -75,12 +75,16 @@ export default function FloatingAssistant() {
   const pageContext = overrideContext?.pageContext || defaultPageContext;
   const welcomeMessage = overrideContext?.welcomeMessage || defaultWelcomeMessage;
   
-  // Couleur : toujours bleu pour aide_decouverte et mode expert, vert pour les vidéos
-  const contextColor = (overrideContext?.pageContext === 'aide_decouverte' || expertMode) 
-  ? 'var(--blue)' 
-  : (overrideContext?.pageContext === 'video_decouverte' || overrideContext?.pageContext === 'travaux_simple_decouverte')
-    ? 'var(--green)'
-    : defaultContextColor;
+  // Couleur : priorité au contextColor explicite, sinon logique par défaut
+  const contextColor = overrideContext?.contextColor
+    ? overrideContext.contextColor
+    : (overrideContext?.pageContext === 'aide_decouverte' || expertMode) 
+      ? 'var(--blue)' 
+      : overrideContext?.pageContext === 'video_decouverte'
+        ? 'var(--green)'
+        : overrideContext?.pageContext === 'travaux_simple_decouverte'
+          ? 'var(--blue)'  // Travaux simples = BLEU
+          : defaultContextColor;
   
   const header = expertMode 
   ? { title: "Assistance Expert", breadcrumb: "", expertiseLine: `🎯 ${expertMode.header.expertiseNom}` }
@@ -167,10 +171,10 @@ export default function FloatingAssistant() {
     };
     
     const handleOpenAssistantWithContext = (event: CustomEvent) => {
-      const { pageContext, welcomeMessage } = event.detail || {};
-      console.log('🎯 Ouverture assistant avec contexte:', pageContext);
+      const { pageContext, welcomeMessage, contextColor, additionalContext } = event.detail || {};
+      console.log('🎯 Ouverture assistant avec contexte:', pageContext, 'couleur:', contextColor);
       
-      setOverrideContext({ pageContext, welcomeMessage });
+      setOverrideContext({ pageContext, welcomeMessage, contextColor, additionalContext });
       setExpertMode(null);
       setChatKey(prev => prev + 1);
       setIsOpen(true);
