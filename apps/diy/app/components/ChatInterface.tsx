@@ -1770,7 +1770,7 @@ export default function ChatInterface({
                       boxShadow: '0 0 15px rgba(37, 99, 235, 0.4)'
                     }}
                   >
-                    ✨ Créer ce travail
+                    ✨ Créer de petits travaux
                   </button>
                   <button
                     onClick={() => setSuggestedTravailSimple(null)}
