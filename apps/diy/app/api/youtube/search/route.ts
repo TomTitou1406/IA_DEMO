@@ -2,14 +2,12 @@
  * /api/youtube/search/route.ts
  * Recherche YouTube avec évaluation IA de la pertinence
  * 
- * @version 3.0
+ * @version 3.1
  * 
- * Fonctionnalités :
- * - Paramètres dynamiques depuis BDD (app_settings)
- * - Chaînes de confiance (youtube_trusted_channels)
- * - Évaluation IA de chaque vidéo (pertinence 0-10)
- * - Reformulation automatique si résultats peu pertinents
- * - Séparation vidéos / shorts
+ * Changements v3.1 :
+ * - Prompt d'évaluation chargé depuis prompts_library (BDD)
+ * - Évaluation IA appliquée aux vidéos ET aux Shorts
+ * - Filtre des vidéos en anglais via le prompt IA
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -50,6 +48,7 @@ interface VideoResult {
   durationSeconds: number;
   score: number;
   isTrusted: boolean;
+  isShort: boolean;
   aiScore?: number;
   aiReason?: string;
 }
@@ -71,6 +70,13 @@ interface SearchInfo {
   averageScore: number;
   aiEnabled: boolean;
   status: 'excellent' | 'good' | 'acceptable' | 'limited';
+}
+
+interface PromptConfig {
+  prompt_text: string;
+  temperature: number;
+  max_tokens: number;
+  model: string;
 }
 
 // ============================================
@@ -110,66 +116,60 @@ async function getYouTubeSettings(): Promise<YouTubeSettings> {
   };
 }
 
+async function getEvaluationPrompt(): Promise<PromptConfig | null> {
+  const { data, error } = await supabase
+    .from('prompts_library')
+    .select('prompt_text, temperature, max_tokens, model')
+    .eq('code', 'system_youtube_evaluation')
+    .eq('est_actif', true)
+    .single();
+
+  if (error || !data) {
+    console.warn('⚠️ Prompt system_youtube_evaluation non trouvé en BDD');
+    return null;
+  }
+
+  return {
+    prompt_text: data.prompt_text,
+    temperature: data.temperature || 0.3,
+    max_tokens: data.max_tokens || 1000,
+    model: data.model || 'gpt-4o-mini',
+  };
+}
+
 // ============================================
 // ÉVALUATION IA DES RÉSULTATS
 // ============================================
 
 async function evaluateWithAI(
-  videos: VideoResult[],
+  allResults: VideoResult[],
   userQuery: string,
-  minScore: number
+  minScore: number,
+  promptConfig: PromptConfig
 ): Promise<AIEvaluation> {
   
   const openaiKey = process.env.OPENAI_API_KEY;
   if (!openaiKey) {
     console.warn('⚠️ OpenAI API key non configurée, évaluation IA désactivée');
     return {
-      scores: videos.map((_, i) => ({ index: i, score: 5, reason: 'Évaluation non disponible' })),
+      scores: allResults.map((_, i) => ({ index: i + 1, score: 5, reason: 'Évaluation non disponible' })),
       averageScore: 5
     };
   }
 
-  const videoList = videos
-    .map((v, i) => `${i + 1}. "${v.title}" - Chaîne: ${v.channelTitle} - ${v.viewCount} vues`)
+  // Construire la liste des vidéos (avec indicateur Short)
+  const videoList = allResults
+    .map((v, i) => {
+      const shortIndicator = v.isShort ? ' [SHORT]' : '';
+      return `${i + 1}. "${v.title}"${shortIndicator} - Chaîne: ${v.channelTitle} - ${v.viewCount} vues`;
+    })
     .join('\n');
 
-  const prompt = `Tu es un expert en bricolage et DIY. L'utilisateur cherche des tutoriels vidéo pour : "${userQuery}"
-  
-  Voici les vidéos trouvées sur YouTube :
-  ${videoList}
-  
-  ÉVALUE chaque vidéo selon sa pertinence par rapport à la demande "${userQuery}".
-  
-  Critères d'évaluation :
-  - 9-10 : Correspond exactement à la demande (titre clair, tutoriel complet)
-  - 7-8 : Très pertinent, couvre bien le sujet ou un synonyme reconnu
-  - 5-6 : Partiellement pertinent, peut aider
-  - 3-4 : Peu pertinent, sujet connexe mais pas la demande
-  - 0-2 : Hors sujet total
-  
-  SYNONYMES ACCEPTÉS (même score qu'une correspondance exacte) :
-  - "cabane de jardin" ≈ "abri de jardin" ≈ "chalet de jardin" ≈ "annexe jardin"
-  - "cuisine d'été" ≈ "cuisine extérieure" ≈ "cuisine outdoor" ≈ "cuisine de jardin"
-  - "terrasse" ≈ "deck" ≈ "platelage bois"
-  - "cloison" ≈ "séparation" ≈ "mur intérieur"
-  - "carrelage" ≈ "faïence" ≈ "céramique"
-  - "WC" ≈ "toilettes" ≈ "sanitaires"
-  - "salle de bain" ≈ "salle d'eau" ≈ "douche"
-  
-  HORS-SUJET (score 0-3 même si mots similaires) :
-  - "barbecue" ou "four à pizza" seuls pour une recherche "cuisine d'été"
-  - "dalle béton" seule pour une recherche "cabane" (c'est une étape préparatoire)
-  - Vidéos de présentation/visite SANS tutoriel de construction
-  - Vidéos de décoration sans aspect bricolage/construction
-  
-  Retourne UNIQUEMENT un JSON valide (sans markdown, sans backticks) :
-  {
-    "scores": [
-      {"index": 1, "score": 8, "reason": "Raison courte"},
-      {"index": 2, "score": 3, "reason": "Raison courte"}
-    ],
-    "suggestedQuery": "nouvelle requête si moyenne < ${minScore}, sinon null"
-  }`;
+  // Remplacer les variables dans le prompt
+  const prompt = promptConfig.prompt_text
+    .replace(/\{\{USER_QUERY\}\}/g, userQuery)
+    .replace(/\{\{VIDEO_LIST\}\}/g, videoList)
+    .replace(/\{\{MIN_SCORE\}\}/g, String(minScore));
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
@@ -179,10 +179,10 @@ async function evaluateWithAI(
         'Authorization': `Bearer ${openaiKey}`,
       },
       body: JSON.stringify({
-        model: 'gpt-4o-mini',
+        model: promptConfig.model,
         messages: [{ role: 'user', content: prompt }],
-        temperature: 0.3,
-        max_tokens: 1000,
+        temperature: promptConfig.temperature,
+        max_tokens: promptConfig.max_tokens,
       }),
     });
 
@@ -210,7 +210,7 @@ async function evaluateWithAI(
   } catch (error) {
     console.error('Erreur évaluation IA:', error);
     return {
-      scores: videos.map((_, i) => ({ index: i, score: 5, reason: 'Erreur évaluation' })),
+      scores: allResults.map((_, i) => ({ index: i + 1, score: 5, reason: 'Erreur évaluation' })),
       averageScore: 5
     };
   }
@@ -285,6 +285,9 @@ export async function POST(request: NextRequest) {
     // Charger les paramètres depuis BDD
     const settings = await getYouTubeSettings();
 
+    // Charger le prompt d'évaluation depuis BDD
+    const promptConfig = await getEvaluationPrompt();
+
     // Charger les chaînes de confiance depuis BDD
     const { data: trustedChannels } = await supabase
       .from('youtube_trusted_channels')
@@ -325,9 +328,8 @@ export async function POST(request: NextRequest) {
       // 2. Récupérer les détails
       const videoDetails = await getVideoDetails(videoIds, apiKey);
 
-      // 3. Traiter et filtrer les résultats
-      const videos: VideoResult[] = [];
-      const shorts: VideoResult[] = [];
+      // 3. Traiter TOUS les résultats ensemble (vidéos + shorts)
+      const allResults: VideoResult[] = [];
 
       videoDetails.forEach((v: any) => {
         const viewCount = parseInt(v.statistics?.viewCount || '0');
@@ -350,6 +352,11 @@ export async function POST(request: NextRequest) {
         });
 
         const score = viewCount * bonusScore;
+        const isShort = duration <= settings.shorts_max_duration;
+
+        // Filtrer : on garde les Shorts si activés, sinon seulement les vidéos longues
+        if (isShort && !settings.include_shorts) return;
+        if (!isShort && duration < settings.min_duration) return;
 
         const videoData: VideoResult = {
           id: v.id,
@@ -362,29 +369,23 @@ export async function POST(request: NextRequest) {
           durationSeconds: duration,
           score,
           isTrusted,
+          isShort,
         };
 
-        // Classer en Short ou vidéo normale
-        if (duration <= settings.shorts_max_duration) {
-          if (settings.include_shorts) {
-            shorts.push(videoData);
-          }
-        } else if (duration >= settings.min_duration) {
-          videos.push(videoData);
-        }
+        allResults.push(videoData);
       });
 
-      // 4. Évaluation IA (si activée)
-      if (settings.ai_enabled && videos.length > 0) {
-        console.log('🤖 Évaluation IA en cours...');
-        lastEvaluation = await evaluateWithAI(videos, originalQuery, settings.ai_min_score);
+      // 4. Évaluation IA de TOUS les résultats (si activée et prompt disponible)
+      if (settings.ai_enabled && allResults.length > 0 && promptConfig) {
+        console.log(`🤖 Évaluation IA de ${allResults.length} résultats...`);
+        lastEvaluation = await evaluateWithAI(allResults, originalQuery, settings.ai_min_score, promptConfig);
         console.log(`📊 Score moyen: ${lastEvaluation.averageScore}/10`);
 
-        // Enrichir les vidéos avec les scores IA
+        // Enrichir les résultats avec les scores IA
         lastEvaluation.scores.forEach((s) => {
-          if (videos[s.index - 1]) {
-            videos[s.index - 1].aiScore = s.score;
-            videos[s.index - 1].aiReason = s.reason;
+          if (allResults[s.index - 1]) {
+            allResults[s.index - 1].aiScore = s.score;
+            allResults[s.index - 1].aiReason = s.reason;
           }
         });
 
@@ -400,16 +401,28 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      // 5. Trier par score IA puis par vues
+      // 5. Séparer et trier par score IA puis par vues
+      const videos = allResults.filter(v => !v.isShort);
+      const shorts = allResults.filter(v => v.isShort);
+
       if (settings.ai_enabled) {
-        videos.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0) || b.score - a.score);
+        // Filtrer les scores trop bas (< 3 = hors sujet)
+        const filteredVideos = videos.filter(v => (v.aiScore || 5) >= 3);
+        const filteredShorts = shorts.filter(v => (v.aiScore || 5) >= 3);
+        
+        filteredVideos.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0) || b.score - a.score);
+        filteredShorts.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0) || b.score - a.score);
+        
+        finalVideos = filteredVideos.slice(0, settings.max_results_display);
+        finalShorts = filteredShorts.slice(0, settings.shorts_max_display);
       } else {
         videos.sort((a, b) => b.score - a.score);
+        shorts.sort((a, b) => b.score - a.score);
+        
+        finalVideos = videos.slice(0, settings.max_results_display);
+        finalShorts = shorts.slice(0, settings.shorts_max_display);
       }
-      shorts.sort((a, b) => b.score - a.score);
-
-      finalVideos = videos.slice(0, settings.max_results_display);
-      finalShorts = shorts.slice(0, settings.shorts_max_display);
+      
       break; // Sortir de la boucle
     }
 
