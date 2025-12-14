@@ -95,7 +95,7 @@ export default function FloatingAssistant() {
     : overrideContext?.pageContext === 'video_decouverte'
       ? { title: "Trouver un tuto", breadcrumb: "", expertiseLine: "🎬 Recherche vidéo" }
       : overrideContext?.pageContext === 'travaux_simple_decouverte'
-        ? { title: "Nouveau travail simple", breadcrumb: "", expertiseLine: "🔧 Création guidée" }
+        ? { title: "Nouveaux travaux simples", breadcrumb: "", expertiseLine: "🔧 Création guidée" }
         : defaultHeader;
   
   const expertise = expertMode 
