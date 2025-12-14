@@ -13,11 +13,161 @@ interface Video {
   duration: string;
   durationSeconds?: number;
   isTrusted?: boolean;
+  aiScore?: number;
 }
 
-interface SearchSettings {
-  include_shorts: boolean;
-  query_used: string;
+interface SearchInfo {
+  originalQuery: string;
+  finalQuery: string;
+  attempts: number;
+  averageScore: number;
+  aiEnabled: boolean;
+  status: 'excellent' | 'good' | 'acceptable' | 'limited';
+}
+
+// ==================== COMPOSANT LOADING ====================
+function LoadingSearch() {
+  const [step, setStep] = useState(0);
+  const [completed, setCompleted] = useState<number[]>([]);
+  const [progress, setProgress] = useState(0);
+  
+  const steps = [
+    { icon: '🔍', text: 'Recherche YouTube en cours...' },
+    { icon: '🤖', text: 'Analyse de la pertinence (IA)...' },
+    { icon: '⭐', text: 'Sélection des meilleures vidéos...' },
+    { icon: '✨', text: 'Finalisation des résultats...' },
+  ];
+  
+  const TOTAL_DURATION = 12000; // 12 secondes
+  const STEP_DURATION = TOTAL_DURATION / steps.length;
+  
+  useEffect(() => {
+    const startTime = Date.now();
+    
+    const progressInterval = setInterval(() => {
+      const elapsed = Date.now() - startTime;
+      const newProgress = Math.min((elapsed / TOTAL_DURATION) * 100, 100);
+      setProgress(newProgress);
+      
+      const newStep = Math.min(Math.floor(elapsed / STEP_DURATION), steps.length - 1);
+      
+      if (newStep !== step) {
+        const completedSteps = [];
+        for (let i = 0; i < newStep; i++) {
+          completedSteps.push(i);
+        }
+        setCompleted(completedSteps);
+        setStep(newStep);
+      }
+      
+      if (newProgress >= 100) {
+        clearInterval(progressInterval);
+      }
+    }, 100);
+    
+    return () => clearInterval(progressInterval);
+  }, []);
+
+  return (
+    <div style={{ 
+      padding: '3rem 2rem',
+      display: 'flex',
+      flexDirection: 'column',
+      alignItems: 'center',
+      gap: '2rem'
+    }}>
+      {/* Progress bar */}
+      <div style={{
+        width: '100%',
+        maxWidth: '400px',
+        height: '6px',
+        background: 'rgba(255,255,255,0.1)',
+        borderRadius: '3px',
+        overflow: 'hidden'
+      }}>
+        <div style={{
+          height: '100%',
+          width: `${progress}%`,
+          background: 'linear-gradient(90deg, var(--green), #10b981)',
+          borderRadius: '3px',
+          transition: 'width 0.1s linear'
+        }} />
+      </div>
+      
+      {/* Steps */}
+      <div style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '0.75rem',
+        width: '100%',
+        maxWidth: '350px'
+      }}>
+        {steps.map((s, i) => {
+          const isCompleted = completed.includes(i);
+          const isCurrent = step === i;
+          
+          return (
+            <div
+              key={i}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                background: isCurrent 
+                  ? 'rgba(16, 185, 129, 0.15)' 
+                  : isCompleted 
+                    ? 'rgba(16, 185, 129, 0.05)'
+                    : 'transparent',
+                border: isCurrent 
+                  ? '1px solid rgba(16, 185, 129, 0.3)'
+                  : '1px solid transparent',
+                transition: 'all 0.3s ease'
+              }}
+            >
+              <span style={{ fontSize: '1.25rem' }}>
+                {isCompleted ? '✅' : s.icon}
+              </span>
+              <span style={{
+                color: isCompleted 
+                  ? 'rgba(255,255,255,0.5)' 
+                  : isCurrent 
+                    ? 'var(--green)'
+                    : 'rgba(255,255,255,0.4)',
+                fontSize: '0.9rem',
+                fontWeight: isCurrent ? '600' : '400',
+                textDecoration: isCompleted ? 'line-through' : 'none'
+              }}>
+                {s.text}
+              </span>
+            </div>
+          );
+        })}
+      </div>
+      
+      {/* Avatar optionnel */}
+      <div style={{
+        width: '60px',
+        height: '60px',
+        borderRadius: '50%',
+        background: 'rgba(255,255,255,0.1)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        animation: 'pulse 2s infinite'
+      }}>
+        <span style={{ fontSize: '1.5rem' }}>🎬</span>
+      </div>
+      
+      <style jsx>{`
+        @keyframes pulse {
+          0%, 100% { transform: scale(1); opacity: 1; }
+          50% { transform: scale(1.05); opacity: 0.8; }
+        }
+      `}</style>
+    </div>
+  );
 }
 
 function VideosContent() {
@@ -27,7 +177,7 @@ function VideosContent() {
   
   const [videos, setVideos] = useState<Video[]>([]);
   const [shorts, setShorts] = useState<Video[]>([]);
-  const [settings, setSettings] = useState<SearchSettings | null>(null);
+  const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -47,15 +197,15 @@ function VideosContent() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ 
-          query: expanded ? query : query, // On pourra ajouter des paramètres pour élargir
+          query: query,
           maxResults: expanded ? 15 : 9,
-          expanded // Flag pour la recherche élargie
+          expanded
         }),
       });
       const data = await res.json();
       setVideos(data.videos || []);
       setShorts(data.shorts || []);
-      setSettings(data.settings || null);
+      setSearchInfo(data.searchInfo || null);
       setIsExpanded(expanded);
     } catch (error) {
       console.error('Search error:', error);
@@ -64,15 +214,15 @@ function VideosContent() {
     }
   };
 
-  const handleExpandSearch = () => {
+  const handleMoreResults = () => {
     searchVideos(true);
   };
 
-  const handleRefineSearch = () => {
+  const handleNewSearch = () => {
     window.dispatchEvent(new CustomEvent('openAssistantWithContext', { 
       detail: { 
         pageContext: 'video_decouverte',
-        welcomeMessage: `Les résultats pour "${query}" ne te conviennent pas ? Précise-moi ce que tu cherches exactement ! 🎬`
+        welcomeMessage: `Tu cherches autre chose ? Dis-moi quel tutoriel tu veux trouver ! 🎬`
       } 
     }));
   };
@@ -194,7 +344,7 @@ function VideosContent() {
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
           {!isExpanded && videos.length > 0 && (
             <button
-              onClick={handleExpandSearch}
+              onClick={handleMoreResults}
               style={{
                 padding: '0.6rem 1rem',
                 borderRadius: '8px',
@@ -209,11 +359,11 @@ function VideosContent() {
                 gap: '0.5rem'
               }}
             >
-              🔍 Élargir la recherche
+              ➕ Plus de résultats
             </button>
           )}
           <button
-            onClick={handleRefineSearch}
+            onClick={handleNewSearch}
             style={{
               padding: '0.6rem 1rem',
               borderRadius: '8px',
@@ -228,7 +378,7 @@ function VideosContent() {
               gap: '0.5rem'
             }}
           >
-            🔄 Affiner la recherche
+            🔄 Nouvelle recherche
           </button>
           <button
             onClick={() => router.push('/')}
@@ -252,16 +402,14 @@ function VideosContent() {
       </div>
 
       {loading ? (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <p style={{ color: 'white' }}>⏳ Recherche en cours...</p>
-        </div>
+        <LoadingSearch />
       ) : videos.length === 0 && shorts.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
             Aucune vidéo trouvée
           </p>
           <button
-            onClick={handleRefineSearch}
+            onClick={handleNewSearch}
             style={{
               padding: '0.75rem 1.5rem',
               borderRadius: '8px',
@@ -273,11 +421,50 @@ function VideosContent() {
               cursor: 'pointer'
             }}
           >
-            🔄 Reformuler ma recherche
+            🔄 Nouvelle recherche
           </button>
         </div>
       ) : (
         <>
+          {/* Indicateur de qualité des résultats */}
+          {searchInfo && searchInfo.aiEnabled && (
+            <div style={{
+              marginBottom: '1.5rem',
+              padding: '0.75rem 1rem',
+              background: searchInfo.status === 'excellent' 
+                ? 'rgba(16, 185, 129, 0.1)'
+                : searchInfo.status === 'good'
+                  ? 'rgba(59, 130, 246, 0.1)'
+                  : 'rgba(251, 191, 36, 0.1)',
+              border: `1px solid ${
+                searchInfo.status === 'excellent' 
+                  ? 'rgba(16, 185, 129, 0.3)'
+                  : searchInfo.status === 'good'
+                    ? 'rgba(59, 130, 246, 0.3)'
+                    : 'rgba(251, 191, 36, 0.3)'
+              }`,
+              borderRadius: '8px',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}>
+              <span>
+                {searchInfo.status === 'excellent' ? '⭐' : 
+                 searchInfo.status === 'good' ? '✅' : '💡'}
+              </span>
+              <span style={{ 
+                color: 'rgba(255,255,255,0.8)', 
+                fontSize: '0.85rem' 
+              }}>
+                {searchInfo.status === 'excellent' 
+                  ? 'Résultats très pertinents'
+                  : searchInfo.status === 'good'
+                    ? 'Bons résultats trouvés'
+                    : 'Résultats approximatifs - essaie "Nouvelle recherche" pour préciser'}
+              </span>
+            </div>
+          )}
+
           {/* Player si vidéo sélectionnée */}
           {selectedVideo && (
             <div style={{ 
@@ -373,7 +560,7 @@ function VideosContent() {
               textAlign: 'center'
             }}>
               <p style={{ color: 'var(--blue)', fontSize: '0.9rem', margin: 0 }}>
-                🔍 Recherche élargie - Plus de résultats affichés
+                ➕ Plus de résultats affichés
               </p>
             </div>
           )}
