@@ -612,7 +612,7 @@ export default function MiseEnOeuvrePage() {
   };
 
   // Quitter - Option C (Hybride)
-  const handleQuit = async () => {
+   const handleQuit = async () => {
     const { data: brouillonExistant } = await supabase
       .from('etapes')
       .select('id')
@@ -625,7 +625,7 @@ export default function MiseEnOeuvrePage() {
     if (hasBrouillonEnBDD || hasChanges) {
       const garderBrouillon = await showConfirm({
         title: 'Étapes brouillon',
-        message: 'Des étapes brouillon existent pour ce lot.\n\n• OK = Garder le brouillon (vous pourrez reprendre plus tard)\n• Annuler = Supprimer le brouillon et quitter',
+        message: 'Des étapes brouillon existent pour ce lot.\n\n• Garder = Reprendre plus tard\n• Supprimer = Quitter sans sauvegarder',
         confirmText: 'Garder',
         cancelText: 'Supprimer',
         type: 'warning'
