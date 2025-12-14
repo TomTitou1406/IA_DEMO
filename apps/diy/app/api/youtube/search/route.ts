@@ -2,9 +2,10 @@
  * /api/youtube/search/route.ts
  * Recherche YouTube avec évaluation IA de la pertinence
  * 
- * @version 3.2
+ * @version 3.3
  * 
  * Changelog :
+ * - v3.3 : Ajout displaySettings dans searchInfo (pagination dynamique)
  * - v3.2 : Retourne TOUS les résultats pour pagination côté client
  * - v3.1 : Prompt depuis BDD, évaluation Shorts, filtre FR
  * - v3.0 : Évaluation IA de la pertinence
@@ -72,6 +73,10 @@ interface SearchInfo {
   status: 'excellent' | 'good' | 'acceptable' | 'limited';
   totalVideos: number;
   totalShorts: number;
+  displaySettings: {
+    videosPerPage: number;
+    shortsPerPage: number;
+  };
 }
 
 interface PromptConfig {
@@ -422,6 +427,10 @@ export async function POST(request: NextRequest) {
       status,
       totalVideos: finalVideos.length,
       totalShorts: finalShorts.length,
+      displaySettings: {
+        videosPerPage: settings.max_results_display,
+        shortsPerPage: settings.shorts_max_display,
+      },
     };
 
     console.log(`✅ ${finalVideos.length} vidéos + ${finalShorts.length} shorts | Status: ${status}`);
