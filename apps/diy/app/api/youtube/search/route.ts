@@ -134,29 +134,42 @@ async function evaluateWithAI(
     .join('\n');
 
   const prompt = `Tu es un expert en bricolage et DIY. L'utilisateur cherche des tutoriels vidéo pour : "${userQuery}"
-
-Voici les vidéos trouvées sur YouTube :
-${videoList}
-
-ÉVALUE chaque vidéo selon sa pertinence par rapport à la demande "${userQuery}".
-
-Critères d'évaluation :
-- 9-10 : Exactement ce que l'utilisateur cherche (titre contient les mots-clés exacts)
-- 7-8 : Très pertinent, couvre bien le sujet
-- 5-6 : Partiellement pertinent, peut aider
-- 3-4 : Peu pertinent, sujet connexe mais pas la demande
-- 0-2 : Hors sujet
-
-IMPORTANT : Sois strict ! Une vidéo sur "abri de jardin" n'est PAS pertinente pour "cabane de jardin". Une vidéo sur "barbecue" n'est PAS pertinente pour "cuisine d'été".
-
-Retourne UNIQUEMENT un JSON valide (sans markdown, sans backticks) :
-{
-  "scores": [
-    {"index": 1, "score": 8, "reason": "Raison courte"},
-    {"index": 2, "score": 3, "reason": "Raison courte"}
-  ],
-  "suggestedQuery": "nouvelle requête si moyenne < ${minScore}, sinon null"
-}`;
+  
+  Voici les vidéos trouvées sur YouTube :
+  ${videoList}
+  
+  ÉVALUE chaque vidéo selon sa pertinence par rapport à la demande "${userQuery}".
+  
+  Critères d'évaluation :
+  - 9-10 : Correspond exactement à la demande (titre clair, tutoriel complet)
+  - 7-8 : Très pertinent, couvre bien le sujet ou un synonyme reconnu
+  - 5-6 : Partiellement pertinent, peut aider
+  - 3-4 : Peu pertinent, sujet connexe mais pas la demande
+  - 0-2 : Hors sujet total
+  
+  SYNONYMES ACCEPTÉS (même score qu'une correspondance exacte) :
+  - "cabane de jardin" ≈ "abri de jardin" ≈ "chalet de jardin" ≈ "annexe jardin"
+  - "cuisine d'été" ≈ "cuisine extérieure" ≈ "cuisine outdoor" ≈ "cuisine de jardin"
+  - "terrasse" ≈ "deck" ≈ "platelage bois"
+  - "cloison" ≈ "séparation" ≈ "mur intérieur"
+  - "carrelage" ≈ "faïence" ≈ "céramique"
+  - "WC" ≈ "toilettes" ≈ "sanitaires"
+  - "salle de bain" ≈ "salle d'eau" ≈ "douche"
+  
+  HORS-SUJET (score 0-3 même si mots similaires) :
+  - "barbecue" ou "four à pizza" seuls pour une recherche "cuisine d'été"
+  - "dalle béton" seule pour une recherche "cabane" (c'est une étape préparatoire)
+  - Vidéos de présentation/visite SANS tutoriel de construction
+  - Vidéos de décoration sans aspect bricolage/construction
+  
+  Retourne UNIQUEMENT un JSON valide (sans markdown, sans backticks) :
+  {
+    "scores": [
+      {"index": 1, "score": 8, "reason": "Raison courte"},
+      {"index": 2, "score": 3, "reason": "Raison courte"}
+    ],
+    "suggestedQuery": "nouvelle requête si moyenne < ${minScore}, sinon null"
+  }`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
