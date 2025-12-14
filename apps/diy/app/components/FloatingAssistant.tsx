@@ -211,8 +211,16 @@ export default function FloatingAssistant() {
     setAssistantState(state);
   };
 
-  const handleNewChat = () => {
-    if (confirm('Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.')) {
+  const handleNewChat = async () => {
+    const confirmed = await showConfirm({
+      title: 'Nouvelle discussion',
+      message: 'Démarrer une nouvelle discussion ? L\'historique actuel sera effacé.',
+      confirmText: 'Nouvelle discussion',
+      cancelText: 'Annuler',
+      type: 'info'
+    });
+    
+    if (confirmed) {
       isManualResetRef.current = true;
       setExpertMode(null);
       setChatKey(prev => prev + 1);
