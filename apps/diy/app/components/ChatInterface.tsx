@@ -964,17 +964,15 @@ export default function ChatInterface({
       const expertName = pendingExpertise.nom_affichage;
       setPendingExpertise(null);
     
-      // L'expert répond directement à la question
+     // L'expert répond directement à la question
       setLoading(true);
       try {
-        const response = await sendChat(
-          questionToAnswer,
-          [],
-          {
-            pageContext: 'expert_mode',
-            additionalContext: `Tu es ${expertName}. Réponds directement à cette question de manière claire et concise. IMPORTANT : pas de markdown (pas de ** ni ## ni ###), écris en texte simple avec des numéros (1. 2. 3.) si tu dois lister.`
-          }
-        );
+        const response = await sendChat({
+          messages: [{ role: 'user', content: questionToAnswer }],
+          context: `Tu es ${expertName}. Réponds directement à cette question de manière claire et concise. IMPORTANT : pas de markdown (pas de ** ni ## ni ###), écris en texte simple avec des numéros (1. 2. 3.) si tu dois lister.`,
+          isVoiceMode: false,
+          pageContext: 'expert_mode'
+        });
         
         const expertResponse: Message = {
           role: 'assistant',
