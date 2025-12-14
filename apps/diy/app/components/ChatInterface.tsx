@@ -922,36 +922,96 @@ export default function ChatInterface({
       
       console.log(`✅ Prompt expert ${prompt.isNew ? 'créé' : 'trouvé'}: ${prompt.code}`);
       
-      // Mettre à jour le header
-      const headerInfo = getExpertHeaderInfo(pendingExpertise);
-      setExpertHeader(headerInfo);
-      setExpertPrompt(prompt.prompt_text);
-      setIsExpertMode(true);
-      
-      // Envoyer un event pour mettre à jour le FloatingAssistant
-      window.dispatchEvent(new CustomEvent('expertModeActivated', {
-        detail: {
-          header: headerInfo,
-          expertise: pendingExpertise
+     // Mettre à jour le header
+    const headerInfo = getExpertHeaderInfo(pendingExpertise);
+    setExpertHeader(headerInfo);
+    setExpertPrompt(prompt.prompt_text);
+    setIsExpertMode(true);
+    
+    // Envoyer un event pour mettre à jour le FloatingAssistant
+    window.dispatchEvent(new CustomEvent('expertModeActivated', {
+      detail: {
+        header: headerInfo,
+        expertise: pendingExpertise
+      }
+    }));
+    
+    // Vérifier si le contexte contient une question à laquelle répondre directement
+    const hasQuestion = pendingExpertise.contexte_resume && 
+      (pendingExpertise.contexte_resume.includes('?') || 
+       pendingExpertise.contexte_resume.toLowerCase().startsWith('à quelle') ||
+       pendingExpertise.contexte_resume.toLowerCase().startsWith('comment') ||
+       pendingExpertise.contexte_resume.toLowerCase().startsWith('quel') ||
+       pendingExpertise.contexte_resume.toLowerCase().startsWith('pourquoi'));
+    
+    if (hasQuestion) {
+      // Message court de transition
+      const transitionMessage: Message = {
+        role: 'assistant',
+        content: `🎯 ${pendingExpertise.nom_affichage} à ton service !`,
+        timestamp: new Date().toISOString(),
+        metadata: { promptSource: 'expert_transition' }
+      };
+    
+      if (disablePersistence) {
+        setLocalMessages(prev => [...prev, transitionMessage]);
+      } else {
+        await persistMessage(transitionMessage);
+      }
+    
+      // Reset pending avant l'appel async
+      const questionToAnswer = pendingExpertise.contexte_resume;
+      const expertName = pendingExpertise.nom_affichage;
+      setPendingExpertise(null);
+    
+      // L'expert répond directement à la question
+      setLoading(true);
+      try {
+        const response = await sendChat(
+          questionToAnswer,
+          [],
+          {
+            pageContext: 'expert_mode',
+            additionalContext: `Tu es ${expertName}. Réponds directement à cette question de manière claire et concise. IMPORTANT : pas de markdown (pas de ** ni ## ni ###), écris en texte simple avec des numéros (1. 2. 3.) si tu dois lister.`
+          }
+        );
+        
+        const expertResponse: Message = {
+          role: 'assistant',
+          content: response.message,
+          timestamp: new Date().toISOString(),
+          metadata: { promptSource: 'expert_direct_response' }
+        };
+        
+        if (disablePersistence) {
+          setLocalMessages(prev => [...prev, expertResponse]);
+        } else {
+          await persistMessage(expertResponse);
         }
-      }));
-      
-      // Message de transition
+      } catch (error) {
+        console.error('Erreur réponse expert:', error);
+      } finally {
+        setLoading(false);
+      }
+    
+    } else {
+      // Pas de question directe, message d'accueil standard
       const transitionMessage: Message = {
         role: 'assistant',
         content: `🎯 ${pendingExpertise.nom_affichage} à ton service !\n\n${pendingExpertise.contexte_resume}\n\nPose-moi tes questions, je suis là pour t'aider ! 💪`,
         timestamp: new Date().toISOString(),
         metadata: { promptSource: 'expert_transition' }
       };
-      
+    
       if (disablePersistence) {
         setLocalMessages(prev => [...prev, transitionMessage]);
       } else {
         await persistMessage(transitionMessage);
       }
-      
+    
       // Reset pending
       setPendingExpertise(null);
+    }
       
     } catch (error) {
       console.error('Erreur transition expert:', error);
