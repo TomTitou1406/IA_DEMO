@@ -138,6 +138,7 @@ export default function ChatInterface({
   const [pendingVideoSearch, setPendingVideoSearch] = useState<{query: string; description: string} | null>(null);
   const [pendingTravailSimple, setPendingTravailSimple] = useState<any>(null);
   const [isCreatingTravailSimple, setIsCreatingTravailSimple] = useState(false);
+  const [suggestedTravailSimple, setSuggestedTravailSimple] = useState<any>(null);
   
   // ==================== REFS ====================
   
@@ -690,6 +691,42 @@ export default function ChatInterface({
             }
           } catch (e) {
             console.error('Erreur parsing travail simple:', e);
+          }
+        }
+      }
+
+      // Détection travaux simples
+      if (pageContext === 'travaux_simple_decouverte') {
+        const travailMatch = response.message.match(/```json[\s\S]*?"ready_to_create"\s*:\s*true[\s\S]*?```/);
+        if (travailMatch) {
+          try {
+            const json = JSON.parse(travailMatch[0].replace(/```json|```/g, ''));
+            if (json.travail_simple) {
+              console.log('🔧 Travail simple détecté:', json.travail_simple.titre);
+              setPendingTravailSimple(json.travail_simple);
+              // Nettoyer le JSON du message
+              response.message = response.message.replace(/```json[\s\S]*?```/g, '').trim();
+            }
+          } catch (e) {
+            console.error('Erreur parsing travail simple:', e);
+          }
+        }
+      }
+      
+      // Détection suggestion travail simple (depuis aide_decouverte)
+      if (pageContext === 'aide_decouverte') {
+        const suggestionMatch = response.message.match(/```json[\s\S]*?"ready_for_travail_simple"\s*:\s*true[\s\S]*?```/);
+        if (suggestionMatch) {
+          try {
+            const json = JSON.parse(suggestionMatch[0].replace(/```json|```/g, ''));
+            if (json.travail_simple_detecte) {
+              console.log('💡 Suggestion travail simple détectée:', json.travail_simple_detecte.titre);
+              setSuggestedTravailSimple(json.travail_simple_detecte);
+              // Nettoyer le JSON du message
+              response.message = response.message.replace(/```json[\s\S]*?```/g, '').trim();
+            }
+          } catch (e) {
+            console.error('Erreur parsing suggestion travail simple:', e);
           }
         }
       }
