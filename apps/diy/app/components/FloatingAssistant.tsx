@@ -40,10 +40,12 @@ export default function FloatingAssistant() {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [chatKey, setChatKey] = useState(0);
   
-  // Override contexte pour aide ponctuelle
+ // Override contexte pour aide ponctuelle
   const [overrideContext, setOverrideContext] = useState<{
     pageContext?: string;
     welcomeMessage?: string;
+    contextColor?: string;
+    additionalContext?: string;
   } | null>(null);
   
   // Mode Expert (transition Phase 2)
