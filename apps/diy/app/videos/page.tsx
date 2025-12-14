@@ -1,3 +1,14 @@
+/**
+ * /app/videos/page.tsx
+ * Page d'affichage des résultats de recherche YouTube
+ * 
+ * @version 2.0
+ * 
+ * Changelog :
+ * - v2.0 : Loader progressif circulaire, suppression bandeau qualité et bouton "Plus de résultats"
+ * - v1.0 : Version initiale avec recherche basique
+ */
+
 'use client';
 
 import { useSearchParams, useRouter } from 'next/navigation';
@@ -224,42 +235,32 @@ function VideosContent() {
   const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
-  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     if (query) {
-      searchVideos(false);
+      searchVideos();
     } else {
       setLoading(false);
     }
   }, [query]);
 
-  const searchVideos = async (expanded: boolean) => {
+  const searchVideos = async () => {
     setLoading(true);
     try {
       const res = await fetch('/api/youtube/search', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          query: query,
-          maxResults: expanded ? 15 : 9,
-          expanded
-        }),
+        body: JSON.stringify({ query }),
       });
       const data = await res.json();
       setVideos(data.videos || []);
       setShorts(data.shorts || []);
       setSearchInfo(data.searchInfo || null);
-      setIsExpanded(expanded);
     } catch (error) {
       console.error('Search error:', error);
     } finally {
       setLoading(false);
     }
-  };
-
-  const handleMoreResults = () => {
-    searchVideos(true);
   };
 
   const handleNewSearch = () => {
@@ -386,26 +387,6 @@ function VideosContent() {
         </div>
         
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {!isExpanded && videos.length > 0 && (
-            <button
-              onClick={handleMoreResults}
-              style={{
-                padding: '0.6rem 1rem',
-                borderRadius: '8px',
-                border: '2px solid var(--blue)',
-                background: 'transparent',
-                color: 'var(--blue)',
-                fontSize: '0.85rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-            >
-              ➕ Plus de résultats
-            </button>
-          )}
           <button
             onClick={handleNewSearch}
             style={{
@@ -470,45 +451,6 @@ function VideosContent() {
         </div>
       ) : (
         <>
-          {/* Indicateur de qualité des résultats */}
-          {searchInfo && searchInfo.aiEnabled && (
-            <div style={{
-              marginBottom: '1.5rem',
-              padding: '0.75rem 1rem',
-              background: searchInfo.status === 'excellent' 
-                ? 'rgba(16, 185, 129, 0.1)'
-                : searchInfo.status === 'good'
-                  ? 'rgba(59, 130, 246, 0.1)'
-                  : 'rgba(251, 191, 36, 0.1)',
-              border: `1px solid ${
-                searchInfo.status === 'excellent' 
-                  ? 'rgba(16, 185, 129, 0.3)'
-                  : searchInfo.status === 'good'
-                    ? 'rgba(59, 130, 246, 0.3)'
-                    : 'rgba(251, 191, 36, 0.3)'
-              }`,
-              borderRadius: '8px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              <span>
-                {searchInfo.status === 'excellent' ? '⭐' : 
-                 searchInfo.status === 'good' ? '✅' : '💡'}
-              </span>
-              <span style={{ 
-                color: 'rgba(255,255,255,0.8)', 
-                fontSize: '0.85rem' 
-              }}>
-                {searchInfo.status === 'excellent' 
-                  ? 'Résultats très pertinents'
-                  : searchInfo.status === 'good'
-                    ? 'Bons résultats trouvés'
-                    : 'Résultats approximatifs - essaie "Nouvelle recherche" pour préciser'}
-              </span>
-            </div>
-          )}
-
           {/* Player si vidéo sélectionnée */}
           {selectedVideo && (
             <div style={{ 
@@ -591,22 +533,6 @@ function VideosContent() {
                 ))}
               </div>
             </>
-          )}
-
-          {/* Message si recherche élargie */}
-          {isExpanded && (
-            <div style={{
-              marginTop: '2rem',
-              padding: '1rem',
-              background: 'rgba(37, 99, 235, 0.1)',
-              border: '1px solid rgba(37, 99, 235, 0.3)',
-              borderRadius: '8px',
-              textAlign: 'center'
-            }}>
-              <p style={{ color: 'var(--blue)', fontSize: '0.9rem', margin: 0 }}>
-                ➕ Plus de résultats affichés
-              </p>
-            </div>
           )}
         </>
       )}
