@@ -2,9 +2,10 @@
  * /app/videos/page.tsx
  * Page d'affichage des résultats de recherche YouTube
  * 
- * @version 2.1
+ * @version 2.2
  * 
  * Changelog :
+ * - v2.2 : Pagination dynamique depuis BDD (displaySettings)
  * - v2.1 : Pagination côté client avec bouton "Voir plus" centré
  * - v2.0 : Loader progressif circulaire, suppression bandeau qualité
  * - v1.0 : Version initiale avec recherche basique
@@ -37,6 +38,10 @@ interface SearchInfo {
   status: 'excellent' | 'good' | 'acceptable' | 'limited';
   totalVideos: number;
   totalShorts: number;
+  displaySettings: {
+    videosPerPage: number;
+    shortsPerPage: number;
+  };
 }
 
 // ==================== COMPOSANT LOADING ====================
@@ -232,10 +237,11 @@ function VideosContent() {
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   
-  // Pagination côté client
-  const ITEMS_PER_PAGE = 9;
-  const [videosDisplayCount, setVideosDisplayCount] = useState(ITEMS_PER_PAGE);
+  // Pagination côté client - valeurs par défaut, mises à jour par l'API
+  const [videosDisplayCount, setVideosDisplayCount] = useState(9);
   const [shortsDisplayCount, setShortsDisplayCount] = useState(6);
+  const [videosPerPage, setVideosPerPage] = useState(9);
+  const [shortsPerPage, setShortsPerPage] = useState(6);
 
   useEffect(() => {
     if (query) {
@@ -247,9 +253,6 @@ function VideosContent() {
 
   const searchVideos = async () => {
     setLoading(true);
-    // Reset pagination
-    setVideosDisplayCount(ITEMS_PER_PAGE);
-    setShortsDisplayCount(6);
     
     try {
       const res = await fetch('/api/youtube/search', {
@@ -261,6 +264,15 @@ function VideosContent() {
       setVideos(data.videos || []);
       setShorts(data.shorts || []);
       setSearchInfo(data.searchInfo || null);
+      
+      // Utiliser les settings de la BDD
+      if (data.searchInfo?.displaySettings) {
+        const { videosPerPage: vpp, shortsPerPage: spp } = data.searchInfo.displaySettings;
+        setVideosPerPage(vpp);
+        setShortsPerPage(spp);
+        setVideosDisplayCount(vpp);
+        setShortsDisplayCount(spp);
+      }
     } catch (error) {
       console.error('Search error:', error);
     } finally {
@@ -278,11 +290,11 @@ function VideosContent() {
   };
 
   const handleShowMoreVideos = () => {
-    setVideosDisplayCount(prev => prev + ITEMS_PER_PAGE);
+    setVideosDisplayCount(prev => prev + videosPerPage);
   };
 
   const handleShowMoreShorts = () => {
-    setShortsDisplayCount(prev => prev + 6);
+    setShortsDisplayCount(prev => prev + shortsPerPage);
   };
 
   const formatViews = (count: number) => {
