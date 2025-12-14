@@ -2,10 +2,11 @@
  * /app/videos/page.tsx
  * Page d'affichage des résultats de recherche YouTube
  * 
- * @version 2.0
+ * @version 2.1
  * 
  * Changelog :
- * - v2.0 : Loader progressif circulaire, suppression bandeau qualité et bouton "Plus de résultats"
+ * - v2.1 : Pagination côté client avec bouton "Voir plus" centré
+ * - v2.0 : Loader progressif circulaire, suppression bandeau qualité
  * - v1.0 : Version initiale avec recherche basique
  */
 
@@ -34,6 +35,8 @@ interface SearchInfo {
   averageScore: number;
   aiEnabled: boolean;
   status: 'excellent' | 'good' | 'acceptable' | 'limited';
+  totalVideos: number;
+  totalShorts: number;
 }
 
 // ==================== COMPOSANT LOADING ====================
@@ -49,7 +52,7 @@ function LoadingSearch() {
     { icon: '✨', text: 'Finalisation des résultats...' },
   ];
 
-  const TOTAL_DURATION = 15000; // 15 secondes
+  const TOTAL_DURATION = 15000;
   const STEP_DURATION = TOTAL_DURATION / steps.length;
 
   useEffect(() => {
@@ -79,7 +82,6 @@ function LoadingSearch() {
     return () => clearInterval(progressInterval);
   }, []);
 
-  // Calculer le cercle SVG
   const radius = 52;
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (progress / 100) * circumference;
@@ -92,14 +94,12 @@ function LoadingSearch() {
       padding: '2rem'
     }}>
       <div style={{ textAlign: 'center', maxWidth: '400px' }}>
-        {/* Progress bar circulaire */}
         <div style={{
           width: '120px',
           height: '120px',
           margin: '0 auto 1.5rem',
           position: 'relative'
         }}>
-          {/* SVG cercle de progression */}
           <svg
             width="120"
             height="120"
@@ -110,7 +110,6 @@ function LoadingSearch() {
               left: 0
             }}
           >
-            {/* Cercle de fond */}
             <circle
               cx="60"
               cy="60"
@@ -119,7 +118,6 @@ function LoadingSearch() {
               stroke="rgba(16, 185, 129, 0.2)"
               strokeWidth="8"
             />
-            {/* Cercle de progression */}
             <circle
               cx="60"
               cy="60"
@@ -136,7 +134,6 @@ function LoadingSearch() {
             />
           </svg>
           
-          {/* Icône centrale */}
           <div style={{
             position: 'absolute',
             inset: 0,
@@ -148,7 +145,6 @@ function LoadingSearch() {
             🎬
           </div>
           
-          {/* Pourcentage */}
           <div style={{
             position: 'absolute',
             bottom: '-8px',
@@ -181,7 +177,6 @@ function LoadingSearch() {
           L'assistant recherche et sélectionne les meilleures vidéos pour toi.
         </p>
 
-        {/* Étapes */}
         <div style={{
           background: 'rgba(255,255,255,0.05)',
           borderRadius: '12px',
@@ -225,6 +220,7 @@ function LoadingSearch() {
   );
 }
 
+// ==================== COMPOSANT PRINCIPAL ====================
 function VideosContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -235,6 +231,11 @@ function VideosContent() {
   const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  
+  // Pagination côté client
+  const ITEMS_PER_PAGE = 9;
+  const [videosDisplayCount, setVideosDisplayCount] = useState(ITEMS_PER_PAGE);
+  const [shortsDisplayCount, setShortsDisplayCount] = useState(6);
 
   useEffect(() => {
     if (query) {
@@ -246,6 +247,10 @@ function VideosContent() {
 
   const searchVideos = async () => {
     setLoading(true);
+    // Reset pagination
+    setVideosDisplayCount(ITEMS_PER_PAGE);
+    setShortsDisplayCount(6);
+    
     try {
       const res = await fetch('/api/youtube/search', {
         method: 'POST',
@@ -272,11 +277,26 @@ function VideosContent() {
     }));
   };
 
+  const handleShowMoreVideos = () => {
+    setVideosDisplayCount(prev => prev + ITEMS_PER_PAGE);
+  };
+
+  const handleShowMoreShorts = () => {
+    setShortsDisplayCount(prev => prev + 6);
+  };
+
   const formatViews = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(0)}k`;
     return count.toString();
   };
+
+  // Vidéos à afficher (paginées)
+  const displayedVideos = videos.slice(0, videosDisplayCount);
+  const remainingVideos = videos.length - videosDisplayCount;
+  
+  const displayedShorts = shorts.slice(0, shortsDisplayCount);
+  const remainingShorts = shorts.length - shortsDisplayCount;
 
   const VideoCard = ({ video, isShort = false }: { video: Video; isShort?: boolean }) => (
     <div
@@ -304,7 +324,6 @@ function VideosContent() {
             objectFit: 'cover' 
           }}
         />
-        {/* Durée */}
         <span style={{
           position: 'absolute',
           bottom: '8px',
@@ -318,7 +337,6 @@ function VideosContent() {
         }}>
           {isShort ? '▶ Short' : video.duration}
         </span>
-        {/* Badge chaîne de confiance */}
         {video.isTrusted && (
           <span style={{
             position: 'absolute',
@@ -362,6 +380,51 @@ function VideosContent() {
           👁️ {formatViews(video.viewCount)} vues
         </span>
       </div>
+    </div>
+  );
+
+  // Bouton "Voir plus" réutilisable
+  const ShowMoreButton = ({ 
+    remaining, 
+    onClick, 
+    label = "vidéos" 
+  }: { 
+    remaining: number; 
+    onClick: () => void;
+    label?: string;
+  }) => (
+    <div style={{ 
+      display: 'flex', 
+      justifyContent: 'center', 
+      marginTop: '1.5rem',
+      marginBottom: '1rem'
+    }}>
+      <button
+        onClick={onClick}
+        style={{
+          padding: '0.75rem 1.5rem',
+          borderRadius: '25px',
+          border: '2px solid var(--green)',
+          background: 'rgba(16, 185, 129, 0.1)',
+          color: 'var(--green)',
+          fontSize: '0.9rem',
+          fontWeight: '600',
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          transition: 'all 0.2s'
+        }}
+        onMouseOver={(e) => {
+          e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
+        }}
+        onMouseOut={(e) => {
+          e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+        }}
+      >
+        <span>➕</span>
+        <span>Voir plus ({remaining} {label})</span>
+      </button>
     </div>
   );
 
@@ -486,20 +549,28 @@ function VideosContent() {
                   color: 'rgba(255,255,255,0.5)', 
                   fontSize: '0.85rem' 
                 }}>
-                  ({videos.length})
+                  ({displayedVideos.length}/{videos.length})
                 </span>
               </div>
               
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
-                gap: '1.25rem',
-                marginBottom: '2rem'
+                gap: '1.25rem'
               }}>
-                {videos.map(video => (
+                {displayedVideos.map(video => (
                   <VideoCard key={video.id} video={video} />
                 ))}
               </div>
+
+              {/* Bouton Voir plus - Vidéos */}
+              {remainingVideos > 0 && (
+                <ShowMoreButton 
+                  remaining={remainingVideos} 
+                  onClick={handleShowMoreVideos}
+                  label="vidéos"
+                />
+              )}
             </>
           )}
 
@@ -510,7 +581,8 @@ function VideosContent() {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0.5rem',
-                marginBottom: '1rem'
+                marginBottom: '1rem',
+                marginTop: '2rem'
               }}>
                 <h2 style={{ color: 'white', fontSize: '1.1rem', margin: 0 }}>
                   ⚡ Shorts
@@ -519,7 +591,7 @@ function VideosContent() {
                   color: 'rgba(255,255,255,0.5)', 
                   fontSize: '0.85rem' 
                 }}>
-                  ({shorts.length})
+                  ({displayedShorts.length}/{shorts.length})
                 </span>
               </div>
               
@@ -528,10 +600,19 @@ function VideosContent() {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))',
                 gap: '1rem'
               }}>
-                {shorts.map(video => (
+                {displayedShorts.map(video => (
                   <VideoCard key={video.id} video={video} isShort />
                 ))}
               </div>
+
+              {/* Bouton Voir plus - Shorts */}
+              {remainingShorts > 0 && (
+                <ShowMoreButton 
+                  remaining={remainingShorts} 
+                  onClick={handleShowMoreShorts}
+                  label="shorts"
+                />
+              )}
             </>
           )}
         </>
