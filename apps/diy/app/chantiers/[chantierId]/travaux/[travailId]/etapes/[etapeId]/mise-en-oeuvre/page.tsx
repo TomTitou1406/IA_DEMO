@@ -670,11 +670,13 @@ export default function MiseEnOeuvreTachesPage() {
     const hasBrouillonEnBDD = brouillonExistant && brouillonExistant.length > 0;
     
     if (hasBrouillonEnBDD || hasChanges) {
-      const garderBrouillon = window.confirm(
-        'Des tâches brouillon existent pour cette étape.\n\n' +
-        '• OK = Garder le brouillon (vous pourrez reprendre plus tard)\n' +
-        '• Annuler = Supprimer le brouillon et quitter'
-      );
+      const garderBrouillon = await showConfirm({
+        title: 'Tâches brouillon',
+        message: 'Des tâches brouillon existent pour cette étape.\n\n• Garder = Reprendre plus tard\n• Supprimer = Quitter sans sauvegarder',
+        confirmText: 'Garder',
+        cancelText: 'Supprimer',
+        type: 'warning'
+      });
       
       if (!garderBrouillon) {
         await deleteTaches(etapeId, 'brouillon');
