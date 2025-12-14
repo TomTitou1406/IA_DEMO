@@ -179,7 +179,7 @@ export default function ChantiersPage() {
                 detail: {
                   pageContext: 'travaux_simple_decouverte',
                   contextColor: '#2563eb',
-                  welcomeMessage: "Salut ! 🔧 Quel petit travail veux-tu réaliser ?\n\nExemples : poser une étagère, fixer un miroir, monter un meuble, installer une tringle..."
+                  welcomeMessage: "Salut ! 🔧 Quels petits travaux veux-tu réaliser ?\n\nExemples : poser une étagère, fixer un miroir, monter un meuble, installer une tringle..."
                 }
               }));
             }}
