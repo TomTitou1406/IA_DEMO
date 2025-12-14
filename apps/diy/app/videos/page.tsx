@@ -37,10 +37,10 @@ function LoadingSearch() {
     { icon: '⭐', text: 'Sélection des meilleures vidéos...' },
     { icon: '✨', text: 'Finalisation des résultats...' },
   ];
-  
-  const TOTAL_DURATION = 12000; // 12 secondes
+
+  const TOTAL_DURATION = 15000; // 15 secondes
   const STEP_DURATION = TOTAL_DURATION / steps.length;
-  
+
   useEffect(() => {
     const startTime = Date.now();
     
@@ -68,104 +68,148 @@ function LoadingSearch() {
     return () => clearInterval(progressInterval);
   }, []);
 
+  // Calculer le cercle SVG
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (progress / 100) * circumference;
+
   return (
-    <div style={{ 
-      padding: '3rem 2rem',
+    <div style={{
       display: 'flex',
-      flexDirection: 'column',
       alignItems: 'center',
-      gap: '2rem'
+      justifyContent: 'center',
+      padding: '2rem'
     }}>
-      {/* Progress bar */}
-      <div style={{
-        width: '100%',
-        maxWidth: '400px',
-        height: '6px',
-        background: 'rgba(255,255,255,0.1)',
-        borderRadius: '3px',
-        overflow: 'hidden'
-      }}>
+      <div style={{ textAlign: 'center', maxWidth: '400px' }}>
+        {/* Progress bar circulaire */}
         <div style={{
-          height: '100%',
-          width: `${progress}%`,
-          background: 'linear-gradient(90deg, var(--green), #10b981)',
-          borderRadius: '3px',
-          transition: 'width 0.1s linear'
-        }} />
-      </div>
-      
-      {/* Steps */}
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '0.75rem',
-        width: '100%',
-        maxWidth: '350px'
-      }}>
-        {steps.map((s, i) => {
-          const isCompleted = completed.includes(i);
-          const isCurrent = step === i;
+          width: '120px',
+          height: '120px',
+          margin: '0 auto 1.5rem',
+          position: 'relative'
+        }}>
+          {/* SVG cercle de progression */}
+          <svg
+            width="120"
+            height="120"
+            style={{
+              transform: 'rotate(-90deg)',
+              position: 'absolute',
+              top: 0,
+              left: 0
+            }}
+          >
+            {/* Cercle de fond */}
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke="rgba(16, 185, 129, 0.2)"
+              strokeWidth="8"
+            />
+            {/* Cercle de progression */}
+            <circle
+              cx="60"
+              cy="60"
+              r={radius}
+              fill="none"
+              stroke="var(--green)"
+              strokeWidth="8"
+              strokeLinecap="round"
+              strokeDasharray={circumference}
+              strokeDashoffset={strokeDashoffset}
+              style={{
+                transition: 'stroke-dashoffset 0.1s linear'
+              }}
+            />
+          </svg>
           
-          return (
+          {/* Icône centrale */}
+          <div style={{
+            position: 'absolute',
+            inset: 0,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '2.5rem'
+          }}>
+            🎬
+          </div>
+          
+          {/* Pourcentage */}
+          <div style={{
+            position: 'absolute',
+            bottom: '-8px',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: '#0a0a0a',
+            padding: '0 0.5rem',
+            fontSize: '0.75rem',
+            color: 'var(--green)',
+            fontWeight: '700'
+          }}>
+            {Math.round(progress)}%
+          </div>
+        </div>
+
+        <h2 style={{
+          fontSize: '1.3rem',
+          fontWeight: '700',
+          color: 'var(--gray-light)',
+          marginBottom: '0.5rem'
+        }}>
+          Recherche de tutoriels...
+        </h2>
+
+        <p style={{
+          fontSize: '0.95rem',
+          color: 'var(--gray)',
+          marginBottom: '1.5rem'
+        }}>
+          L'assistant recherche et sélectionne les meilleures vidéos pour toi.
+        </p>
+
+        {/* Étapes */}
+        <div style={{
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '12px',
+          padding: '1rem',
+          marginBottom: '1rem'
+        }}>
+          {steps.map((s, idx) => (
             <div
-              key={i}
+              key={idx}
               style={{
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.75rem',
-                padding: '0.5rem 0.75rem',
+                padding: '0.5rem',
                 borderRadius: '8px',
-                background: isCurrent 
-                  ? 'rgba(16, 185, 129, 0.15)' 
-                  : isCompleted 
-                    ? 'rgba(16, 185, 129, 0.05)'
-                    : 'transparent',
-                border: isCurrent 
-                  ? '1px solid rgba(16, 185, 129, 0.3)'
-                  : '1px solid transparent',
-                transition: 'all 0.3s ease'
+                background: idx === step ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+                transition: 'all 0.3s'
               }}
             >
-              <span style={{ fontSize: '1.25rem' }}>
-                {isCompleted ? '✅' : s.icon}
-              </span>
+              <span style={{ fontSize: '1.1rem' }}>{s.icon}</span>
               <span style={{
-                color: isCompleted 
-                  ? 'rgba(255,255,255,0.5)' 
-                  : isCurrent 
-                    ? 'var(--green)'
-                    : 'rgba(255,255,255,0.4)',
-                fontSize: '0.9rem',
-                fontWeight: isCurrent ? '600' : '400',
-                textDecoration: isCompleted ? 'line-through' : 'none'
+                fontSize: '0.85rem',
+                color: idx === step ? 'var(--green)' : completed.includes(idx) ? '#10b981' : 'var(--gray)',
+                fontWeight: idx === step ? '600' : '400',
+                flex: 1,
+                textAlign: 'left'
               }}>
                 {s.text}
               </span>
+              {completed.includes(idx) && <span style={{ color: '#10b981' }}>✓</span>}
+              {idx === step && <span style={{ color: 'var(--green)' }}>...</span>}
             </div>
-          );
-        })}
+          ))}
+        </div>
+
+        <p style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>
+          Cela peut prendre quelques secondes...
+        </p>
       </div>
-      
-      {/* Avatar optionnel */}
-      <div style={{
-        width: '60px',
-        height: '60px',
-        borderRadius: '50%',
-        background: 'rgba(255,255,255,0.1)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        animation: 'pulse 2s infinite'
-      }}>
-        <span style={{ fontSize: '1.5rem' }}>🎬</span>
-      </div>
-      
-      <style jsx>{`
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.05); opacity: 0.8; }
-        }
-      `}</style>
     </div>
   );
 }
