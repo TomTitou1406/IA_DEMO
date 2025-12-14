@@ -19,7 +19,7 @@ export default function HomePage() {
           <div className="card-illu">
             <img src="/images/chantiers.webp" alt="Mes projets" />
           </div>
-          <h3>Mode Chantiers</h3>
+          <h3>Travaux et Chantiers</h3>
           <p>Crée et pilote tes chantiers</p>
           <Link href="/chantiers" className="main-btn btn-orange">
             Accéder à mes projets
