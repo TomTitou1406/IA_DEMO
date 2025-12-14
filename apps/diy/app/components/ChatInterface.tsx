@@ -1039,14 +1039,18 @@ export default function ChatInterface({
     // Fermer la card de suggestion
     setSuggestedTravailSimple(null);
     
-    // Changer le contexte vers travaux_simple_decouverte
-    window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
-      detail: {
-        pageContext: 'travaux_simple_decouverte',
-        welcomeMessage: `Parfait ! Je vais t'aider à réaliser : "${travailInfo.titre}"\n\n${travailInfo.contexte_resume}\n\nJ'ai juste besoin de quelques précisions pour te guider au mieux. On commence ?`,
-        additionalContext: `CONTEXTE PRÉ-REMPLI:\nTitre suggéré: ${travailInfo.titre}\nDescription: ${travailInfo.description_courte || ''}\n\nL'utilisateur vient du mode "J'ai besoin d'aide" et a déjà décrit son besoin. Pose les questions de précision (surface, contraintes, etc.) puis génère le JSON de création.`
-      }
+    // Stocker les infos dans sessionStorage pour les récupérer après redirection
+    sessionStorage.setItem('pendingTravailSimpleFromAide', JSON.stringify({
+      titre: travailInfo.titre,
+      description: travailInfo.description_courte || '',
+      contexte: travailInfo.contexte_resume
     }));
+    
+    // Fermer l'assistant
+    window.dispatchEvent(new CustomEvent('closeAssistant'));
+    
+    // Rediriger vers /chantiers
+    window.location.href = '/chantiers';
   };
   
   // Envoi texte
