@@ -1032,6 +1032,22 @@ export default function ChatInterface({
     }
   };
 
+  /**
+   * Bascule vers le mode travaux simples avec les infos pré-collectées
+   */
+  const handleSwitchToTravailSimple = (travailInfo: any) => {
+    // Fermer la card de suggestion
+    setSuggestedTravailSimple(null);
+    
+    // Changer le contexte vers travaux_simple_decouverte
+    window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
+      detail: {
+        pageContext: 'travaux_simple_decouverte',
+        welcomeMessage: `Parfait ! Je vais t'aider à réaliser : "${travailInfo.titre}"\n\n${travailInfo.contexte_resume}\n\nJ'ai juste besoin de quelques précisions pour te guider au mieux. On commence ?`,
+        additionalContext: `CONTEXTE PRÉ-REMPLI:\nTitre suggéré: ${travailInfo.titre}\nDescription: ${travailInfo.description_courte || ''}\n\nL'utilisateur vient du mode "J'ai besoin d'aide" et a déjà décrit son besoin. Pose les questions de précision (surface, contraintes, etc.) puis génère le JSON de création.`
+      }
+    }));
+  };
   
   // Envoi texte
   const handleSend = async () => {
@@ -1625,6 +1641,91 @@ export default function ChatInterface({
             }}>
               <div className="spinner" style={{ width: '16px', height: '16px', borderTopColor: contextColor }}></div>
               Génération audio...
+            </div>
+          </div>
+        )}
+
+       {/* Card suggestion travail simple (depuis aide_decouverte) */}
+        {suggestedTravailSimple && !loading && (
+          <div style={{
+            padding: '1rem',
+            margin: '0.5rem 0',
+            background: 'linear-gradient(135deg, rgba(37, 99, 235, 0.15), rgba(37, 99, 235, 0.1))',
+            borderRadius: '12px',
+            border: '2px solid var(--blue)',
+            boxShadow: '0 0 20px rgba(37, 99, 235, 0.2)'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🔧</span>
+              <div style={{ flex: 1 }}>
+                <div style={{
+                  fontSize: '0.95rem',
+                  fontWeight: '700',
+                  color: 'var(--blue)',
+                  marginBottom: '0.5rem'
+                }}>
+                  Ce travail semble simple !
+                </div>
+                
+                <p style={{
+                  fontSize: '0.9rem',
+                  color: 'var(--gray-light)',
+                  marginBottom: '0.75rem',
+                  lineHeight: 1.4
+                }}>
+                  {suggestedTravailSimple.contexte_resume}
+                </p>
+                
+                <div style={{
+                  padding: '0.6rem 0.75rem',
+                  background: 'rgba(37, 99, 235, 0.15)',
+                  borderRadius: '8px',
+                  marginBottom: '0.75rem'
+                }}>
+                  <span style={{
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    color: 'var(--gray-light)'
+                  }}>
+                    📋 {suggestedTravailSimple.titre}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+                  <button
+                    onClick={() => handleSwitchToTravailSimple(suggestedTravailSimple)}
+                    style={{
+                      flex: 1,
+                      minWidth: '140px',
+                      padding: '0.75rem 1rem',
+                      background: 'var(--blue)',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '10px',
+                      fontSize: '0.9rem',
+                      fontWeight: '700',
+                      cursor: 'pointer',
+                      boxShadow: '0 0 15px rgba(37, 99, 235, 0.4)'
+                    }}
+                  >
+                    ✨ Créer ce travail
+                  </button>
+                  <button
+                    onClick={() => setSuggestedTravailSimple(null)}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      background: 'transparent',
+                      color: 'var(--gray)',
+                      border: '1px solid var(--gray)',
+                      borderRadius: '10px',
+                      fontSize: '0.85rem',
+                      cursor: 'pointer'
+                    }}
+                  >
+                    Continuer à discuter
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         )}
