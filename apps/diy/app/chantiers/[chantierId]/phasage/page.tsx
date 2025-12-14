@@ -437,9 +437,9 @@ function LoadingPhasage() {
 // ==================== COMPOSANT PRINCIPAL ====================
 
 export default function PhasagePage() {
-  const [showQuitModal, setShowQuitModal] = useState(false);
   const params = useParams();
   const router = useRouter();
+  const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const chantierId = params.chantierId as string;
 
   // États
@@ -454,7 +454,6 @@ export default function PhasagePage() {
   // Modales
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [showValidateModal, setShowValidateModal] = useState(false);
-  const [showQuitModal, setShowQuitModal] = useState(false);
   const [violations, setViolations] = useState<RegleViolation[]>([]);
 
   // ==================== CHARGEMENT INITIAL ====================
@@ -681,19 +680,31 @@ export default function PhasagePage() {
   }
 
   // ==================== QUITTER ====================
-
-  function handleQuitClick() {
-    setShowQuitModal(true);
-  }
-
-  async function confirmQuitWithSave() {
-    setShowQuitModal(false);
-    await savePhasage('save_brouillon');
-  }
-
-  function confirmQuitWithoutSave() {
-    setShowQuitModal(false);
-    router.push(`/chantiers/${chantierId}`);
+  async function handleQuitClick() {
+    const wantToSave = await showConfirm({
+      title: 'Sauvegarder avant de quitter ?',
+      message: 'Voulez-vous sauvegarder le brouillon avant de quitter ?',
+      confirmText: 'Sauvegarder et quitter',
+      cancelText: 'Non',
+      type: 'info'
+    });
+    
+    if (wantToSave) {
+      await savePhasage('save_brouillon');
+      router.push(`/chantiers/${chantierId}`);
+    } else {
+      const confirmQuit = await showConfirm({
+        title: 'Quitter sans sauvegarder',
+        message: 'Les modifications non sauvegardées seront perdues.',
+        confirmText: 'Quitter',
+        cancelText: 'Annuler',
+        type: 'danger'
+      });
+      
+      if (confirmQuit) {
+        router.push(`/chantiers/${chantierId}`);
+      }
+    }
   }
 
   // ==================== CALCULS ====================
@@ -781,17 +792,6 @@ export default function PhasagePage() {
         cancelText="Corriger"
         onConfirm={() => { setShowValidateModal(false); savePhasage('validate'); }}
         onCancel={() => setShowValidateModal(false)}
-      />
-
-      <Modale
-        isOpen={showQuitModal}
-        type="info"
-        title="Quitter le phasage ?"
-        message="Voulez-vous sauvegarder votre phasage en brouillon pour y revenir plus tard ?"
-        confirmText="Sauvegarder et quitter"
-        cancelText="Quitter sans sauvegarder"
-        onConfirm={confirmQuitWithSave}
-        onCancel={confirmQuitWithoutSave}
       />
 
       {/* BREADCRUMB */}
