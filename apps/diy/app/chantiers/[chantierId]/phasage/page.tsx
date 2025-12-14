@@ -13,6 +13,7 @@ import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/app/lib/supabaseClient';
 import { applyPhasageAction, type PhasageAction } from '@/app/lib/services/phasageActions';
+import { useToast } from '@/app/components/Toast';
 
 // ==================== TYPES ====================
 
@@ -436,6 +437,7 @@ function LoadingPhasage() {
 // ==================== COMPOSANT PRINCIPAL ====================
 
 export default function PhasagePage() {
+  const [showQuitModal, setShowQuitModal] = useState(false);
   const params = useParams();
   const router = useRouter();
   const chantierId = params.chantierId as string;
