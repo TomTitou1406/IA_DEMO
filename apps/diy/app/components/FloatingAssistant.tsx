@@ -256,8 +256,9 @@ export default function FloatingAssistant() {
           style={{
             position: 'fixed',
             bottom: '2rem',
-            left: '50%',
-            transform: 'translateX(-50%)',
+            right: '2rem',
+            left: 'auto',
+            transform: 'none',
             width: '80px',
             height: '80px',
             borderRadius: '50%',
@@ -540,9 +541,9 @@ export default function FloatingAssistant() {
         @media (max-width: 768px) {
           .floating-assistant-btn {
             bottom: 1rem !important;
-            left: 50% !important;
-            transform: translateX(-50%) !important;
-            right: auto !important;
+            right: 1rem !important;
+            left: auto !important;
+            transform: none !important;
             width: 64px !important;
             height: 64px !important;
           }
