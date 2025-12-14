@@ -48,6 +48,32 @@ export default function ChantiersPage() {
   const [showEnCours, setShowEnCours] = useState(false);
   const [showTermines, setShowTermines] = useState(false);
 
+  // Détecter si on vient du mode "J'ai besoin d'aide" avec un travail simple suggéré
+  useEffect(() => {
+    const pendingData = sessionStorage.getItem('pendingTravailSimpleFromAide');
+    if (pendingData) {
+      try {
+        const travailInfo = JSON.parse(pendingData);
+        // Supprimer pour ne pas re-déclencher
+        sessionStorage.removeItem('pendingTravailSimpleFromAide');
+        
+        // Ouvrir l'assistant avec le contexte travaux simples (BLEU)
+        setTimeout(() => {
+          window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
+            detail: {
+              pageContext: 'travaux_simple_decouverte',
+              contextColor: '#2563eb',
+              welcomeMessage: `Parfait ! Je vais t'aider à réaliser : "${travailInfo.titre}"\n\n${travailInfo.contexte}\n\nJ'ai juste besoin de quelques précisions pour te guider au mieux. On commence ?`,
+              additionalContext: `CONTEXTE PRÉ-REMPLI:\nTitre suggéré: ${travailInfo.titre}\nDescription: ${travailInfo.description}\n\nL'utilisateur vient du mode "J'ai besoin d'aide" et a déjà décrit son besoin. Pose les questions de précision (surface, contraintes, etc.) puis génère le JSON de création.`
+            }
+          }));
+        }, 300);
+      } catch (e) {
+        console.error('Erreur parsing pendingTravailSimple:', e);
+      }
+    }
+  }, []);
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -152,6 +178,7 @@ export default function ChantiersPage() {
               window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
                 detail: {
                   pageContext: 'travaux_simple_decouverte',
+                  contextColor: '#2563eb',
                   welcomeMessage: "Salut ! 🔧 Quel petit travail veux-tu réaliser ?\n\nExemples : poser une étagère, fixer un miroir, monter un meuble, installer une tringle..."
                 }
               }));
@@ -164,19 +191,19 @@ export default function ChantiersPage() {
               justifyContent: 'center',
               gap: '0.5rem',
               padding: '0.875rem 1rem',
-              background: 'linear-gradient(135deg, var(--green), #059669)',
+              background: 'linear-gradient(135deg, var(--blue), #1d4ed8)',
               color: 'white',
               borderRadius: '12px',
               border: 'none',
               fontWeight: '600',
               fontSize: '0.9rem',
-              boxShadow: '0 4px 12px rgba(16, 185, 129, 0.3)',
+              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
               cursor: 'pointer',
               transition: 'all 0.2s'
             }}
           >
             <span>🔧</span>
-            <span>Travaux simples en cours</span>
+            <span>Travaux simples</span>
           </button>
 
           {/* Bouton Nouveau chantier */}
@@ -211,7 +238,7 @@ export default function ChantiersPage() {
             title="Travaux simples"
             icon="🔧"
             count={travauxSimples.length}
-            color="var(--green)"
+            color="var(--blue)"
             isExpanded={showSimples}
             onToggle={() => setShowSimples(!showSimples)}
           >
@@ -475,7 +502,7 @@ function TravailSimpleCard({
             <div style={{
               width: `${progression}%`,
               height: '100%',
-              background: 'var(--green)',
+              background: 'var(--blue)',
               transition: 'width 0.3s'
             }} />
           </div>
@@ -614,7 +641,7 @@ function ChantierCard({
           {/* Badge */}
           {chantier.statut !== 'nouveau' && (
             <div style={{
-              background: progression === 100 ? 'var(--green)' : 'rgba(255,255,255,0.1)',
+              background: progression === 100 ? 'var(--blue)' : 'rgba(255,255,255,0.1)',
               color: progression === 100 ? 'white' : 'var(--gray-light)',
               padding: '0.25rem 0.5rem',
               borderRadius: '6px',
