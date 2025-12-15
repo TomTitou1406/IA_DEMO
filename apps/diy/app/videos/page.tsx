@@ -367,20 +367,6 @@ function VideosContent() {
     setShortsDisplayCount(prev => prev + shortsPerPage);
   };
 
-  // Ouvrir l'analyse pour créer un travail simple inspiré
-  const handleCreateTravailInspire = () => {
-    if (!selectedVideoData) return;
-    setAnalysisMode('simple');
-    setShowAnalysisModal(true);
-  };
-  
-  // Ouvrir l'analyse pour créer un chantier inspiré
-  const handleCreateChantierInspire = () => {
-    if (!selectedVideoData) return;
-    setAnalysisMode('complexe');
-    setShowAnalysisModal(true);
-  };
-  
   const formatViews = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(0)}k`;
@@ -718,68 +704,40 @@ function VideosContent() {
                     <span>Favoris</span>
                   </button>
           
-                  {/* Bouton Travail inspiré */}
+                  {/* Bouton Mettre en œuvre */}
                   <button
-                    onClick={handleCreateTravailInspire}
+                    onClick={() => {
+                      if (!selectedVideoData) return;
+                      setAnalysisMode('simple'); // L'IA décidera ensuite
+                      setShowAnalysisModal(true);
+                    }}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.6rem 1rem',
+                      gap: '0.5rem',
+                      padding: '0.7rem 1.25rem',
                       borderRadius: '10px',
-                      border: '2px solid #3b82f6',
+                      border: '2px solid #10b981',
                       background: 'transparent',
-                      color: '#3b82f6',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
+                      color: '#10b981',
+                      fontSize: '0.9rem',
+                      fontWeight: '600',
                       cursor: 'pointer',
                       transition: 'all 0.3s'
                     }}
                     onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#3b82f6';
+                      e.currentTarget.style.background = '#10b981';
                       e.currentTarget.style.color = 'white';
-                      e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.4)';
+                      e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
                     }}
                     onMouseLeave={(e) => {
                       e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = '#3b82f6';
+                      e.currentTarget.style.color = '#10b981';
                       e.currentTarget.style.boxShadow = 'none';
                     }}
                   >
-                    <span>🔧</span>
-                    <span>Travail inspiré</span>
-                  </button>
-          
-                  {/* Bouton Chantier inspiré */}
-                  <button
-                    onClick={handleCreateChantierInspire}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.6rem 1rem',
-                      borderRadius: '10px',
-                      border: '2px solid #f97316',
-                      background: 'transparent',
-                      color: '#f97316',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#f97316';
-                      e.currentTarget.style.color = 'white';
-                      e.currentTarget.style.boxShadow = '0 0 20px rgba(249, 115, 22, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = '#f97316';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    <span>🏗️</span>
-                    <span>Chantier inspiré</span>
+                    <span>🚀</span>
+                    <span>Mettre en œuvre</span>
                   </button>
                 </div>
               )}
