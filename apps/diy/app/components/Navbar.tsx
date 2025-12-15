@@ -714,9 +714,8 @@ export default function Navbar({ className }: NavbarProps) {
         <HelpButton mobile />
       </nav>
 
-      {/* ==================== SPACER TOP ==================== */}
-      <div style={{ height: isMobile ? '48px' : '54px' }} />
-      
+      {/* ==================== AUCUN SPACER TOP ==================== */}
+            
       {/* ==================== SPACER BOTTOM (mobile only) ==================== */}
       {isMobile && <div style={{ height: '65px' }} />}
 
