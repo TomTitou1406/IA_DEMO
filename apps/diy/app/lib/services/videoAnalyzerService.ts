@@ -156,7 +156,7 @@ export async function analyzeVideoWithAI(
     // Charger le prompt depuis la BDD
     const { data: promptData } = await supabase
       .from('prompts_library')
-      .select('contenu, model, temperature')
+      .select('prompt_text, model, temperature')
       .eq('code', 'system_video_analysis')
       .eq('est_actif', true)
       .single();
@@ -187,7 +187,7 @@ ${description.substring(0, 500)}
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        systemPrompt: promptData.contenu,
+        systemPrompt: promptData.prompt_text,
         userMessage,
         model: promptData.model || 'gpt-4o-mini',
         temperature: promptData.temperature || 0.3,
