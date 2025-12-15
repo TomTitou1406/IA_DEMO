@@ -161,7 +161,7 @@ export default function ChantiersPage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: '0.5rem',
+        paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
         paddingBottom: '100px' // Espace pour FloatingAssistant
       }}>
         
