@@ -73,7 +73,7 @@ export default function Breadcrumb({
       <div style={{ 
         maxWidth: '1100px', 
         margin: '0 auto', 
-        padding: '0.75rem 1rem',
+        padding: '0.5rem 1rem',
         display: 'flex', 
         alignItems: 'center',
         gap: '0.5rem',
