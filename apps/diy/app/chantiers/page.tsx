@@ -48,6 +48,14 @@ export default function ChantiersPage() {
   const [showEnCours, setShowEnCours] = useState(false);
   const [showTermines, setShowTermines] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Détecter si on vient du mode "J'ai besoin d'aide" avec un travail simple suggéré
   useEffect(() => {
     const pendingData = sessionStorage.getItem('pendingTravailSimpleFromAide');
@@ -161,7 +169,7 @@ export default function ChantiersPage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: 'clamp(0.5rem, 2vw, 1.5rem)',
+        paddingTop: isMobile ? '0.5rem' : '4rem',
         paddingBottom: '100px' // Espace pour FloatingAssistant
       }}>
         
