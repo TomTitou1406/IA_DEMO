@@ -369,12 +369,14 @@ function VideosContent() {
 
   // Ouvrir l'analyse pour créer un travail simple ou un chantier inspiré
   const handleCreateTravailInspire = () => {
+    console.log('selectedVideoData:', selectedVideoData);
     if (!selectedVideoData) return;
     setAnalysisMode('simple');
     setShowAnalysisModal(true);
   };
   
   const handleCreateChantierInspire = () => {
+    console.log('selectedVideoData:', selectedVideoData);
     if (!selectedVideoData) return;
     setAnalysisMode('complexe');
     setShowAnalysisModal(true);
