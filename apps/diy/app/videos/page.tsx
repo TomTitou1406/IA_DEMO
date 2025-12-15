@@ -2,9 +2,10 @@
  * /app/videos/page.tsx
  * Page d'affichage des résultats de recherche YouTube
  * 
- * @version 2.2
+ * @version 2.3
  * 
  * Changelog :
+ * - v2.3 : Ajout bouton ❤️ favoris sur les cards + lien vers /videos/favorites
  * - v2.2 : Pagination dynamique depuis BDD (displaySettings)
  * - v2.1 : Pagination côté client avec bouton "Voir plus" centré
  * - v2.0 : Loader progressif circulaire, suppression bandeau qualité
@@ -237,11 +238,20 @@ function VideosContent() {
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   
-  // Pagination côté client - valeurs par défaut, mises à jour par l'API
+  // Favoris
+  const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
+  const [favoritesCount, setFavoritesCount] = useState(0);
+  
+  // Pagination côté client
   const [videosDisplayCount, setVideosDisplayCount] = useState(9);
   const [shortsDisplayCount, setShortsDisplayCount] = useState(6);
   const [videosPerPage, setVideosPerPage] = useState(9);
   const [shortsPerPage, setShortsPerPage] = useState(6);
+
+  // Charger les favoris au démarrage
+  useEffect(() => {
+    loadFavorites();
+  }, []);
 
   useEffect(() => {
     if (query) {
@@ -250,6 +260,60 @@ function VideosContent() {
       setLoading(false);
     }
   }, [query]);
+
+  const loadFavorites = async () => {
+    try {
+      const res = await fetch('/api/videos/favorites');
+      const data = await res.json();
+      if (data.favorites) {
+        const ids = new Set<string>(data.favorites.map((f: any) => f.video_id));
+        setFavoriteIds(ids);
+        setFavoritesCount(data.count || 0);
+      }
+    } catch (error) {
+      console.error('Erreur chargement favoris:', error);
+    }
+  };
+
+  const toggleFavorite = async (video: Video, e: React.MouseEvent) => {
+    e.stopPropagation(); // Empêcher la sélection de la vidéo
+    
+    const isFavorite = favoriteIds.has(video.id);
+    
+    try {
+      if (isFavorite) {
+        // Retirer des favoris
+        await fetch(`/api/videos/favorites?video_id=${video.id}`, {
+          method: 'DELETE'
+        });
+        setFavoriteIds(prev => {
+          const next = new Set(prev);
+          next.delete(video.id);
+          return next;
+        });
+        setFavoritesCount(prev => prev - 1);
+      } else {
+        // Ajouter aux favoris
+        await fetch('/api/videos/favorites', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            video_id: video.id,
+            title: video.title,
+            thumbnail: video.thumbnail,
+            channel_title: video.channelTitle,
+            duration: video.duration,
+            duration_seconds: video.durationSeconds,
+            view_count: video.viewCount
+          })
+        });
+        setFavoriteIds(prev => new Set(prev).add(video.id));
+        setFavoritesCount(prev => prev + 1);
+      }
+    } catch (error) {
+      console.error('Erreur toggle favori:', error);
+    }
+  };
 
   const searchVideos = async () => {
     setLoading(true);
@@ -265,7 +329,6 @@ function VideosContent() {
       setShorts(data.shorts || []);
       setSearchInfo(data.searchInfo || null);
       
-      // Utiliser les settings de la BDD
       if (data.searchInfo?.displaySettings) {
         const { videosPerPage: vpp, shortsPerPage: spp } = data.searchInfo.displaySettings;
         setVideosPerPage(vpp);
@@ -310,90 +373,124 @@ function VideosContent() {
   const displayedShorts = shorts.slice(0, shortsDisplayCount);
   const remainingShorts = shorts.length - shortsDisplayCount;
 
-  const VideoCard = ({ video, isShort = false }: { video: Video; isShort?: boolean }) => (
-    <div
-      onClick={() => setSelectedVideo(video.id)}
-      style={{
-        background: 'rgba(255,255,255,0.05)',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        cursor: 'pointer',
-        border: selectedVideo === video.id 
-          ? '2px solid var(--green)' 
-          : video.isTrusted 
-            ? '2px solid rgba(16, 185, 129, 0.3)'
-            : '2px solid transparent',
-        transition: 'all 0.2s'
-      }}
-    >
-      <div style={{ position: 'relative' }}>
-        <img 
-          src={video.thumbnail} 
-          alt={video.title}
-          style={{ 
-            width: '100%', 
-            height: isShort ? '200px' : '160px', 
-            objectFit: 'cover' 
-          }}
-        />
-        <span style={{
-          position: 'absolute',
-          bottom: '8px',
-          right: '8px',
-          background: isShort ? 'rgba(255, 0, 0, 0.9)' : 'rgba(0,0,0,0.8)',
-          color: 'white',
-          padding: '2px 6px',
-          borderRadius: '4px',
-          fontSize: '0.75rem',
-          fontWeight: '600'
-        }}>
-          {isShort ? '▶ Short' : video.duration}
-        </span>
-        {video.isTrusted && (
+  const VideoCard = ({ video, isShort = false }: { video: Video; isShort?: boolean }) => {
+    const isFavorite = favoriteIds.has(video.id);
+    
+    return (
+      <div
+        onClick={() => setSelectedVideo(video.id)}
+        style={{
+          background: 'rgba(255,255,255,0.05)',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          cursor: 'pointer',
+          border: selectedVideo === video.id 
+            ? '2px solid var(--green)' 
+            : video.isTrusted 
+              ? '2px solid rgba(16, 185, 129, 0.3)'
+              : '2px solid transparent',
+          transition: 'all 0.2s',
+          position: 'relative'
+        }}
+      >
+        <div style={{ position: 'relative' }}>
+          <img 
+            src={video.thumbnail} 
+            alt={video.title}
+            style={{ 
+              width: '100%', 
+              height: isShort ? '200px' : '160px', 
+              objectFit: 'cover' 
+            }}
+          />
+          {/* Durée */}
           <span style={{
             position: 'absolute',
-            top: '8px',
-            left: '8px',
-            background: 'var(--green)',
+            bottom: '8px',
+            right: '8px',
+            background: isShort ? 'rgba(255, 0, 0, 0.9)' : 'rgba(0,0,0,0.8)',
             color: 'white',
             padding: '2px 6px',
             borderRadius: '4px',
-            fontSize: '0.7rem',
+            fontSize: '0.75rem',
             fontWeight: '600'
           }}>
-            ✓ Recommandé
+            {isShort ? '▶ Short' : video.duration}
           </span>
-        )}
+          
+          {/* Bouton Favori ❤️ */}
+          <button
+            onClick={(e) => toggleFavorite(video, e)}
+            style={{
+              position: 'absolute',
+              top: '8px',
+              right: '8px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              border: 'none',
+              background: isFavorite ? 'var(--red, #ef4444)' : 'rgba(0,0,0,0.6)',
+              color: 'white',
+              fontSize: '1rem',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              transition: 'all 0.2s',
+              zIndex: 10
+            }}
+            title={isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris'}
+          >
+            {isFavorite ? '❤️' : '🤍'}
+          </button>
+          
+          {/* Badge chaîne de confiance */}
+          {video.isTrusted && (
+            <span style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              background: 'var(--green)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '0.7rem',
+              fontWeight: '600'
+            }}>
+              ✓ Recommandé
+            </span>
+          )}
+        </div>
+        <div style={{ padding: '0.75rem' }}>
+          <h3 style={{ 
+            color: 'white', 
+            fontSize: '0.85rem', 
+            marginBottom: '0.4rem',
+            lineHeight: '1.3',
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden'
+          }}>
+            {video.title}
+          </h3>
+          <p style={{ 
+            color: 'rgba(255,255,255,0.5)', 
+            fontSize: '0.75rem',
+            marginBottom: '0.25rem'
+          }}>
+            {video.channelTitle}
+          </p>
+          <span style={{ 
+            color: 'rgba(255,255,255,0.4)', 
+            fontSize: '0.7rem' 
+          }}>
+            👁️ {formatViews(video.viewCount)} vues
+          </span>
+        </div>
       </div>
-      <div style={{ padding: '0.75rem' }}>
-        <h3 style={{ 
-          color: 'white', 
-          fontSize: '0.85rem', 
-          marginBottom: '0.4rem',
-          lineHeight: '1.3',
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden'
-        }}>
-          {video.title}
-        </h3>
-        <p style={{ 
-          color: 'rgba(255,255,255,0.5)', 
-          fontSize: '0.75rem',
-          marginBottom: '0.25rem'
-        }}>
-          {video.channelTitle}
-        </p>
-        <span style={{ 
-          color: 'rgba(255,255,255,0.4)', 
-          fontSize: '0.7rem' 
-        }}>
-          👁️ {formatViews(video.viewCount)} vues
-        </span>
-      </div>
-    </div>
-  );
+    );
+  };
 
   // Bouton "Voir plus" réutilisable
   const ShowMoreButton = ({ 
@@ -462,6 +559,26 @@ function VideosContent() {
         </div>
         
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Bouton Favoris */}
+          <button
+            onClick={() => router.push('/videos/favorites')}
+            style={{
+              padding: '0.6rem 1rem',
+              borderRadius: '8px',
+              border: '2px solid #ef4444',
+              background: 'transparent',
+              color: '#ef4444',
+              fontSize: '0.85rem',
+              fontWeight: '600',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
+            }}
+          >
+            ❤️ Favoris {favoritesCount > 0 && `(${favoritesCount})`}
+          </button>
+          
           <button
             onClick={handleNewSearch}
             style={{
