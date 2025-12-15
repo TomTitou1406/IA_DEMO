@@ -610,7 +610,7 @@ export default function Navbar({ className }: NavbarProps) {
               </div>
               <div style={{ 
                 color: 'rgba(255,255,255,0.5)', 
-                fontSize: '0.6rem',
+                fontSize: '0.8rem',
                 fontWeight: '400'
               }}>
                 Je t'aide pas à pas !
