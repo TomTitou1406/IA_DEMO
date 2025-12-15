@@ -2,9 +2,10 @@
  * /app/components/Navbar.tsx
  * Navigation principale avec design moderne et animations
  * 
- * @version 1.1
+ * @version 1.2
  * 
  * Changelog :
+ * - v1.2 : Hauteur réduite, max-width, liseré, bouton "Appelez-nous" revu
  * - v1.1 : Header transparent, effet halo survol, spacer réduit
  * - v1.0 : Version initiale
  * 
@@ -12,10 +13,11 @@
  * - Glassmorphism header transparent
  * - Badges animés avec compteurs
  * - Bottom nav mobile
- * - Bouton aide avec effet pulse + halo
+ * - Bouton "Appelez-nous" discret → vert au survol
  * - Logo cliquable
  * - Indicateur de page active
  * - Effet halo au survol
+ * - Liseré subtil en bas du header
  */
 
 'use client';
@@ -146,15 +148,15 @@ export default function Navbar({ className }: NavbarProps) {
     return (
       <span style={{
         position: 'absolute',
-        top: '-6px',
-        right: '-10px',
+        top: '-5px',
+        right: '-8px',
         background: color,
         color: 'white',
-        fontSize: '0.65rem',
+        fontSize: '0.6rem',
         fontWeight: '700',
-        padding: '2px 6px',
-        borderRadius: '10px',
-        minWidth: '18px',
+        padding: '1px 5px',
+        borderRadius: '8px',
+        minWidth: '16px',
         textAlign: 'center',
         boxShadow: `0 2px 8px ${color}50`,
         animation: 'badgePop 0.3s ease-out'
@@ -174,26 +176,26 @@ export default function Navbar({ className }: NavbarProps) {
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.5rem',
-          padding: '0.6rem 1rem',
-          borderRadius: '12px',
+          gap: '0.4rem',
+          padding: '0.45rem 0.85rem',
+          borderRadius: '10px',
           border: 'none',
           background: active 
             ? `${item.color}25` 
             : 'transparent',
           color: active ? item.color : 'rgba(255,255,255,0.7)',
-          fontSize: '0.9rem',
+          fontSize: '0.85rem',
           fontWeight: active ? '600' : '500',
           cursor: 'pointer',
           position: 'relative',
           transition: 'all 0.3s ease',
-          boxShadow: active ? `0 0 20px ${item.color}30` : 'none',
+          boxShadow: active ? `0 0 15px ${item.color}30` : 'none',
         }}
         onMouseEnter={(e) => {
           if (!active) {
             e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
             e.currentTarget.style.color = 'white';
-            e.currentTarget.style.boxShadow = '0 0 25px rgba(255,255,255,0.2)';
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(255,255,255,0.15)';
           }
         }}
         onMouseLeave={(e) => {
@@ -204,7 +206,7 @@ export default function Navbar({ className }: NavbarProps) {
           }
         }}
       >
-        <span style={{ fontSize: '1.1rem' }}>{item.icon}</span>
+        <span style={{ fontSize: '1rem' }}>{item.icon}</span>
         <span>{item.label}</span>
         {item.count !== undefined && <Badge count={item.count} color={item.color} />}
       </button>
@@ -222,12 +224,12 @@ export default function Navbar({ className }: NavbarProps) {
           display: 'flex',
           flexDirection: 'column',
           alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.5rem',
+          gap: '0.2rem',
+          padding: '0.4rem',
           border: 'none',
           background: 'transparent',
           color: active ? item.color : 'rgba(255,255,255,0.5)',
-          fontSize: '0.65rem',
+          fontSize: '0.6rem',
           fontWeight: active ? '600' : '500',
           cursor: 'pointer',
           position: 'relative',
@@ -236,7 +238,7 @@ export default function Navbar({ className }: NavbarProps) {
         }}
       >
         <span style={{ 
-          fontSize: '1.4rem',
+          fontSize: '1.3rem',
           transform: active ? 'scale(1.1)' : 'scale(1)',
           transition: 'transform 0.2s ease',
           filter: active ? `drop-shadow(0 0 8px ${item.color})` : 'none'
@@ -247,15 +249,15 @@ export default function Navbar({ className }: NavbarProps) {
         {item.count !== undefined && item.count > 0 && (
           <span style={{
             position: 'absolute',
-            top: '2px',
-            right: 'calc(50% - 20px)',
+            top: '0px',
+            right: 'calc(50% - 18px)',
             background: item.color,
             color: 'white',
-            fontSize: '0.55rem',
+            fontSize: '0.5rem',
             fontWeight: '700',
-            padding: '1px 4px',
-            borderRadius: '8px',
-            minWidth: '14px',
+            padding: '1px 3px',
+            borderRadius: '6px',
+            minWidth: '12px',
             textAlign: 'center',
           }}>
             {item.count > 99 ? '99+' : item.count}
@@ -267,11 +269,11 @@ export default function Navbar({ className }: NavbarProps) {
             bottom: '0',
             left: '50%',
             transform: 'translateX(-50%)',
-            width: '20px',
-            height: '3px',
+            width: '18px',
+            height: '2px',
             background: item.color,
-            borderRadius: '3px 3px 0 0',
-            boxShadow: `0 0 10px ${item.color}`,
+            borderRadius: '2px 2px 0 0',
+            boxShadow: `0 0 8px ${item.color}`,
           }} />
         )}
       </button>
@@ -286,52 +288,42 @@ export default function Navbar({ className }: NavbarProps) {
         display: 'flex',
         flexDirection: mobile ? 'column' : 'row',
         alignItems: 'center',
-        gap: mobile ? '0.25rem' : '0.5rem',
-        padding: mobile ? '0.5rem' : '0.6rem 1.2rem',
-        borderRadius: mobile ? '0' : '25px',
-        border: 'none',
-        background: mobile ? 'transparent' : 'linear-gradient(135deg, #10b981 0%, #059669 100%)',
-        color: mobile ? '#10b981' : 'white',
-        fontSize: mobile ? '0.65rem' : '0.9rem',
+        gap: mobile ? '0.2rem' : '0.4rem',
+        padding: mobile ? '0.4rem' : '0.45rem 1rem',
+        borderRadius: mobile ? '0' : '20px',
+        border: mobile ? 'none' : '1.5px solid rgba(16, 185, 129, 0.5)',
+        background: 'transparent',
+        color: mobile ? '#10b981' : 'rgba(16, 185, 129, 0.9)',
+        fontSize: mobile ? '0.6rem' : '0.85rem',
         fontWeight: '600',
         cursor: 'pointer',
         position: 'relative',
         transition: 'all 0.3s ease',
-        boxShadow: mobile ? 'none' : '0 4px 15px rgba(16, 185, 129, 0.4)',
         flex: mobile ? 1 : 'none',
       }}
       onMouseEnter={(e) => {
         if (!mobile) {
-          e.currentTarget.style.transform = 'scale(1.05)';
-          e.currentTarget.style.boxShadow = '0 0 35px rgba(16, 185, 129, 0.6), 0 6px 20px rgba(16, 185, 129, 0.4)';
+          e.currentTarget.style.background = '#10b981';
+          e.currentTarget.style.color = 'white';
+          e.currentTarget.style.borderColor = '#10b981';
+          e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
         }
       }}
       onMouseLeave={(e) => {
         if (!mobile) {
-          e.currentTarget.style.transform = 'scale(1)';
-          e.currentTarget.style.boxShadow = '0 4px 15px rgba(16, 185, 129, 0.4)';
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.color = 'rgba(16, 185, 129, 0.9)';
+          e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+          e.currentTarget.style.boxShadow = 'none';
         }
       }}
     >
       <span style={{ 
-        fontSize: mobile ? '1.4rem' : '1.1rem',
-        animation: 'pulse 2s infinite'
+        fontSize: mobile ? '1.3rem' : '1rem',
       }}>
         📞
       </span>
-      <span>{mobile ? 'Aide' : "Besoin d'aide ?"}</span>
-      
-      {/* Effet pulse */}
-      {!mobile && (
-        <span style={{
-          position: 'absolute',
-          inset: 0,
-          borderRadius: '25px',
-          border: '2px solid #10b981',
-          animation: 'helpPulse 2s infinite',
-          pointerEvents: 'none'
-        }} />
-      )}
+      <span>{mobile ? 'Aide' : "Appelez-nous"}</span>
     </button>
   );
 
@@ -551,91 +543,95 @@ export default function Navbar({ className }: NavbarProps) {
           left: 0,
           right: 0,
           zIndex: 1000,
-          padding: '0.6rem 2rem',
           background: isScrolled 
-            ? 'rgba(10, 10, 10, 0.85)' 
-            : 'rgba(0, 0, 0, 0.4)',
+            ? 'rgba(10, 10, 10, 0.9)' 
+            : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: isScrolled 
-            ? '1px solid rgba(255,255,255,0.08)' 
-            : '1px solid transparent',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           transition: 'all 0.3s ease',
-          display: isMobile ? 'none' : 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
+          display: isMobile ? 'none' : 'block',
         }}
       >
-        {/* Logo */}
-        <button
-          onClick={() => router.push('/')}
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.75rem',
-            background: 'none',
-            border: 'none',
-            cursor: 'pointer',
-            padding: '0.25rem',
-            borderRadius: '12px',
-            transition: 'all 0.3s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'scale(1.02)';
-            e.currentTarget.style.filter = 'drop-shadow(0 0 15px rgba(249, 115, 22, 0.4))';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'scale(1)';
-            e.currentTarget.style.filter = 'none';
-          }}
-        >
-          <img 
-            src="/images/papibricole-avatar.png" 
-            alt="PapiBricole"
-            style={{
-              width: '42px',
-              height: '42px',
-              borderRadius: '12px',
-              objectFit: 'cover'
-            }}
-            onError={(e) => {
-              (e.target as HTMLImageElement).style.display = 'none';
-            }}
-          />
-          <div style={{ textAlign: 'left' }}>
-            <div style={{ 
-              color: 'white', 
-              fontSize: '1.15rem', 
-              fontWeight: '700',
-              letterSpacing: '-0.5px'
-            }}>
-              Papi<span style={{ color: '#f97316' }}>Bricole</span>
-            </div>
-            <div style={{ 
-              color: 'rgba(255,255,255,0.5)', 
-              fontSize: '0.65rem',
-              fontWeight: '400'
-            }}>
-              Je t'aide pas à pas !
-            </div>
-          </div>
-        </button>
-
-        {/* Navigation centrale - TRANSPARENT */}
-        <nav style={{
+        {/* Container avec max-width */}
+        <div style={{
+          maxWidth: '1200px',
+          margin: '0 auto',
+          padding: '0.5rem 1.5rem',
           display: 'flex',
           alignItems: 'center',
-          gap: '0.25rem',
-          padding: '0.3rem',
-          borderRadius: '16px'
+          justifyContent: 'space-between',
         }}>
-          {navItems.map(item => (
-            <NavItemDesktop key={item.id} item={item} />
-          ))}
-        </nav>
+          {/* Logo */}
+          <button
+            onClick={() => router.push('/')}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.6rem',
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '0.2rem',
+              borderRadius: '10px',
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = 'scale(1.02)';
+              e.currentTarget.style.filter = 'drop-shadow(0 0 12px rgba(249, 115, 22, 0.4))';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = 'scale(1)';
+              e.currentTarget.style.filter = 'none';
+            }}
+          >
+            <img 
+              src="/images/papibricole-avatar.png" 
+              alt="PapiBricole"
+              style={{
+                width: '38px',
+                height: '38px',
+                borderRadius: '10px',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
+            <div style={{ textAlign: 'left' }}>
+              <div style={{ 
+                color: 'white', 
+                fontSize: '1.1rem', 
+                fontWeight: '700',
+                letterSpacing: '-0.5px',
+                lineHeight: '1.2'
+              }}>
+                Papi<span style={{ color: '#f97316' }}>Bricole</span>
+              </div>
+              <div style={{ 
+                color: 'rgba(255,255,255,0.5)', 
+                fontSize: '0.6rem',
+                fontWeight: '400'
+              }}>
+                Je t'aide pas à pas !
+              </div>
+            </div>
+          </button>
 
-        {/* Bouton Aide */}
-        <HelpButton />
+          {/* Navigation centrale - TRANSPARENT */}
+          <nav style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.2rem',
+          }}>
+            {navItems.map(item => (
+              <NavItemDesktop key={item.id} item={item} />
+            ))}
+          </nav>
+
+          {/* Bouton Aide */}
+          <HelpButton />
+        </div>
       </header>
 
       {/* ==================== HEADER MOBILE (minimal) ==================== */}
@@ -646,15 +642,13 @@ export default function Navbar({ className }: NavbarProps) {
           left: 0,
           right: 0,
           zIndex: 1000,
-          padding: '0.6rem 1rem',
+          padding: '0.5rem 1rem',
           background: isScrolled 
             ? 'rgba(10, 10, 10, 0.9)' 
-            : 'rgba(0, 0, 0, 0.4)',
+            : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: isScrolled 
-            ? '1px solid rgba(255,255,255,0.08)' 
-            : '1px solid transparent',
+          borderBottom: '1px solid rgba(255,255,255,0.08)',
           transition: 'all 0.3s ease',
           display: isMobile ? 'flex' : 'none',
           alignItems: 'center',
@@ -666,7 +660,7 @@ export default function Navbar({ className }: NavbarProps) {
           style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '0.5rem',
+            gap: '0.4rem',
             background: 'none',
             border: 'none',
             cursor: 'pointer',
@@ -676,9 +670,9 @@ export default function Navbar({ className }: NavbarProps) {
             src="/images/papibricole-avatar.png" 
             alt="PapiBricole"
             style={{
-              width: '34px',
-              height: '34px',
-              borderRadius: '10px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '8px',
               objectFit: 'cover'
             }}
             onError={(e) => {
@@ -687,7 +681,7 @@ export default function Navbar({ className }: NavbarProps) {
           />
           <span style={{ 
             color: 'white', 
-            fontSize: '1.05rem', 
+            fontSize: '1rem', 
             fontWeight: '700' 
           }}>
             Papi<span style={{ color: '#f97316' }}>Bricole</span>
@@ -703,8 +697,8 @@ export default function Navbar({ className }: NavbarProps) {
           left: 0,
           right: 0,
           zIndex: 1000,
-          padding: '0.4rem 0.25rem',
-          paddingBottom: 'calc(0.4rem + env(safe-area-inset-bottom))',
+          padding: '0.3rem 0.25rem',
+          paddingBottom: 'calc(0.3rem + env(safe-area-inset-bottom))',
           background: 'rgba(10, 10, 10, 0.95)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -721,10 +715,10 @@ export default function Navbar({ className }: NavbarProps) {
       </nav>
 
       {/* ==================== SPACER TOP ==================== */}
-      <div style={{ height: isMobile ? '54px' : '62px' }} />
+      <div style={{ height: isMobile ? '48px' : '54px' }} />
       
       {/* ==================== SPACER BOTTOM (mobile only) ==================== */}
-      {isMobile && <div style={{ height: '75px' }} />}
+      {isMobile && <div style={{ height: '65px' }} />}
 
       {/* ==================== MODAL AIDE ==================== */}
       {showHelpModal && <HelpModal />}
@@ -735,17 +729,6 @@ export default function Navbar({ className }: NavbarProps) {
           0% { transform: scale(0); }
           50% { transform: scale(1.2); }
           100% { transform: scale(1); }
-        }
-        
-        @keyframes helpPulse {
-          0% { transform: scale(1); opacity: 1; }
-          50% { transform: scale(1.15); opacity: 0; }
-          100% { transform: scale(1); opacity: 0; }
-        }
-        
-        @keyframes pulse {
-          0%, 100% { transform: scale(1); }
-          50% { transform: scale(1.1); }
         }
         
         @keyframes fadeIn {
