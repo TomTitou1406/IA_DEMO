@@ -16,6 +16,7 @@
 
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
+import VideoAnalysisModal from '@/app/components/VideoAnalysisModal';
 
 interface Video {
   id: string;
@@ -241,6 +242,10 @@ function VideosContent() {
   // Favoris
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [favoritesCount, setFavoritesCount] = useState(0);
+
+  // Modal analyse vidéo
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState<'simple' | 'complexe'>('simple');
   
   // Pagination côté client
   const [videosDisplayCount, setVideosDisplayCount] = useState(9);
@@ -359,6 +364,20 @@ function VideosContent() {
 
   const handleShowMoreShorts = () => {
     setShortsDisplayCount(prev => prev + shortsPerPage);
+  };
+
+  // Ouvrir l'analyse pour créer un travail simple inspiré
+  const handleCreateTravailInspire = () => {
+    if (!selectedVideo) return;
+    setAnalysisMode('simple');
+    setShowAnalysisModal(true);
+  };
+  
+  // Ouvrir l'analyse pour créer un chantier inspiré
+  const handleCreateChantierInspire = () => {
+    if (!selectedVideo) return;
+    setAnalysisMode('complexe');
+    setShowAnalysisModal(true);
   };
 
   const formatViews = (count: number) => {
