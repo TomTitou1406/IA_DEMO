@@ -381,13 +381,6 @@ function VideosContent() {
     console.log('5. FIN handler');
   };
   
-  const handleCreateChantierInspire = () => {
-    console.log('selectedVideoData:', selectedVideoData);
-    if (!selectedVideoData) return;
-    setAnalysisMode('complexe');
-    setShowAnalysisModal(true);
-  };
-
   const formatViews = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(0)}k`;
