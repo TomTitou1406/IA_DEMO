@@ -304,7 +304,8 @@ function VideosContent() {
             channel_title: video.channelTitle,
             duration: video.duration,
             duration_seconds: video.durationSeconds,
-            view_count: video.viewCount
+            view_count: video.viewCount,
+            search_query: query
           })
         });
         setFavoriteIds(prev => new Set(prev).add(video.id));
