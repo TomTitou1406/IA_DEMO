@@ -73,7 +73,8 @@ export async function POST(request: NextRequest) {
       view_count,
       chantier_id,
       travail_id,
-      notes 
+      notes,
+       search_query
     } = body;
     
     if (!video_id || !title) {
@@ -96,7 +97,8 @@ export async function POST(request: NextRequest) {
         view_count,
         chantier_id: chantier_id || null,
         travail_id: travail_id || null,
-        notes: notes || null
+        notes: notes || null,
+        search_query: search_query || null
       })
       .select()
       .single();
