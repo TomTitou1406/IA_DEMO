@@ -238,6 +238,7 @@ function VideosContent() {
   const [searchInfo, setSearchInfo] = useState<SearchInfo | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [selectedVideoData, setSelectedVideoData] = useState<Video | null>(null);
   
   // Favoris
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -366,16 +367,15 @@ function VideosContent() {
     setShortsDisplayCount(prev => prev + shortsPerPage);
   };
 
-  // Ouvrir l'analyse pour créer un travail simple inspiré
+  // Ouvrir l'analyse pour créer un travail simple ou un chantier inspiré
   const handleCreateTravailInspire = () => {
-    if (!selectedVideo) return;
+    if (!selectedVideoData) return;
     setAnalysisMode('simple');
     setShowAnalysisModal(true);
   };
   
-  // Ouvrir l'analyse pour créer un chantier inspiré
   const handleCreateChantierInspire = () => {
-    if (!selectedVideo) return;
+    if (!selectedVideoData) return;
     setAnalysisMode('complexe');
     setShowAnalysisModal(true);
   };
@@ -398,7 +398,10 @@ function VideosContent() {
     
     return (
       <div
-        onClick={() => setSelectedVideo(video.id)}
+        onClick={() => {
+          setSelectedVideo(video.id);
+          setSelectedVideoData(video);
+        }}
         style={{
           background: 'rgba(255,255,255,0.05)',
           borderRadius: '12px',
@@ -680,6 +683,105 @@ function VideosContent() {
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                 allowFullScreen
               />
+              
+              {/* Boutons d'action sous le player */}
+              {selectedVideoData && (
+                <div style={{
+                  display: 'flex',
+                  flexWrap: 'wrap',
+                  gap: '0.5rem',
+                  padding: '1rem',
+                  background: 'rgba(0,0,0,0.5)',
+                  justifyContent: 'center'
+                }}>
+                  {/* Bouton Favoris */}
+                  <button
+                    onClick={() => toggleFavorite(selectedVideoData)}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '10px',
+                      border: '2px solid',
+                      borderColor: favoriteIds.has(selectedVideoData.id) ? '#ef4444' : 'rgba(255,255,255,0.3)',
+                      background: favoriteIds.has(selectedVideoData.id) ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
+                      color: favoriteIds.has(selectedVideoData.id) ? '#ef4444' : 'rgba(255,255,255,0.7)',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s'
+                    }}
+                  >
+                    <span>{favoriteIds.has(selectedVideoData.id) ? '❤️' : '🤍'}</span>
+                    <span>Favoris</span>
+                  </button>
+          
+                  {/* Bouton Travail inspiré */}
+                  <button
+                    onClick={handleCreateTravailInspire}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '10px',
+                      border: '2px solid #3b82f6',
+                      background: 'transparent',
+                      color: '#3b82f6',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#3b82f6';
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#3b82f6';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <span>🔧</span>
+                    <span>Travail inspiré</span>
+                  </button>
+          
+                  {/* Bouton Chantier inspiré */}
+                  <button
+                    onClick={handleCreateChantierInspire}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      padding: '0.6rem 1rem',
+                      borderRadius: '10px',
+                      border: '2px solid #f97316',
+                      background: 'transparent',
+                      color: '#f97316',
+                      fontSize: '0.85rem',
+                      fontWeight: '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.3s'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#f97316';
+                      e.currentTarget.style.color = 'white';
+                      e.currentTarget.style.boxShadow = '0 0 20px rgba(249, 115, 22, 0.4)';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'transparent';
+                      e.currentTarget.style.color = '#f97316';
+                      e.currentTarget.style.boxShadow = 'none';
+                    }}
+                  >
+                    <span>🏗️</span>
+                    <span>Chantier inspiré</span>
+                  </button>
+                </div>
+              )}
             </div>
           )}
 
