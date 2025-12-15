@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "../styles/globals.css";
 import FloatingAssistant from './components/FloatingAssistant';
 import { ToastProvider } from './components/Toast';
+import Navbar from './components/Navbar';
 
 export const metadata: Metadata = {
   title: "PapiBricole - Ton coach IA bricolage",
@@ -13,23 +14,11 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
- return (
+  return (
     <html lang="fr">
       <body>
         <ToastProvider>
-          <header className="header">
-            <div className="header-content">
-              <div className="logo">
-                <div className="logo-icon">
-                  <img src="/images/papibricole_logo_tete.png" alt="PapiBricole" />
-                </div>
-                <div className="logo-text">
-                  <span className="logo-title">PapiBricole</span>
-                  <span className="logo-baseline">Je t'aide pas à pas et à chaque étape !</span>
-                </div>
-              </div>
-            </div>
-          </header>
+          <Navbar />
           <main>{children}</main>
           <FloatingAssistant />
         </ToastProvider>
