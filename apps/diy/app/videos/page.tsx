@@ -696,7 +696,7 @@ function VideosContent() {
                 }}>
                   {/* Bouton Favoris */}
                   <button
-                    onClick={() => toggleFavorite(selectedVideoData)}
+                    onClick={(e) => toggleFavorite(selectedVideoData!, e)}
                     style={{
                       display: 'flex',
                       alignItems: 'center',
