@@ -161,7 +161,7 @@ export default function ChantiersPage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: '80px',
+        paddingTop: '0.5rem',
         paddingBottom: '100px' // Espace pour FloatingAssistant
       }}>
         
@@ -172,7 +172,7 @@ export default function ChantiersPage() {
           marginBottom: '1.5rem',
           flexWrap: 'wrap'
         }}>
-          {/* Bouton  */}
+          {/* Bouton Travaux simples */}
           <button
             onClick={() => {
               window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
@@ -191,21 +191,30 @@ export default function ChantiersPage() {
               justifyContent: 'center',
               gap: '0.5rem',
               padding: '0.875rem 1rem',
-              background: 'linear-gradient(135deg, var(--blue), #1d4ed8)',
-              color: 'white',
+              background: 'transparent',
+              color: 'var(--blue)',
               borderRadius: '12px',
-              border: 'none',
+              border: '2px solid var(--blue)',
               fontWeight: '600',
               fontSize: '0.9rem',
-              boxShadow: '0 4px 12px rgba(37, 99, 235, 0.3)',
               cursor: 'pointer',
-              transition: 'all 0.2s'
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--blue)';
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(37, 99, 235, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--blue)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             <span>🔧</span>
             <span>Travaux simples</span>
           </button>
-
+          
           {/* Bouton Nouveau chantier */}
           <Link 
             href="/chantiers/nouveau"
@@ -217,14 +226,24 @@ export default function ChantiersPage() {
               justifyContent: 'center',
               gap: '0.5rem',
               padding: '0.875rem 1rem',
-              background: 'linear-gradient(135deg, var(--orange), #ea580c)',
-              color: 'white',
+              background: 'transparent',
+              color: 'var(--orange)',
               borderRadius: '12px',
+              border: '2px solid var(--orange)',
               textDecoration: 'none',
               fontWeight: '600',
               fontSize: '0.9rem',
-              boxShadow: '0 4px 12px rgba(249, 115, 22, 0.3)',
-              transition: 'all 0.2s'
+              transition: 'all 0.3s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'var(--orange)';
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(249, 115, 22, 0.5)';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'var(--orange)';
+              e.currentTarget.style.boxShadow = 'none';
             }}
           >
             <span>🏗️</span>
