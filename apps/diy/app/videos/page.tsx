@@ -368,11 +368,17 @@ function VideosContent() {
   };
 
   // Ouvrir l'analyse pour créer un travail simple ou un chantier inspiré
-  const handleCreateTravailInspire = () => {
-    console.log('selectedVideoData:', selectedVideoData);
-    if (!selectedVideoData) return;
-    setAnalysisMode('simple');
+  const handleCreateChantierInspire = () => {
+    console.log('1. selectedVideoData:', selectedVideoData);
+    if (!selectedVideoData) {
+      console.log('2. STOP - pas de videoData');
+      return;
+    }
+    console.log('3. setAnalysisMode complexe');
+    setAnalysisMode('complexe');
+    console.log('4. setShowAnalysisModal true');
     setShowAnalysisModal(true);
+    console.log('5. FIN handler');
   };
   
   const handleCreateChantierInspire = () => {
@@ -870,6 +876,15 @@ function VideosContent() {
             </>
           )}
         </>
+      )}
+      {/* Modal analyse vidéo */}
+      {selectedVideoData && (
+        <VideoAnalysisModal
+          isOpen={showAnalysisModal}
+          onClose={() => setShowAnalysisModal(false)}
+          video={{...}}
+          mode={analysisMode}
+        />
       )}
     </div>
   );
