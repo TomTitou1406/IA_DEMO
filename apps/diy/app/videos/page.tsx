@@ -367,18 +367,18 @@ function VideosContent() {
     setShortsDisplayCount(prev => prev + shortsPerPage);
   };
 
-  // Ouvrir l'analyse pour créer un travail simple ou un chantier inspiré
-  const handleCreateChantierInspire = () => {
-    console.log('1. selectedVideoData:', selectedVideoData);
-    if (!selectedVideoData) {
-      console.log('2. STOP - pas de videoData');
-      return;
-    }
-    console.log('3. setAnalysisMode complexe');
-    setAnalysisMode('complexe');
-    console.log('4. setShowAnalysisModal true');
+  // Ouvrir l'analyse pour créer un travail simple inspiré
+  const handleCreateTravailInspire = () => {
+    if (!selectedVideoData) return;
+    setAnalysisMode('simple');
     setShowAnalysisModal(true);
-    console.log('5. FIN handler');
+  };
+  
+  // Ouvrir l'analyse pour créer un chantier inspiré
+  const handleCreateChantierInspire = () => {
+    if (!selectedVideoData) return;
+    setAnalysisMode('complexe');
+    setShowAnalysisModal(true);
   };
   
   const formatViews = (count: number) => {
