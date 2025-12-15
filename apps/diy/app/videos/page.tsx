@@ -882,7 +882,14 @@ function VideosContent() {
         <VideoAnalysisModal
           isOpen={showAnalysisModal}
           onClose={() => setShowAnalysisModal(false)}
-          video={{...}}
+          video={{
+            id: selectedVideoData.id,
+            title: selectedVideoData.title,
+            description: selectedVideoData.description || '',
+            thumbnail: selectedVideoData.thumbnail,
+            channelTitle: selectedVideoData.channelTitle,
+            durationSeconds: selectedVideoData.durationSeconds
+          }}
           mode={analysisMode}
         />
       )}
