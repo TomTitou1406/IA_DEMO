@@ -256,7 +256,7 @@ export default function FloatingAssistant() {
           style={{
             position: 'fixed',
             bottom: '2rem',
-            right: '2rem',
+            right: 'max(2rem, calc((100vw - 1200px) / 2 + 2rem))',
             left: 'auto',
             transform: 'none',
             width: '80px',
