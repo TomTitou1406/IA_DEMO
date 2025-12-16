@@ -695,9 +695,10 @@ export default function FavoritesPage() {
       {/* Modal analyse vidéo */}
       {selectedVideoData && (
         <VideoAnalysisModal
-          isOpen={showAnalysisModal}
-          onClose={() => setShowAnalysisModal(false)}
-          video={{
+        isOpen={showAnalysisModal}
+        onClose={() => setShowAnalysisModal(false)}
+        searchQuery={query}
+        video={{
             id: selectedVideoData.video_id,
             title: selectedVideoData.title,
             description: '',
@@ -708,7 +709,7 @@ export default function FavoritesPage() {
             chapters: selectedVideoData.chapters || undefined,
             hasChapters: selectedVideoData.has_chapters || false
           }}
-          mode={analysisMode}
+          
         />
       )}
     </div>
