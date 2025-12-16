@@ -2,7 +2,11 @@
  * /api/videos/favorites/route.ts
  * API CRUD pour les vidéos favorites
  * 
- * @version 1.0
+ * @version 1.1
+ * 
+ * Changelog :
+ * - v1.1 : Ajout published_at, like_count, is_hd, chapters, has_chapters
+ * - v1.0 : Version initiale
  * 
  * Endpoints :
  * - GET : Liste des favoris de l'utilisateur
@@ -74,7 +78,13 @@ export async function POST(request: NextRequest) {
       chantier_id,
       travail_id,
       notes,
-       search_query
+      search_query,
+      // v1.1 : Nouveaux champs
+      published_at,
+      like_count,
+      is_hd,
+      chapters,
+      has_chapters
     } = body;
     
     if (!video_id || !title) {
@@ -98,7 +108,13 @@ export async function POST(request: NextRequest) {
         chantier_id: chantier_id || null,
         travail_id: travail_id || null,
         notes: notes || null,
-        search_query: search_query || null
+        search_query: search_query || null,
+        // v1.1 : Nouveaux champs
+        published_at: published_at || null,
+        like_count: like_count || 0,
+        is_hd: is_hd || false,
+        chapters: chapters || null,
+        has_chapters: has_chapters || false
       })
       .select()
       .single();
@@ -115,7 +131,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
     
-    console.log(`⭐ Vidéo ajoutée aux favoris: ${title}`);
+    const chaptersInfo = has_chapters ? ` (${chapters?.length || 0} chapitres)` : '';
+    console.log(`⭐ Vidéo ajoutée aux favoris: ${title}${chaptersInfo}`);
     
     return NextResponse.json({ 
       success: true, 
