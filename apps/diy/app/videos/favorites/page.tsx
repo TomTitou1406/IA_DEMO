@@ -426,8 +426,10 @@ export default function FavoritesPage() {
       
       {/* Header sticky - style breadcrumb */}
       <div style={{
-        position: 'sticky',
-        top: '60px',
+        position: 'fixed',
+        top: 60,
+        left: 0,
+        right: 0,
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
