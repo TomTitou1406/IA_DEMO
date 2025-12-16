@@ -2,7 +2,11 @@
  * /app/components/VideoAnalysisModal.tsx
  * Modal d'analyse de vidéo YouTube pour création de chantier/travail inspiré
  * 
- * @version 1.0
+ * @version 1.1
+ * 
+ * Changelog :
+ * - v1.1 : Accepte chapitres pré-chargés (depuis favoris) pour éviter appel API
+ * - v1.0 : Version initiale
  * 
  * Fonctionnalités :
  * - Affiche les chapitres détectés
@@ -17,6 +21,16 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { VideoAnalysis, VideoInspiration, toVideoInspiration } from '@/app/lib/services/videoAnalyzerService';
 
+// ============================================
+// TYPES
+// ============================================
+
+interface VideoChapter {
+  title: string;
+  start_seconds: number;
+  start_formatted: string;
+}
+
 interface VideoAnalysisModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -27,11 +41,18 @@ interface VideoAnalysisModalProps {
     thumbnail: string;
     channelTitle: string;
     durationSeconds?: number;
+    // v1.1 : Chapitres optionnels pré-chargés (depuis favoris)
+    chapters?: VideoChapter[];
+    hasChapters?: boolean;
   };
   mode: 'simple' | 'complexe';
 }
 
 type AnalysisStep = 'analyzing' | 'results' | 'no_chapters' | 'error';
+
+// ============================================
+// COMPOSANT
+// ============================================
 
 export default function VideoAnalysisModal({ 
   isOpen, 
@@ -47,7 +68,12 @@ export default function VideoAnalysisModal({
 
   useEffect(() => {
     if (isOpen && video) {
-      analyzeVideo();
+      // v1.1 : Si chapitres pré-chargés, les utiliser directement
+      if (video.hasChapters && video.chapters && video.chapters.length >= 2) {
+        usePreloadedChapters();
+      } else {
+        analyzeVideo();
+      }
     }
   }, [isOpen, video]);
 
@@ -59,6 +85,26 @@ export default function VideoAnalysisModal({
       return () => clearInterval(interval);
     }
   }, [step]);
+
+  // v1.1 : Utiliser les chapitres pré-chargés (depuis favoris)
+  const usePreloadedChapters = () => {
+    setProgress(100);
+    
+    const preloadedAnalysis: VideoAnalysis = {
+      video_id: video.id,
+      title: video.title,
+      description: video.description || '',
+      thumbnail: video.thumbnail,
+      channel: video.channelTitle,
+      duration_seconds: video.durationSeconds || 0,
+      has_chapters: true,
+      chapters: video.chapters || [],
+      ai_analysis: null // Pas d'analyse IA pour les chapitres pré-chargés
+    };
+    
+    setAnalysis(preloadedAnalysis);
+    setStep('results');
+  };
 
   const analyzeVideo = async () => {
     setStep('analyzing');
@@ -163,7 +209,9 @@ export default function VideoAnalysisModal({
     >
       <div 
         style={{
-          background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)',
+          background: 'rgba(0, 0, 0, 0.7)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
           borderRadius: '24px',
           padding: '2rem',
           maxWidth: '500px',
@@ -255,38 +303,55 @@ export default function VideoAnalysisModal({
                   objectFit: 'cover'
                 }}
               />
-              <div style={{ flex: 1, textAlign: 'left' }}>
-                <p style={{ 
-                  color: 'white', 
+              <div style={{ textAlign: 'left', flex: 1, minWidth: 0 }}>
+                <p style={{
+                  color: 'white',
                   fontSize: '0.8rem',
                   margin: 0,
-                  lineHeight: 1.3,
-                  display: '-webkit-box',
-                  WebkitLineClamp: 2,
-                  WebkitBoxOrient: 'vertical',
-                  overflow: 'hidden'
+                  overflow: 'hidden',
+                  textOverflow: 'ellipsis',
+                  whiteSpace: 'nowrap'
                 }}>
                   {video.title}
+                </p>
+                <p style={{
+                  color: 'rgba(255,255,255,0.5)',
+                  fontSize: '0.7rem',
+                  margin: 0
+                }}>
+                  {video.channelTitle}
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* ==================== ÉTAPE : RÉSULTATS (CHAPITRES OK) ==================== */}
+        {/* ==================== ÉTAPE : RÉSULTATS ==================== */}
         {step === 'results' && analysis && (
           <>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '0.5rem' }}>✅</div>
+              <div style={{
+                width: '60px',
+                height: '60px',
+                borderRadius: '50%',
+                background: 'rgba(16, 185, 129, 0.2)',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                margin: '0 auto 1rem',
+                fontSize: '1.5rem'
+              }}>
+                ✅
+              </div>
               <h2 style={{ 
                 color: 'white', 
                 fontSize: '1.3rem', 
                 fontWeight: '700',
-                marginBottom: '0.25rem'
+                marginBottom: '0.5rem'
               }}>
                 {analysis.chapters.length} étapes détectées !
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.85rem' }}>
+              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
                 Ces étapes guideront la génération de ton {mode === 'simple' ? 'travail' : 'chantier'}
               </p>
             </div>
@@ -296,7 +361,7 @@ export default function VideoAnalysisModal({
               background: 'rgba(255,255,255,0.05)',
               borderRadius: '12px',
               padding: '1rem',
-              marginBottom: '1.5rem',
+              marginBottom: '1rem',
               maxHeight: '200px',
               overflow: 'auto'
             }}>
@@ -308,36 +373,35 @@ export default function VideoAnalysisModal({
                     alignItems: 'center',
                     gap: '0.75rem',
                     padding: '0.5rem 0',
-                    borderBottom: idx < analysis.chapters.length - 1 
-                      ? '1px solid rgba(255,255,255,0.05)' 
-                      : 'none'
+                    borderBottom: idx < analysis.chapters.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none'
                   }}
                 >
                   <span style={{
-                    background: 'var(--green)',
-                    color: 'white',
                     width: '24px',
                     height: '24px',
                     borderRadius: '50%',
+                    background: 'var(--green)',
+                    color: 'white',
+                    fontSize: '0.75rem',
+                    fontWeight: '600',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    fontSize: '0.75rem',
-                    fontWeight: '700',
                     flexShrink: 0
                   }}>
                     {idx + 1}
                   </span>
                   <span style={{ 
-                    color: 'var(--gray-light)', 
+                    color: 'white', 
                     fontSize: '0.85rem',
                     flex: 1
                   }}>
                     {chapter.title}
                   </span>
                   <span style={{ 
-                    color: 'var(--gray)', 
-                    fontSize: '0.75rem' 
+                    color: 'rgba(255,255,255,0.4)', 
+                    fontSize: '0.75rem',
+                    flexShrink: 0
                   }}>
                     {chapter.start_formatted}
                   </span>
@@ -345,7 +409,7 @@ export default function VideoAnalysisModal({
               ))}
             </div>
 
-            {/* Type détecté */}
+            {/* Type de projet détecté */}
             {analysis.ai_analysis?.type_projet && (
               <div style={{
                 display: 'flex',
