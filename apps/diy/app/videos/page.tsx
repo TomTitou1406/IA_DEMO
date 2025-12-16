@@ -875,7 +875,7 @@ function VideosContent() {
         }}
         onMettreEnOeuvre={() => {
           setShowPlayerModal(false);
-          setAnalysisMode('chantier');
+          setAnalysisMode('simple');
           setShowAnalysisModal(true);
         }}
         isFavorite={selectedVideoData ? favoriteIds.has(selectedVideoData.id) : false}
