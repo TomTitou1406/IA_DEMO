@@ -537,14 +537,6 @@ function VideosContent() {
           {/* Bouton Favori ❤️ */}
           <button
             onClick={(e) => toggleFavorite(video, e)}
-            // Mémoriser qu'on vient d'une recherche
-              sessionStorage.setItem('favoritesOrigin', JSON.stringify({
-                from: 'search',
-                query: query,
-                path: `/videos?q=${encodeURIComponent(query)}`
-              }));
-              router.push('/videos/favorites');
-            }}
             style={{
               position: 'absolute',
               top: '8px',
@@ -727,10 +719,17 @@ function VideosContent() {
           </p>
         </div>
         
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Bouton Favoris */}
+        {/* Bouton Favoris */}
           <button
-            onClick={() => router.push('/videos/favorites')}
+            onClick={() => {
+              // Mémoriser qu'on vient d'une recherche
+              sessionStorage.setItem('favoritesOrigin', JSON.stringify({
+                from: 'search',
+                query: query,
+                path: `/videos?q=${encodeURIComponent(query)}`
+              }));
+              router.push('/videos/favorites');
+            }}
             style={{
               padding: '0.6rem 1rem',
               borderRadius: '8px',
