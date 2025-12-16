@@ -84,7 +84,8 @@ export async function POST(request: NextRequest) {
       like_count,
       is_hd,
       chapters,
-      has_chapters
+      has_chapters,
+      is_trusted
     } = body;
     
     if (!video_id || !title) {
@@ -114,7 +115,8 @@ export async function POST(request: NextRequest) {
         like_count: like_count || 0,
         is_hd: is_hd || false,
         chapters: chapters || null,
-        has_chapters: has_chapters || false
+        has_chapters: has_chapters || false,
+        is_trusted: is_trusted || false
       })
       .select()
       .single();
