@@ -436,7 +436,7 @@ export default function FavoritesPage() {
         marginRight: '-2rem',
         marginTop: '-2rem',
         marginBottom: '1.5rem',
-        padding: '0.75rem 2rem',
+        padding: '0.75rem 1rem',
       }}>
         <div style={{
           maxWidth: '1100px',
