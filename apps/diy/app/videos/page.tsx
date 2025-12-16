@@ -701,89 +701,146 @@ function VideosContent() {
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {/* Header avec navigation */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
+      {/* Header sticky - style breadcrumb */}
+      <div style={{
+        position: 'sticky',
+        top: '60px',
+        zIndex: 100,
+        background: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        marginLeft: '-2rem',
+        marginRight: '-2rem',
+        marginTop: '-2rem',
         marginBottom: '1.5rem',
-        flexWrap: 'wrap',
-        gap: '1rem'
+        padding: '0.75rem 2rem',
       }}>
-        <div>
-          <h1 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-            🎬 Tutoriels
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-            Résultats pour : "{query}"
-          </p>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-        {/* Bouton Favoris */}
-          <button
-            onClick={() => {
-              // Mémoriser qu'on vient d'une recherche
-              sessionStorage.setItem('favoritesOrigin', JSON.stringify({
-                from: 'search',
-                query: query,
-                path: `/videos?q=${encodeURIComponent(query)}`
-              }));
-              router.push('/videos/favorites');
-            }}
-            style={{
-              padding: '0.6rem 1rem',
-              borderRadius: '8px',
-              border: '2px solid #ef4444',
-              background: 'transparent',
-              color: '#ef4444',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            ❤️ Favoris {favoritesCount > 0 && `(${favoritesCount})`}
-          </button>
+        <div style={{
+          maxWidth: '1100px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          {/* Contexte */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            fontSize: '0.9rem'
+          }}>
+            <span>🎬</span>
+            <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>Tutoriels</span>
+            <span style={{ color: 'var(--gray)', opacity: 0.5 }}>/</span>
+            <span style={{ color: 'var(--gray)' }}>"{query}"</span>
+            <span style={{ 
+              color: 'rgba(255,255,255,0.4)', 
+              fontSize: '0.8rem',
+              marginLeft: '0.25rem'
+            }}>
+              ({videos.length} vidéos)
+            </span>
+          </div>
           
-          <button
-            onClick={handleNewSearch}
-            style={{
-              padding: '0.6rem 1rem',
-              borderRadius: '8px',
-              border: '2px solid var(--green)',
-              background: 'transparent',
-              color: 'var(--green)',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            🔄 Nouvelle recherche
-          </button>
-          <button
-            onClick={() => router.push('/')}
-            style={{
-              padding: '0.6rem 1rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'rgba(255,255,255,0.1)',
-              color: 'white',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            🏠 Retour accueil
-          </button>
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Bouton Favoris */}
+            <button
+              onClick={() => {
+                sessionStorage.setItem('favoritesOrigin', JSON.stringify({
+                  from: 'search',
+                  query: query,
+                  path: `/videos?q=${encodeURIComponent(query)}`
+                }));
+                router.push('/videos/favorites');
+              }}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(239, 68, 68, 0.5)',
+                background: 'rgba(239, 68, 68, 0.1)',
+                color: '#ef4444',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              ❤️ {favoritesCount > 0 ? favoritesCount : ''}
+            </button>
+            
+            {/* Bouton Nouvelle recherche */}
+            <button
+              onClick={handleNewSearch}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(16, 185, 129, 0.5)',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: 'var(--green)',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.3)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              🔄 Rechercher
+            </button>
+            
+            {/* Bouton Accueil */}
+            <button
+              onClick={() => router.push('/')}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.1)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              🏠
+            </button>
+          </div>
         </div>
       </div>
 
