@@ -474,8 +474,8 @@ export default function VideoAnalysisModal({
                   gap: '0.5rem'
                 }}
               >
-                <span>{mode === 'simple' ? '🔧' : '🏗️'}</span>
-                <span>Créer mon {mode === 'simple' ? 'travail' : 'chantier'}</span>
+                <span>{mode === 'simple' ? '🔨' : '🏗️'}</span>
+                <span>{mode === 'simple' ? 'Créer en travaux simples' : 'Créer un chantier complexe'}</span>
               </button>
             </div>
           </>
