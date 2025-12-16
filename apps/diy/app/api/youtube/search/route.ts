@@ -2,9 +2,10 @@
  * /api/youtube/search/route.ts
  * Recherche YouTube avec évaluation IA de la pertinence
  * 
- * @version 3.3
+ * @version 3.4
  * 
  * Changelog :
+ * - v3.4 : Ajout publishedAt, likeCount, isHD pour enrichir les cards
  * - v3.3 : Ajout displaySettings dans searchInfo (pagination dynamique)
  * - v3.2 : Retourne TOUS les résultats pour pagination côté client
  * - v3.1 : Prompt depuis BDD, évaluation Shorts, filtre FR
@@ -52,6 +53,10 @@ interface VideoResult {
   isShort: boolean;
   aiScore?: number;
   aiReason?: string;
+  // v3.4 : Nouveaux champs
+  publishedAt: string;      // Date ISO de publication
+  likeCount: number;        // Nombre de likes
+  isHD: boolean;            // Qualité HD ou non
 }
 
 interface AIEvaluation {
@@ -324,8 +329,11 @@ export async function POST(request: NextRequest) {
 
       videoDetails.forEach((v: any) => {
         const viewCount = parseInt(v.statistics?.viewCount || '0');
+        const likeCount = parseInt(v.statistics?.likeCount || '0');
         const channelTitle = v.snippet.channelTitle;
         const duration = parseDuration(v.contentDetails?.duration);
+        const publishedAt = v.snippet.publishedAt || '';
+        const isHD = v.contentDetails?.definition === 'hd';
 
         if (viewCount < settings.min_views) return;
 
@@ -358,6 +366,10 @@ export async function POST(request: NextRequest) {
           score,
           isTrusted,
           isShort,
+          // v3.4 : Nouveaux champs
+          publishedAt,
+          likeCount,
+          isHD,
         };
 
         allResults.push(videoData);
@@ -396,14 +408,12 @@ export async function POST(request: NextRequest) {
         filteredVideos.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0) || b.score - a.score);
         filteredShorts.sort((a, b) => (b.aiScore || 0) - (a.aiScore || 0) || b.score - a.score);
         
-        // v3.2 : Retourne TOUS les résultats, pas de slice
         finalVideos = filteredVideos;
         finalShorts = filteredShorts;
       } else {
         videos.sort((a, b) => b.score - a.score);
         shorts.sort((a, b) => b.score - a.score);
         
-        // v3.2 : Retourne TOUS les résultats, pas de slice
         finalVideos = videos;
         finalShorts = shorts;
       }
