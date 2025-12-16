@@ -488,8 +488,16 @@ function VideosContent() {
             : video.isTrusted 
               ? '2px solid rgba(16, 185, 129, 0.3)'
               : '2px solid transparent',
-          transition: 'all 0.2s',
+          transition: 'all 0.3s',
           position: 'relative'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = 'none';
         }}
       >
         <div style={{ position: 'relative' }}>
@@ -709,7 +717,6 @@ function VideosContent() {
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        borderBottom: '1px solid rgba(255,255,255,0.05)',
         marginLeft: '-2rem',
         marginRight: '-2rem',
         marginTop: '-2rem',
@@ -772,11 +779,13 @@ function VideosContent() {
                 transition: 'all 0.3s'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
-                e.currentTarget.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.3)';
+                e.currentTarget.style.background = '#ef4444';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.5)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                e.currentTarget.style.color = '#ef4444';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
@@ -801,11 +810,13 @@ function VideosContent() {
                 transition: 'all 0.3s'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
-                e.currentTarget.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.3)';
+                e.currentTarget.style.background = '#10b981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                e.currentTarget.style.color = '#10b981';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
@@ -830,11 +841,13 @@ function VideosContent() {
                 transition: 'all 0.3s'
               }}
               onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)';
-                e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.1)';
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.2)';
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
@@ -876,10 +889,12 @@ function VideosContent() {
                 display: 'flex', 
                 alignItems: 'center', 
                 gap: '0.5rem',
-                marginBottom: '1rem'
+                marginBottom: '1rem',
+                paddingBottom: '0.75rem',
+                borderBottom: '1px solid rgba(255,255,255,0.1)'
               }}>
                 <h2 style={{ color: 'white', fontSize: '1.1rem', margin: 0 }}>
-                  📺 Tutoriels vidéo
+                  🎬 Vidéos longues
                 </h2>
                 <span style={{ 
                   color: 'rgba(255,255,255,0.5)', 
@@ -918,10 +933,12 @@ function VideosContent() {
                 alignItems: 'center', 
                 gap: '0.5rem',
                 marginBottom: '1rem',
-                marginTop: '2rem'
+                marginTop: '2rem',
+                paddingBottom: '0.75rem',
+                borderBottom: '1px solid rgba(255,255,255,0.1)'
               }}>
                 <h2 style={{ color: 'white', fontSize: '1.1rem', margin: 0 }}>
-                  ⚡ Shorts
+                  ⚡ Shorts vidéos
                 </h2>
                 <span style={{ 
                   color: 'rgba(255,255,255,0.5)', 
