@@ -3,23 +3,10 @@
  * API de classification projet bricolage (simple vs chantier)
  * 
  * @version 1.0
- * 
- * Utilise le prompt CLASSIFICATION_PROJET_BRICOLAGE pour analyser
- * un projet et recommander le mode de création approprié.
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
-import OpenAI from 'openai';
-
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
-);
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-});
+import { supabase } from '@/app/lib/supabaseClient';
 
 // ============================================
 // TYPES
@@ -57,11 +44,11 @@ function replaceVariables(template: string, variables: Record<string, string | u
   
   // Remplacer les variables simples {{variable}}
   for (const [key, value] of Object.entries(variables)) {
-    result = result.replace(new RegExp(`{{${key}}}`, 'g'), value || '');
+    result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value || '');
   }
   
   // Gérer les blocs conditionnels {{#if variable}}...{{/if}}
-  result = result.replace(/{{#if (\w+)}}([\s\S]*?){{\/if}}/g, (match, varName, content) => {
+  result = result.replace(/\{\{#if (\w+)\}\}([\s\S]*?)\{\{\/if\}\}/g, (match, varName, content) => {
     return variables[varName] ? content : '';
   });
   
@@ -76,17 +63,63 @@ function determineDisplayMode(result: ClassificationResult): {
   
   // Bridage intelligent
   if (classification === 'complexe' && confiance >= 85 && risques_sensibles.length > 0) {
-    // Chantier certain avec risques → forcer chantier
     return { mode_affichage: 'complexe_only', bouton_recommande: 'complexe' };
   }
   
   if (classification === 'simple' && confiance >= 85 && risques_sensibles.length === 0) {
-    // Travaux simples certains sans risques → forcer simple
     return { mode_affichage: 'simple_only', bouton_recommande: 'simple' };
   }
   
-  // Cas ambigu → laisser le choix
   return { mode_affichage: 'choix', bouton_recommande: classification };
+}
+
+// ============================================
+// APPEL OPENAI VIA FETCH
+// ============================================
+
+async function callOpenAI(
+  prompt: string, 
+  model: string, 
+  temperature: number, 
+  maxTokens: number
+): Promise<string> {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  
+  if (!openaiKey) {
+    throw new Error('OpenAI API key non configurée');
+  }
+
+  const response = await fetch('https://api.openai.com/v1/chat/completions', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${openaiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      messages: [
+        {
+          role: 'system',
+          content: 'Tu es un assistant expert en bricolage. Réponds uniquement en JSON valide, sans markdown ni backticks.'
+        },
+        {
+          role: 'user',
+          content: prompt
+        }
+      ],
+      temperature,
+      max_tokens: maxTokens
+    })
+  });
+
+  if (!response.ok) {
+    const error = await response.json();
+    console.error('OpenAI API error:', error);
+    throw new Error('OpenAI API call failed');
+  }
+
+  const data = await response.json();
+  return data.choices?.[0]?.message?.content?.trim() || '';
 }
 
 // ============================================
@@ -136,23 +169,12 @@ export async function POST(request: NextRequest) {
     });
 
     // 3. Appeler OpenAI
-    const completion = await openai.chat.completions.create({
-      model: promptData.model || 'gpt-4o-mini',
-      messages: [
-        {
-          role: 'system',
-          content: 'Tu es un assistant expert en bricolage. Réponds uniquement en JSON valide, sans markdown ni backticks.'
-        },
-        {
-          role: 'user',
-          content: promptFinal
-        }
-      ],
-      temperature: parseFloat(promptData.temperature) || 0.3,
-      max_tokens: promptData.max_tokens || 800,
-    });
-
-    const responseText = completion.choices[0]?.message?.content?.trim() || '';
+    const responseText = await callOpenAI(
+      promptFinal,
+      promptData.model || 'gpt-4o-mini',
+      parseFloat(promptData.temperature) || 0.3,
+      promptData.max_tokens || 800
+    );
     
     // 4. Parser la réponse JSON
     let result: ClassificationResult;
