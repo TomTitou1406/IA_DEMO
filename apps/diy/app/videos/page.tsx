@@ -348,6 +348,33 @@ function VideosContent() {
   };
 
   const searchVideos = async () => {
+    // Vérifier le cache d'abord
+    const cached = sessionStorage.getItem('lastVideoSearch');
+    if (cached) {
+      try {
+        const data = JSON.parse(cached);
+        // Si même query et cache < 10 minutes
+        if (data.query === query && Date.now() - data.timestamp < 600000) {
+          console.log('📦 Résultats depuis le cache');
+          setVideos(data.videos || []);
+          setShorts(data.shorts || []);
+          setSearchInfo(data.searchInfo || null);
+          
+          if (data.searchInfo?.displaySettings) {
+            const { videosPerPage: vpp, shortsPerPage: spp } = data.searchInfo.displaySettings;
+            setVideosPerPage(vpp);
+            setShortsPerPage(spp);
+            setVideosDisplayCount(vpp);
+            setShortsDisplayCount(spp);
+          }
+          setLoading(false);
+          return; // Skip l'appel API
+        }
+      } catch (e) {
+        console.log('Cache invalide, recherche normale');
+      }
+    }
+  
     setLoading(true);
     
     try {
@@ -368,6 +395,17 @@ function VideosContent() {
         setVideosDisplayCount(vpp);
         setShortsDisplayCount(spp);
       }
+  
+      // Sauvegarder en cache
+      sessionStorage.setItem('lastVideoSearch', JSON.stringify({
+        query,
+        videos: data.videos || [],
+        shorts: data.shorts || [],
+        searchInfo: data.searchInfo || null,
+        timestamp: Date.now()
+      }));
+      console.log('💾 Résultats mis en cache');
+  
     } catch (error) {
       console.error('Search error:', error);
     } finally {
