@@ -327,7 +327,9 @@ export default function Navbar({ className }: NavbarProps) {
                 objectFit: 'cover',
                 marginBottom: '0.5rem',
                 animation: 'bounce 1s ease infinite',
-                boxShadow: '0 8px 25px rgba(249, 115, 22, 0.3)'
+                boxShadow: '0 8px 25px rgba(249, 115, 22, 0.3)',
+                display: 'block',
+                margin: '0 auto 0.5rem auto'
               }}
             />
             <h2 style={{ 
