@@ -148,7 +148,9 @@ export default function VideoPlayerModal({
       <div
         onClick={(e) => e.stopPropagation()}
         style={{
-          background: '#1a1a2e',
+          background: 'rgba(26, 26, 46, 0.95)',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
           borderRadius: '16px',
           width: '100%',
           maxWidth: '800px',
