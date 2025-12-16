@@ -124,7 +124,7 @@ export default function FavoritesPage() {
       setFavorites(data.favorites || []);
       
       // v1.3 : Ouvrir tous les groupes par défaut
-      const groupKeys = new Set((data.favorites || []).map((f: Favorite) => f.search_query || 'Autres vidéos'));
+      const groupKeys = new Set<string>((data.favorites || []).map((f: Favorite) => f.search_query || 'Autres vidéos'));
       setOpenGroups(groupKeys);
       setAllExpanded(true);
     } catch (error) {
