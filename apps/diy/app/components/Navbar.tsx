@@ -69,9 +69,9 @@ export default function Navbar({ className }: NavbarProps) {
     loadCounts();
   }, [pathname]);
 
+  // Fonction pour charger le compteur projets
   const loadCounts = async () => {
     try {
-      // Compteur projets (chantiers actifs)
       const projectsRes = await fetch('/api/chantiers?count_only=true');
       if (projectsRes.ok) {
         const data = await projectsRes.json();
@@ -80,31 +80,33 @@ export default function Navbar({ className }: NavbarProps) {
     } catch (e) {
       console.log('Compteur projets non disponible');
     }
-
-    // Fonction pour charger le compteur
-    const loadFavoritesCount = async () => {
-      try {
-        const favRes = await fetch('/api/videos/favorites');
-        if (favRes.ok) {
-          const data = await favRes.json();
-          setFavoritesCount(data.count || 0);
-        }
-      } catch (e) {
-        console.log('Compteur favoris non disponible');
+  };
+  
+  // Fonction pour charger le compteur favoris
+  const loadFavoritesCount = async () => {
+    try {
+      const favRes = await fetch('/api/videos/favorites');
+      if (favRes.ok) {
+        const data = await favRes.json();
+        setFavoritesCount(data.count || 0);
       }
-    };
+    } catch (e) {
+      console.log('Compteur favoris non disponible');
+    }
+  };
+  
+  // useEffect pour charger au démarrage + écouter les mises à jour
+  useEffect(() => {
+    loadCounts();
+    loadFavoritesCount();
     
-    // useEffect pour charger au démarrage + écouter les mises à jour
-    useEffect(() => {
-      loadFavoritesCount();
-      
-      // Écouter les mises à jour depuis la page vidéos
-      const handleUpdate = () => loadFavoritesCount();
-      window.addEventListener('favoritesUpdated', handleUpdate);
-      
-      return () => window.removeEventListener('favoritesUpdated', handleUpdate);
-    }, []);
-
+    // Écouter les mises à jour depuis la page vidéos
+    const handleUpdate = () => loadFavoritesCount();
+    window.addEventListener('favoritesUpdated', handleUpdate);
+    
+    return () => window.removeEventListener('favoritesUpdated', handleUpdate);
+  }, []);
+  
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
     return pathname.startsWith(path);
