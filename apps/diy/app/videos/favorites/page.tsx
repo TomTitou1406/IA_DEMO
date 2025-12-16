@@ -2,9 +2,10 @@
  * /app/videos/favorites/page.tsx
  * Page d'affichage des vidéos favorites groupées par requête de recherche
  * 
- * @version 1.1
+ * @version 1.2
  * 
  * Changelog :
+ * - v1.2 : Cards enrichies (likes, date, HD, chapitres) + VideoPlayerModal + synchro compteur
  * - v1.1 : Ajout bouton "Mettre en œuvre" + modal analyse vidéo
  * - v1.0 : Version initiale - Affichage groupé par search_query
  */
@@ -14,6 +15,17 @@
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import VideoAnalysisModal from '@/app/components/VideoAnalysisModal';
+import VideoPlayerModal from '@/app/components/VideoPlayerModal';
+
+// ============================================
+// TYPES
+// ============================================
+
+interface VideoChapter {
+  title: string;
+  start_seconds: number;
+  start_formatted: string;
+}
 
 interface Favorite {
   id: string;
@@ -29,6 +41,12 @@ interface Favorite {
   travail_id: string | null;
   notes: string | null;
   created_at: string;
+  // v1.2 : Nouveaux champs
+  published_at: string | null;
+  like_count: number | null;
+  is_hd: boolean | null;
+  chapters: VideoChapter[] | null;
+  has_chapters: boolean | null;
 }
 
 interface GroupedFavorites {
@@ -37,6 +55,29 @@ interface GroupedFavorites {
   latestDate: string;
 }
 
+// Type adapté pour VideoPlayerModal
+interface VideoForModal {
+  id: string;
+  title: string;
+  description?: string;
+  thumbnail: string;
+  channelTitle: string;
+  viewCount: number;
+  duration: string;
+  durationSeconds?: number;
+  isTrusted?: boolean;
+  isShort?: boolean;
+  publishedAt?: string;
+  likeCount?: number;
+  isHD?: boolean;
+  hasChapters?: boolean;
+  chapters?: VideoChapter[];
+}
+
+// ============================================
+// COMPOSANT PRINCIPAL
+// ============================================
+
 export default function FavoritesPage() {
   const router = useRouter();
   
@@ -44,6 +85,9 @@ export default function FavoritesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [selectedVideoData, setSelectedVideoData] = useState<Favorite | null>(null);
+  
+  // Modal player
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
   
   // Modal analyse vidéo
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
@@ -75,10 +119,14 @@ export default function FavoritesPage() {
       });
       setFavorites(prev => prev.filter(f => f.video_id !== videoId));
       
-      // Si la vidéo supprimée était en lecture, fermer le player
+      // Notifier la Navbar
+      window.dispatchEvent(new Event('favoritesUpdated'));
+      
+      // Si la vidéo supprimée était en lecture, fermer le modal
       if (selectedVideo === videoId) {
         setSelectedVideo(null);
         setSelectedVideoData(null);
+        setShowPlayerModal(false);
       }
     } catch (error) {
       console.error('Erreur suppression favori:', error);
@@ -97,18 +145,62 @@ export default function FavoritesPage() {
   const handleSelectVideo = (favorite: Favorite) => {
     setSelectedVideo(favorite.video_id);
     setSelectedVideoData(favorite);
+    setShowPlayerModal(true);
   };
 
   const handleMettreEnOeuvre = () => {
     if (!selectedVideoData) return;
-    setAnalysisMode('simple'); // L'IA décidera
+    setShowPlayerModal(false);
+    setAnalysisMode('simple');
     setShowAnalysisModal(true);
   };
+
+  // Convertir Favorite vers format VideoPlayerModal
+  const favoriteToVideo = (fav: Favorite): VideoForModal => ({
+    id: fav.video_id,
+    title: fav.title,
+    thumbnail: fav.thumbnail,
+    channelTitle: fav.channel_title,
+    viewCount: fav.view_count,
+    duration: fav.duration,
+    durationSeconds: fav.duration_seconds,
+    publishedAt: fav.published_at || undefined,
+    likeCount: fav.like_count || undefined,
+    isHD: fav.is_hd || false,
+    hasChapters: fav.has_chapters || false,
+    chapters: fav.chapters || undefined,
+  });
+
+  // ============================================
+  // HELPERS
+  // ============================================
 
   const formatViews = (count: number) => {
     if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
     if (count >= 1000) return `${(count / 1000).toFixed(0)}k`;
     return count?.toString() || '0';
+  };
+
+  const formatLikes = (count: number | null): string | null => {
+    if (!count) return null;
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+    return count.toString();
+  };
+
+  const formatDate = (dateString: string | null): string => {
+    if (!dateString) return '';
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffYears = now.getFullYear() - date.getFullYear();
+    
+    if (diffYears === 0) {
+      return date.toLocaleDateString('fr-FR', { month: 'short' });
+    } else if (diffYears === 1) {
+      return "l'an dernier";
+    } else {
+      return date.getFullYear().toString();
+    }
   };
 
   const formatRelativeDate = (dateString: string) => {
@@ -124,14 +216,16 @@ export default function FavoritesPage() {
     return `Il y a ${Math.floor(diffDays / 30)} mois`;
   };
 
-  // Grouper les favoris par search_query
+  // ============================================
+  // GROUPEMENT
+  // ============================================
+
   const groupedFavorites: GroupedFavorites[] = favorites.reduce((groups, fav) => {
     const query = fav.search_query || 'Autres vidéos';
     const existingGroup = groups.find(g => g.query === query);
     
     if (existingGroup) {
       existingGroup.favorites.push(fav);
-      // Mettre à jour la date la plus récente
       if (new Date(fav.created_at) > new Date(existingGroup.latestDate)) {
         existingGroup.latestDate = fav.created_at;
       }
@@ -146,10 +240,13 @@ export default function FavoritesPage() {
     return groups;
   }, [] as GroupedFavorites[]);
 
-  // Trier les groupes par date (plus récent en premier)
   groupedFavorites.sort((a, b) => 
     new Date(b.latestDate).getTime() - new Date(a.latestDate).getTime()
   );
+
+  // ============================================
+  // COMPOSANT VIDEOCARD
+  // ============================================
 
   const VideoCard = ({ favorite }: { favorite: Favorite }) => (
     <div
@@ -179,6 +276,7 @@ export default function FavoritesPage() {
             objectFit: 'cover' 
           }}
         />
+        
         {/* Durée */}
         <span style={{
           position: 'absolute',
@@ -193,6 +291,23 @@ export default function FavoritesPage() {
         }}>
           {favorite.duration}
         </span>
+        
+        {/* Badge HD */}
+        {favorite.is_hd && (
+          <span style={{
+            position: 'absolute',
+            bottom: '8px',
+            left: '8px',
+            background: 'rgba(0,0,0,0.8)',
+            color: 'white',
+            padding: '2px 5px',
+            borderRadius: '3px',
+            fontSize: '0.65rem',
+            fontWeight: '700'
+          }}>
+            HD
+          </span>
+        )}
         
         {/* Bouton Supprimer ✕ */}
         <button
@@ -220,6 +335,23 @@ export default function FavoritesPage() {
         >
           ✕
         </button>
+        
+        {/* Badge chapitré */}
+        {favorite.has_chapters && (
+          <span style={{
+            position: 'absolute',
+            top: '8px',
+            left: '8px',
+            background: 'rgba(59, 130, 246, 0.9)',
+            color: 'white',
+            padding: '2px 6px',
+            borderRadius: '4px',
+            fontSize: '0.7rem',
+            fontWeight: '600'
+          }}>
+            📑 Chapitré
+          </span>
+        )}
       </div>
       
       <div style={{ padding: '0.75rem' }}>
@@ -242,15 +374,31 @@ export default function FavoritesPage() {
         }}>
           {favorite.channel_title}
         </p>
-        <span style={{ 
+        
+        {/* Ligne enrichie : vues + likes + date */}
+        <div style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.5rem',
           color: 'rgba(255,255,255,0.4)', 
-          fontSize: '0.65rem' 
+          fontSize: '0.65rem',
+          flexWrap: 'wrap'
         }}>
-          👁️ {formatViews(favorite.view_count)} vues
-        </span>
+          <span>👁️ {formatViews(favorite.view_count)}</span>
+          {favorite.like_count && favorite.like_count > 0 && (
+            <span>• 👍 {formatLikes(favorite.like_count)}</span>
+          )}
+          {favorite.published_at && (
+            <span>• 📅 {formatDate(favorite.published_at)}</span>
+          )}
+        </div>
       </div>
     </div>
   );
+
+  // ============================================
+  // RENDER
+  // ============================================
 
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
@@ -312,67 +460,6 @@ export default function FavoritesPage() {
           </button>
         </div>
       </div>
-
-      {/* Player si vidéo sélectionnée */}
-      {selectedVideo && (
-        <div style={{ 
-          marginBottom: '2rem', 
-          borderRadius: '12px', 
-          overflow: 'hidden',
-          boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-        }}>
-          <iframe
-            width="100%"
-            height="450"
-            src={`https://www.youtube.com/embed/${selectedVideo}?autoplay=1`}
-            frameBorder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
-          
-          {/* Bouton Mettre en œuvre */}
-          {selectedVideoData && (
-            <div style={{ 
-              padding: '1rem', 
-              background: 'rgba(0,0,0,0.5)',
-              display: 'flex',
-              justifyContent: 'center',
-              gap: '0.75rem'
-            }}>
-              <button
-                onClick={handleMettreEnOeuvre}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.7rem 1.25rem',
-                  borderRadius: '10px',
-                  border: '2px solid #10b981',
-                  background: 'transparent',
-                  color: '#10b981',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.3s'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = '#10b981';
-                  e.currentTarget.style.color = 'white';
-                  e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'transparent';
-                  e.currentTarget.style.color = '#10b981';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                <span>🚀</span>
-                <span>Mettre en œuvre</span>
-              </button>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* Contenu */}
       {loading ? (
@@ -467,6 +554,23 @@ export default function FavoritesPage() {
         </div>
       )}
 
+      {/* Modal Player Vidéo */}
+      <VideoPlayerModal
+        video={selectedVideoData ? favoriteToVideo(selectedVideoData) : null}
+        isOpen={showPlayerModal}
+        onClose={() => setShowPlayerModal(false)}
+        onFavoriteToggle={() => {
+          // Déjà en favoris, donc on retire
+          if (selectedVideoData) {
+            removeFavorite(selectedVideoData.video_id, { stopPropagation: () => {} } as React.MouseEvent);
+          }
+        }}
+        onMettreEnOeuvre={handleMettreEnOeuvre}
+        isFavorite={true} // Toujours true car on est sur la page favoris
+        showFavoriteButton={true}
+        showMettreEnOeuvreButton={true}
+      />
+
       {/* Modal analyse vidéo */}
       {selectedVideoData && (
         <VideoAnalysisModal
@@ -475,10 +579,13 @@ export default function FavoritesPage() {
           video={{
             id: selectedVideoData.video_id,
             title: selectedVideoData.title,
-            description: '', // Pas de description stockée dans les favoris
+            description: '',
             thumbnail: selectedVideoData.thumbnail,
             channelTitle: selectedVideoData.channel_title,
-            durationSeconds: selectedVideoData.duration_seconds
+            durationSeconds: selectedVideoData.duration_seconds,
+            // v1.2 : Passer les chapitres s'ils existent
+            chapters: selectedVideoData.chapters || undefined,
+            hasChapters: selectedVideoData.has_chapters || false
           }}
           mode={analysisMode}
         />
