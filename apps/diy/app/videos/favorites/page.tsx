@@ -47,6 +47,7 @@ interface Favorite {
   is_hd: boolean | null;
   chapters: VideoChapter[] | null;
   has_chapters: boolean | null;
+  is_trusted: boolean | null;
 }
 
 interface GroupedFavorites {
