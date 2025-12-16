@@ -470,7 +470,7 @@ export default function VideoAnalysisModal({
                   fontSize: '0.95rem'
                 }}>
                   Recommandation : {classification.bouton_recommande === 'simple' 
-                    ? 'Travail simple' 
+                    ? 'Travaux simples' 
                     : 'Chantier'}
                 </span>
                 <span style={{
@@ -592,7 +592,7 @@ export default function VideoAnalysisModal({
                   }}
                 >
                   <span>🔨</span>
-                  <span>Créer un travail simple</span>
+                  <span>Créer en mode Travaux simples</span>
                   {classification.bouton_recommande === 'simple' && classification.mode_affichage === 'choix' && (
                     <span style={{
                       background: 'rgba(255,255,255,0.2)',
@@ -648,7 +648,7 @@ export default function VideoAnalysisModal({
                   }}
                 >
                   <span>🏗️</span>
-                  <span>Créer un chantier</span>
+                  <span>Créer en mode chantier</span>
                   {classification.bouton_recommande === 'complexe' && classification.mode_affichage === 'choix' && (
                     <span style={{
                       background: 'rgba(255,255,255,0.2)',
