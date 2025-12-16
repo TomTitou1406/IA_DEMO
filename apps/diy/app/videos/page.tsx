@@ -270,7 +270,7 @@ function VideosContent() {
   const [videosPerPage, setVideosPerPage] = useState(9);
   const [shortsPerPage, setShortsPerPage] = useState(6);
 
-    // Charger les favoris au démarrage
+  // Charger les favoris au démarrage
   useEffect(() => {
     loadFavorites();
   }, []);
@@ -537,6 +537,14 @@ function VideosContent() {
           {/* Bouton Favori ❤️ */}
           <button
             onClick={(e) => toggleFavorite(video, e)}
+            // Mémoriser qu'on vient d'une recherche
+              sessionStorage.setItem('favoritesOrigin', JSON.stringify({
+                from: 'search',
+                query: query,
+                path: `/videos?q=${encodeURIComponent(query)}`
+              }));
+              router.push('/videos/favorites');
+            }}
             style={{
               position: 'absolute',
               top: '8px',
