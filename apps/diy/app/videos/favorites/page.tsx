@@ -98,6 +98,20 @@ export default function FavoritesPage() {
     loadFavorites();
   }, []);
 
+  const [searchOrigin, setSearchOrigin] = useState<{ query: string; path: string } | null>(null);
+  useEffect(() => {
+    // Vérifier si on vient d'une recherche
+    const origin = sessionStorage.getItem('favoritesOrigin');
+    if (origin) {
+      try {
+        const data = JSON.parse(origin);
+        if (data.from === 'search') {
+          setSearchOrigin({ query: data.query, path: data.path });
+        }
+      } catch (e) {}
+    }
+  }, []);
+
   const loadFavorites = async () => {
     setLoading(true);
     try {
