@@ -187,7 +187,7 @@ export default function ChantiersPage() {
                 detail: {
                   pageContext: 'travaux_simple_decouverte',
                   contextColor: '#2563eb',
-                  welcomeMessage: "Salut ! 🔧 Quels petits travaux veux-tu réaliser ?\n\nExemples : poser une étagère, fixer un miroir, monter un meuble, installer une tringle..."
+                  welcomeMessage: "Salut ! 🔨 Quels petits travaux veux-tu réaliser ?\n\nExemples : poser une étagère, fixer un miroir, monter un meuble, installer une tringle..."
                 }
               }));
             }}
@@ -219,7 +219,7 @@ export default function ChantiersPage() {
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <span>🔧</span>
+            <span>🔨</span>
             <span>Travaux simples</span>
           </button>
           
@@ -263,7 +263,7 @@ export default function ChantiersPage() {
         {travauxSimples.length > 0 && (
           <Section
             title="Travaux simples"
-            icon="🔧"
+            icon="🔨"
             count={travauxSimples.length}
             color="var(--blue)"
             isExpanded={showSimples}
