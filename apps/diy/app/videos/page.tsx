@@ -314,7 +314,10 @@ function VideosContent() {
             duration: video.duration,
             duration_seconds: video.durationSeconds,
             view_count: video.viewCount,
-            search_query: query
+            search_query: query,
+            published_at: video.publishedAt || null,
+            like_count: video.likeCount || 0,
+            is_hd: video.isHD || false
           })
         });
         setFavoriteIds(prev => new Set(prev).add(video.id));
