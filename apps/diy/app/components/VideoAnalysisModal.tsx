@@ -99,7 +99,8 @@ export default function VideoAnalysisModal({
       duration_seconds: video.durationSeconds || 0,
       has_chapters: true,
       chapters: video.chapters || [],
-      ai_analysis: null // Pas d'analyse IA pour les chapitres pré-chargés
+      ai_analysis: null,
+      analyzed_at: new Date().toISOString()
     };
     
     setAnalysis(preloadedAnalysis);
