@@ -374,19 +374,13 @@ export default function Navbar({ className }: NavbarProps) {
       >
         {/* Header */}
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <img 
-            src="/images/papibricole-avatar.png" 
-            alt="PapiBricole" 
-            style={{ 
-              width: '80px', 
-              height: '80px', 
-              borderRadius: '50%',
-              objectFit: 'cover',
-              marginBottom: '0.5rem',
-              animation: 'bounce 1s ease infinite',
-              boxShadow: '0 8px 25px rgba(249, 115, 22, 0.3)'
-            }}
-          />
+          <div style={{ 
+            fontSize: '4rem', 
+            marginBottom: '0.5rem',
+            animation: 'bounce 1s ease infinite'
+          }}>
+            🛠️
+          </div>
           <h2 style={{ 
             color: 'white', 
             fontSize: '1.5rem', 
@@ -402,7 +396,7 @@ export default function Navbar({ className }: NavbarProps) {
 
         {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {/* Option 1 : Assistant IA */}
+          {/* Option 1 : Assistant IA (v1.3 : Bleu + logo Papi) */}
           <button
             onClick={openAssistantHelp}
             style={{
@@ -411,27 +405,39 @@ export default function Navbar({ className }: NavbarProps) {
               gap: '1rem',
               padding: '1rem 1.25rem',
               borderRadius: '16px',
-              border: '1px solid rgba(37, 99, 235, 0.5)',
-              background: 'rgba(37, 99, 235, 0.1)',
-              color: '#2563eb',
+              border: '1px solid rgba(59, 130, 246, 0.5)',
+              background: 'rgba(59, 130, 246, 0.1)',
+              color: '#3b82f6',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               textAlign: 'left'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#2563eb';
+              e.currentTarget.style.background = '#3b82f6';
               e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = '#2563eb';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(37, 99, 235, 0.5)';
+              e.currentTarget.style.borderColor = '#3b82f6';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.5)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 99, 235, 0.1)';
-              e.currentTarget.style.color = '#2563eb';
-              e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.5)';
+              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+              e.currentTarget.style.color = '#3b82f6';
+              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <span style={{ fontSize: '2.5rem' }}>✨</span>
+            <img 
+              src="/images/papibricole-avatar.png" 
+              alt="Papi" 
+              style={{ 
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
             <div>
               <div style={{ fontWeight: '600', fontSize: '1rem' }}>Demander à Papi</div>
               <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
@@ -441,8 +447,8 @@ export default function Navbar({ className }: NavbarProps) {
             <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
           </button>
 
-          {/* Option 2 : Téléphone */}
-          
+          {/* Option 2 : Téléphone (v1.3 : Nouveau numéro) */}
+          <a
             href="tel:0761882950"
             style={{
               display: 'flex',
@@ -481,7 +487,7 @@ export default function Navbar({ className }: NavbarProps) {
             <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
           </a>
 
-          {/* Option 3 : WhatsApp (grisé) */}
+          {/* Option 3 : WhatsApp (v1.3 : Grisé + bientôt disponible) */}
           <div
             style={{
               display: 'flex',
@@ -489,17 +495,18 @@ export default function Navbar({ className }: NavbarProps) {
               gap: '1rem',
               padding: '1rem 1.25rem',
               borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.15)',
-              background: 'rgba(255, 255, 255, 0.03)',
-              color: 'rgba(255, 255, 255, 0.4)',
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(255, 255, 255, 0.02)',
+              color: 'rgba(255, 255, 255, 0.3)',
               cursor: 'not-allowed',
               textAlign: 'left',
+              opacity: 0.5
             }}
           >
-            <span style={{ fontSize: '2rem', opacity: 0.5 }}>💬</span>
+            <span style={{ fontSize: '2rem' }}>💬</span>
             <div>
               <div style={{ fontWeight: '600', fontSize: '1rem' }}>WhatsApp</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+              <div style={{ fontSize: '0.8rem' }}>
                 Fonctionnalité bientôt disponible
               </div>
             </div>
