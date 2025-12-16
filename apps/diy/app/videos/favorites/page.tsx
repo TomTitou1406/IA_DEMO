@@ -2,9 +2,10 @@
  * /app/videos/favorites/page.tsx
  * Page d'affichage des vidéos favorites groupées par requête de recherche
  * 
- * @version 1.2
+ * @version 1.3
  * 
  * Changelog :
+ * - v1.3 : Volets collapsables par groupe + bouton global Replier/Déplier
  * - v1.2 : Cards enrichies (likes, date, HD, chapitres) + VideoPlayerModal + synchro compteur
  * - v1.1 : Ajout bouton "Mettre en œuvre" + modal analyse vidéo
  * - v1.0 : Version initiale - Affichage groupé par search_query
@@ -93,6 +94,10 @@ export default function FavoritesPage() {
   // Modal analyse vidéo
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
   
+  // v1.3 : Volets collapsables
+  const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
+  const [allExpanded, setAllExpanded] = useState(true);
+  
   useEffect(() => {
     loadFavorites();
   }, []);
@@ -117,6 +122,11 @@ export default function FavoritesPage() {
       const res = await fetch('/api/videos/favorites');
       const data = await res.json();
       setFavorites(data.favorites || []);
+      
+      // v1.3 : Ouvrir tous les groupes par défaut
+      const groupKeys = new Set((data.favorites || []).map((f: Favorite) => f.search_query || 'Autres vidéos'));
+      setOpenGroups(groupKeys);
+      setAllExpanded(true);
     } catch (error) {
       console.error('Erreur chargement favoris:', error);
     } finally {
@@ -184,6 +194,39 @@ export default function FavoritesPage() {
     chapters: fav.chapters || undefined,
     isTrusted: fav.is_trusted || false,
   });
+
+  // ============================================
+  // v1.3 : FONCTIONS TOGGLE VOLETS
+  // ============================================
+
+  const toggleGroup = (groupKey: string) => {
+    setOpenGroups(prev => {
+      const next = new Set(prev);
+      if (next.has(groupKey)) {
+        next.delete(groupKey);
+      } else {
+        next.add(groupKey);
+      }
+      // Mettre à jour allExpanded
+      const allGroupKeys = groupedFavorites.map(g => g.query);
+      const allOpen = allGroupKeys.every(k => next.has(k));
+      setAllExpanded(allOpen);
+      return next;
+    });
+  };
+
+  const toggleAllGroups = () => {
+    if (allExpanded) {
+      // Tout fermer
+      setOpenGroups(new Set());
+      setAllExpanded(false);
+    } else {
+      // Tout ouvrir
+      const allKeys = new Set(groupedFavorites.map(g => g.query));
+      setOpenGroups(allKeys);
+      setAllExpanded(true);
+    }
+  };
 
   // ============================================
   // HELPERS
@@ -503,6 +546,37 @@ export default function FavoritesPage() {
               </button>
             )}
             
+            {/* v1.3 : Bouton Tout ouvrir/fermer */}
+            {favorites.length > 0 && (
+              <button
+                onClick={toggleAllGroups}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255, 255, 255, 0.2)',
+                  background: 'rgba(255, 255, 255, 0.05)',
+                  color: 'rgba(255, 255, 255, 0.7)',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.15)';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                  e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                }}
+              >
+                {allExpanded ? '🔼 Replier' : '🔽 Déplier'}
+              </button>
+            )}
+            
             {/* Bouton Chercher */}
             <button
               onClick={handleNewSearch}
@@ -604,17 +678,32 @@ export default function FavoritesPage() {
         <div>
           {groupedFavorites.map((group, idx) => (
             <div key={group.query} style={{ marginBottom: '2rem' }}>
-              {/* Header du groupe */}
-              <div style={{ 
-                display: 'flex', 
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                marginBottom: '1rem',
-                paddingBottom: '0.5rem',
-                borderBottom: '1px solid rgba(255,255,255,0.1)'
-              }}>
+              {/* v1.3 : Header du groupe - cliquable */}
+              <div 
+                onClick={() => toggleGroup(group.query)}
+                style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: openGroups.has(group.query) ? '1rem' : '0',
+                  paddingBottom: '0.75rem',
+                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  cursor: 'pointer',
+                  userSelect: 'none',
+                  transition: 'all 0.3s'
+                }}
+              >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <span style={{ fontSize: '1.1rem' }}>🔍</span>
+                  {/* Chevron animé */}
+                  <span style={{ 
+                    fontSize: '0.8rem',
+                    transition: 'transform 0.3s',
+                    transform: openGroups.has(group.query) ? 'rotate(90deg)' : 'rotate(0deg)',
+                    color: 'rgba(255,255,255,0.5)'
+                  }}>
+                    ▶
+                  </span>
+                  <span style={{ fontSize: '1rem' }}>🔍</span>
                   <h2 style={{ 
                     color: 'white', 
                     fontSize: '1rem', 
@@ -624,14 +713,14 @@ export default function FavoritesPage() {
                     {group.query.charAt(0).toUpperCase() + group.query.slice(1)}
                   </h2>
                   <span style={{ 
-                  color: 'rgba(255,255,255,0.5)', 
-                  fontSize: '0.85rem' 
-                }}>
-                  ({group.favorites.filter(f => (f.duration_seconds || 0) > 60).length} vidéos
-                  {group.favorites.filter(f => (f.duration_seconds || 0) <= 60).length > 0 && 
-                    ` / ${group.favorites.filter(f => (f.duration_seconds || 0) <= 60).length} shorts`
-                  })
-                </span>
+                    color: 'rgba(255,255,255,0.5)', 
+                    fontSize: '0.85rem' 
+                  }}>
+                    ({group.favorites.filter(f => (f.duration_seconds || 0) > 60).length} vidéos
+                    {group.favorites.filter(f => (f.duration_seconds || 0) <= 60).length > 0 && 
+                      ` / ${group.favorites.filter(f => (f.duration_seconds || 0) <= 60).length} shorts`
+                    })
+                  </span>
                 </div>
                 <span style={{ 
                   color: 'rgba(255,255,255,0.4)', 
@@ -641,25 +730,32 @@ export default function FavoritesPage() {
                 </span>
               </div>
               
-             {/* Grille de vidéos */}
-             <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
-                gap: '1rem'
-              }}>
-                {[...group.favorites]
-                  .sort((a, b) => {
-                    const aIsShort = (a.duration_seconds || 0) <= 60;
-                    const bIsShort = (b.duration_seconds || 0) <= 60;
-                    if (aIsShort && !bIsShort) return 1;  // Shorts après
-                    if (!aIsShort && bIsShort) return -1; // Vidéos avant
-                    return 0;
-                  })
-                  .map(fav => (
-                    <VideoCard key={fav.id} favorite={fav} />
-                  ))
-                }
-              </div>
+              {/* v1.3 : Contenu collapsable */}
+              {openGroups.has(group.query) && (
+                <div style={{
+                  animation: 'slideDown 0.3s ease',
+                }}>
+                  {/* Grille de vidéos */}
+                  <div style={{
+                    display: 'grid',
+                    gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
+                    gap: '1rem'
+                  }}>
+                    {[...group.favorites]
+                      .sort((a, b) => {
+                        const aIsShort = (a.duration_seconds || 0) <= 60;
+                        const bIsShort = (b.duration_seconds || 0) <= 60;
+                        if (aIsShort && !bIsShort) return 1;  // Shorts après
+                        if (!aIsShort && bIsShort) return -1; // Vidéos avant
+                        return 0;
+                      })
+                      .map(fav => (
+                        <VideoCard key={fav.id} favorite={fav} />
+                      ))
+                    }
+                  </div>
+                </div>
+              )}
               
               {/* Séparateur entre groupes */}
               {idx < groupedFavorites.length - 1 && (
@@ -710,6 +806,20 @@ export default function FavoritesPage() {
           
         />
       )}
+
+      {/* v1.3 : Styles animations */}
+      <style jsx global>{`
+        @keyframes slideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-10px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 }
