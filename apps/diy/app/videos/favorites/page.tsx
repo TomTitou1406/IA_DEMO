@@ -432,15 +432,10 @@ export default function FavoritesPage() {
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        marginLeft: '-2rem',
-        marginRight: '-2rem',
-        marginTop: '-2rem',
         marginBottom: '1.5rem',
-        padding: '0.75rem 1rem',
+        padding: '0.75rem 0',
       }}>
         <div style={{
-          maxWidth: '1100px',
-          margin: '0 auto',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
@@ -461,7 +456,10 @@ export default function FavoritesPage() {
               fontSize: '0.8rem',
               marginLeft: '0.25rem'
             }}>
-              ({favorites.length} vidéo{favorites.length > 1 ? 's' : ''})
+              ({favorites.filter(f => (f.duration_seconds || 0) > 60).length} vidéos
+              {favorites.filter(f => (f.duration_seconds || 0) <= 60).length > 0 && 
+                ` / ${favorites.filter(f => (f.duration_seconds || 0) <= 60).length} shorts`
+              })
             </span>
           </div>
           
@@ -647,9 +645,18 @@ export default function FavoritesPage() {
                 gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
                 gap: '1rem'
               }}>
-                {group.favorites.map(fav => (
-                  <VideoCard key={fav.id} favorite={fav} />
-                ))}
+                {[...group.favorites]
+                  .sort((a, b) => {
+                    const aIsShort = (a.duration_seconds || 0) <= 60;
+                    const bIsShort = (b.duration_seconds || 0) <= 60;
+                    if (aIsShort && !bIsShort) return 1;  // Shorts après
+                    if (!aIsShort && bIsShort) return -1; // Vidéos avant
+                    return 0;
+                  })
+                  .map(fav => (
+                    <VideoCard key={fav.id} favorite={fav} />
+                  ))
+                }
               </div>
               
               {/* Séparateur entre groupes */}
