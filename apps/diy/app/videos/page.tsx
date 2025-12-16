@@ -970,6 +970,7 @@ function VideosContent() {
         <VideoAnalysisModal
           isOpen={showAnalysisModal}
           onClose={() => setShowAnalysisModal(false)}
+          searchQuery={query}
           video={{
             id: selectedVideoData.id,
             title: selectedVideoData.title,
