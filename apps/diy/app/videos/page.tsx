@@ -26,12 +26,23 @@ interface Video {
   channelTitle: string;
   viewCount: number;
   duration: string;
-  durationSeconds?: number;
-  isTrusted?: boolean;
+  durationSeconds: number;
+  score: number;
+  isTrusted: boolean;
+  isShort: boolean;
   aiScore?: number;
+  aiReason?: string;
+  // v3.4
   publishedAt: string;
   likeCount: number;
   isHD: boolean;
+  // v3.5
+  hasChapters: boolean;
+  chapters: Array<{
+    title: string;
+    start_seconds: number;
+    start_formatted: string;
+  }>;
 }
 
 interface SearchInfo {
@@ -315,9 +326,12 @@ function VideosContent() {
             duration_seconds: video.durationSeconds,
             view_count: video.viewCount,
             search_query: query,
+            // v3.5 : Nouveaux champs
             published_at: video.publishedAt || null,
             like_count: video.likeCount || 0,
-            is_hd: video.isHD || false
+            is_hd: video.isHD || false,
+            chapters: video.chapters || null,
+            has_chapters: video.hasChapters || false
           })
         });
         setFavoriteIds(prev => new Set(prev).add(video.id));
@@ -517,6 +531,39 @@ function VideosContent() {
               fontWeight: '600'
             }}>
               ✓ Recommandé
+            </span>
+          )}
+          {/* Badge chapitré (si pas recommandé) */}
+          {video.hasChapters && !video.isTrusted && (
+            <span style={{
+              position: 'absolute',
+              top: '8px',
+              left: '8px',
+              background: 'rgba(59, 130, 246, 0.9)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '0.7rem',
+              fontWeight: '600'
+            }}>
+              📑 Chapitré
+            </span>
+          )}
+          
+          {/* Badge chapitré (si aussi recommandé - en dessous) */}
+          {video.hasChapters && video.isTrusted && (
+            <span style={{
+              position: 'absolute',
+              top: '32px',
+              left: '8px',
+              background: 'rgba(59, 130, 246, 0.9)',
+              color: 'white',
+              padding: '2px 6px',
+              borderRadius: '4px',
+              fontSize: '0.7rem',
+              fontWeight: '600'
+            }}>
+              📑 Chapitré
             </span>
           )}
         </div>
