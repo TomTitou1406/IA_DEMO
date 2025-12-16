@@ -123,10 +123,16 @@ export default function FavoritesPage() {
       const data = await res.json();
       setFavorites(data.favorites || []);
       
-      // v1.3 : Ouvrir tous les groupes par défaut
-      const groupKeys = new Set<string>((data.favorites || []).map((f: Favorite) => f.search_query || 'Autres vidéos'));
-      setOpenGroups(groupKeys);
-      setAllExpanded(true);
+      // v1.3 : Ouvrir seulement le groupe le plus récent par défaut
+      if (data.favorites && data.favorites.length > 0) {
+        // Trouver le groupe le plus récent
+        const sortedByDate = [...data.favorites].sort(
+          (a: Favorite, b: Favorite) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const mostRecentQuery = sortedByDate[0].search_query || 'Autres vidéos';
+        setOpenGroups(new Set<string>([mostRecentQuery]));
+        setAllExpanded(false);
+      }
     } catch (error) {
       console.error('Erreur chargement favoris:', error);
     } finally {
@@ -266,11 +272,13 @@ export default function FavoritesPage() {
     const diffMs = now.getTime() - date.getTime();
     const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
     
-    if (diffDays === 0) return "Aujourd'hui";
-    if (diffDays === 1) return "Hier";
+    const timeStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+    
+    if (diffDays === 0) return `Aujourd'hui ${timeStr}`;
+    if (diffDays === 1) return `Hier ${timeStr}`;
     if (diffDays < 7) return `Il y a ${diffDays} jours`;
     if (diffDays < 30) return `Il y a ${Math.floor(diffDays / 7)} semaine(s)`;
-    return `Il y a ${Math.floor(diffDays / 30)} mois`;
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' });
   };
 
   // ============================================
@@ -605,7 +613,7 @@ export default function FavoritesPage() {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              🔍 Chercher
+              🔍 Nouvelle Recherche
             </button>
             
             {/* Bouton Accueil */}
@@ -678,7 +686,7 @@ export default function FavoritesPage() {
         <div>
           {groupedFavorites.map((group, idx) => (
             <div key={group.query} style={{ marginBottom: '2rem' }}>
-              {/* v1.3 : Header du groupe - cliquable */}
+              {/* v1.3 : Header du groupe - cliquable avec dégradé */}
               <div 
                 onClick={() => toggleGroup(group.query)}
                 style={{ 
@@ -686,11 +694,29 @@ export default function FavoritesPage() {
                   justifyContent: 'space-between',
                   alignItems: 'center',
                   marginBottom: openGroups.has(group.query) ? '1rem' : '0',
-                  paddingBottom: '0.75rem',
-                  borderBottom: '1px solid rgba(255,255,255,0.1)',
+                  padding: '0.75rem 1rem',
+                  borderRadius: '8px',
+                  background: openGroups.has(group.query) 
+                    ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)'
+                    : 'transparent',
+                  border: openGroups.has(group.query) 
+                    ? '1px solid rgba(16, 185, 129, 0.2)' 
+                    : '1px solid rgba(255,255,255,0.1)',
                   cursor: 'pointer',
                   userSelect: 'none',
                   transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!openGroups.has(group.query)) {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.05)';
+                    e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.15)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!openGroups.has(group.query)) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                  }
                 }}
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
