@@ -435,23 +435,24 @@ export default function FavoritesPage() {
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        marginBottom: '1.5rem',
-        padding: '0.75rem 0',
       }}>
         <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '0.75rem 2rem',
+        display: 'flex',
+        justifyContent: 'space-between',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: '0.75rem'
+      }}>
+        {/* Contexte */}
+        <div style={{ 
+          display: 'flex', 
+          alignItems: 'center', 
+          gap: '0.5rem',
+          fontSize: '0.9rem'
         }}>
-          {/* Contexte */}
-          <div style={{ 
-            display: 'flex', 
-            alignItems: 'center', 
-            gap: '0.5rem',
-            fontSize: '0.9rem'
-          }}>
             <span>❤️</span>
             <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>Mes favoris</span>
             <span style={{ 
