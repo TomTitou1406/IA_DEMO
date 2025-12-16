@@ -703,12 +703,15 @@ function VideosContent() {
   );
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+    
+    <div style={{ padding: '2rem', paddingTop: '4rem', maxWidth: '1200px', margin: '0 auto' }}>
       
       {/* Header sticky - style breadcrumb */}
       <div style={{
-        position: 'sticky',
-        top: '60px',
+        position: 'fixed',
+        top: 60,
+        left: 0,
+        right: 0,
         zIndex: 100,
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
