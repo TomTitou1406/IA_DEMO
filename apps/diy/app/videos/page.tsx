@@ -706,7 +706,7 @@ function VideosContent() {
     
     <div style={{ padding: '2rem', paddingTop: '4rem', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {/* Header sticky - style breadcrumb */}
+      {/* Header sticky */}
       <div style={{
         position: 'fixed',
         top: 60,
@@ -716,12 +716,11 @@ function VideosContent() {
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        marginBottom: '1.5rem',
-        padding: '0.75rem 1rem',
       }}>
         <div style={{
-          maxWidth: '1100px',
+          maxWidth: '1200px',
           margin: '0 auto',
+          padding: '0.75rem 2rem',
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
