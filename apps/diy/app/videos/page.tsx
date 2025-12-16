@@ -868,8 +868,12 @@ function VideosContent() {
         video={selectedVideoData}
         isOpen={showPlayerModal}
         onClose={() => setShowPlayerModal(false)}
-        onFavoriteToggle={(video) => toggleFavorite(video, new MouseEvent('click') as any)}
-        onMettreEnOeuvre={(video) => {
+        onFavoriteToggle={() => {
+          if (selectedVideoData) {
+            toggleFavorite(selectedVideoData, new MouseEvent('click') as any);
+          }
+        }}
+        onMettreEnOeuvre={() => {
           setShowPlayerModal(false);
           setAnalysisMode('chantier');
           setShowAnalysisModal(true);
