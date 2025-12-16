@@ -422,7 +422,8 @@ export default function FavoritesPage() {
   // ============================================
 
   return (
-    <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
+      
+      <div style={{ padding: '2rem', paddingTop: '4rem', maxWidth: '1200px', margin: '0 auto' }}>
       
       {/* Header sticky - style breadcrumb */}
       <div style={{
