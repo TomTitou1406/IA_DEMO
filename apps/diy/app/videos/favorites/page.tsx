@@ -275,11 +275,16 @@ export default function FavoritesPage() {
         border: selectedVideo === favorite.video_id 
           ? '2px solid var(--green)' 
           : '2px solid transparent',
-        transition: 'all 0.2s',
-        position: 'relative',
-        minWidth: '200px',
-        maxWidth: '280px',
-        flex: '1 1 200px'
+        transition: 'all 0.3s',
+        position: 'relative'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.boxShadow = '0 8px 25px rgba(0, 0, 0, 0.3)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
       }}
     >
       <div style={{ position: 'relative' }}>
@@ -419,85 +424,147 @@ export default function FavoritesPage() {
   return (
     <div style={{ padding: '2rem', maxWidth: '1200px', margin: '0 auto' }}>
       
-      {/* Header */}
-      <div style={{ 
-        display: 'flex', 
-        justifyContent: 'space-between', 
-        alignItems: 'center',
+      {/* Header sticky - style breadcrumb */}
+      <div style={{
+        position: 'sticky',
+        top: '60px',
+        zIndex: 100,
+        background: 'rgba(0, 0, 0, 0.7)',
+        backdropFilter: 'blur(10px)',
+        WebkitBackdropFilter: 'blur(10px)',
+        marginLeft: '-2rem',
+        marginRight: '-2rem',
+        marginTop: '-2rem',
         marginBottom: '1.5rem',
-        flexWrap: 'wrap',
-        gap: '1rem'
+        padding: '0.75rem 2rem',
       }}>
-        <div>
-          <h1 style={{ color: 'white', fontSize: '1.5rem', marginBottom: '0.25rem' }}>
-            ❤️ Mes vidéos favorites
-          </h1>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-            {favorites.length} vidéo{favorites.length > 1 ? 's' : ''} sauvegardée{favorites.length > 1 ? 's' : ''}
-          </p>
-        </div>
-        
-        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
-          {/* Bouton retour aux résultats */}
-          {searchOrigin && (
+        <div style={{
+          maxWidth: '1100px',
+          margin: '0 auto',
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
+        }}>
+          {/* Contexte */}
+          <div style={{ 
+            display: 'flex', 
+            alignItems: 'center', 
+            gap: '0.5rem',
+            fontSize: '0.9rem'
+          }}>
+            <span>❤️</span>
+            <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>Mes favoris</span>
+            <span style={{ 
+              color: 'rgba(255,255,255,0.4)', 
+              fontSize: '0.8rem',
+              marginLeft: '0.25rem'
+            }}>
+              ({favorites.length} vidéo{favorites.length > 1 ? 's' : ''})
+            </span>
+          </div>
+          
+          {/* Actions */}
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Bouton Retour résultats (conditionnel) */}
+            {searchOrigin && (
+              <button
+                onClick={() => {
+                  sessionStorage.removeItem('favoritesOrigin');
+                  router.push(searchOrigin.path);
+                }}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(249, 115, 22, 0.5)',
+                  background: 'rgba(249, 115, 22, 0.1)',
+                  color: '#f97316',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#f97316';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.boxShadow = '0 0 20px rgba(249, 115, 22, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(249, 115, 22, 0.1)';
+                  e.currentTarget.style.color = '#f97316';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                ⬅️ Résultats
+              </button>
+            )}
+            
+            {/* Bouton Chercher */}
             <button
-              onClick={() => {
-                sessionStorage.removeItem('favoritesOrigin');
-                router.push(searchOrigin.path);
-              }}
+              onClick={handleNewSearch}
               style={{
-                padding: '0.6rem 1rem',
+                padding: '0.5rem 0.75rem',
                 borderRadius: '8px',
-                border: '2px solid var(--orange)',
-                background: 'transparent',
-                color: 'var(--orange)',
-                fontSize: '0.85rem',
+                border: '1px solid rgba(16, 185, 129, 0.5)',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#10b981',
+                fontSize: '0.8rem',
                 fontWeight: '600',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '0.4rem',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#10b981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                e.currentTarget.style.color = '#10b981';
+                e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              ⬅️ Retour aux résultats
+              🔍 Chercher
             </button>
-          )}
-          <button
-            onClick={handleNewSearch}
-            style={{
-              padding: '0.6rem 1rem',
-              borderRadius: '8px',
-              border: '2px solid var(--green)',
-              background: 'transparent',
-              color: 'var(--green)',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            🔍 Chercher un tuto
-          </button>
-          <button
-            onClick={() => router.push('/')}
-            style={{
-              padding: '0.6rem 1rem',
-              borderRadius: '8px',
-              border: 'none',
-              background: 'rgba(255,255,255,0.1)',
-              color: 'white',
-              fontSize: '0.85rem',
-              fontWeight: '600',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}
-          >
-            🏠 Retour accueil
-          </button>
+            
+            {/* Bouton Accueil */}
+            <button
+              onClick={() => router.push('/')}
+              style={{
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                border: '1px solid rgba(255, 255, 255, 0.2)',
+                background: 'rgba(255, 255, 255, 0.05)',
+                color: 'rgba(255, 255, 255, 0.7)',
+                fontSize: '0.8rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.3s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.3)';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.boxShadow = '0 0 15px rgba(255, 255, 255, 0.2)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)';
+                e.currentTarget.style.color = 'rgba(255, 255, 255, 0.7)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              🏠
+            </button>
+          </div>
         </div>
       </div>
 
@@ -571,10 +638,10 @@ export default function FavoritesPage() {
                 </span>
               </div>
               
-              {/* Grille de vidéos */}
-              <div style={{
-                display: 'flex',
-                flexWrap: 'wrap',
+             {/* Grille de vidéos */}
+             <div style={{
+                display: 'grid',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
                 gap: '1rem'
               }}>
                 {group.favorites.map(fav => (
