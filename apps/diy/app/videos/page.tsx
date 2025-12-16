@@ -662,18 +662,10 @@ function VideosContent() {
   };
 
   // Bouton "Voir plus" réutilisable
-  const ShowMoreButton = ({ 
-    remaining, 
-    onClick, 
-    label = "vidéos" 
-  }: { 
-    remaining: number; 
-    onClick: () => void;
-    label?: string;
-  }) => (
-    <div style={{ 
-      display: 'flex', 
-      justifyContent: 'center', 
+  const ShowMoreButton = ({ remaining, onClick, label }: { remaining: number; onClick: () => void; label: string }) => (
+    <div style={{
+      display: 'flex',
+      justifyContent: 'center',
       marginTop: '1.5rem',
       marginBottom: '1rem'
     }}>
@@ -691,13 +683,17 @@ function VideosContent() {
           display: 'flex',
           alignItems: 'center',
           gap: '0.5rem',
-          transition: 'all 0.2s'
+          transition: 'all 0.3s'
         }}
-        onMouseOver={(e) => {
-          e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = '#10b981';
+          e.currentTarget.style.color = 'white';
+          e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.5)';
         }}
-        onMouseOut={(e) => {
+        onMouseLeave={(e) => {
           e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+          e.currentTarget.style.color = '#10b981';
+          e.currentTarget.style.boxShadow = 'none';
         }}
       >
         <span>➕</span>
@@ -721,7 +717,7 @@ function VideosContent() {
         marginRight: '-2rem',
         marginTop: '-2rem',
         marginBottom: '1.5rem',
-        padding: '0.75rem 2rem',
+        padding: '0.75rem 1rem',
       }}>
         <div style={{
           maxWidth: '1100px',
@@ -906,7 +902,7 @@ function VideosContent() {
               
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(250px, 1fr))',
                 gap: '1.25rem'
               }}>
                 {displayedVideos.map(video => (
