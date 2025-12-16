@@ -2,9 +2,10 @@
  * /api/youtube/search/route.ts
  * Recherche YouTube avec évaluation IA de la pertinence
  * 
- * @version 3.4
+ * @version 3.5
  * 
  * Changelog :
+ * - v3.5 : Ajout parsing chapitres + description complète + hasChapters
  * - v3.4 : Ajout publishedAt, likeCount, isHD pour enrichir les cards
  * - v3.3 : Ajout displaySettings dans searchInfo (pagination dynamique)
  * - v3.2 : Retourne TOUS les résultats pour pagination côté client
@@ -33,10 +34,15 @@ interface YouTubeSettings {
   include_shorts: boolean;
   shorts_max_duration: number;
   shorts_max_display: number;
-  // Paramètres IA
   ai_enabled: boolean;
   ai_min_score: number;
   ai_max_retries: number;
+}
+
+interface VideoChapter {
+  title: string;
+  start_seconds: number;
+  start_formatted: string;
 }
 
 interface VideoResult {
@@ -53,10 +59,13 @@ interface VideoResult {
   isShort: boolean;
   aiScore?: number;
   aiReason?: string;
-  // v3.4 : Nouveaux champs
-  publishedAt: string;      // Date ISO de publication
-  likeCount: number;        // Nombre de likes
-  isHD: boolean;            // Qualité HD ou non
+  // v3.4 : Infos enrichies
+  publishedAt: string;
+  likeCount: number;
+  isHD: boolean;
+  // v3.5 : Chapitres
+  hasChapters: boolean;
+  chapters: VideoChapter[];
 }
 
 interface AIEvaluation {
@@ -89,6 +98,84 @@ interface PromptConfig {
   temperature: number;
   max_tokens: number;
   model: string;
+}
+
+// ============================================
+// PARSING DES CHAPITRES
+// ============================================
+
+function parseChaptersFromDescription(description: string): VideoChapter[] {
+  if (!description) return [];
+  
+  const chapters: VideoChapter[] = [];
+  
+  // Regex universelle : capture "H:MM:SS" ou "MM:SS" ou "M:SS" suivi de texte
+  const regex = /(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})\s*[•·\-–—]?\s*([A-Za-zÀ-ÿ][^0-9]*?)(?=\s*\d{1,2}:\d{2}|$|\n)/g;
+  
+  let match;
+  while ((match = regex.exec(description)) !== null) {
+    const timestamp = match[1];
+    let title = match[2].trim();
+    
+    // Nettoyer le titre
+    title = title
+      .replace(/^[•·\-–—:]\s*/, '')
+      .replace(/[•·\-–—:]\s*$/, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    
+    // Ignorer si titre trop court ou trop long
+    if (title.length >= 2 && title.length < 80) {
+      const seconds = parseTimestampToSeconds(timestamp);
+      
+      // Éviter les doublons
+      if (!chapters.some(c => c.start_seconds === seconds)) {
+        chapters.push({
+          title,
+          start_seconds: seconds,
+          start_formatted: timestamp
+        });
+      }
+    }
+  }
+  
+  // Trier par timestamp
+  chapters.sort((a, b) => a.start_seconds - b.start_seconds);
+  
+  // Filtrer les chapitres non pertinents (intro, outro, etc.)
+  const filteredChapters = filterRelevantChapters(chapters);
+  
+  return filteredChapters;
+}
+
+function parseTimestampToSeconds(timestamp: string): number {
+  const parts = timestamp.split(':').map(p => parseInt(p));
+  if (parts.length === 3) {
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  return parts[0] * 60 + parts[1];
+}
+
+function filterRelevantChapters(chapters: VideoChapter[]): VideoChapter[] {
+  const excludePatterns = [
+    /^intro(duction)?$/i,
+    /^outro$/i,
+    /^conclusion$/i,
+    /^générique/i,
+    /^pub(licité)?$/i,
+    /^sponsor/i,
+    /^partenaire/i,
+    /^abonne/i,
+    /^like/i,
+    /^merci/i,
+    /^au revoir/i,
+    /^à bientôt/i,
+  ];
+  
+  return chapters.filter(chapter => {
+    const title = chapter.title.toLowerCase();
+    return !excludePatterns.some(pattern => pattern.test(title));
+  });
 }
 
 // ============================================
@@ -170,7 +257,8 @@ async function evaluateWithAI(
   const videoList = allResults
     .map((v, i) => {
       const shortIndicator = v.isShort ? ' [SHORT]' : '';
-      return `${i + 1}. "${v.title}"${shortIndicator} - Chaîne: ${v.channelTitle} - ${v.viewCount} vues`;
+      const chapterIndicator = v.hasChapters ? ` [${v.chapters.length} chapitres]` : '';
+      return `${i + 1}. "${v.title}"${shortIndicator}${chapterIndicator} - Chaîne: ${v.channelTitle} - ${v.viewCount} vues`;
     })
     .join('\n');
 
@@ -334,6 +422,11 @@ export async function POST(request: NextRequest) {
         const duration = parseDuration(v.contentDetails?.duration);
         const publishedAt = v.snippet.publishedAt || '';
         const isHD = v.contentDetails?.definition === 'hd';
+        
+        // v3.5 : Parser les chapitres depuis la description
+        const fullDescription = v.snippet.description || '';
+        const chapters = parseChaptersFromDescription(fullDescription);
+        const hasChapters = chapters.length >= 2;
 
         if (viewCount < settings.min_views) return;
 
@@ -357,7 +450,7 @@ export async function POST(request: NextRequest) {
         const videoData: VideoResult = {
           id: v.id,
           title: v.snippet.title,
-          description: v.snippet.description?.substring(0, 120) || '',
+          description: fullDescription, // v3.5 : Description complète
           thumbnail: v.snippet.thumbnails?.high?.url || v.snippet.thumbnails?.medium?.url,
           channelTitle,
           viewCount,
@@ -366,14 +459,20 @@ export async function POST(request: NextRequest) {
           score,
           isTrusted,
           isShort,
-          // v3.4 : Nouveaux champs
           publishedAt,
           likeCount,
           isHD,
+          // v3.5 : Chapitres
+          hasChapters,
+          chapters,
         };
 
         allResults.push(videoData);
       });
+
+      // Log des chapitres détectés
+      const withChapters = allResults.filter(v => v.hasChapters).length;
+      console.log(`📑 ${withChapters}/${allResults.length} vidéos avec chapitres`);
 
       if (settings.ai_enabled && allResults.length > 0 && promptConfig) {
         console.log(`🤖 Évaluation IA de ${allResults.length} résultats...`);
