@@ -262,8 +262,7 @@ function VideosContent() {
 
   // Modal analyse vidéo
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-  const [analysisMode, setAnalysisMode] = useState<'simple' | 'complexe'>('simple');
-  
+    
   // Pagination côté client
   const [videosDisplayCount, setVideosDisplayCount] = useState(9);
   const [shortsDisplayCount, setShortsDisplayCount] = useState(6);
@@ -979,7 +978,7 @@ function VideosContent() {
             channelTitle: selectedVideoData.channelTitle,
             durationSeconds: selectedVideoData.durationSeconds
           }}
-          mode={analysisMode}
+          
         />
       )}
       {/* Modal Player Vidéo */}
