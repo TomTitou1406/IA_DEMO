@@ -2,9 +2,10 @@
  * /app/components/Navbar.tsx
  * Navigation principale avec design moderne et animations
  * 
- * @version 1.2
+ * @version 1.3
  * 
  * Changelog :
+ * - v1.3 : Bouton "Besoin d'aide ?" rouge, modale refaite (Papi bleu + logo, tel 07..., WhatsApp grisé)
  * - v1.2 : Hauteur réduite, max-width, liseré, bouton "Appelez-nous" revu
  * - v1.1 : Header transparent, effet halo survol, spacer réduit
  * - v1.0 : Version initiale
@@ -13,7 +14,7 @@
  * - Glassmorphism header transparent
  * - Badges animés avec compteurs
  * - Bottom nav mobile
- * - Bouton "Appelez-nous" discret → vert au survol
+ * - Bouton "Besoin d'aide ?" rouge avec effet halo
  * - Logo cliquable
  * - Indicateur de page active
  * - Effet halo au survol
@@ -294,7 +295,7 @@ export default function Navbar({ className }: NavbarProps) {
     );
   };
 
-  // ==================== BOUTON AIDE ====================
+  // ==================== BOUTON AIDE (v1.3 : Rouge "Besoin d'aide ?") ====================
   const HelpButton = ({ mobile = false }: { mobile?: boolean }) => (
     <button
       onClick={() => setShowHelpModal(true)}
@@ -305,9 +306,9 @@ export default function Navbar({ className }: NavbarProps) {
         gap: mobile ? '0.2rem' : '0.4rem',
         padding: mobile ? '0.4rem' : '0.45rem 1rem',
         borderRadius: mobile ? '0' : '20px',
-        border: mobile ? 'none' : '1.5px solid rgba(16, 185, 129, 0.5)',
-        background: 'transparent',
-        color: mobile ? '#10b981' : 'rgba(16, 185, 129, 0.9)',
+        border: mobile ? 'none' : '1.5px solid rgba(239, 68, 68, 0.5)',
+        background: mobile ? 'transparent' : 'rgba(239, 68, 68, 0.1)',
+        color: '#ef4444',
         fontSize: mobile ? '0.6rem' : '0.85rem',
         fontWeight: '600',
         cursor: 'pointer',
@@ -317,17 +318,17 @@ export default function Navbar({ className }: NavbarProps) {
       }}
       onMouseEnter={(e) => {
         if (!mobile) {
-          e.currentTarget.style.background = '#10b981';
+          e.currentTarget.style.background = '#ef4444';
           e.currentTarget.style.color = 'white';
-          e.currentTarget.style.borderColor = '#10b981';
-          e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
+          e.currentTarget.style.borderColor = '#ef4444';
+          e.currentTarget.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.5)';
         }
       }}
       onMouseLeave={(e) => {
         if (!mobile) {
-          e.currentTarget.style.background = 'transparent';
-          e.currentTarget.style.color = 'rgba(16, 185, 129, 0.9)';
-          e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+          e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+          e.currentTarget.style.color = '#ef4444';
+          e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
           e.currentTarget.style.boxShadow = 'none';
         }
       }}
@@ -337,11 +338,11 @@ export default function Navbar({ className }: NavbarProps) {
       }}>
         📞
       </span>
-      <span>{mobile ? 'Aide' : "Appelez-nous"}</span>
+      <span>{mobile ? 'Aide' : "Besoin d'aide ?"}</span>
     </button>
   );
 
-  // ==================== MODAL AIDE ====================
+  // ==================== MODAL AIDE (v1.3 : Refaite) ====================
   const HelpModal = () => (
     <div 
       style={{
@@ -395,7 +396,7 @@ export default function Navbar({ className }: NavbarProps) {
 
         {/* Options */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {/* Option 1 : Assistant IA */}
+          {/* Option 1 : Assistant IA (v1.3 : Bleu + logo Papi) */}
           <button
             onClick={openAssistantHelp}
             style={{
@@ -404,117 +405,112 @@ export default function Navbar({ className }: NavbarProps) {
               gap: '1rem',
               padding: '1rem 1.25rem',
               borderRadius: '16px',
-              border: '2px solid rgba(16, 185, 129, 0.3)',
-              background: 'rgba(16, 185, 129, 0.1)',
-              color: 'white',
+              border: '1px solid rgba(59, 130, 246, 0.5)',
+              background: 'rgba(59, 130, 246, 0.1)',
+              color: '#3b82f6',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               textAlign: 'left'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
-              e.currentTarget.style.borderColor = '#10b981';
-              e.currentTarget.style.transform = 'translateX(5px)';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.3)';
+              e.currentTarget.style.background = '#3b82f6';
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.borderColor = '#3b82f6';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.5)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
-              e.currentTarget.style.transform = 'translateX(0)';
+              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+              e.currentTarget.style.color = '#3b82f6';
+              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
-            <span style={{ fontSize: '2rem' }}>🤖</span>
+            <img 
+              src="/images/papibricole-avatar.png" 
+              alt="Papi" 
+              style={{ 
+                width: '40px', 
+                height: '40px', 
+                borderRadius: '50%',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
             <div>
               <div style={{ fontWeight: '600', fontSize: '1rem' }}>Demander à Papi</div>
-              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
                 Assistant IA disponible 24h/24
               </div>
             </div>
-            <span style={{ marginLeft: 'auto', opacity: 0.5 }}>→</span>
+            <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
           </button>
 
-          {/* Option 2 : Téléphone */}
+          {/* Option 2 : Téléphone (v1.3 : Nouveau numéro) */}
           <a
-            href="tel:+33800123456"
+            href="tel:0761882950"
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
               padding: '1rem 1.25rem',
               borderRadius: '16px',
-              border: '2px solid rgba(59, 130, 246, 0.3)',
-              background: 'rgba(59, 130, 246, 0.1)',
-              color: 'white',
+              border: '1px solid rgba(16, 185, 129, 0.5)',
+              background: 'rgba(16, 185, 129, 0.1)',
+              color: '#10b981',
               cursor: 'pointer',
               transition: 'all 0.3s ease',
               textDecoration: 'none',
               textAlign: 'left'
             }}
             onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.2)';
-              e.currentTarget.style.borderColor = '#3b82f6';
-              e.currentTarget.style.transform = 'translateX(5px)';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.3)';
+              e.currentTarget.style.background = '#10b981';
+              e.currentTarget.style.color = 'white';
+              e.currentTarget.style.borderColor = '#10b981';
+              e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
             }}
             onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.3)';
-              e.currentTarget.style.transform = 'translateX(0)';
+              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+              e.currentTarget.style.color = '#10b981';
+              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
               e.currentTarget.style.boxShadow = 'none';
             }}
           >
             <span style={{ fontSize: '2rem' }}>📞</span>
             <div>
               <div style={{ fontWeight: '600', fontSize: '1rem' }}>Appeler</div>
-              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-                08 00 12 34 56 (gratuit)
+              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                07 61 88 29 50
               </div>
             </div>
-            <span style={{ marginLeft: 'auto', opacity: 0.5 }}>→</span>
+            <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
           </a>
 
-          {/* Option 3 : WhatsApp */}
-          <a
-            href="https://wa.me/33612345678?text=Bonjour%20PapiBricole%20!"
-            target="_blank"
-            rel="noopener noreferrer"
+          {/* Option 3 : WhatsApp (v1.3 : Grisé + bientôt disponible) */}
+          <div
             style={{
               display: 'flex',
               alignItems: 'center',
               gap: '1rem',
               padding: '1rem 1.25rem',
               borderRadius: '16px',
-              border: '2px solid rgba(37, 211, 102, 0.3)',
-              background: 'rgba(37, 211, 102, 0.1)',
-              color: 'white',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              textDecoration: 'none',
-              textAlign: 'left'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 211, 102, 0.2)';
-              e.currentTarget.style.borderColor = '#25d366';
-              e.currentTarget.style.transform = 'translateX(5px)';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(37, 211, 102, 0.3)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(37, 211, 102, 0.1)';
-              e.currentTarget.style.borderColor = 'rgba(37, 211, 102, 0.3)';
-              e.currentTarget.style.transform = 'translateX(0)';
-              e.currentTarget.style.boxShadow = 'none';
+              border: '1px solid rgba(255, 255, 255, 0.1)',
+              background: 'rgba(255, 255, 255, 0.02)',
+              color: 'rgba(255, 255, 255, 0.3)',
+              cursor: 'not-allowed',
+              textAlign: 'left',
+              opacity: 0.5
             }}
           >
             <span style={{ fontSize: '2rem' }}>💬</span>
             <div>
               <div style={{ fontWeight: '600', fontSize: '1rem' }}>WhatsApp</div>
-              <div style={{ fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
-                Réponse rapide par message
+              <div style={{ fontSize: '0.8rem' }}>
+                Fonctionnalité bientôt disponible
               </div>
             </div>
-            <span style={{ marginLeft: 'auto', opacity: 0.5 }}>→</span>
-          </a>
+          </div>
         </div>
 
         {/* Bouton fermer */}
