@@ -621,14 +621,17 @@ export default function FavoritesPage() {
                     margin: 0,
                     fontWeight: '600'
                   }}>
-                    "{group.query}"
+                    {group.query.charAt(0).toUpperCase() + group.query.slice(1)}
                   </h2>
                   <span style={{ 
-                    color: 'rgba(255,255,255,0.5)', 
-                    fontSize: '0.85rem' 
-                  }}>
-                    ({group.favorites.length} vidéo{group.favorites.length > 1 ? 's' : ''})
-                  </span>
+                  color: 'rgba(255,255,255,0.5)', 
+                  fontSize: '0.85rem' 
+                }}>
+                  ({group.favorites.filter(f => (f.duration_seconds || 0) > 60).length} vidéos
+                  {group.favorites.filter(f => (f.duration_seconds || 0) <= 60).length > 0 && 
+                    ` / ${group.favorites.filter(f => (f.duration_seconds || 0) <= 60).length} shorts`
+                  })
+                </span>
                 </div>
                 <span style={{ 
                   color: 'rgba(255,255,255,0.4)', 
