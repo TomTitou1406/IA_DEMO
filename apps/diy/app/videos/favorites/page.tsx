@@ -2,9 +2,10 @@
  * /app/videos/favorites/page.tsx
  * Page d'affichage des vidéos favorites groupées par requête de recherche
  * 
- * @version 1.0
+ * @version 1.1
  * 
  * Changelog :
+ * - v1.1 : Ajout bouton "Mettre en œuvre" + modal analyse vidéo
  * - v1.0 : Version initiale - Affichage groupé par search_query
  */
 
@@ -12,6 +13,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
+import VideoAnalysisModal from '@/app/components/VideoAnalysisModal';
 
 interface Favorite {
   id: string;
@@ -41,6 +43,11 @@ export default function FavoritesPage() {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
+  const [selectedVideoData, setSelectedVideoData] = useState<Favorite | null>(null);
+  
+  // Modal analyse vidéo
+  const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [analysisMode, setAnalysisMode] = useState<'simple' | 'complexe'>('simple');
 
   useEffect(() => {
     loadFavorites();
@@ -71,6 +78,7 @@ export default function FavoritesPage() {
       // Si la vidéo supprimée était en lecture, fermer le player
       if (selectedVideo === videoId) {
         setSelectedVideo(null);
+        setSelectedVideoData(null);
       }
     } catch (error) {
       console.error('Erreur suppression favori:', error);
@@ -84,6 +92,17 @@ export default function FavoritesPage() {
         welcomeMessage: `Quel tutoriel cherches-tu ? 🎬`
       } 
     }));
+  };
+
+  const handleSelectVideo = (favorite: Favorite) => {
+    setSelectedVideo(favorite.video_id);
+    setSelectedVideoData(favorite);
+  };
+
+  const handleMettreEnOeuvre = () => {
+    if (!selectedVideoData) return;
+    setAnalysisMode('simple'); // L'IA décidera
+    setShowAnalysisModal(true);
   };
 
   const formatViews = (count: number) => {
@@ -134,7 +153,7 @@ export default function FavoritesPage() {
 
   const VideoCard = ({ favorite }: { favorite: Favorite }) => (
     <div
-      onClick={() => setSelectedVideo(favorite.video_id)}
+      onClick={() => handleSelectVideo(favorite)}
       style={{
         background: 'rgba(255,255,255,0.05)',
         borderRadius: '12px',
@@ -175,7 +194,7 @@ export default function FavoritesPage() {
           {favorite.duration}
         </span>
         
-        {/* Bouton Supprimer ❌ */}
+        {/* Bouton Supprimer ✕ */}
         <button
           onClick={(e) => removeFavorite(favorite.video_id, e)}
           style={{
@@ -311,19 +330,47 @@ export default function FavoritesPage() {
             allowFullScreen
           />
           
-          {/* TODO: Bouton créer chantier sous le player */}
-          {/* 
-          <div style={{ 
-            padding: '1rem', 
-            background: 'rgba(255,255,255,0.05)',
-            display: 'flex',
-            justifyContent: 'center'
-          }}>
-            <button style={{...}}>
-              🏗️ Créer un chantier à partir de cette vidéo
-            </button>
-          </div>
-          */}
+          {/* Bouton Mettre en œuvre */}
+          {selectedVideoData && (
+            <div style={{ 
+              padding: '1rem', 
+              background: 'rgba(0,0,0,0.5)',
+              display: 'flex',
+              justifyContent: 'center',
+              gap: '0.75rem'
+            }}>
+              <button
+                onClick={handleMettreEnOeuvre}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  padding: '0.7rem 1.25rem',
+                  borderRadius: '10px',
+                  border: '2px solid #10b981',
+                  background: 'transparent',
+                  color: '#10b981',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = '#10b981';
+                  e.currentTarget.style.color = 'white';
+                  e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = '#10b981';
+                  e.currentTarget.style.boxShadow = 'none';
+                }}
+              >
+                <span>🚀</span>
+                <span>Mettre en œuvre</span>
+              </button>
+            </div>
+          )}
         </div>
       )}
 
@@ -336,7 +383,7 @@ export default function FavoritesPage() {
         </div>
       ) : favorites.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🤍</div>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🤷</div>
           <p style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>
             Aucune vidéo en favoris
           </p>
@@ -408,24 +455,6 @@ export default function FavoritesPage() {
                 ))}
               </div>
               
-              {/* TODO: Bouton créer chantier pour le groupe */}
-              {/*
-              <div style={{ marginTop: '1rem' }}>
-                <button style={{
-                  padding: '0.5rem 1rem',
-                  borderRadius: '8px',
-                  border: '2px solid var(--orange)',
-                  background: 'transparent',
-                  color: 'var(--orange)',
-                  fontSize: '0.85rem',
-                  fontWeight: '600',
-                  cursor: 'pointer'
-                }}>
-                  🏗️ Créer un chantier depuis ces vidéos
-                </button>
-              </div>
-              */}
-              
               {/* Séparateur entre groupes */}
               {idx < groupedFavorites.length - 1 && (
                 <div style={{ 
@@ -436,6 +465,23 @@ export default function FavoritesPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Modal analyse vidéo */}
+      {selectedVideoData && (
+        <VideoAnalysisModal
+          isOpen={showAnalysisModal}
+          onClose={() => setShowAnalysisModal(false)}
+          video={{
+            id: selectedVideoData.video_id,
+            title: selectedVideoData.title,
+            description: '', // Pas de description stockée dans les favoris
+            thumbnail: selectedVideoData.thumbnail,
+            channelTitle: selectedVideoData.channel_title,
+            durationSeconds: selectedVideoData.duration_seconds
+          }}
+          mode={analysisMode}
+        />
       )}
     </div>
   );
