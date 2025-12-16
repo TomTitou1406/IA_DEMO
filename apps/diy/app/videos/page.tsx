@@ -814,7 +814,7 @@ function VideosContent() {
                 e.currentTarget.style.boxShadow = 'none';
               }}
             >
-              🔄 Rechercher
+              🔍 Nouvelle Recherche
             </button>
             
             {/* Bouton Accueil */}
