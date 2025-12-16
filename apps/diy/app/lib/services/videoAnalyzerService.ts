@@ -58,53 +58,39 @@ export interface VideoInspiration {
 
 /**
  * Parse les chapitres depuis la description YouTube
- * Format attendu : "0:00 Introduction" ou "1:05:30 Étape finale"
+ * Détecte tous les formats : ligne, inline, avec ou sans séparateurs
  */
 export function parseChaptersFromDescription(description: string): VideoChapter[] {
   if (!description) return [];
   
   const chapters: VideoChapter[] = [];
-  const lines = description.split('\n');
   
-  // Regex pour détecter les timestamps : 0:00, 00:00, 1:00:00, 01:00:00
-  const timestampRegex = /^(\d{1,2}):(\d{2})(?::(\d{2}))?\s+(.+)$/;
+  // Regex universelle : capture "H:MM:SS" ou "MM:SS" ou "M:SS" suivi de texte
+  // Le texte s'arrête au prochain timestamp ou à la fin
+  const regex = /(\d{1,2}:\d{2}:\d{2}|\d{1,2}:\d{2})\s*[•·\-–—]?\s*([A-Za-zÀ-ÿ][^0-9]*?)(?=\s*\d{1,2}:\d{2}|$|\n)/g;
   
-  for (const line of lines) {
-    const trimmed = line.trim();
-    const match = trimmed.match(timestampRegex);
+  let match;
+  while ((match = regex.exec(description)) !== null) {
+    const timestamp = match[1];
+    let title = match[2].trim();
     
-    if (match) {
-      let start_seconds: number;
-      let title: string;
+    // Nettoyer le titre
+    title = title
+      .replace(/^[•·\-–—:]\s*/, '')  // Enlever séparateurs au début
+      .replace(/[•·\-–—:]\s*$/, '')  // Enlever séparateurs à la fin
+      .replace(/\s+/g, ' ')           // Normaliser espaces
+      .trim();
+    
+    // Ignorer si titre trop court ou trop long
+    if (title.length >= 2 && title.length < 80) {
+      const seconds = parseTimestampToSeconds(timestamp);
       
-      if (match[3]) {
-        // Format H:MM:SS
-        const hours = parseInt(match[1]);
-        const minutes = parseInt(match[2]);
-        const seconds = parseInt(match[3]);
-        start_seconds = hours * 3600 + minutes * 60 + seconds;
-        title = match[4].trim();
-      } else {
-        // Format M:SS ou MM:SS
-        const minutes = parseInt(match[1]);
-        const seconds = parseInt(match[2]);
-        start_seconds = minutes * 60 + seconds;
-        title = match[4].trim();
-      }
-      
-      // Nettoyer le titre (enlever emojis de début, tirets, etc.)
-      title = title
-        .replace(/^[-–—•]\s*/, '')
-        .replace(/^[🔧🏠🛠️⚡💡🔨📐✅❌🎬📺]\s*/, '')
-        .trim();
-      
-      if (title.length > 0) {
+      // Éviter les doublons
+      if (!chapters.some(c => c.start_seconds === seconds)) {
         chapters.push({
           title,
-          start_seconds,
-          start_formatted: match[3] 
-            ? `${match[1]}:${match[2]}:${match[3]}`
-            : `${match[1]}:${match[2]}`
+          start_seconds: seconds,
+          start_formatted: timestamp
         });
       }
     }
@@ -114,6 +100,16 @@ export function parseChaptersFromDescription(description: string): VideoChapter[
   chapters.sort((a, b) => a.start_seconds - b.start_seconds);
   
   return chapters;
+}
+
+function parseTimestampToSeconds(timestamp: string): number {
+  const parts = timestamp.split(':').map(p => parseInt(p));
+  if (parts.length === 3) {
+    // H:MM:SS
+    return parts[0] * 3600 + parts[1] * 60 + parts[2];
+  }
+  // M:SS ou MM:SS
+  return parts[0] * 60 + parts[1];
 }
 
 /**
