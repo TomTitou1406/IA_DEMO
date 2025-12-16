@@ -5,20 +5,10 @@
  * @version 1.3
  * 
  * Changelog :
- * - v1.3 : Bouton "Besoin d'aide ?" rouge, modale refaite (Papi bleu + logo, tel 07..., WhatsApp grisé)
+ * - v1.3 : Bouton "Besoin d'aide ?" rouge, modale refaite (Papi + ✨, tel 07..., WhatsApp grisé)
  * - v1.2 : Hauteur réduite, max-width, liseré, bouton "Appelez-nous" revu
  * - v1.1 : Header transparent, effet halo survol, spacer réduit
  * - v1.0 : Version initiale
- * 
- * Features :
- * - Glassmorphism header transparent
- * - Badges animés avec compteurs
- * - Bottom nav mobile
- * - Bouton "Besoin d'aide ?" rouge avec effet halo
- * - Logo cliquable
- * - Indicateur de page active
- * - Effet halo au survol
- * - Liseré subtil en bas du header
  */
 
 'use client';
@@ -34,23 +24,19 @@ export default function Navbar({ className }: NavbarProps) {
   const router = useRouter();
   const pathname = usePathname();
   
-  // Compteurs dynamiques
   const [projectsCount, setProjectsCount] = useState(0);
   const [favoritesCount, setFavoritesCount] = useState(0);
   const [isScrolled, setIsScrolled] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
-  // Charger les compteurs
   useEffect(() => {
     loadCounts();
     
-    // Détecter le scroll pour effet header
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 20);
     };
     
-    // Détecter mobile
     const handleResize = () => {
       setIsMobile(window.innerWidth < 768);
     };
@@ -65,12 +51,10 @@ export default function Navbar({ className }: NavbarProps) {
     };
   }, []);
 
-  // Recharger les compteurs quand on change de page
   useEffect(() => {
     loadCounts();
   }, [pathname]);
 
-  // Fonction pour charger le compteur projets
   const loadCounts = async () => {
     try {
       const projectsRes = await fetch('/api/chantiers?count_only=true');
@@ -83,7 +67,6 @@ export default function Navbar({ className }: NavbarProps) {
     }
   };
   
-  // Fonction pour charger le compteur favoris
   const loadFavoritesCount = async () => {
     try {
       const favRes = await fetch('/api/videos/favorites');
@@ -96,12 +79,10 @@ export default function Navbar({ className }: NavbarProps) {
     }
   };
   
-  // useEffect pour charger au démarrage + écouter les mises à jour
   useEffect(() => {
     loadCounts();
     loadFavoritesCount();
     
-    // Écouter les mises à jour depuis la page vidéos
     const handleUpdate = () => loadFavoritesCount();
     window.addEventListener('favoritesUpdated', handleUpdate);
     
@@ -114,36 +95,10 @@ export default function Navbar({ className }: NavbarProps) {
   };
 
   const navItems = [
-    { 
-      id: 'home',
-      icon: '🏠', 
-      label: 'Accueil', 
-      path: '/',
-      color: '#f97316' // Orange
-    },
-    { 
-      id: 'projects',
-      icon: '📁', 
-      label: 'Mes projets', 
-      path: '/chantiers',
-      count: projectsCount,
-      color: '#f97316' // Orange
-    },
-    { 
-      id: 'videos',
-      icon: '❤️', 
-      label: 'Mes vidéos', 
-      path: '/videos/favorites',
-      count: favoritesCount,
-      color: '#ef4444' // Rouge
-    },
-    { 
-      id: 'account',
-      icon: '👤', 
-      label: 'Mon compte', 
-      path: '/compte',
-      color: '#3b82f6' // Bleu
-    },
+    { id: 'home', icon: '🏠', label: 'Accueil', path: '/', color: '#f97316' },
+    { id: 'projects', icon: '📁', label: 'Mes projets', path: '/chantiers', count: projectsCount, color: '#f97316' },
+    { id: 'videos', icon: '❤️', label: 'Mes vidéos', path: '/videos/favorites', count: favoritesCount, color: '#ef4444' },
+    { id: 'account', icon: '👤', label: 'Mon compte', path: '/compte', color: '#3b82f6' },
   ];
 
   const openAssistantHelp = () => {
@@ -156,10 +111,8 @@ export default function Navbar({ className }: NavbarProps) {
     }));
   };
 
-  // ==================== COMPOSANT BADGE ====================
   const Badge = ({ count, color }: { count: number; color: string }) => {
     if (count === 0) return null;
-    
     return (
       <span style={{
         position: 'absolute',
@@ -181,10 +134,8 @@ export default function Navbar({ className }: NavbarProps) {
     );
   };
 
-  // ==================== NAV ITEM DESKTOP ====================
   const NavItemDesktop = ({ item }: { item: typeof navItems[0] }) => {
     const active = isActive(item.path);
-    
     return (
       <button
         onClick={() => router.push(item.path)}
@@ -195,9 +146,7 @@ export default function Navbar({ className }: NavbarProps) {
           padding: '0.45rem 0.85rem',
           borderRadius: '10px',
           border: 'none',
-          background: active 
-            ? `${item.color}25` 
-            : 'transparent',
+          background: active ? `${item.color}25` : 'transparent',
           color: active ? item.color : 'rgba(255,255,255,0.7)',
           fontSize: '0.85rem',
           fontWeight: active ? '600' : '500',
@@ -228,10 +177,8 @@ export default function Navbar({ className }: NavbarProps) {
     );
   };
 
-  // ==================== NAV ITEM MOBILE ====================
   const NavItemMobile = ({ item }: { item: typeof navItems[0] }) => {
     const active = isActive(item.path);
-    
     return (
       <button
         onClick={() => router.push(item.path)}
@@ -295,257 +242,241 @@ export default function Navbar({ className }: NavbarProps) {
     );
   };
 
-  // ==================== BOUTON AIDE (v1.3 : Rouge "Besoin d'aide ?") ====================
-  const HelpButton = ({ mobile = false }: { mobile?: boolean }) => (
-    <button
-      onClick={() => setShowHelpModal(true)}
-      style={{
-        display: 'flex',
-        flexDirection: mobile ? 'column' : 'row',
-        alignItems: 'center',
-        gap: mobile ? '0.2rem' : '0.4rem',
-        padding: mobile ? '0.4rem' : '0.45rem 1rem',
-        borderRadius: mobile ? '0' : '20px',
-        border: mobile ? 'none' : '1.5px solid rgba(239, 68, 68, 0.5)',
-        background: mobile ? 'transparent' : 'rgba(239, 68, 68, 0.1)',
-        color: '#ef4444',
-        fontSize: mobile ? '0.6rem' : '0.85rem',
-        fontWeight: '600',
-        cursor: 'pointer',
-        position: 'relative',
-        transition: 'all 0.3s ease',
-        flex: mobile ? 1 : 'none',
-      }}
-      onMouseEnter={(e) => {
-        if (!mobile) {
-          e.currentTarget.style.background = '#ef4444';
-          e.currentTarget.style.color = 'white';
-          e.currentTarget.style.borderColor = '#ef4444';
-          e.currentTarget.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.5)';
-        }
-      }}
-      onMouseLeave={(e) => {
-        if (!mobile) {
-          e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
-          e.currentTarget.style.color = '#ef4444';
-          e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-          e.currentTarget.style.boxShadow = 'none';
-        }
-      }}
-    >
-      <span style={{ 
-        fontSize: mobile ? '1.3rem' : '1rem',
-      }}>
-        📞
-      </span>
-      <span>{mobile ? 'Aide' : "Besoin d'aide ?"}</span>
-    </button>
-  );
+  const HelpButton = ({ mobile = false }: { mobile?: boolean }) => {
+    return (
+      <button
+        onClick={() => setShowHelpModal(true)}
+        style={{
+          display: 'flex',
+          flexDirection: mobile ? 'column' : 'row',
+          alignItems: 'center',
+          gap: mobile ? '0.2rem' : '0.4rem',
+          padding: mobile ? '0.4rem' : '0.45rem 1rem',
+          borderRadius: mobile ? '0' : '20px',
+          border: mobile ? 'none' : '1.5px solid rgba(239, 68, 68, 0.5)',
+          background: mobile ? 'transparent' : 'rgba(239, 68, 68, 0.1)',
+          color: '#ef4444',
+          fontSize: mobile ? '0.6rem' : '0.85rem',
+          fontWeight: '600',
+          cursor: 'pointer',
+          position: 'relative',
+          transition: 'all 0.3s ease',
+          flex: mobile ? 1 : 'none',
+        }}
+        onMouseEnter={(e) => {
+          if (!mobile) {
+            e.currentTarget.style.background = '#ef4444';
+            e.currentTarget.style.color = 'white';
+            e.currentTarget.style.borderColor = '#ef4444';
+            e.currentTarget.style.boxShadow = '0 0 25px rgba(239, 68, 68, 0.5)';
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!mobile) {
+            e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+            e.currentTarget.style.color = '#ef4444';
+            e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+            e.currentTarget.style.boxShadow = 'none';
+          }
+        }}
+      >
+        <span style={{ fontSize: mobile ? '1.3rem' : '1rem' }}>📞</span>
+        <span>{mobile ? 'Aide' : "Besoin d'aide ?"}</span>
+      </button>
+    );
+  };
 
-  // ==================== MODAL AIDE (v1.3 : Refaite) ====================
-  const HelpModal = () => (
-    <div 
-      style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0,0,0,0.8)',
-        backdropFilter: 'blur(8px)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 2000,
-        padding: '1rem',
-        animation: 'fadeIn 0.2s ease'
-      }}
-      onClick={() => setShowHelpModal(false)}
-    >
+  const HelpModal = () => {
+    return (
       <div 
         style={{
-          background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)',
-          borderRadius: '24px',
-          padding: '2rem',
-          maxWidth: '400px',
-          width: '100%',
-          border: '1px solid rgba(255,255,255,0.1)',
-          boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
-          animation: 'slideUp 0.3s ease'
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(0,0,0,0.8)',
+          backdropFilter: 'blur(8px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 2000,
+          padding: '1rem',
+          animation: 'fadeIn 0.2s ease'
         }}
-        onClick={(e) => e.stopPropagation()}
+        onClick={() => setShowHelpModal(false)}
       >
-        {/* Header */}
-        <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-          <div style={{ 
-            fontSize: '4rem', 
-            marginBottom: '0.5rem',
-            animation: 'bounce 1s ease infinite'
-          }}>
-            🛠️
-          </div>
-          <h2 style={{ 
-            color: 'white', 
-            fontSize: '1.5rem', 
-            fontWeight: '700',
-            marginBottom: '0.5rem'
-          }}>
-            Comment puis-je t'aider ?
-          </h2>
-          <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-            Choisis ton mode d'assistance préféré
-          </p>
-        </div>
-
-        {/* Options */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {/* Option 1 : Assistant IA (v1.3 : Bleu + logo Papi) */}
-          <button
-            onClick={openAssistantHelp}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.25rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(59, 130, 246, 0.5)',
-              background: 'rgba(59, 130, 246, 0.1)',
-              color: '#3b82f6',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              textAlign: 'left'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#3b82f6';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = '#3b82f6';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
-              e.currentTarget.style.color = '#3b82f6';
-              e.currentTarget.style.borderColor = 'rgba(59, 130, 246, 0.5)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
+        <div 
+          style={{
+            background: 'linear-gradient(180deg, #1a1a1a 0%, #0a0a0a 100%)',
+            borderRadius: '24px',
+            padding: '2rem',
+            maxWidth: '400px',
+            width: '100%',
+            border: '1px solid rgba(255,255,255,0.1)',
+            boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
+            animation: 'slideUp 0.3s ease'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <img 
               src="/images/papibricole-avatar.png" 
-              alt="Papi" 
+              alt="PapiBricole" 
               style={{ 
-                width: '40px', 
-                height: '40px', 
+                width: '80px', 
+                height: '80px', 
                 borderRadius: '50%',
-                objectFit: 'cover'
-              }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
+                objectFit: 'cover',
+                marginBottom: '0.5rem',
+                animation: 'bounce 1s ease infinite',
+                boxShadow: '0 8px 25px rgba(249, 115, 22, 0.3)'
               }}
             />
-            <div>
-              <div style={{ fontWeight: '600', fontSize: '1rem' }}>Demander à Papi</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-                Assistant IA disponible 24h/24
-              </div>
-            </div>
-            <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
-          </button>
+            <h2 style={{ 
+              color: 'white', 
+              fontSize: '1.5rem', 
+              fontWeight: '700',
+              marginBottom: '0.5rem'
+            }}>
+              Comment puis-je t'aider ?
+            </h2>
+            <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+              Choisis ton mode d'assistance préféré
+            </p>
+          </div>
 
-          {/* Option 2 : Téléphone (v1.3 : Nouveau numéro) */}
-          <a
-            href="tel:0761882950"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.25rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(16, 185, 129, 0.5)',
-              background: 'rgba(16, 185, 129, 0.1)',
-              color: '#10b981',
-              cursor: 'pointer',
-              transition: 'all 0.3s ease',
-              textDecoration: 'none',
-              textAlign: 'left'
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = '#10b981';
-              e.currentTarget.style.color = 'white';
-              e.currentTarget.style.borderColor = '#10b981';
-              e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
-              e.currentTarget.style.color = '#10b981';
-              e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
-          >
-            <span style={{ fontSize: '2rem' }}>📞</span>
-            <div>
-              <div style={{ fontWeight: '600', fontSize: '1rem' }}>Appeler</div>
-              <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
-                07 61 88 29 50
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button
+              onClick={openAssistantHelp}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem 1.25rem',
+                borderRadius: '16px',
+                border: '1px solid rgba(37, 99, 235, 0.5)',
+                background: 'rgba(37, 99, 235, 0.1)',
+                color: '#2563eb',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#2563eb';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.borderColor = '#2563eb';
+                e.currentTarget.style.boxShadow = '0 0 25px rgba(37, 99, 235, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(37, 99, 235, 0.1)';
+                e.currentTarget.style.color = '#2563eb';
+                e.currentTarget.style.borderColor = 'rgba(37, 99, 235, 0.5)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <span style={{ fontSize: '2.5rem' }}>✨</span>
+              <div>
+                <div style={{ fontWeight: '600', fontSize: '1rem' }}>Demander à Papi</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                  Assistant IA disponible 24h/24
+                </div>
               </div>
-            </div>
-            <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
-          </a>
+              <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
+            </button>
 
-          {/* Option 3 : WhatsApp (v1.3 : Grisé + bientôt disponible) */}
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '1rem',
-              padding: '1rem 1.25rem',
-              borderRadius: '16px',
-              border: '1px solid rgba(255, 255, 255, 0.1)',
-              background: 'rgba(255, 255, 255, 0.02)',
-              color: 'rgba(255, 255, 255, 0.3)',
-              cursor: 'not-allowed',
-              textAlign: 'left',
-              opacity: 0.5
-            }}
-          >
-            <span style={{ fontSize: '2rem' }}>💬</span>
-            <div>
-              <div style={{ fontWeight: '600', fontSize: '1rem' }}>WhatsApp</div>
-              <div style={{ fontSize: '0.8rem' }}>
-                Fonctionnalité bientôt disponible
+            <a
+              href="tel:0761882950"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem 1.25rem',
+                borderRadius: '16px',
+                border: '1px solid rgba(16, 185, 129, 0.5)',
+                background: 'rgba(16, 185, 129, 0.1)',
+                color: '#10b981',
+                cursor: 'pointer',
+                transition: 'all 0.3s ease',
+                textDecoration: 'none',
+                textAlign: 'left'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = '#10b981';
+                e.currentTarget.style.color = 'white';
+                e.currentTarget.style.borderColor = '#10b981';
+                e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                e.currentTarget.style.color = '#10b981';
+                e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.5)';
+                e.currentTarget.style.boxShadow = 'none';
+              }}
+            >
+              <span style={{ fontSize: '2rem' }}>📞</span>
+              <div>
+                <div style={{ fontWeight: '600', fontSize: '1rem' }}>Appeler</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.7 }}>
+                  07 61 88 29 50
+                </div>
+              </div>
+              <span style={{ marginLeft: 'auto', opacity: 0.7 }}>→</span>
+            </a>
+
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '1rem',
+                padding: '1rem 1.25rem',
+                borderRadius: '16px',
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                background: 'rgba(255, 255, 255, 0.03)',
+                color: 'rgba(255, 255, 255, 0.4)',
+                cursor: 'not-allowed',
+                textAlign: 'left',
+              }}
+            >
+              <span style={{ fontSize: '2rem', opacity: 0.5 }}>💬</span>
+              <div>
+                <div style={{ fontWeight: '600', fontSize: '1rem' }}>WhatsApp</div>
+                <div style={{ fontSize: '0.8rem', opacity: 0.8 }}>
+                  Fonctionnalité bientôt disponible
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Bouton fermer */}
-        <button
-          onClick={() => setShowHelpModal(false)}
-          style={{
-            width: '100%',
-            marginTop: '1.5rem',
-            padding: '0.75rem',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.2)',
-            background: 'transparent',
-            color: 'rgba(255,255,255,0.6)',
-            fontSize: '0.9rem',
-            cursor: 'pointer',
-            transition: 'all 0.2s ease'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
-            e.currentTarget.style.color = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
-          }}
-        >
-          Fermer
-        </button>
+          <button
+            onClick={() => setShowHelpModal(false)}
+            style={{
+              width: '100%',
+              marginTop: '1.5rem',
+              padding: '0.75rem',
+              borderRadius: '12px',
+              border: '1px solid rgba(255,255,255,0.2)',
+              background: 'transparent',
+              color: 'rgba(255,255,255,0.6)',
+              fontSize: '0.9rem',
+              cursor: 'pointer',
+              transition: 'all 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = 'rgba(255,255,255,0.1)';
+              e.currentTarget.style.color = 'white';
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent';
+              e.currentTarget.style.color = 'rgba(255,255,255,0.6)';
+            }}
+          >
+            Fermer
+          </button>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <>
-      {/* ==================== HEADER DESKTOP ==================== */}
       <header
         style={{
           position: 'fixed',
@@ -553,9 +484,7 @@ export default function Navbar({ className }: NavbarProps) {
           left: 0,
           right: 0,
           zIndex: 1000,
-          background: isScrolled 
-            ? 'rgba(10, 10, 10, 0.9)' 
-            : 'rgba(0, 0, 0, 0.5)',
+          background: isScrolled ? 'rgba(10, 10, 10, 0.9)' : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
@@ -563,7 +492,6 @@ export default function Navbar({ className }: NavbarProps) {
           display: isMobile ? 'none' : 'block',
         }}
       >
-        {/* Container avec max-width */}
         <div style={{
           maxWidth: '1200px',
           margin: '0 auto',
@@ -572,7 +500,6 @@ export default function Navbar({ className }: NavbarProps) {
           alignItems: 'center',
           justifyContent: 'space-between',
         }}>
-          {/* Logo */}
           <button
             onClick={() => router.push('/')}
             style={{
@@ -628,23 +555,16 @@ export default function Navbar({ className }: NavbarProps) {
             </div>
           </button>
 
-          {/* Navigation centrale - TRANSPARENT */}
-          <nav style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.2rem',
-          }}>
+          <nav style={{ display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
             {navItems.map(item => (
               <NavItemDesktop key={item.id} item={item} />
             ))}
           </nav>
 
-          {/* Bouton Aide */}
           <HelpButton />
         </div>
       </header>
 
-      {/* ==================== HEADER MOBILE (minimal) ==================== */}
       <header
         style={{
           position: 'fixed',
@@ -653,9 +573,7 @@ export default function Navbar({ className }: NavbarProps) {
           right: 0,
           zIndex: 1000,
           padding: '0.5rem 1rem',
-          background: isScrolled 
-            ? 'rgba(10, 10, 10, 0.9)' 
-            : 'rgba(0, 0, 0, 0.5)',
+          background: isScrolled ? 'rgba(10, 10, 10, 0.9)' : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
           borderBottom: '1px solid rgba(255,255,255,0.08)',
@@ -689,17 +607,12 @@ export default function Navbar({ className }: NavbarProps) {
               (e.target as HTMLImageElement).style.display = 'none';
             }}
           />
-          <span style={{ 
-            color: 'white', 
-            fontSize: '1rem', 
-            fontWeight: '700' 
-          }}>
+          <span style={{ color: 'white', fontSize: '1rem', fontWeight: '700' }}>
             Papi<span style={{ color: '#f97316' }}>Bricole</span>
           </span>
         </button>
       </header>
 
-      {/* ==================== BOTTOM NAV MOBILE ==================== */}
       <nav
         style={{
           position: 'fixed',
@@ -724,39 +637,25 @@ export default function Navbar({ className }: NavbarProps) {
         <HelpButton mobile />
       </nav>
 
-      {/* ==================== SPACER TOP ==================== */}
       <div style={{ height: isMobile ? '42px' : '50px' }} />
-            
-      {/* ==================== SPACER BOTTOM (mobile only) ==================== */}
       {isMobile && <div style={{ height: '65px' }} />}
 
-      {/* ==================== MODAL AIDE ==================== */}
       {showHelpModal && <HelpModal />}
 
-      {/* ==================== STYLES CSS ==================== */}
       <style jsx global>{`
         @keyframes badgePop {
           0% { transform: scale(0); }
           50% { transform: scale(1.2); }
           100% { transform: scale(1); }
         }
-        
         @keyframes fadeIn {
           from { opacity: 0; }
           to { opacity: 1; }
         }
-        
         @keyframes slideUp {
-          from { 
-            opacity: 0;
-            transform: translateY(20px);
-          }
-          to { 
-            opacity: 1;
-            transform: translateY(0);
-          }
+          from { opacity: 0; transform: translateY(20px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        
         @keyframes bounce {
           0%, 100% { transform: translateY(0); }
           50% { transform: translateY(-10px); }
