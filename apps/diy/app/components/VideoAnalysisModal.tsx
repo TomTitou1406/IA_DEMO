@@ -595,12 +595,15 @@ export default function VideoAnalysisModal({
                   <span>Créer en mode Travaux simples</span>
                   {classification.bouton_recommande === 'simple' && classification.mode_affichage === 'choix' && (
                     <span style={{
-                      background: 'rgba(255,255,255,0.2)',
-                      padding: '0.15rem 0.4rem',
+                      background: '#10b981',
+                      color: 'white',
+                      padding: '0.2rem 0.5rem',
                       borderRadius: '8px',
-                      fontSize: '0.7rem'
+                      fontSize: '0.65rem',
+                      fontWeight: '700',
+                      boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
                     }}>
-                      Recommandé
+                      ✓ Recommandé
                     </span>
                   )}
                 </button>
