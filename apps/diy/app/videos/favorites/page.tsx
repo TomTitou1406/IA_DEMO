@@ -92,8 +92,7 @@ export default function FavoritesPage() {
   
   // Modal analyse vidéo
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
-  const [analysisMode, setAnalysisMode] = useState<'simple' | 'complexe'>('simple');
-
+  
   useEffect(() => {
     loadFavorites();
   }, []);
@@ -166,7 +165,6 @@ export default function FavoritesPage() {
   const handleMettreEnOeuvre = () => {
     if (!selectedVideoData) return;
     setShowPlayerModal(false);
-    setAnalysisMode('simple');
     setShowAnalysisModal(true);
   };
 
@@ -695,10 +693,10 @@ export default function FavoritesPage() {
       {/* Modal analyse vidéo */}
       {selectedVideoData && (
         <VideoAnalysisModal
-        isOpen={showAnalysisModal}
-        onClose={() => setShowAnalysisModal(false)}
-        searchQuery={query}
-        video={{
+          isOpen={showAnalysisModal}
+          onClose={() => setShowAnalysisModal(false)}
+          searchQuery={selectedVideoData?.search_query || selectedVideoData?.title || ''}
+          video={{
             id: selectedVideoData.video_id,
             title: selectedVideoData.title,
             description: '',
