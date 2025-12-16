@@ -334,7 +334,8 @@ function VideosContent() {
             like_count: video.likeCount || 0,
             is_hd: video.isHD || false,
             chapters: video.chapters || null,
-            has_chapters: video.hasChapters || false
+            has_chapters: video.hasChapters || false,
+            is_trusted: video.isTrusted || false
           })
         });
         setFavoriteIds(prev => new Set(prev).add(video.id));
