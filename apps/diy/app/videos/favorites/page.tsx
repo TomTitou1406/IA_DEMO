@@ -693,29 +693,36 @@ export default function FavoritesPage() {
                   display: 'flex', 
                   justifyContent: 'space-between',
                   alignItems: 'center',
-                  marginBottom: openGroups.has(group.query) ? '1rem' : '0',
+                  marginBottom: openGroups.has(group.query) ? '1rem' : '0.75rem',
                   padding: '0.75rem 1rem',
-                  borderRadius: '8px',
+                  borderRadius: openGroups.has(group.query) ? '8px' : '0',
+                  // Fond : dégradé si ouvert, transparent si fermé
                   background: openGroups.has(group.query) 
                     ? 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)'
                     : 'transparent',
-                  border: openGroups.has(group.query) 
-                    ? '1px solid rgba(16, 185, 129, 0.2)' 
-                    : '1px solid rgba(255,255,255,0.1)',
+                  // Bordure gauche épaisse si ouvert
+                  borderLeft: openGroups.has(group.query) 
+                    ? '4px solid #10b981' 
+                    : 'none',
+                  // Bordure basse dégradée si fermé
+                  borderBottom: openGroups.has(group.query) 
+                    ? 'none' 
+                    : '2px solid transparent',
+                  borderImage: openGroups.has(group.query) 
+                    ? 'none' 
+                    : 'linear-gradient(90deg, transparent 0%, rgba(16, 185, 129, 0.5) 100%) 1',
                   cursor: 'pointer',
                   userSelect: 'none',
                   transition: 'all 0.3s'
                 }}
                 onMouseEnter={(e) => {
                   if (!openGroups.has(group.query)) {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.05)';
-                    e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.03)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   if (!openGroups.has(group.query)) {
                     e.currentTarget.style.background = 'transparent';
-                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
                   }
                 }}
               >
