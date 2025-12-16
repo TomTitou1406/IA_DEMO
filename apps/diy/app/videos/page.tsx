@@ -29,6 +29,9 @@ interface Video {
   durationSeconds?: number;
   isTrusted?: boolean;
   aiScore?: number;
+  publishedAt: string;
+  likeCount: number;
+  isHD: boolean;
 }
 
 interface SearchInfo {
@@ -383,6 +386,31 @@ function VideosContent() {
   const VideoCard = ({ video, isShort = false }: { video: Video; isShort?: boolean }) => {
     const isFavorite = favoriteIds.has(video.id);
     
+    // Formater la date de publication
+    const formatDate = (dateString: string) => {
+      if (!dateString) return '';
+      const date = new Date(dateString);
+      const now = new Date();
+      const diffYears = now.getFullYear() - date.getFullYear();
+      
+      if (diffYears === 0) {
+        // Cette année : afficher mois
+        return date.toLocaleDateString('fr-FR', { month: 'short' });
+      } else if (diffYears === 1) {
+        return 'l\'an dernier';
+      } else {
+        return date.getFullYear().toString();
+      }
+    };
+
+    // Formater les likes
+    const formatLikes = (count: number) => {
+      if (!count) return null;
+      if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M`;
+      if (count >= 1000) return `${(count / 1000).toFixed(1)}k`;
+      return count.toString();
+    };
+    
     return (
       <div
         onClick={() => {
@@ -427,6 +455,23 @@ function VideosContent() {
           }}>
             {isShort ? '▶ Short' : video.duration}
           </span>
+          
+          {/* Badge HD */}
+          {video.isHD && !isShort && (
+            <span style={{
+              position: 'absolute',
+              bottom: '8px',
+              left: '8px',
+              background: 'rgba(0,0,0,0.8)',
+              color: 'white',
+              padding: '2px 5px',
+              borderRadius: '3px',
+              fontSize: '0.65rem',
+              fontWeight: '700'
+            }}>
+              HD
+            </span>
+          )}
           
           {/* Bouton Favori ❤️ */}
           <button
@@ -492,12 +537,23 @@ function VideosContent() {
           }}>
             {video.channelTitle}
           </p>
-          <span style={{ 
+          {/* Ligne enrichie : vues + likes + date */}
+          <div style={{ 
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
             color: 'rgba(255,255,255,0.4)', 
-            fontSize: '0.7rem' 
+            fontSize: '0.7rem',
+            flexWrap: 'wrap'
           }}>
-            👁️ {formatViews(video.viewCount)} vues
-          </span>
+            <span>👁️ {formatViews(video.viewCount)}</span>
+            {video.likeCount > 0 && (
+              <span>• 👍 {formatLikes(video.likeCount)}</span>
+            )}
+            {video.publishedAt && (
+              <span>• 📅 {formatDate(video.publishedAt)}</span>
+            )}
+          </div>
         </div>
       </div>
     );
