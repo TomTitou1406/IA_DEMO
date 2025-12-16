@@ -314,6 +314,7 @@ function VideosContent() {
           return next;
         });
         setFavoritesCount(prev => prev - 1);
+        window.dispatchEvent(new Event('favoritesUpdated'));
       } else {
         // Ajouter aux favoris
         await fetch('/api/videos/favorites', {
@@ -338,6 +339,7 @@ function VideosContent() {
         });
         setFavoriteIds(prev => new Set(prev).add(video.id));
         setFavoritesCount(prev => prev + 1);
+        window.dispatchEvent(new Event('favoritesUpdated'));
       }
     } catch (error) {
       console.error('Erreur toggle favori:', error);
