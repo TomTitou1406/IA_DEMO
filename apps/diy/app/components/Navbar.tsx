@@ -81,17 +81,29 @@ export default function Navbar({ className }: NavbarProps) {
       console.log('Compteur projets non disponible');
     }
 
-    try {
-      // Compteur favoris
-      const favRes = await fetch('/api/videos/favorites');
-      if (favRes.ok) {
-        const data = await favRes.json();
-        setFavoritesCount(data.count || 0);
+    // Fonction pour charger le compteur
+    const loadFavoritesCount = async () => {
+      try {
+        const favRes = await fetch('/api/videos/favorites');
+        if (favRes.ok) {
+          const data = await favRes.json();
+          setFavoritesCount(data.count || 0);
+        }
+      } catch (e) {
+        console.log('Compteur favoris non disponible');
       }
-    } catch (e) {
-      console.log('Compteur favoris non disponible');
-    }
-  };
+    };
+    
+    // useEffect pour charger au démarrage + écouter les mises à jour
+    useEffect(() => {
+      loadFavoritesCount();
+      
+      // Écouter les mises à jour depuis la page vidéos
+      const handleUpdate = () => loadFavoritesCount();
+      window.addEventListener('favoritesUpdated', handleUpdate);
+      
+      return () => window.removeEventListener('favoritesUpdated', handleUpdate);
+    }, []);
 
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
