@@ -17,6 +17,7 @@
 import { useSearchParams, useRouter } from 'next/navigation';
 import { useState, useEffect, Suspense } from 'react';
 import VideoAnalysisModal from '@/app/components/VideoAnalysisModal';
+import VideoPlayerModal from '@/app/components/VideoPlayerModal';
 
 interface Video {
   id: string;
@@ -253,6 +254,7 @@ function VideosContent() {
   const [loading, setLoading] = useState(true);
   const [selectedVideo, setSelectedVideo] = useState<string | null>(null);
   const [selectedVideoData, setSelectedVideoData] = useState<Video | null>(null);
+  const [showPlayerModal, setShowPlayerModal] = useState(false);
   
   // Favoris
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
@@ -268,7 +270,7 @@ function VideosContent() {
   const [videosPerPage, setVideosPerPage] = useState(9);
   const [shortsPerPage, setShortsPerPage] = useState(6);
 
-  // Charger les favoris au démarrage
+    // Charger les favoris au démarrage
   useEffect(() => {
     loadFavorites();
   }, []);
@@ -433,6 +435,7 @@ function VideosContent() {
         onClick={() => {
           setSelectedVideo(video.id);
           setSelectedVideoData(video);
+          setShowPlayerModal(true);
         }}
         style={{
           background: 'rgba(255,255,255,0.05)',
@@ -760,96 +763,6 @@ function VideosContent() {
         </div>
       ) : (
         <>
-          {/* Player si vidéo sélectionnée */}
-          {selectedVideo && (
-            <div style={{ 
-              marginBottom: '2rem', 
-              borderRadius: '12px', 
-              overflow: 'hidden',
-              boxShadow: '0 8px 32px rgba(0,0,0,0.3)'
-            }}>
-              <iframe
-                width="100%"
-                height="450"
-                src={`https://www.youtube.com/embed/${selectedVideo}?autoplay=1`}
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              />
-              
-              {/* Boutons d'action sous le player */}
-              {selectedVideoData && (
-                <div style={{
-                  display: 'flex',
-                  flexWrap: 'wrap',
-                  gap: '0.5rem',
-                  padding: '1rem',
-                  background: 'rgba(0,0,0,0.5)',
-                  justifyContent: 'center'
-                }}>
-                  {/* Bouton Favoris */}
-                  <button
-                    onClick={(e) => toggleFavorite(selectedVideoData!, e)}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.4rem',
-                      padding: '0.6rem 1rem',
-                      borderRadius: '10px',
-                      border: '2px solid',
-                      borderColor: favoriteIds.has(selectedVideoData.id) ? '#ef4444' : 'rgba(255,255,255,0.3)',
-                      background: favoriteIds.has(selectedVideoData.id) ? 'rgba(239, 68, 68, 0.1)' : 'transparent',
-                      color: favoriteIds.has(selectedVideoData.id) ? '#ef4444' : 'rgba(255,255,255,0.7)',
-                      fontSize: '0.85rem',
-                      fontWeight: '500',
-                      cursor: 'pointer',
-                      transition: 'all 0.2s'
-                    }}
-                  >
-                    <span>{favoriteIds.has(selectedVideoData.id) ? '❤️' : '🤍'}</span>
-                    <span>Favoris</span>
-                  </button>
-          
-                  {/* Bouton Mettre en œuvre */}
-                  <button
-                    onClick={() => {
-                      if (!selectedVideoData) return;
-                      setAnalysisMode('simple'); // L'IA décidera ensuite
-                      setShowAnalysisModal(true);
-                    }}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      padding: '0.7rem 1.25rem',
-                      borderRadius: '10px',
-                      border: '2px solid #10b981',
-                      background: 'transparent',
-                      color: '#10b981',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      transition: 'all 0.3s'
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.background = '#10b981';
-                      e.currentTarget.style.color = 'white';
-                      e.currentTarget.style.boxShadow = '0 0 25px rgba(16, 185, 129, 0.5)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.background = 'transparent';
-                      e.currentTarget.style.color = '#10b981';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    <span>🚀</span>
-                    <span>Mettre en œuvre</span>
-                  </button>
-                </div>
-              )}
-            </div>
-          )}
-
           {/* Section Vidéos */}
           {videos.length > 0 && (
             <>
@@ -950,6 +863,19 @@ function VideosContent() {
           mode={analysisMode}
         />
       )}
+      {/* Modal Player Vidéo */}
+      <VideoPlayerModal
+        video={selectedVideoData}
+        isOpen={showPlayerModal}
+        onClose={() => setShowPlayerModal(false)}
+        onFavoriteToggle={(video) => toggleFavorite(video, new MouseEvent('click') as any)}
+        onMettreEnOeuvre={(video) => {
+          setShowPlayerModal(false);
+          setAnalysisMode('chantier');
+          setShowAnalysisModal(true);
+        }}
+        isFavorite={selectedVideoData ? favoriteIds.has(selectedVideoData.id) : false}
+      />
     </div>
   );
 }
