@@ -713,9 +713,6 @@ function VideosContent() {
         background: 'rgba(0, 0, 0, 0.7)',
         backdropFilter: 'blur(10px)',
         WebkitBackdropFilter: 'blur(10px)',
-        marginLeft: '-2rem',
-        marginRight: '-2rem',
-        marginTop: '-2rem',
         marginBottom: '1.5rem',
         padding: '0.75rem 1rem',
       }}>
@@ -744,7 +741,7 @@ function VideosContent() {
               fontSize: '0.8rem',
               marginLeft: '0.25rem'
             }}>
-              ({videos.length} vidéos)
+             ({videos.length} vidéos{shorts.length > 0 && ` / ${shorts.length} shorts`})
             </span>
           </div>
           
