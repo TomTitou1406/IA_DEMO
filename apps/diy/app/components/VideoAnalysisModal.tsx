@@ -2,17 +2,12 @@
  * /app/components/VideoAnalysisModal.tsx
  * Modal d'analyse de vidéo YouTube pour création de chantier/travail inspiré
  * 
- * @version 1.1
+ * @version 1.2
  * 
  * Changelog :
- * - v1.1 : Accepte chapitres pré-chargés (depuis favoris) pour éviter appel API
+ * - v1.2 : Classification IA intelligente (simple vs chantier) + bridage
+ * - v1.1 : Accepte chapitres pré-chargés (depuis favoris)
  * - v1.0 : Version initiale
- * 
- * Fonctionnalités :
- * - Affiche les chapitres détectés
- * - Alerte si pas de chapitres
- * - Propose de continuer ou chercher autre vidéo
- * - Redirige vers création travail simple ou chantier
  */
 
 'use client';
@@ -41,14 +36,30 @@ interface VideoAnalysisModalProps {
     thumbnail: string;
     channelTitle: string;
     durationSeconds?: number;
-    // v1.1 : Chapitres optionnels pré-chargés (depuis favoris)
     chapters?: VideoChapter[];
     hasChapters?: boolean;
   };
-  mode: 'simple' | 'complexe';
+  searchQuery?: string; // Requête de recherche originale
 }
 
-type AnalysisStep = 'analyzing' | 'results' | 'no_chapters' | 'error';
+interface ClassificationResult {
+  classification: 'simple' | 'complexe';
+  confiance: number;
+  raisons: string[];
+  risques_sensibles: string[];
+  lots_potentiels: string[];
+  duree_estimee: string;
+  message_utilisateur: string;
+}
+
+interface ClassificationResponse {
+  success: boolean;
+  result: ClassificationResult;
+  mode_affichage: 'simple_only' | 'complexe_only' | 'choix';
+  bouton_recommande: 'simple' | 'complexe';
+}
+
+type AnalysisStep = 'analyzing' | 'classifying' | 'results' | 'no_chapters' | 'error';
 
 // ============================================
 // COMPOSANT
@@ -58,17 +69,24 @@ export default function VideoAnalysisModal({
   isOpen, 
   onClose, 
   video,
-  mode 
+  searchQuery
 }: VideoAnalysisModalProps) {
   const router = useRouter();
   const [step, setStep] = useState<AnalysisStep>('analyzing');
   const [analysis, setAnalysis] = useState<VideoAnalysis | null>(null);
+  const [classification, setClassification] = useState<ClassificationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [progress, setProgress] = useState(0);
 
   useEffect(() => {
     if (isOpen && video) {
-      // v1.1 : Si chapitres pré-chargés, les utiliser directement
+      // Reset state
+      setStep('analyzing');
+      setProgress(0);
+      setClassification(null);
+      setError(null);
+      
+      // Si chapitres pré-chargés, les utiliser directement
       if (video.hasChapters && video.chapters && video.chapters.length >= 2) {
         usePreloadedChapters();
       } else {
@@ -78,17 +96,21 @@ export default function VideoAnalysisModal({
   }, [isOpen, video]);
 
   useEffect(() => {
-    if (step === 'analyzing') {
+    if (step === 'analyzing' || step === 'classifying') {
       const interval = setInterval(() => {
-        setProgress(prev => Math.min(prev + 10, 90));
-      }, 300);
+        setProgress(prev => {
+          if (step === 'analyzing') return Math.min(prev + 8, 50);
+          if (step === 'classifying') return Math.min(prev + 5, 95);
+          return prev;
+        });
+      }, 200);
       return () => clearInterval(interval);
     }
   }, [step]);
 
-  // v1.1 : Utiliser les chapitres pré-chargés (depuis favoris)
-  const usePreloadedChapters = () => {
-    setProgress(100);
+  // Utiliser les chapitres pré-chargés (depuis favoris)
+  const usePreloadedChapters = async () => {
+    setProgress(50);
     
     const preloadedAnalysis: VideoAnalysis = {
       video_id: video.id,
@@ -104,7 +126,9 @@ export default function VideoAnalysisModal({
     };
     
     setAnalysis(preloadedAnalysis);
-    setStep('results');
+    
+    // Classifier le projet
+    await classifyProject(preloadedAnalysis);
   };
 
   const analyzeVideo = async () => {
@@ -127,7 +151,7 @@ export default function VideoAnalysisModal({
       });
 
       const data = await response.json();
-      setProgress(100);
+      setProgress(50);
 
       if (!response.ok) {
         throw new Error(data.error || 'Erreur analyse');
@@ -137,7 +161,7 @@ export default function VideoAnalysisModal({
       
       // Vérifier si chapitres disponibles
       if (data.analysis.has_chapters && data.analysis.chapters.length >= 2) {
-        setStep('results');
+        await classifyProject(data.analysis);
       } else {
         setStep('no_chapters');
       }
@@ -149,10 +173,57 @@ export default function VideoAnalysisModal({
     }
   };
 
-  const handleContinue = () => {
+  const classifyProject = async (analysisData: VideoAnalysis) => {
+    setStep('classifying');
+    
+    try {
+      const chapitresTitles = analysisData.chapters?.map(c => c.title) || [];
+      
+      const response = await fetch('/api/ai/classify-project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          titre_recherche: searchQuery || video.title,
+          titre_video: video.title,
+          chapitres: chapitresTitles.length > 0 ? chapitresTitles : undefined
+        })
+      });
+
+      const data: ClassificationResponse = await response.json();
+      setProgress(100);
+
+      if (!response.ok || !data.success) {
+        throw new Error('Erreur classification');
+      }
+
+      setClassification(data);
+      setStep('results');
+
+    } catch (err: any) {
+      console.error('Erreur classification:', err);
+      // Fallback : afficher les deux boutons
+      setClassification({
+        success: true,
+        result: {
+          classification: 'simple',
+          confiance: 50,
+          raisons: [],
+          risques_sensibles: [],
+          lots_potentiels: [],
+          duree_estimee: 'À déterminer',
+          message_utilisateur: 'Tu peux choisir le mode qui te convient.'
+        },
+        mode_affichage: 'choix',
+        bouton_recommande: 'simple'
+      });
+      setStep('results');
+    }
+  };
+
+  const handleCreate = (mode: 'simple' | 'complexe') => {
     if (!analysis) return;
 
-    // Stocker les données en sessionStorage pour les récupérer dans la page de création
+    // Stocker les données en sessionStorage
     const inspiration: VideoInspiration = toVideoInspiration(analysis);
     
     sessionStorage.setItem('videoInspiration', JSON.stringify({
@@ -165,29 +236,43 @@ export default function VideoAnalysisModal({
 
     // Rediriger selon le mode
     if (mode === 'simple') {
-      // Ouvrir l'assistant travaux simples avec contexte vidéo
       window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
         detail: {
           pageContext: 'travaux_simple_video',
           contextColor: '#2563eb',
-          welcomeMessage: `Super ! Je vais t'aider à reproduire ce tuto : "${video.title}"\n\nJ'ai identifié ${analysis.chapters.length} étapes clés. Quelques questions pour adapter à ta situation...`,
+          welcomeMessage: `Super ! Je vais t'aider à reproduire ce tuto : "${video.title}"\n\nJ'ai identifié ${analysis.chapters?.length || 0} étapes clés. Quelques questions pour adapter à ta situation...`,
           additionalContext: `VIDEO INSPIRATION:\nTitre: ${video.title}\nÉtapes clés: ${analysis.ai_analysis?.etapes_cles?.join(', ')}\n\nGénère un travail simple inspiré de cette vidéo.`
         }
       }));
     } else {
-      // Rediriger vers création chantier
       router.push('/chantiers/nouveau?from=video');
     }
   };
 
   const handleSearchOther = () => {
     onClose();
-    // Retour à la recherche
   };
 
-  const handleContinueAnyway = () => {
-    // Continuer même sans chapitres (fallback sur titre)
-    handleContinue();
+  const handleContinueAnyway = async () => {
+    // Continuer même sans chapitres
+    if (!analysis) {
+      const fallbackAnalysis: VideoAnalysis = {
+        video_id: video.id,
+        title: video.title,
+        description: video.description || '',
+        thumbnail: video.thumbnail,
+        channel: video.channelTitle,
+        duration_seconds: video.durationSeconds || 0,
+        has_chapters: false,
+        chapters: [],
+        ai_analysis: null,
+        analyzed_at: new Date().toISOString()
+      };
+      setAnalysis(fallbackAnalysis);
+      await classifyProject(fallbackAnalysis);
+    } else {
+      await classifyProject(analysis);
+    }
   };
 
   if (!isOpen) return null;
@@ -217,7 +302,7 @@ export default function VideoAnalysisModal({
           padding: '2rem',
           maxWidth: '500px',
           width: '100%',
-          maxHeight: '80vh',
+          maxHeight: '85vh',
           overflow: 'auto',
           border: '1px solid rgba(255,255,255,0.1)',
           boxShadow: '0 25px 50px rgba(0,0,0,0.5)',
@@ -226,7 +311,7 @@ export default function VideoAnalysisModal({
         onClick={(e) => e.stopPropagation()}
       >
         {/* ==================== ÉTAPE : ANALYSE EN COURS ==================== */}
-        {step === 'analyzing' && (
+        {(step === 'analyzing' || step === 'classifying') && (
           <div style={{ textAlign: 'center' }}>
             <div style={{ 
               width: '80px',
@@ -264,7 +349,7 @@ export default function VideoAnalysisModal({
                 justifyContent: 'center',
                 fontSize: '1.5rem'
               }}>
-                🔍
+                {step === 'analyzing' ? '🔍' : '🤖'}
               </div>
             </div>
 
@@ -274,14 +359,13 @@ export default function VideoAnalysisModal({
               fontWeight: '700',
               marginBottom: '0.5rem'
             }}>
-              Analyse en cours...
+              {step === 'analyzing' ? 'Analyse en cours...' : 'Classification du projet...'}
             </h2>
 
             <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem', marginBottom: '1rem' }}>
-              {progress < 30 && "Lecture de la vidéo..."}
-              {progress >= 30 && progress < 60 && "Détection des chapitres..."}
-              {progress >= 60 && progress < 90 && "Identification des étapes clés..."}
-              {progress >= 90 && "Finalisation..."}
+              {step === 'analyzing' && progress < 30 && "Lecture de la vidéo..."}
+              {step === 'analyzing' && progress >= 30 && "Détection des chapitres..."}
+              {step === 'classifying' && "L'IA analyse le type de projet..."}
             </p>
 
             {/* Mini aperçu vidéo */}
@@ -327,8 +411,8 @@ export default function VideoAnalysisModal({
           </div>
         )}
 
-        {/* ==================== ÉTAPE : RÉSULTATS ==================== */}
-        {step === 'results' && analysis && (
+        {/* ==================== ÉTAPE : RÉSULTATS AVEC CLASSIFICATION ==================== */}
+        {step === 'results' && analysis && classification && (
           <>
             <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
               <div style={{
@@ -350,132 +434,248 @@ export default function VideoAnalysisModal({
                 fontWeight: '700',
                 marginBottom: '0.5rem'
               }}>
-                {analysis.chapters.length} étapes détectées !
+                Analyse terminée !
               </h2>
-              <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
-                Ces étapes guideront la génération de ton {mode === 'simple' ? 'travail' : 'chantier'}
-              </p>
+              {analysis.chapters && analysis.chapters.length > 0 && (
+                <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>
+                  {analysis.chapters.length} étapes détectées
+                </p>
+              )}
             </div>
 
-            {/* Liste des chapitres */}
+            {/* Recommandation IA */}
             <div style={{
-              background: 'rgba(255,255,255,0.05)',
+              background: classification.bouton_recommande === 'simple' 
+                ? 'rgba(59, 130, 246, 0.1)' 
+                : 'rgba(249, 115, 22, 0.1)',
+              border: `1px solid ${classification.bouton_recommande === 'simple' 
+                ? 'rgba(59, 130, 246, 0.3)' 
+                : 'rgba(249, 115, 22, 0.3)'}`,
               borderRadius: '12px',
               padding: '1rem',
-              marginBottom: '1rem',
-              maxHeight: '200px',
-              overflow: 'auto'
+              marginBottom: '1rem'
             }}>
-              {analysis.chapters.map((chapter, idx) => (
-                <div 
-                  key={idx}
+              <div style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.5rem',
+                marginBottom: '0.5rem'
+              }}>
+                <span style={{ fontSize: '1.2rem' }}>
+                  {classification.bouton_recommande === 'simple' ? '🔨' : '🏗️'}
+                </span>
+                <span style={{ 
+                  color: 'white', 
+                  fontWeight: '600',
+                  fontSize: '0.95rem'
+                }}>
+                  Recommandation : {classification.bouton_recommande === 'simple' 
+                    ? 'Travail simple' 
+                    : 'Chantier'}
+                </span>
+                <span style={{
+                  background: 'rgba(255,255,255,0.1)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '10px',
+                  fontSize: '0.7rem',
+                  color: 'rgba(255,255,255,0.7)'
+                }}>
+                  {classification.result.confiance}%
+                </span>
+              </div>
+              
+              <p style={{ 
+                color: 'rgba(255,255,255,0.7)', 
+                fontSize: '0.85rem',
+                margin: 0,
+                lineHeight: 1.4
+              }}>
+                {classification.result.message_utilisateur}
+              </p>
+
+              {/* Raisons */}
+              {classification.result.raisons.length > 0 && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  {classification.result.raisons.slice(0, 3).map((raison, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: 'rgba(255,255,255,0.6)',
+                      marginTop: '0.25rem'
+                    }}>
+                      <span style={{ color: '#10b981' }}>✓</span>
+                      <span>{raison}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Risques */}
+              {classification.result.risques_sensibles.length > 0 && (
+                <div style={{ marginTop: '0.75rem' }}>
+                  {classification.result.risques_sensibles.map((risque, idx) => (
+                    <div key={idx} style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      fontSize: '0.8rem',
+                      color: 'rgba(239, 68, 68, 0.8)',
+                      marginTop: '0.25rem'
+                    }}>
+                      <span>⚠️</span>
+                      <span>{risque}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+
+              {/* Durée estimée */}
+              {classification.result.duree_estimee && (
+                <div style={{
+                  marginTop: '0.75rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  fontSize: '0.8rem',
+                  color: 'rgba(255,255,255,0.5)'
+                }}>
+                  <span>⏱️</span>
+                  <span>Durée estimée : {classification.result.duree_estimee}</span>
+                </div>
+              )}
+            </div>
+
+            {/* Boutons selon mode_affichage */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              
+              {/* Bouton Travail simple */}
+              {(classification.mode_affichage === 'simple_only' || classification.mode_affichage === 'choix') && (
+                <button
+                  onClick={() => handleCreate('simple')}
                   style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.75rem',
-                    padding: '0.5rem 0',
-                    borderBottom: idx < analysis.chapters.length - 1 ? '1px solid rgba(255,255,255,0.1)' : 'none'
-                  }}
-                >
-                  <span style={{
-                    width: '24px',
-                    height: '24px',
-                    borderRadius: '50%',
-                    background: 'var(--green)',
-                    color: 'white',
-                    fontSize: '0.75rem',
+                    padding: '0.875rem',
+                    borderRadius: '12px',
+                    border: classification.bouton_recommande === 'simple' 
+                      ? 'none' 
+                      : '1px solid rgba(59, 130, 246, 0.5)',
+                    background: classification.bouton_recommande === 'simple' 
+                      ? '#3b82f6' 
+                      : 'rgba(59, 130, 246, 0.1)',
+                    color: classification.bouton_recommande === 'simple' 
+                      ? 'white' 
+                      : '#3b82f6',
+                    fontSize: '0.95rem',
                     fontWeight: '600',
+                    cursor: 'pointer',
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    flexShrink: 0
-                  }}>
-                    {idx + 1}
-                  </span>
-                  <span style={{ 
-                    color: 'white', 
-                    fontSize: '0.85rem',
-                    flex: 1
-                  }}>
-                    {chapter.title}
-                  </span>
-                  <span style={{ 
-                    color: 'rgba(255,255,255,0.4)', 
-                    fontSize: '0.75rem',
-                    flexShrink: 0
-                  }}>
-                    {chapter.start_formatted}
-                  </span>
-                </div>
-              ))}
-            </div>
+                    gap: '0.5rem',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#3b82f6';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (classification.bouton_recommande === 'simple') {
+                      e.currentTarget.style.background = '#3b82f6';
+                      e.currentTarget.style.color = 'white';
+                    } else {
+                      e.currentTarget.style.background = 'rgba(59, 130, 246, 0.1)';
+                      e.currentTarget.style.color = '#3b82f6';
+                    }
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <span>🔨</span>
+                  <span>Créer un travail simple</span>
+                  {classification.bouton_recommande === 'simple' && classification.mode_affichage === 'choix' && (
+                    <span style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      padding: '0.15rem 0.4rem',
+                      borderRadius: '8px',
+                      fontSize: '0.7rem'
+                    }}>
+                      Recommandé
+                    </span>
+                  )}
+                </button>
+              )}
 
-            {/* Type de projet détecté */}
-            {analysis.ai_analysis?.type_projet && (
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '1.5rem',
-                padding: '0.75rem',
-                background: 'rgba(16, 185, 129, 0.1)',
-                borderRadius: '8px',
-                border: '1px solid rgba(16, 185, 129, 0.2)'
-              }}>
-                <span>🏷️</span>
-                <span style={{ color: 'var(--gray-light)', fontSize: '0.85rem' }}>
-                  Type détecté : <strong style={{ color: 'var(--green)' }}>{analysis.ai_analysis.type_projet}</strong>
-                </span>
-              </div>
-            )}
+              {/* Bouton Chantier */}
+              {(classification.mode_affichage === 'complexe_only' || classification.mode_affichage === 'choix') && (
+                <button
+                  onClick={() => handleCreate('complexe')}
+                  style={{
+                    padding: '0.875rem',
+                    borderRadius: '12px',
+                    border: classification.bouton_recommande === 'complexe' 
+                      ? 'none' 
+                      : '1px solid rgba(249, 115, 22, 0.5)',
+                    background: classification.bouton_recommande === 'complexe' 
+                      ? '#f97316' 
+                      : 'rgba(249, 115, 22, 0.1)',
+                    color: classification.bouton_recommande === 'complexe' 
+                      ? 'white' 
+                      : '#f97316',
+                    fontSize: '0.95rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#f97316';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(249, 115, 22, 0.5)';
+                  }}
+                  onMouseLeave={(e) => {
+                    if (classification.bouton_recommande === 'complexe') {
+                      e.currentTarget.style.background = '#f97316';
+                      e.currentTarget.style.color = 'white';
+                    } else {
+                      e.currentTarget.style.background = 'rgba(249, 115, 22, 0.1)';
+                      e.currentTarget.style.color = '#f97316';
+                    }
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <span>🏗️</span>
+                  <span>Créer un chantier</span>
+                  {classification.bouton_recommande === 'complexe' && classification.mode_affichage === 'choix' && (
+                    <span style={{
+                      background: 'rgba(255,255,255,0.2)',
+                      padding: '0.15rem 0.4rem',
+                      borderRadius: '8px',
+                      fontSize: '0.7rem'
+                    }}>
+                      Recommandé
+                    </span>
+                  )}
+                </button>
+              )}
 
-            {/* Info */}
-            <p style={{ 
-              color: 'rgba(255,255,255,0.5)', 
-              fontSize: '0.8rem', 
-              textAlign: 'center',
-              marginBottom: '1.5rem'
-            }}>
-              💡 PapiBricole adaptera ces étapes selon les règles métier et ta situation
-            </p>
-
-            {/* Boutons */}
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              {/* Bouton Annuler */}
               <button
                 onClick={onClose}
                 style={{
-                  flex: 1,
                   padding: '0.75rem',
                   borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.2)',
+                  border: 'none',
                   background: 'transparent',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '0.9rem',
+                  color: 'rgba(255,255,255,0.5)',
+                  fontSize: '0.85rem',
                   cursor: 'pointer'
                 }}
               >
                 Annuler
-              </button>
-              <button
-                onClick={handleContinue}
-                style={{
-                  flex: 2,
-                  padding: '0.75rem',
-                  borderRadius: '12px',
-                  border: 'none',
-                  background: mode === 'simple' ? 'var(--blue)' : 'var(--orange)',
-                  color: 'white',
-                  fontSize: '0.9rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <span>{mode === 'simple' ? '🔨' : '🏗️'}</span>
-                <span>{mode === 'simple' ? 'Créer en travaux simples' : 'Créer un chantier complexe'}</span>
               </button>
             </div>
           </>
@@ -499,7 +699,6 @@ export default function VideoAnalysisModal({
               </p>
             </div>
 
-            {/* Explication */}
             <div style={{
               background: 'rgba(249, 115, 22, 0.1)',
               border: '1px solid rgba(249, 115, 22, 0.2)',
@@ -513,22 +712,32 @@ export default function VideoAnalysisModal({
                 margin: 0,
                 lineHeight: 1.5
               }}>
-                Sans chapitres, la génération sera basée uniquement sur le <strong>titre de la vidéo</strong>. 
-                Le résultat sera moins précis et pourrait nécessiter plus d'ajustements.
+                L'IA analysera le <strong>titre de la vidéo</strong> pour te recommander le meilleur mode de création.
               </p>
             </div>
 
-            {/* Options */}
-            <p style={{ 
-              color: 'rgba(255,255,255,0.6)', 
-              fontSize: '0.85rem',
-              marginBottom: '1rem',
-              textAlign: 'center'
-            }}>
-              Tu peux :
-            </p>
-
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+              <button
+                onClick={handleContinueAnyway}
+                style={{
+                  padding: '0.875rem',
+                  borderRadius: '12px',
+                  border: 'none',
+                  background: 'var(--green)',
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem'
+                }}
+              >
+                <span>🤖</span>
+                <span>Continuer avec l'IA</span>
+              </button>
+
               <button
                 onClick={handleSearchOther}
                 style={{
@@ -548,25 +757,6 @@ export default function VideoAnalysisModal({
               >
                 <span>🔍</span>
                 <span>Chercher une autre vidéo</span>
-              </button>
-
-              <button
-                onClick={handleContinueAnyway}
-                style={{
-                  padding: '0.875rem',
-                  borderRadius: '12px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'rgba(255,255,255,0.7)',
-                  fontSize: '0.9rem',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '0.5rem'
-                }}
-              >
-                <span>Continuer malgré tout</span>
               </button>
 
               <button
