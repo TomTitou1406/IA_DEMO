@@ -169,6 +169,7 @@ export default function FavoritesPage() {
     isHD: fav.is_hd || false,
     hasChapters: fav.has_chapters || false,
     chapters: fav.chapters || undefined,
+    isTrusted: fav.is_trusted || false,
   });
 
   // ============================================
