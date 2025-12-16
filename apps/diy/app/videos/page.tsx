@@ -719,6 +719,7 @@ function VideosContent() {
           </p>
         </div>
         
+        <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
         {/* Bouton Favoris */}
           <button
             onClick={() => {
