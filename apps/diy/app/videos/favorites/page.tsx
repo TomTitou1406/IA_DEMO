@@ -438,6 +438,30 @@ export default function FavoritesPage() {
         </div>
         
         <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+          {/* Bouton retour aux résultats */}
+          {searchOrigin && (
+            <button
+              onClick={() => {
+                sessionStorage.removeItem('favoritesOrigin');
+                router.push(searchOrigin.path);
+              }}
+              style={{
+                padding: '0.6rem 1rem',
+                borderRadius: '8px',
+                border: '2px solid var(--orange)',
+                background: 'transparent',
+                color: 'var(--orange)',
+                fontSize: '0.85rem',
+                fontWeight: '600',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}
+            >
+              ⬅️ Retour aux résultats
+            </button>
+          )}
           <button
             onClick={handleNewSearch}
             style={{
