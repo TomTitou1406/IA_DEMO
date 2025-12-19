@@ -37,7 +37,18 @@ interface Travail {
   etapes_terminees?: number;     
   etapes_en_cours?: number;
   etapes_brouillon?: number;
-  etapes_bloquees?: number;       
+  etapes_bloquees?: number;
+  forcages?: {
+    forcages: Array<{
+      date: string;
+      type: string;
+      niveau_risque: string;
+      action_demandee: string;
+      avertissement_affiche: string;
+      regle_concernee?: string;
+      confirme_par_utilisateur: boolean;
+    }>;
+  };
   etapes?: {
     etapes: Array<{
       numero: number;
@@ -206,6 +217,17 @@ export default function TravauxPage() {
                 lineHeight: '1.2'
               }}>
                 {getStatusIcon(travail.statut)} {travail.titre}
+                {travail.forcages?.forcages && travail.forcages.forcages.length > 0 && (
+                  <span 
+                    style={{ 
+                      marginLeft: '0.5rem',
+                      cursor: 'help'
+                    }}
+                    title={`${travail.forcages.forcages.length} forçage(s) utilisateur`}
+                  >
+                    ⚠️
+                  </span>
+                )}
               </h3>
             </div>
             {/* Description en dessous */}
