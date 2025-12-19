@@ -766,12 +766,34 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
     // Formater les règles importantes
     let reglesInfo = '';
     if (regles && regles.length > 0) {
-      const reglesFormatted = regles
-        .filter((r: any) => r.type_regle === 'dependance' || r.type_regle === 'interdit')
-        .slice(0, 10)
-        .map((r: any) => `   • ${r.message_ia || r.titre}`)
-        .join('\n');
-      reglesInfo = `\n📏 RÈGLES DE PHASAGE À RESPECTER :\n${reglesFormatted}`;
+      const interdits = regles.filter((r: any) => r.type_regle === 'interdit');
+      const techniques = regles.filter((r: any) => r.type_regle === 'dependance');
+      const conseils = regles.filter((r: any) => r.type_regle === 'conseil' || r.type_regle === 'alerte');
+      
+      let reglesInfo = '';
+      
+      if (interdits.length > 0) {
+        const interditsFormatted = interdits
+          .map((r: any) => `   ⛔ [${r.code}] ${r.message_ia || r.titre}`)
+          .join('\n');
+        reglesInfo += `\n🚫 TRAVAUX HORS SCOPE (à refuser) :\n${interditsFormatted}`;
+      }
+      
+      if (techniques.length > 0) {
+        const techniquesFormatted = techniques
+          .slice(0, 8)
+          .map((r: any) => `   🔧 [${r.code}] ${r.message_ia || r.titre}`)
+          .join('\n');
+        reglesInfo += `\n\n🔧 SÉQUENCES TECHNIQUES (avertir si modifié) :\n${techniquesFormatted}`;
+      }
+      
+      if (conseils.length > 0) {
+        const conseilsFormatted = conseils
+          .slice(0, 5)
+          .map((r: any) => `   💡 ${r.message_ia || r.titre}`)
+          .join('\n');
+        reglesInfo += `\n\n💡 BONNES PRATIQUES (informer) :\n${conseilsFormatted}`;
+      }
     }
 
     // Construire le contexte : données chantier + prompt instructions
