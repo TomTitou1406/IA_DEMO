@@ -92,43 +92,42 @@ export async function loadAlertesCritiques(): Promise<AlerteCritique[]> {
 
 /**
  * Formate les règles pour injection dans le prompt
+ * Structure en 3 niveaux : INTERDITS (refuser) / TECHNIQUES (avertir) / CONSEILS (informer)
  */
 export function formatReglesForPrompt(regles: ReglePhasage[]): string {
-  const dependances = regles.filter(r => r.type_regle === 'dependance');
+  const interdits = regles.filter(r => r.type_regle === 'interdit');
+  const techniques = regles.filter(r => r.type_regle === 'dependance');
   const alertes = regles.filter(r => r.type_regle === 'alerte');
   const conseils = regles.filter(r => r.type_regle === 'conseil');
-  const interdits = regles.filter(r => r.type_regle === 'interdit');
 
   let result = '';
 
+  // NIVEAU 1 : Interdits absolus (refuser)
   if (interdits.length > 0) {
-    result += '### INTERDITS (ne jamais proposer)\n';
+    result += '### 🚫 TRAVAUX HORS SCOPE (à refuser, pas de JSON)\n';
     interdits.forEach(r => {
-      result += `- ${r.titre} : ${r.message_ia || r.description}\n`;
+      result += `- ⛔ [${r.code}] ${r.message_ia || r.description}\n`;
     });
     result += '\n';
   }
 
-  if (dependances.length > 0) {
-    result += '### ORDRE DES TRAVAUX (dépendances obligatoires)\n';
-    dependances.forEach(r => {
-      result += `- ${r.titre} : ${r.message_ia || r.description}\n`;
+  // NIVEAU 2 : Séquences techniques (avertir si modifié, tracer le forçage)
+  if (techniques.length > 0) {
+    result += '### 🔧 SÉQUENCES TECHNIQUES (avertir si le bricoleur modifie, puis exécuter)\n';
+    techniques.forEach(r => {
+      result += `- [${r.code}] ${r.message_ia || r.description}\n`;
     });
     result += '\n';
   }
 
-  if (alertes.length > 0) {
-    result += '### ALERTES SÉCURITÉ\n';
+  // NIVEAU 3 : Alertes et conseils (informer, ne pas bloquer)
+  if (alertes.length > 0 || conseils.length > 0) {
+    result += '### 💡 BONNES PRATIQUES (informer, exécuter sans bloquer)\n';
     alertes.forEach(r => {
-      result += `- ${r.titre} : ${r.message_ia || r.description}\n`;
+      result += `- ⚠️ ${r.message_ia || r.description}\n`;
     });
-    result += '\n';
-  }
-
-  if (conseils.length > 0) {
-    result += '### BONNES PRATIQUES\n';
     conseils.forEach(r => {
-      result += `- ${r.titre} : ${r.message_ia || r.description}\n`;
+      result += `- 💡 ${r.message_ia || r.description}\n`;
     });
   }
 
