@@ -9,7 +9,6 @@ import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesEtapes } from '@/app/lib/services/etapesService';
 import { getTravauxByChantier, annulerTravail, reactiverTravail, commencerTravail, reporterTravail, terminerTravail } from '@/app/lib/services/travauxService';
 import NotesButton from '@/app/components/NotesButton';
-// NOUVEAUX IMPORTS
 import Breadcrumb from '@/app/components/Breadcrumb';
 import ParentContext from '@/app/components/ParentContext';
 
@@ -62,6 +61,179 @@ interface Travail {
   };
 }
 
+// ==================== MODALE FORÇAGE ====================
+function ForcageModal({ 
+  isOpen, 
+  travail, 
+  onClose 
+}: { 
+  isOpen: boolean; 
+  travail: Travail | null; 
+  onClose: () => void;
+}) {
+  if (!isOpen || !travail) return null;
+  
+  const forcages = travail.forcages?.forcages || [];
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0, 0, 0, 0.8)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem'
+    }}>
+      <div style={{
+        background: '#1a1a1a',
+        borderRadius: '16px',
+        border: '1px solid #ef4444',
+        maxWidth: '500px',
+        width: '100%',
+        maxHeight: '80vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'rgba(239, 68, 68, 0.15)',
+          padding: '1rem 1.25rem',
+          borderBottom: '1px solid rgba(239, 68, 68, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>⚡</span>
+            <div>
+              <h3 style={{ margin: 0, color: 'var(--gray-light)', fontSize: '1rem', fontWeight: '600' }}>
+                Forçage(s) enregistré(s)
+              </h3>
+              <p style={{ margin: 0, color: 'var(--gray)', fontSize: '0.85rem' }}>
+                {travail.titre}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--gray)',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            ×
+          </button>
+        </div>
+        
+        {/* Body */}
+        <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', flex: 1 }}>
+          {forcages.map((f: any, idx: number) => (
+            <div 
+              key={idx}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                borderRadius: '10px',
+                padding: '1rem',
+                marginBottom: idx < forcages.length - 1 ? '0.75rem' : 0
+              }}
+            >
+              {/* Date et type */}
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between', 
+                alignItems: 'center',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{
+                  background: f.niveau_risque === 'technique' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                  color: f.niveau_risque === 'technique' ? '#ef4444' : '#f59e0b',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '6px',
+                  fontSize: '0.75rem',
+                  fontWeight: '600'
+                }}>
+                  {f.niveau_risque === 'technique' ? '🔧 Technique' : '💡 Conseil'}
+                </span>
+                <span style={{ color: 'var(--gray)', fontSize: '0.75rem' }}>
+                  {new Date(f.date).toLocaleDateString('fr-FR', { 
+                    day: 'numeric', 
+                    month: 'short',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                  })}
+                </span>
+              </div>
+              
+              {/* Action demandée */}
+              <p style={{ 
+                color: 'var(--gray-light)', 
+                fontSize: '0.9rem', 
+                fontWeight: '600',
+                margin: '0 0 0.5rem 0' 
+              }}>
+                📝 {f.action_demandee}
+              </p>
+              
+              {/* Avertissement */}
+              <p style={{ 
+                color: 'var(--gray)', 
+                fontSize: '0.85rem', 
+                margin: '0 0 0.5rem 0',
+                lineHeight: '1.4'
+              }}>
+                ⚠️ {f.avertissement_affiche}
+              </p>
+              
+              {/* Règle concernée */}
+              {f.regle_concernee && (
+                <p style={{ 
+                  color: 'var(--gray)', 
+                  fontSize: '0.75rem', 
+                  margin: 0,
+                  opacity: 0.7
+                }}>
+                  Règle : {f.regle_concernee}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+        
+        {/* Footer */}
+        <div style={{
+          padding: '1rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          textAlign: 'center'
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              padding: '0.6rem 2rem',
+              background: '#ef4444',
+              border: 'none',
+              borderRadius: '8px',
+              color: 'white',
+              fontSize: '0.9rem',
+              fontWeight: '600',
+              cursor: 'pointer'
+            }}
+          >
+            Compris
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TravauxPage() {
   const params = useParams();
   const router = useRouter();
@@ -86,6 +258,13 @@ export default function TravauxPage() {
     message: '',
     onConfirm: () => {}
   });
+
+  {/* Modale Forçage */}
+  <ForcageModal 
+    isOpen={showForcageModal.isOpen}
+    travail={showForcageModal.travail}
+    onClose={() => setShowForcageModal({ isOpen: false, travail: null })}
+  />
 
   useEffect(() => {
     async function loadData() {
@@ -124,11 +303,6 @@ export default function TravauxPage() {
       </div>
     );
   }
-
-  const [showForcageModal, setShowForcageModal] = useState<{
-    isOpen: boolean;
-    travail: Travail | null;
-  }>({ isOpen: false, travail: null });
 
   // Grouper par statut
   const termines = travaux.filter(t => t.statut === 'terminé');
@@ -591,173 +765,7 @@ export default function TravauxPage() {
       }}></div>
     </div>
   );
-
-  // ==================== MODALE FORÇAGE ====================
-  function ForcageModal() {
-    if (!showForcageModal.isOpen || !showForcageModal.travail) return null;
-    
-    const travail = showForcageModal.travail;
-    const forcages = travail.forcages?.forcages || [];
-    
-    return (
-      <div style={{
-        position: 'fixed',
-        inset: 0,
-        background: 'rgba(0, 0, 0, 0.8)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1000,
-        padding: '1rem'
-      }}>
-        <div style={{
-          background: '#1a1a1a',
-          borderRadius: '16px',
-          border: '1px solid #ef4444',
-          maxWidth: '500px',
-          width: '100%',
-          maxHeight: '80vh',
-          overflow: 'hidden',
-          display: 'flex',
-          flexDirection: 'column'
-        }}>
-          {/* Header */}
-          <div style={{
-            background: 'rgba(239, 68, 68, 0.15)',
-            padding: '1rem 1.25rem',
-            borderBottom: '1px solid rgba(239, 68, 68, 0.3)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <span style={{ fontSize: '1.5rem' }}>⚡</span>
-              <div>
-                <h3 style={{ margin: 0, color: 'var(--gray-light)', fontSize: '1rem', fontWeight: '600' }}>
-                  Forçage(s) enregistré(s)
-                </h3>
-                <p style={{ margin: 0, color: 'var(--gray)', fontSize: '0.85rem' }}>
-                  {travail.titre}
-                </p>
-              </div>
-            </div>
-            <button
-              onClick={() => setShowForcageModal({ isOpen: false, travail: null })}
-              style={{
-                background: 'transparent',
-                border: 'none',
-                color: 'var(--gray)',
-                fontSize: '1.5rem',
-                cursor: 'pointer',
-                padding: '0.25rem'
-              }}
-            >
-              ×
-            </button>
-          </div>
-          
-          {/* Body */}
-          <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', flex: 1 }}>
-            {forcages.map((f, idx) => (
-              <div 
-                key={idx}
-                style={{
-                  background: 'rgba(239, 68, 68, 0.1)',
-                  border: '1px solid rgba(239, 68, 68, 0.2)',
-                  borderRadius: '10px',
-                  padding: '1rem',
-                  marginBottom: idx < forcages.length - 1 ? '0.75rem' : 0
-                }}
-              >
-                {/* Date et type */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'space-between', 
-                  alignItems: 'center',
-                  marginBottom: '0.75rem'
-                }}>
-                  <span style={{
-                    background: f.niveau_risque === 'technique' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
-                    color: f.niveau_risque === 'technique' ? '#ef4444' : '#f59e0b',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '6px',
-                    fontSize: '0.75rem',
-                    fontWeight: '600'
-                  }}>
-                    {f.niveau_risque === 'technique' ? '🔧 Technique' : '💡 Conseil'}
-                  </span>
-                  <span style={{ color: 'var(--gray)', fontSize: '0.75rem' }}>
-                    {new Date(f.date).toLocaleDateString('fr-FR', { 
-                      day: 'numeric', 
-                      month: 'short',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-                
-                {/* Action demandée */}
-                <p style={{ 
-                  color: 'var(--gray-light)', 
-                  fontSize: '0.9rem', 
-                  fontWeight: '600',
-                  margin: '0 0 0.5rem 0' 
-                }}>
-                  📝 {f.action_demandee}
-                </p>
-                
-                {/* Avertissement */}
-                <p style={{ 
-                  color: 'var(--gray)', 
-                  fontSize: '0.85rem', 
-                  margin: '0 0 0.5rem 0',
-                  lineHeight: '1.4'
-                }}>
-                  ⚠️ {f.avertissement_affiche}
-                </p>
-                
-                {/* Règle concernée */}
-                {f.regle_concernee && (
-                  <p style={{ 
-                    color: 'var(--gray)', 
-                    fontSize: '0.75rem', 
-                    margin: 0,
-                    opacity: 0.7
-                  }}>
-                    Règle : {f.regle_concernee}
-                  </p>
-                )}
-              </div>
-            ))}
-          </div>
-          
-          {/* Footer */}
-          <div style={{
-            padding: '1rem 1.25rem',
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            textAlign: 'center'
-          }}>
-            <button
-              onClick={() => setShowForcageModal({ isOpen: false, travail: null })}
-              style={{
-                padding: '0.6rem 2rem',
-                background: '#ef4444',
-                border: 'none',
-                borderRadius: '8px',
-                color: 'white',
-                fontSize: '0.9rem',
-                fontWeight: '600',
-                cursor: 'pointer'
-              }}
-            >
-              Compris
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
+  
   return (
     <>
       {/* ========== NOUVEAU BREADCRUMB ========== */}
@@ -980,7 +988,11 @@ export default function TravauxPage() {
         />
 
         {/* Modale Forçage */}
-        <ForcageModal />
+        <ForcageModal 
+          isOpen={showForcageModal.isOpen}
+          travail={showForcageModal.travail}
+          onClose={() => setShowForcageModal({ isOpen: false, travail: null })}
+        />
       </div>
     </>
   );
