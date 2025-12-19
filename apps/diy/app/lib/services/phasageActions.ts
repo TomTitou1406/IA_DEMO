@@ -77,12 +77,50 @@ export interface LotGenere {
 // ==================== EXTRACTION ====================
 
 /**
+ * Valide et normalise un forçage extrait du JSON
+ */
+function validateForcage(forcage: any): Forcage | null {
+  if (!forcage || typeof forcage !== 'object') {
+    return null;
+  }
+
+  // Vérifier les champs obligatoires
+  if (!forcage.type || !forcage.niveau_risque || !forcage.action_demandee) {
+    console.warn('⚠️ Forçage incomplet, champs manquants:', forcage);
+    return null;
+  }
+
+  // Valider niveau_risque
+  const niveauxValides: NiveauRisque[] = ['conseil', 'technique', 'securite'];
+  if (!niveauxValides.includes(forcage.niveau_risque)) {
+    console.warn('⚠️ niveau_risque invalide:', forcage.niveau_risque);
+    forcage.niveau_risque = 'technique'; // Fallback
+  }
+
+  // Valider type
+  const typesValides: TypeForcage[] = ['ordre_modifie', 'suppression_lot', 'ajout_non_recommande', 'budget_risque', 'autre'];
+  if (!typesValides.includes(forcage.type)) {
+    console.warn('⚠️ type de forçage invalide:', forcage.type);
+    forcage.type = 'autre'; // Fallback
+  }
+
+  return {
+    type: forcage.type,
+    niveau_risque: forcage.niveau_risque,
+    action_demandee: forcage.action_demandee,
+    avertissement_affiche: forcage.avertissement_affiche || '',
+    regle_concernee: forcage.regle_concernee || null
+  };
+}
+
+/**
  * Extrait une action phasage d'une réponse IA
  * Cherche un bloc JSON avec "phasage_action"
  */
 export function extractPhasageAction(content: string): {
   hasAction: boolean;
   action: PhasageAction | null;
+  hasForcage: boolean;
   cleanContent: string;
 } {
   try {
@@ -116,20 +154,36 @@ export function extractPhasageAction(content: string): {
           cleanContent = parsed.phasage_action.message || "Modification effectuée !";
         }
         
-        console.log('✅ Action phasage détectée:', parsed.phasage_action);
+        // Extraire et valider le forçage si présent
+        const action = parsed.phasage_action as PhasageAction;
+        let hasForcage = false;
+        
+        if (action.forcage) {
+          const forcageValide = validateForcage(action.forcage);
+          if (forcageValide) {
+            action.forcage = forcageValide;
+            hasForcage = true;
+            console.log('⚠️ FORÇAGE détecté:', forcageValide.type, '-', forcageValide.niveau_risque);
+          } else {
+            delete action.forcage; // Supprimer si invalide
+          }
+        }
+        
+        console.log('✅ Action phasage détectée:', action.action, hasForcage ? '(avec forçage)' : '');
         
         return {
           hasAction: true,
-          action: parsed.phasage_action as PhasageAction,
+          action,
+          hasForcage,
           cleanContent
         };
       }
     }
     
-    return { hasAction: false, action: null, cleanContent: content };
+    return { hasAction: false, action: null, hasForcage: false, cleanContent: content };
   } catch (error) {
     console.error('Erreur parsing action phasage:', error);
-    return { hasAction: false, action: null, cleanContent: content };
+    return { hasAction: false, action: null, hasForcage: false, cleanContent: content };
   }
 }
 
@@ -142,10 +196,13 @@ export function extractPhasageAction(content: string): {
 export function extractPhasageActions(content: string): {
   hasActions: boolean;
   actions: PhasageAction[];
+  hasForcages: boolean;
+  forcagesCount: number;
   cleanContent: string;
 } {
   const actions: PhasageAction[] = [];
   let cleanContent = content;
+  let forcagesCount = 0;
   
   try {
     // Pattern pour trouver TOUS les blocs JSON avec phasage_action
@@ -156,8 +213,22 @@ export function extractPhasageActions(content: string): {
       try {
         const parsed = JSON.parse(match[1]);
         if (parsed.phasage_action) {
-          actions.push(parsed.phasage_action as PhasageAction);
-          console.log('✅ Action phasage détectée:', parsed.phasage_action);
+          const action = parsed.phasage_action as PhasageAction;
+          
+          // Valider le forçage si présent
+          if (action.forcage) {
+            const forcageValide = validateForcage(action.forcage);
+            if (forcageValide) {
+              action.forcage = forcageValide;
+              forcagesCount++;
+              console.log('⚠️ FORÇAGE détecté:', forcageValide.type, '-', forcageValide.niveau_risque);
+            } else {
+              delete action.forcage;
+            }
+          }
+          
+          actions.push(action);
+          console.log('✅ Action phasage détectée:', action.action, action.forcage ? '(avec forçage)' : '');
         }
       } catch (e) {
         console.error('Erreur parsing JSON action:', e);
@@ -171,8 +242,22 @@ export function extractPhasageActions(content: string): {
         try {
           const parsed = JSON.parse(match[1]);
           if (parsed.phasage_action) {
-            actions.push(parsed.phasage_action as PhasageAction);
-            console.log('✅ Action phasage détectée (raw):', parsed.phasage_action);
+            const action = parsed.phasage_action as PhasageAction;
+            
+            // Valider le forçage si présent
+            if (action.forcage) {
+              const forcageValide = validateForcage(action.forcage);
+              if (forcageValide) {
+                action.forcage = forcageValide;
+                forcagesCount++;
+                console.log('⚠️ FORÇAGE détecté (raw):', forcageValide.type, '-', forcageValide.niveau_risque);
+              } else {
+                delete action.forcage;
+              }
+            }
+            
+            actions.push(action);
+            console.log('✅ Action phasage détectée (raw):', action.action, action.forcage ? '(avec forçage)' : '');
           }
         } catch (e) {
           console.error('Erreur parsing JSON brut:', e);
@@ -199,18 +284,20 @@ export function extractPhasageActions(content: string): {
     }
     
     if (actions.length > 1) {
-      console.log(`📦 ${actions.length} actions phasage détectées`);
+      console.log(`📦 ${actions.length} actions phasage détectées${forcagesCount > 0 ? ` (${forcagesCount} forçages)` : ''}`);
     }
     
     return {
       hasActions: actions.length > 0,
       actions,
+      hasForcages: forcagesCount > 0,
+      forcagesCount,
       cleanContent
     };
     
   } catch (error) {
     console.error('Erreur extraction actions phasage:', error);
-    return { hasActions: false, actions: [], cleanContent: content };
+    return { hasActions: false, actions: [], hasForcages: false, forcagesCount: 0, cleanContent: content };
   }
 }
 
