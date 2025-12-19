@@ -1217,11 +1217,17 @@ export default function PhasagePage() {
                         style={{ 
                           marginLeft: '0.5rem',
                           cursor: 'pointer',
-                          fontSize: '0.9rem'
+                          fontSize: '0.75rem',
+                          background: 'rgba(239, 68, 68, 0.2)',
+                          border: '1px solid #ef4444',
+                          borderRadius: '4px',
+                          padding: '0.15rem 0.4rem',
+                          color: '#ef4444',
+                          fontWeight: '600'
                         }}
-                        title="Cliquez pour voir les détails"
+                        title="Cliquez pour voir les forçages"
                       >
-                        ⚠️
+                        ⚡ Forcé
                       </span>
                     )}
                   </h3>
