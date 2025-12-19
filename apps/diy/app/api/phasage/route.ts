@@ -159,7 +159,7 @@ export async function POST(request: NextRequest) {
       });
     }
 
-   // ========== ACTION : SAVE_BROUILLON ==========
+    // ========== ACTION : SAVE_BROUILLON ==========
     if (action === 'save_brouillon' && lots) {
       // 1. Récupérer les forçages existants AVANT suppression
       const { data: existingLots } = await supabase
@@ -183,34 +183,33 @@ export async function POST(request: NextRequest) {
       await deleteLots(chantierId, 'brouillon');
       
       // 3. Ré-attacher les forçages aux lots avant sauvegarde
-      const lotsAvecForcages = lots.map((lot: any) => ({
+      let lotsAvecForcages = lots.map((lot: any) => ({
         ...lot,
         forcages: forcagesParTitre.get(lot.titre) || lot.forcages || { forcages: [] }
       }));
       
-      // 4. Sauvegarder les nouveaux lots avec leurs forçages préservés
-      const result = await saveLots(chantierId, lotsAvecForcages, 'brouillon');
-      return NextResponse.json({ success: result.success, error: result.error });
-    }
-
-    // ========== ACTION : VALIDATE (brouillon → à_venir) ==========
-    if (action === 'validate') {
-      // Si des lots sont fournis, on les sauvegarde d'abord
-      if (lots && lots.length > 0) {
-        await deleteLots(chantierId, 'brouillon');
-        const saveResult = await saveLots(chantierId, lots, 'à_venir');
-        if (!saveResult.success) {
-          return NextResponse.json({ success: false, error: saveResult.error });
-        }
-        // Mettre à jour le statut du chantier
-        await supabase
-          .from('chantiers')
-          .update({ statut: 'en_cours', updated_at: new Date().toISOString() })
-          .eq('id', chantierId);
-        return NextResponse.json({ success: true });
+      // ========== VALIDATION POST-ACTION ==========
+      // 4. Garantir que "Finitions" est TOUJOURS en dernier
+      const finitionsIndex = lotsAvecForcages.findIndex(
+        (l: any) => l.titre.toLowerCase().includes('finition')
+      );
+      
+      if (finitionsIndex !== -1 && finitionsIndex !== lotsAvecForcages.length - 1) {
+        // Finitions n'est pas en dernier → on le déplace
+        const [finitionsLot] = lotsAvecForcages.splice(finitionsIndex, 1);
+        lotsAvecForcages.push(finitionsLot);
+        
+        // Recalculer les ordres
+        lotsAvecForcages = lotsAvecForcages.map((lot: any, idx: number) => ({
+          ...lot,
+          ordre: idx + 1
+        }));
+        
+        console.log('⚠️ Finitions repositionné en dernier automatiquement');
       }
-      // Sinon on valide le brouillon existant
-      const result = await validerBrouillon(chantierId);
+      
+      // 5. Sauvegarder les nouveaux lots avec leurs forçages préservés
+      const result = await saveLots(chantierId, lotsAvecForcages, 'brouillon');
       return NextResponse.json({ success: result.success, error: result.error });
     }
 
