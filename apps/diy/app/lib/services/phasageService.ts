@@ -227,6 +227,7 @@ export async function loadBrouillon(chantierId: string): Promise<LotGenere[]> {
     prerequis_stricts: t.prerequis_stricts || [],
     points_attention: t.points_attention,
     dependances_type: 'sequentiel',
+    forcages: t.forcages || { forcages: [] },
   }));
 }
 
