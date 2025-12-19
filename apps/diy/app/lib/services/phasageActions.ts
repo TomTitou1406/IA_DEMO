@@ -8,6 +8,8 @@
  * @date 30 novembre 2025
  */
 
+import { supabase } from '@/app/lib/supabaseClient';
+
 // ==================== TYPES ====================
 
 export type PhasageActionType = 
@@ -19,10 +21,44 @@ export type PhasageActionType =
   | 'decouper_lot'
   | 'ajuster_budget_global';
 
+// ==================== TYPES ====================
+
+export type PhasageActionType = 
+  | 'modifier_lot'
+  | 'ajouter_lot'
+  | 'supprimer_lot'
+  | 'deplacer_lot'
+  | 'fusionner_lots'
+  | 'decouper_lot'
+  | 'ajuster_budget_global';
+
+export type NiveauRisque = 'conseil' | 'technique' | 'securite';
+
+export type TypeForcage = 
+  | 'ordre_modifie'
+  | 'suppression_lot'
+  | 'ajout_non_recommande'
+  | 'budget_risque'
+  | 'autre';
+
+export interface Forcage {
+  type: TypeForcage;
+  niveau_risque: NiveauRisque;
+  action_demandee: string;
+  avertissement_affiche: string;
+  regle_concernee: string | null;
+}
+
+export interface ForcageEnregistre extends Forcage {
+  date: string;  // ISO 8601
+  confirme_par_utilisateur: boolean;
+}
+
 export interface PhasageAction {
   action: PhasageActionType;
   params: Record<string, any>;
-  message: string;  // Explication pour le bricoleur
+  message: string;
+  forcage?: Forcage;  // ✅ NOUVEAU : forçage optionnel
 }
 
 export interface LotGenere {
@@ -314,6 +350,112 @@ export function applyPhasageAction(
   }
   
   return newLots;
+}
+
+// ==================== SAUVEGARDE FORÇAGES ====================
+
+import { supabase } from '@/app/lib/supabaseClient';
+
+/**
+ * Sauvegarde un forçage dans le champ JSONB du lot concerné
+ * @param chantierId - ID du chantier
+ * @param lotOrdre - Numéro d'ordre du lot
+ * @param forcage - Données du forçage
+ */
+export async function saveForcage(
+  chantierId: string,
+  lotOrdre: number,
+  forcage: Forcage
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    // 1. Récupérer le lot concerné
+    const { data: lot, error: fetchError } = await supabase
+      .from('travaux')
+      .select('id, forcages')
+      .eq('chantier_id', chantierId)
+      .eq('ordre', lotOrdre)
+      .eq('niveau', 'lot')
+      .single();
+
+    if (fetchError || !lot) {
+      console.error('Lot non trouvé pour forçage:', lotOrdre);
+      return { success: false, error: 'Lot non trouvé' };
+    }
+
+    // 2. Préparer le forçage enrichi
+    const forcageEnregistre: ForcageEnregistre = {
+      ...forcage,
+      date: new Date().toISOString(),
+      confirme_par_utilisateur: true
+    };
+
+    // 3. Récupérer les forçages existants ou initialiser
+    const forcagesExistants = lot.forcages?.forcages || [];
+    
+    // 4. Ajouter le nouveau forçage
+    const nouveauxForcages = {
+      forcages: [...forcagesExistants, forcageEnregistre]
+    };
+
+    // 5. Mettre à jour le lot
+    const { error: updateError } = await supabase
+      .from('travaux')
+      .update({ 
+        forcages: nouveauxForcages,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', lot.id);
+
+    if (updateError) {
+      console.error('Erreur sauvegarde forçage:', updateError);
+      return { success: false, error: updateError.message };
+    }
+
+    console.log('✅ Forçage enregistré pour lot', lotOrdre, ':', forcage.type);
+    return { success: true };
+
+  } catch (err) {
+    console.error('Erreur saveForcage:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Erreur inconnue' };
+  }
+}
+
+/**
+ * Sauvegarde un forçage en extrayant le lot_ordre depuis les params de l'action
+ * Fonction helper pour appel direct après application d'une action
+ */
+export async function saveForcageFromAction(
+  chantierId: string,
+  action: PhasageAction
+): Promise<{ success: boolean; error?: string }> {
+  if (!action.forcage) {
+    return { success: true }; // Pas de forçage à sauvegarder
+  }
+
+  // Extraire le lot_ordre selon le type d'action
+  let lotOrdre: number | null = null;
+
+  switch (action.action) {
+    case 'modifier_lot':
+    case 'supprimer_lot':
+    case 'deplacer_lot':
+    case 'decouper_lot':
+      lotOrdre = action.params.lot_ordre;
+      break;
+    case 'ajouter_lot':
+      lotOrdre = action.params.position;
+      break;
+    case 'fusionner_lots':
+      lotOrdre = action.params.lots_ordres?.[0];
+      break;
+  }
+
+  if (!lotOrdre) {
+    console.warn('Impossible de déterminer le lot_ordre pour le forçage');
+    return { success: false, error: 'lot_ordre non déterminé' };
+  }
+
+  return saveForcage(chantierId, lotOrdre, action.forcage);
 }
 
 // ==================== EVENT HELPERS ====================
