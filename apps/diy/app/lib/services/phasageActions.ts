@@ -562,7 +562,7 @@ export async function saveForcageFromAction(
     case 'supprimer_lot':
     case 'deplacer_lot':
     case 'decouper_lot':
-      lotOrdre = action.params.lot_ordre;
+      lotOrdre = action.params.nouvelle_position;
       break;
     case 'ajouter_lot':
       lotOrdre = action.params.position;
