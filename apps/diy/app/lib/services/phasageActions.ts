@@ -19,7 +19,7 @@ export type PhasageActionType =
   | 'deplacer_lot'
   | 'fusionner_lots'
   | 'decouper_lot'
-  | 'ajuster_budget_global';
+  | 'ajuster_budget_global'
   | 'reordonner_lots';
 
 export type NiveauRisque = 'conseil' | 'technique' | 'securite';
