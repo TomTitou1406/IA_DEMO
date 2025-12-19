@@ -20,6 +20,7 @@ export type PhasageActionType =
   | 'fusionner_lots'
   | 'decouper_lot'
   | 'ajuster_budget_global';
+  | 'reordonner_lots';
 
 export type NiveauRisque = 'conseil' | 'technique' | 'securite';
 
@@ -409,6 +410,52 @@ export function applyPhasageAction(
       newLots.splice(index, 0, ...newSubLots);
       newLots.forEach((lot, idx) => lot.ordre = idx + 1);
       break;
+    }
+    
+    // Permet de réorganiser TOUS les lots en une seule action
+    // params.nouvel_ordre = tableau des lot_ordre dans le nouvel ordre souhaité
+    // Ex: [1, 2, 3, 5, 6, 4, 7] = lot 4 passe après lot 6
+    case 'reordonner_lots': {
+      const { nouvel_ordre } = action.params;
+      
+      if (!nouvel_ordre || !Array.isArray(nouvel_ordre)) {
+        console.error('reordonner_lots: nouvel_ordre manquant ou invalide');
+        break;
+      }
+      
+      // Créer une map ordre_actuel -> lot
+      const lotsParOrdre = new Map<number, typeof newLots[0]>();
+      newLots.forEach(lot => {
+        lotsParOrdre.set(lot.ordre, { ...lot });
+      });
+      
+      // Réorganiser selon le nouvel ordre
+      const lotsReordonnes: typeof newLots = [];
+      nouvel_ordre.forEach((ordreActuel: number, index: number) => {
+        const lot = lotsParOrdre.get(ordreActuel);
+        if (lot) {
+          lotsReordonnes.push({
+            ...lot,
+            ordre: index + 1  // Nouvel ordre = position dans le tableau + 1
+          });
+        }
+      });
+      
+      // Vérifier qu'on n'a pas perdu de lots
+      if (lotsReordonnes.length !== newLots.length) {
+        console.warn('reordonner_lots: nombre de lots différent après réorganisation');
+        // Ajouter les lots manquants à la fin
+        newLots.forEach(lot => {
+          if (!nouvel_ordre.includes(lot.ordre)) {
+            lotsReordonnes.push({
+              ...lot,
+              ordre: lotsReordonnes.length + 1
+            });
+          }
+        });
+      }
+      
+      return lotsReordonnes;
     }
     
     // ========== AJUSTER LE BUDGET GLOBAL ==========
