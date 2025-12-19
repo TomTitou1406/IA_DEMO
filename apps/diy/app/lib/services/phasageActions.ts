@@ -441,8 +441,6 @@ export function applyPhasageAction(
 
 // ==================== SAUVEGARDE FORÇAGES ====================
 
-import { supabase } from '@/app/lib/supabaseClient';
-
 /**
  * Sauvegarde un forçage dans le champ JSONB du lot concerné
  * @param chantierId - ID du chantier
