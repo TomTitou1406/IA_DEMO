@@ -28,6 +28,17 @@ interface LotGenere {
   prerequis_stricts: number[];
   points_attention?: string;
   dependances_type: 'sequentiel' | 'parallele';
+  forcages?: {
+    forcages: Array<{
+      date: string;
+      type: string;
+      niveau_risque: string;
+      action_demandee: string;
+      avertissement_affiche: string;
+      regle_concernee?: string | null;
+      confirme_par_utilisateur: boolean;
+    }>;
+  };
 }
 
 interface Alerte {
@@ -98,13 +109,17 @@ const REGLES_ORDRE: Record<string, string[]> = {
 function verifierRegles(lots: LotGenere[]): RegleViolation[] {
   const violations: RegleViolation[] = [];
   
-  lots.forEach((lot) => {
+  // Exclure les lots de préparation (positions 1-2) de la vérification
+  const lotsATester = lots.filter(l => l.ordre > 2);
+  
+  lotsATester.forEach((lot) => {
     const doitEtreAvant = REGLES_ORDRE[lot.code_expertise] || [];
     
     doitEtreAvant.forEach((codeApres) => {
       // Chercher si un lot avec ce code est AVANT le lot actuel
+      // Mais ignorer les lots de préparation (ordre <= 2)
       const lotAvant = lots.find(
-        (l) => l.code_expertise === codeApres && l.ordre < lot.ordre
+        (l) => l.code_expertise === codeApres && l.ordre < lot.ordre && l.ordre > 2
       );
       
       if (lotAvant) {
@@ -1020,6 +1035,18 @@ export default function PhasagePage() {
                     margin: '0 0 0.35rem 0'
                   }}>
                     {lot.titre}
+                    {lot.forcages?.forcages && lot.forcages.forcages.length > 0 && (
+                      <span 
+                        style={{ 
+                          marginLeft: '0.5rem',
+                          cursor: 'help',
+                          fontSize: '0.9rem'
+                        }}
+                        title={`${lot.forcages.forcages.length} forçage(s) - Ordre modifié malgré avertissement`}
+                      >
+                        ⚠️
+                      </span>
+                    )}
                   </h3>
                   
                   <p style={{
