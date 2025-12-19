@@ -21,17 +21,6 @@ export type PhasageActionType =
   | 'decouper_lot'
   | 'ajuster_budget_global';
 
-// ==================== TYPES ====================
-
-export type PhasageActionType = 
-  | 'modifier_lot'
-  | 'ajouter_lot'
-  | 'supprimer_lot'
-  | 'deplacer_lot'
-  | 'fusionner_lots'
-  | 'decouper_lot'
-  | 'ajuster_budget_global';
-
 export type NiveauRisque = 'conseil' | 'technique' | 'securite';
 
 export type TypeForcage = 
