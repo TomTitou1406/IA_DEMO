@@ -259,12 +259,11 @@ export default function TravauxPage() {
     onConfirm: () => {}
   });
 
-  {/* Modale Forçage */}
-  <ForcageModal 
-    isOpen={showForcageModal.isOpen}
-    travail={showForcageModal.travail}
-    onClose={() => setShowForcageModal({ isOpen: false, travail: null })}
-  />
+  // ✅ AJOUT DU STATE POUR LA MODALE FORÇAGE
+  const [showForcageModal, setShowForcageModal] = useState<{
+    isOpen: boolean;
+    travail: Travail | null;
+  }>({ isOpen: false, travail: null });
 
   useEffect(() => {
     async function loadData() {
