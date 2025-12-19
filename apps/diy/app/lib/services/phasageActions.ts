@@ -300,9 +300,8 @@ export function applyPhasageAction(
   lots: LotGenere[],
   action: PhasageAction
 ): LotGenere[] {
-  const newLots = [...lots];
-  
-  switch (action.action) {
+  // Copie profonde pour que React détecte les changements
+  const newLots = lots.map(l => ({ ...l }));
     
     // ========== MODIFIER UN LOT ==========
     case 'modifier_lot': {
