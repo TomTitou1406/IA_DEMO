@@ -10,8 +10,8 @@
  * - 'reset' : Supprime les lots existants
  * - 'load_brouillon' : Charge les lots brouillon existants
  * 
- * @version 2.0
- * @date 29 novembre 2025
+ * @version 2.1
+ * @date 19 décembre 2025
  */
 
 import { NextRequest, NextResponse } from 'next/server';
@@ -178,66 +178,100 @@ export async function POST(request: NextRequest) {
           }
         });
       }
-
-      // ========== ACTION : VALIDATE (brouillon → à_venir) ==========
-      if (action === 'validate') {
-        console.log('🎯 ACTION VALIDATE reçue pour chantier:', chantierId);
+      
+      // 2. Supprimer les anciens brouillons
+      await deleteLots(chantierId, 'brouillon');
+      
+      // 3. Ré-attacher les forçages aux lots avant sauvegarde
+      let lotsAvecForcages = lots.map((lot: any) => ({
+        ...lot,
+        forcages: forcagesParTitre.get(lot.titre) || lot.forcages || { forcages: [] }
+      }));
+      
+      // ========== VALIDATION POST-ACTION ==========
+      // 4. Garantir que "Finitions" est TOUJOURS en dernier
+      const finitionsIndex = lotsAvecForcages.findIndex(
+        (l: any) => l.titre.toLowerCase().includes('finition')
+      );
+      
+      if (finitionsIndex !== -1 && finitionsIndex !== lotsAvecForcages.length - 1) {
+        // Finitions n'est pas en dernier → on le déplace
+        const [finitionsLot] = lotsAvecForcages.splice(finitionsIndex, 1);
+        lotsAvecForcages.push(finitionsLot);
         
-        // Si des lots sont fournis, on les sauvegarde directement en à_venir
-        if (lots && lots.length > 0) {
-          console.log('📦 Sauvegarde de', lots.length, 'lots en à_venir');
-          
-          // 1. Récupérer les forçages existants AVANT suppression
-          const { data: existingLots } = await supabase
-            .from('travaux')
-            .select('titre, forcages')
-            .eq('chantier_id', chantierId)
-            .eq('statut', 'brouillon')
-            .eq('niveau', 'lot');
-          
-          // Créer une map titre -> forcages pour les préserver
-          const forcagesParTitre = new Map<string, any>();
-          if (existingLots) {
-            existingLots.forEach((lot: any) => {
-              if (lot.forcages && lot.forcages.forcages && lot.forcages.forcages.length > 0) {
-                forcagesParTitre.set(lot.titre, lot.forcages);
-              }
-            });
-          }
-          
-          // 2. Supprimer les brouillons
-          await deleteLots(chantierId, 'brouillon');
-          
-          // 3. Ré-attacher les forçages aux lots
-          const lotsAvecForcages = lots.map((lot: any) => ({
-            ...lot,
-            forcages: forcagesParTitre.get(lot.titre) || lot.forcages || { forcages: [] }
-          }));
-          
-          // 4. Sauvegarder en à_venir
-          const saveResult = await saveLots(chantierId, lotsAvecForcages, 'à_venir');
-          
-          if (!saveResult.success) {
-            console.error('❌ Erreur sauvegarde lots:', saveResult.error);
-            return NextResponse.json({ success: false, error: saveResult.error });
-          }
-          
-          // 5. Mettre à jour le statut du chantier
-          await supabase
-            .from('chantiers')
-            .update({ statut: 'en_cours', updated_at: new Date().toISOString() })
-            .eq('id', chantierId);
-          
-          console.log('✅ VALIDATE terminé avec succès');
-          return NextResponse.json({ success: true });
+        // Recalculer les ordres
+        lotsAvecForcages = lotsAvecForcages.map((lot: any, idx: number) => ({
+          ...lot,
+          ordre: idx + 1
+        }));
+        
+        console.log('⚠️ Finitions repositionné en dernier automatiquement');
+      }
+      
+      // 5. Sauvegarder les nouveaux lots avec leurs forçages préservés
+      const result = await saveLots(chantierId, lotsAvecForcages, 'brouillon');
+      return NextResponse.json({ success: result.success, error: result.error });
+    }
+
+    // ========== ACTION : VALIDATE (brouillon → à_venir) ==========
+    if (action === 'validate') {
+      console.log('🎯 ACTION VALIDATE reçue pour chantier:', chantierId);
+      
+      // Si des lots sont fournis, on les sauvegarde directement en à_venir
+      if (lots && lots.length > 0) {
+        console.log('📦 Sauvegarde de', lots.length, 'lots en à_venir');
+        
+        // 1. Récupérer les forçages existants AVANT suppression
+        const { data: existingLots } = await supabase
+          .from('travaux')
+          .select('titre, forcages')
+          .eq('chantier_id', chantierId)
+          .eq('statut', 'brouillon')
+          .eq('niveau', 'lot');
+        
+        // Créer une map titre -> forcages pour les préserver
+        const forcagesParTitre = new Map<string, any>();
+        if (existingLots) {
+          existingLots.forEach((lot: any) => {
+            if (lot.forcages && lot.forcages.forcages && lot.forcages.forcages.length > 0) {
+              forcagesParTitre.set(lot.titre, lot.forcages);
+            }
+          });
         }
         
-        // Sinon on valide le brouillon existant via la fonction dédiée
-        console.log('🔄 Validation brouillon existant via validerBrouillon()');
-        const result = await validerBrouillon(chantierId);
-        return NextResponse.json({ success: result.success, error: result.error });
+        // 2. Supprimer les brouillons
+        await deleteLots(chantierId, 'brouillon');
+        
+        // 3. Ré-attacher les forçages aux lots
+        const lotsAvecForcages = lots.map((lot: any) => ({
+          ...lot,
+          forcages: forcagesParTitre.get(lot.titre) || lot.forcages || { forcages: [] }
+        }));
+        
+        // 4. Sauvegarder en à_venir
+        const saveResult = await saveLots(chantierId, lotsAvecForcages, 'à_venir');
+        
+        if (!saveResult.success) {
+          console.error('❌ Erreur sauvegarde lots:', saveResult.error);
+          return NextResponse.json({ success: false, error: saveResult.error });
+        }
+        
+        // 5. Mettre à jour le statut du chantier
+        await supabase
+          .from('chantiers')
+          .update({ statut: 'en_cours', updated_at: new Date().toISOString() })
+          .eq('id', chantierId);
+        
+        console.log('✅ VALIDATE terminé avec succès');
+        return NextResponse.json({ success: true });
       }
-   
+      
+      // Sinon on valide le brouillon existant via la fonction dédiée
+      console.log('🔄 Validation brouillon existant via validerBrouillon()');
+      const result = await validerBrouillon(chantierId);
+      return NextResponse.json({ success: result.success, error: result.error });
+    }
+
     // ========== ACTION PAR DÉFAUT : GÉNÉRER LE PHASAGE ==========
     console.log('🚀 Démarrage phasage pour chantier:', chantierId);
 
@@ -267,7 +301,7 @@ export async function POST(request: NextRequest) {
         { role: 'system', content: prompt },
         { role: 'user', content: 'Génère le phasage de ce projet en JSON.' }
       ],
-      temperature: 0.2, // Réduit pour plus de cohérence
+      temperature: 0.2,
       max_tokens: 4000,
     });
 
