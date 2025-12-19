@@ -560,8 +560,11 @@ export async function saveForcageFromAction(
   switch (action.action) {
     case 'modifier_lot':
     case 'supprimer_lot':
-    case 'deplacer_lot':
     case 'decouper_lot':
+      lotOrdre = action.params.lot_ordre;
+      break;
+    case 'deplacer_lot':
+      // Après déplacement, le lot est à sa nouvelle position
       lotOrdre = action.params.nouvelle_position;
       break;
     case 'ajouter_lot':
@@ -570,6 +573,23 @@ export async function saveForcageFromAction(
     case 'fusionner_lots':
       lotOrdre = action.params.lots_ordres?.[0];
       break;
+    // ✅ NOUVEAU : gestion de reordonner_lots
+    case 'reordonner_lots': {
+      // Pour reordonner_lots, on cherche le lot qui a changé de position
+      // Le nouvel_ordre contient les anciens ordres dans le nouvel arrangement
+      const nouvelOrdre = action.params.nouvel_ordre;
+      if (nouvelOrdre && Array.isArray(nouvelOrdre)) {
+        // Trouver le premier lot qui n'est plus à sa position originale
+        for (let i = 0; i < nouvelOrdre.length; i++) {
+          if (nouvelOrdre[i] !== i + 1) {
+            // Ce lot a bougé - on utilise sa NOUVELLE position (i+1)
+            lotOrdre = i + 1;
+            break;
+          }
+        }
+      }
+      break;
+    }
   }
 
   if (!lotOrdre) {
