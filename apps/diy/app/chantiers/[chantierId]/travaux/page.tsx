@@ -221,11 +221,18 @@ export default function TravauxPage() {
                   <span 
                     style={{ 
                       marginLeft: '0.5rem',
+                      fontSize: '0.75rem',
+                      background: 'rgba(239, 68, 68, 0.2)',
+                      border: '1px solid #ef4444',
+                      borderRadius: '4px',
+                      padding: '0.15rem 0.4rem',
+                      color: '#ef4444',
+                      fontWeight: '600',
                       cursor: 'help'
                     }}
-                    title={`${travail.forcages.forcages.length} forçage(s) utilisateur`}
+                    title={`${travail.forcages.forcages.length} forçage(s) - Cliquez pour détails`}
                   >
-                    ⚠️
+                    ⚡ Forcé
                   </span>
                 )}
               </h3>
