@@ -1007,7 +1007,7 @@ export default function PhasagePage() {
       {/* BREADCRUMB */}
       <div style={{
         position: 'fixed',
-        top: '100px',
+        top: '60px',
         left: 0,
         right: 0,
         zIndex: 100,
