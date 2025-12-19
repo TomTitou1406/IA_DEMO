@@ -470,7 +470,11 @@ export default function PhasagePage() {
   const [showRegenerateModal, setShowRegenerateModal] = useState(false);
   const [showValidateModal, setShowValidateModal] = useState(false);
   const [violations, setViolations] = useState<RegleViolation[]>([]);
-
+  const [showForcageModal, setShowForcageModal] = useState<{
+    isOpen: boolean;
+    lot: LotGenere | null;
+  }>({ isOpen: false, lot: null });
+  
   // ==================== CHARGEMENT INITIAL ====================
 
   useEffect(() => {
@@ -795,6 +799,172 @@ export default function PhasagePage() {
     );
   }
 
+  // ==================== MODALE FORÇAGE ====================
+  function ForcageModal() {
+    if (!showForcageModal.isOpen || !showForcageModal.lot) return null;
+    
+    const lot = showForcageModal.lot;
+    const forcages = lot.forcages?.forcages || [];
+    
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.8)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 1000,
+        padding: '1rem'
+      }}>
+        <div style={{
+          background: '#1a1a1a',
+          borderRadius: '16px',
+          border: '1px solid #f59e0b',
+          maxWidth: '500px',
+          width: '100%',
+          maxHeight: '80vh',
+          overflow: 'hidden',
+          display: 'flex',
+          flexDirection: 'column'
+        }}>
+          {/* Header */}
+          <div style={{
+            background: 'rgba(245, 158, 11, 0.15)',
+            padding: '1rem 1.25rem',
+            borderBottom: '1px solid rgba(245, 158, 11, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>⚠️</span>
+              <div>
+                <h3 style={{ margin: 0, color: 'var(--gray-light)', fontSize: '1rem', fontWeight: '600' }}>
+                  Forçage(s) enregistré(s)
+                </h3>
+                <p style={{ margin: 0, color: 'var(--gray)', fontSize: '0.85rem' }}>
+                  {lot.titre}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowForcageModal({ isOpen: false, lot: null })}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--gray)',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                padding: '0.25rem'
+              }}
+            >
+              ×
+            </button>
+          </div>
+          
+          {/* Body */}
+          <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', flex: 1 }}>
+            {forcages.map((f, idx) => (
+              <div 
+                key={idx}
+                style={{
+                  background: 'rgba(245, 158, 11, 0.1)',
+                  border: '1px solid rgba(245, 158, 11, 0.2)',
+                  borderRadius: '10px',
+                  padding: '1rem',
+                  marginBottom: idx < forcages.length - 1 ? '0.75rem' : 0
+                }}
+              >
+                {/* Date et type */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'space-between', 
+                  alignItems: 'center',
+                  marginBottom: '0.75rem'
+                }}>
+                  <span style={{
+                    background: f.niveau_risque === 'technique' ? 'rgba(239, 68, 68, 0.2)' : 'rgba(245, 158, 11, 0.2)',
+                    color: f.niveau_risque === 'technique' ? '#ef4444' : '#f59e0b',
+                    padding: '0.2rem 0.5rem',
+                    borderRadius: '6px',
+                    fontSize: '0.75rem',
+                    fontWeight: '600'
+                  }}>
+                    {f.niveau_risque === 'technique' ? '🔧 Technique' : '💡 Conseil'}
+                  </span>
+                  <span style={{ color: 'var(--gray)', fontSize: '0.75rem' }}>
+                    {new Date(f.date).toLocaleDateString('fr-FR', { 
+                      day: 'numeric', 
+                      month: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </span>
+                </div>
+                
+                {/* Action demandée */}
+                <p style={{ 
+                  color: 'var(--gray-light)', 
+                  fontSize: '0.9rem', 
+                  fontWeight: '600',
+                  margin: '0 0 0.5rem 0' 
+                }}>
+                  📝 {f.action_demandee}
+                </p>
+                
+                {/* Avertissement */}
+                <p style={{ 
+                  color: 'var(--gray)', 
+                  fontSize: '0.85rem', 
+                  margin: '0 0 0.5rem 0',
+                  lineHeight: '1.4'
+                }}>
+                  ⚠️ {f.avertissement_affiche}
+                </p>
+                
+                {/* Règle concernée */}
+                {f.regle_concernee && (
+                  <p style={{ 
+                    color: 'var(--gray)', 
+                    fontSize: '0.75rem', 
+                    margin: 0,
+                    opacity: 0.7
+                  }}>
+                    Règle : {f.regle_concernee}
+                  </p>
+                )}
+              </div>
+            ))}
+          </div>
+          
+          {/* Footer */}
+          <div style={{
+            padding: '1rem 1.25rem',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            textAlign: 'center'
+          }}>
+            <button
+              onClick={() => setShowForcageModal({ isOpen: false, lot: null })}
+              style={{
+                padding: '0.6rem 2rem',
+                background: '#f59e0b',
+                border: 'none',
+                borderRadius: '8px',
+                color: 'white',
+                fontSize: '0.9rem',
+                fontWeight: '600',
+                cursor: 'pointer'
+              }}
+            >
+              Compris
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div style={{ minHeight: '100vh', background: '#0a0a0a', paddingBottom: '100px' }}>
       
@@ -820,6 +990,9 @@ export default function PhasagePage() {
         onConfirm={() => { setShowValidateModal(false); savePhasage('validate'); }}
         onCancel={() => setShowValidateModal(false)}
       />
+
+      {/* Modale Forçage */}
+      <ForcageModal />
 
       {/* BREADCRUMB */}
       <div style={{
@@ -1037,12 +1210,16 @@ export default function PhasagePage() {
                     {lot.titre}
                     {lot.forcages?.forcages && lot.forcages.forcages.length > 0 && (
                       <span 
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowForcageModal({ isOpen: true, lot });
+                        }}
                         style={{ 
                           marginLeft: '0.5rem',
-                          cursor: 'help',
+                          cursor: 'pointer',
                           fontSize: '0.9rem'
                         }}
-                        title={`${lot.forcages.forcages.length} forçage(s) - Ordre modifié malgré avertissement`}
+                        title="Cliquez pour voir les détails"
                       >
                         ⚠️
                       </span>
