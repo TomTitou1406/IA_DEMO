@@ -110,6 +110,7 @@ function verifierRegles(lots: LotGenere[]): RegleViolation[] {
   const violations: RegleViolation[] = [];
   
   // Exclure les lots de préparation (positions 1-2) de la vérification
+  // Ces lots (Vérification réseaux, Protection) sont toujours en premier
   const lotsATester = lots.filter(l => l.ordre > 2);
   
   lotsATester.forEach((lot) => {
