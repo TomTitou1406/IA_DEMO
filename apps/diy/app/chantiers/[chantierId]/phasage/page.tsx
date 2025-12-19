@@ -680,9 +680,12 @@ export default function PhasagePage() {
   }
 
   async function savePhasage(action: 'save_brouillon' | 'validate') {
+    console.log('🚀 savePhasage appelé avec action:', action);
+    console.log('📦 Lots à sauvegarder:', lots.length, lots);
+    
     setSaving(true);
     setError(null);
-
+  
     try {
       const response = await fetch('/api/phasage', {
         method: 'POST',
@@ -693,19 +696,25 @@ export default function PhasagePage() {
           lots 
         }),
       });
-
+  
+      console.log('📡 Réponse reçue, status:', response.status);
+      
       const data = await response.json();
-
+      console.log('📋 Data reçue:', data);
+  
       if (!response.ok || !data.success) {
         throw new Error(data.error || 'Erreur sauvegarde');
       }
-
+  
+      console.log('✅ Sauvegarde OK, redirection...');
+      
       if (action === 'validate') {
         router.push(`/chantiers/${chantierId}/travaux`);
       } else {
         router.push(`/chantiers/${chantierId}`);
       }
     } catch (err) {
+      console.error('❌ Erreur savePhasage:', err);
       setError(err instanceof Error ? err.message : 'Erreur sauvegarde');
       setSaving(false);
     }
