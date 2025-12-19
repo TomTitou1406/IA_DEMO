@@ -763,35 +763,37 @@ async function loadPhasageContext(chantierId: string): Promise<ContextData> {
       lotsBrouillonInfo = `\n📦 LOTS PROPOSÉS (${nbLotsBrouillon}) :\n${lotsFormatted}`;
     }
 
-    // Formater les règles importantes
+    // Formater les règles selon les 3 niveaux
     let reglesInfo = '';
     if (regles && regles.length > 0) {
       const interdits = regles.filter((r: any) => r.type_regle === 'interdit');
       const techniques = regles.filter((r: any) => r.type_regle === 'dependance');
-      const conseils = regles.filter((r: any) => r.type_regle === 'conseil' || r.type_regle === 'alerte');
-      
-      let reglesInfo = '';
-      
+      const alertes = regles.filter((r: any) => r.type_regle === 'alerte');
+      const conseils = regles.filter((r: any) => r.type_regle === 'conseil');
+
+      // NIVEAU 1 : Interdits absolus (refuser)
       if (interdits.length > 0) {
         const interditsFormatted = interdits
           .map((r: any) => `   ⛔ [${r.code}] ${r.message_ia || r.titre}`)
           .join('\n');
         reglesInfo += `\n🚫 TRAVAUX HORS SCOPE (à refuser) :\n${interditsFormatted}`;
       }
-      
+
+      // NIVEAU 2 : Séquences techniques (avertir si modifié)
       if (techniques.length > 0) {
         const techniquesFormatted = techniques
           .slice(0, 8)
           .map((r: any) => `   🔧 [${r.code}] ${r.message_ia || r.titre}`)
           .join('\n');
-        reglesInfo += `\n\n🔧 SÉQUENCES TECHNIQUES (avertir si modifié) :\n${techniquesFormatted}`;
+        reglesInfo += `\n\n🔧 SÉQUENCES TECHNIQUES (avertir + tracer si modifié) :\n${techniquesFormatted}`;
       }
-      
-      if (conseils.length > 0) {
-        const conseilsFormatted = conseils
-          .slice(0, 5)
-          .map((r: any) => `   💡 ${r.message_ia || r.titre}`)
-          .join('\n');
+
+      // NIVEAU 3 : Alertes et conseils (informer)
+      if (alertes.length > 0 || conseils.length > 0) {
+        const conseilsFormatted = [
+          ...alertes.slice(0, 3).map((r: any) => `   ⚠️ ${r.message_ia || r.titre}`),
+          ...conseils.slice(0, 3).map((r: any) => `   💡 ${r.message_ia || r.titre}`)
+        ].join('\n');
         reglesInfo += `\n\n💡 BONNES PRATIQUES (informer) :\n${conseilsFormatted}`;
       }
     }
