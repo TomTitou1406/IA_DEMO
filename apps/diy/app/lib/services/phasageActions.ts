@@ -302,6 +302,8 @@ export function applyPhasageAction(
 ): LotGenere[] {
   // Copie profonde pour que React détecte les changements
   const newLots = lots.map(l => ({ ...l }));
+  
+  switch (action.action) {
     
     // ========== MODIFIER UN LOT ==========
     case 'modifier_lot': {
