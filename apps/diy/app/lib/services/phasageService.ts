@@ -149,7 +149,7 @@ export async function saveLots(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Préparer les données
-    const travauxData = lots.map((lot) => ({
+    const travauxData = lots.map((lot: any) => ({
       chantier_id: chantierId,
       titre: lot.titre,
       description: lot.description,
@@ -163,6 +163,7 @@ export async function saveLots(
       points_attention: lot.points_attention || null,
       statut: statut,
       progression: 0,
+      forcages: lot.forcages || { forcages: [] },  // ✅ AJOUTÉ
     }));
 
     // Insérer les lots
