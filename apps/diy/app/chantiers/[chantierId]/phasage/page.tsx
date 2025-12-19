@@ -12,7 +12,7 @@ import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { supabase } from '@/app/lib/supabaseClient';
-import { applyPhasageAction, type PhasageAction } from '@/app/lib/services/phasageActions';
+import { applyPhasageAction, PhasageAction, saveForcageFromAction } from '@/app/lib/services/phasageActions';
 import { useToast } from '@/app/components/Toast';
 
 // ==================== TYPES ====================
@@ -485,6 +485,18 @@ export default function PhasagePage() {
         }),
       }).then(() => {
         console.log('✅ Brouillon auto-sauvegardé après action IA');
+        
+        // Sauvegarder le forçage si présent
+        if (action.forcage) {
+          saveForcageFromAction(chantierId, action)
+            .then((result) => {
+              if (result.success) {
+                console.log('⚠️ Forçage enregistré:', action.forcage?.type);
+              } else {
+                console.warn('⚠️ Erreur sauvegarde forçage:', result.error);
+              }
+            });
+        }
       }).catch((err) => {
         console.warn('⚠️ Erreur sauvegarde brouillon:', err);
       });
