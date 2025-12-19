@@ -161,10 +161,35 @@ export async function POST(request: NextRequest) {
 
    // ========== ACTION : SAVE_BROUILLON ==========
     if (action === 'save_brouillon' && lots) {
-      // D'abord supprimer les anciens brouillons
+      // 1. Récupérer les forçages existants AVANT suppression
+      const { data: existingLots } = await supabase
+        .from('travaux')
+        .select('titre, forcages')
+        .eq('chantier_id', chantierId)
+        .eq('statut', 'brouillon')
+        .eq('niveau', 'lot');
+      
+      // Créer une map titre -> forcages pour les préserver
+      const forcagesParTitre = new Map<string, any>();
+      if (existingLots) {
+        existingLots.forEach((lot: any) => {
+          if (lot.forcages && lot.forcages.forcages && lot.forcages.forcages.length > 0) {
+            forcagesParTitre.set(lot.titre, lot.forcages);
+          }
+        });
+      }
+      
+      // 2. Supprimer les anciens brouillons
       await deleteLots(chantierId, 'brouillon');
-      // Puis sauvegarder les nouveaux
-      const result = await saveLots(chantierId, lots, 'brouillon');
+      
+      // 3. Ré-attacher les forçages aux lots avant sauvegarde
+      const lotsAvecForcages = lots.map((lot: any) => ({
+        ...lot,
+        forcages: forcagesParTitre.get(lot.titre) || lot.forcages || { forcages: [] }
+      }));
+      
+      // 4. Sauvegarder les nouveaux lots avec leurs forçages préservés
+      const result = await saveLots(chantierId, lotsAvecForcages, 'brouillon');
       return NextResponse.json({ success: result.success, error: result.error });
     }
 
