@@ -584,13 +584,19 @@ export default function ChatInterface({
 
     try {
       // Recharger le contexte frais depuis la BDD
-      let freshContext = additionalContext;
+      let freshContext = '';
       try {
         const contextData = await loadContextForPath(pathname);
-        freshContext = contextData.contextForAI;
+        freshContext = contextData.contextForAI || '';
         console.log('🔄 Contexte rechargé pour le message');
       } catch (e) {
         console.warn('⚠️ Impossible de recharger le contexte:', e);
+      }
+      
+      // Fusionner avec additionalContext (contexte vidéo, etc.) s'il existe
+      if (additionalContext) {
+        freshContext = additionalContext + (freshContext ? `\n\n${freshContext}` : '');
+        console.log('🎬 Contexte additionnel fusionné');
       }
     
       // Préparer les messages pour l'API
