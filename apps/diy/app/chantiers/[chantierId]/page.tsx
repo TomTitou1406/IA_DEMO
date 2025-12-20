@@ -3,9 +3,10 @@
  * 
  * Page unifiée Création / Édition / Récap de chantier
  * - Si id === "nouveau" → mode création (conversation IA)
- * - Sinon → mode récap/édition avec accordéons
+ * - Sinon → mode récap/édition (affiche le chantier + actions)
  * 
- * Design responsive avec accordéons pour mobile
+ * Design compact avec accordéons pour mobile
+ * Affiche tous les champs enrichis (surface, équipements, réseaux, etc.)
  * 
  * @version 3.0
  * @date 20 décembre 2025
@@ -85,7 +86,6 @@ interface ChantierData {
 }
 
 // ==================== COMPOSANT ACCORDÉON ====================
-
 function AccordionSection({
   icon,
   title,
@@ -103,30 +103,30 @@ function AccordionSection({
 }) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.03)',
-      borderRadius: '12px',
+      background: 'rgba(0,0,0,0.25)',
+      borderRadius: '8px',
       overflow: 'hidden',
-      border: '1px solid rgba(255,255,255,0.06)'
+      marginBottom: '0.5rem'
     }}>
       {/* Header cliquable */}
       <button
         onClick={onToggle}
         style={{
           width: '100%',
-          padding: '0.875rem 1rem',
-          background: isOpen ? 'rgba(249, 115, 22, 0.1)' : 'transparent',
+          padding: '0.6rem 0.75rem',
+          background: isOpen ? 'rgba(249, 115, 22, 0.15)' : 'transparent',
           border: 'none',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          transition: 'all 0.2s'
+          transition: 'background 0.2s'
         }}
       >
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <span style={{ fontSize: '1rem' }}>{icon}</span>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+          <span style={{ fontSize: '0.85rem' }}>{icon}</span>
           <span style={{ 
-            fontSize: '0.9rem', 
+            fontSize: '0.8rem', 
             fontWeight: '600', 
             color: isOpen ? 'var(--orange)' : 'var(--gray-light)' 
           }}>
@@ -135,9 +135,9 @@ function AccordionSection({
           {count !== undefined && count > 0 && (
             <span style={{
               background: 'rgba(255,255,255,0.1)',
-              padding: '0.1rem 0.4rem',
-              borderRadius: '10px',
-              fontSize: '0.7rem',
+              padding: '0.1rem 0.35rem',
+              borderRadius: '8px',
+              fontSize: '0.65rem',
               color: 'var(--gray)'
             }}>
               {count}
@@ -146,7 +146,7 @@ function AccordionSection({
         </div>
         <span style={{ 
           color: 'var(--gray)', 
-          fontSize: '0.8rem',
+          fontSize: '0.7rem',
           transform: isOpen ? 'rotate(180deg)' : 'rotate(0deg)',
           transition: 'transform 0.2s'
         }}>
@@ -157,7 +157,7 @@ function AccordionSection({
       {/* Contenu */}
       {isOpen && (
         <div style={{
-          padding: '0.75rem 1rem 1rem',
+          padding: '0.5rem 0.75rem 0.75rem',
           borderTop: '1px solid rgba(255,255,255,0.06)'
         }}>
           {children}
@@ -167,131 +167,13 @@ function AccordionSection({
   );
 }
 
-// ==================== COMPOSANTS D'AFFICHAGE ====================
-
-function InfoChip({ 
-  icon, 
-  label, 
-  value, 
-  subValue 
-}: { 
-  icon: string; 
-  label: string; 
-  value: string;
-  subValue?: string;
-}) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'center',
-      gap: '0.5rem',
-      padding: '0.5rem 0.75rem',
-      background: 'rgba(0,0,0,0.3)',
-      borderRadius: '8px',
-      flex: '1 1 auto',
-      minWidth: '120px'
-    }}>
-      <span style={{ fontSize: '0.9rem' }}>{icon}</span>
-      <div>
-        <div style={{ fontSize: '0.65rem', color: 'var(--gray)', textTransform: 'uppercase' }}>
-          {label}
-        </div>
-        <div style={{ fontSize: '0.85rem', color: 'var(--gray-light)', fontWeight: '600' }}>
-          {value}
-          {subValue && <span style={{ fontSize: '0.7rem', color: 'var(--gray)', marginLeft: '0.25rem' }}>{subValue}</span>}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function TagsList({ 
-  tags, 
-  color 
-}: { 
-  tags: string[]; 
-  color: string;
-}) {
-  return (
-    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-      {tags.map((tag, idx) => (
-        <span key={idx} style={{
-          background: `${color}20`,
-          color: color,
-          padding: '0.2rem 0.6rem',
-          borderRadius: '12px',
-          fontSize: '0.75rem',
-          fontWeight: '500'
-        }}>
-          {tag}
-        </span>
-      ))}
-    </div>
-  );
-}
-
-function InfoRow({ 
-  icon, 
-  label, 
-  value 
-}: { 
-  icon: string; 
-  label: string; 
-  value: string;
-}) {
-  return (
-    <div style={{
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: '0.5rem',
-      padding: '0.4rem 0'
-    }}>
-      <span style={{ fontSize: '0.85rem', flexShrink: 0 }}>{icon}</span>
-      <div style={{ flex: 1 }}>
-        <span style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase' }}>{label}</span>
-        <div style={{ fontSize: '0.85rem', color: 'var(--gray-light)', lineHeight: '1.4' }}>{value}</div>
-      </div>
-    </div>
-  );
-}
-
-function NetworkBadge({ 
-  icon, 
-  label, 
-  active 
-}: { 
-  icon: string; 
-  label: string; 
-  active: boolean;
-}) {
-  return (
-    <span style={{
-      display: 'inline-flex',
-      alignItems: 'center',
-      gap: '0.25rem',
-      padding: '0.25rem 0.6rem',
-      background: active ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
-      border: `1px solid ${active ? 'rgba(239, 68, 68, 0.3)' : 'rgba(16, 185, 129, 0.3)'}`,
-      borderRadius: '12px',
-      fontSize: '0.75rem',
-      color: active ? '#ef4444' : '#10b981'
-    }}>
-      <span>{icon}</span>
-      <span>{label}</span>
-      <span style={{ fontWeight: '600' }}>{active ? '⚠️' : '✓'}</span>
-    </span>
-  );
-}
-
-// ==================== COMPOSANT PRINCIPAL ====================
-
 export default function ChantierEditPage() {
   const params = useParams();
   const router = useRouter();
   const chantierId = params.chantierId as string;
   const isCreation = chantierId === 'nouveau';
 
-  // États
+ // États
   const [chantier, setChantier] = useState<ChantierData | null>(null);
   const [loading, setLoading] = useState(!isCreation);
   const [error, setError] = useState<string | null>(null);
@@ -305,12 +187,10 @@ export default function ChantierEditPage() {
     competences: false
   });
 
-  // Toggle une section
   const toggleSection = (key: string) => {
     setOpenSections(prev => ({ ...prev, [key]: !prev[key] }));
   };
 
-  // Tout déplier / replier
   const toggleAll = () => {
     const allOpen = Object.values(openSections).every(v => v);
     const newState = Object.keys(openSections).reduce((acc, key) => {
@@ -319,7 +199,7 @@ export default function ChantierEditPage() {
     }, {} as Record<string, boolean>);
     setOpenSections(newState);
   };
-
+  
   // Charger le chantier si mode édition
   useEffect(() => {
     if (isCreation) return;
@@ -362,12 +242,12 @@ export default function ChantierEditPage() {
     loadChantier();
   }, [chantierId, isCreation]);
 
-  // Ouvrir l'assistant pour modifier
+// Ouvrir l'assistant pour modifier
   const handleModifier = () => {
     window.dispatchEvent(new CustomEvent('openAssistant'));
   };
 
-  // Lancer le phasage
+  // Lancer le phasage (génération des lots)
   const handleLancerPhasage = () => {
     router.push(`/chantiers/${chantierId}/phasage`);
   };
@@ -415,7 +295,7 @@ export default function ChantierEditPage() {
           maxWidth: '500px', 
           margin: '0 auto', 
           padding: '1rem',
-          paddingTop: '120px',
+          paddingTop: '70px',
         }}>
           <div style={{
             background: 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.05) 100%)',
@@ -495,6 +375,29 @@ export default function ChantierEditPage() {
               >
                 <span>✨ Démarrer avec l'assistant</span>
               </button>
+
+              <button
+                onClick={() => {/* TODO: ouvrir vidéo */}}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  color: 'var(--gray-light)',
+                  fontSize: '0.9rem',
+                  fontWeight: '500',
+                  padding: '0.6rem 1.25rem',
+                  width: '100%',
+                  maxWidth: '280px',
+                  background: 'transparent',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  borderRadius: '25px',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+              >
+                <span>🎬 Voir une vidéo explicative</span>
+              </button>
             </div>
           </div>
         </div>
@@ -526,39 +429,31 @@ export default function ChantierEditPage() {
   }
 
   const meta = chantier.metadata || {};
+  const allOpen = Object.values(openSections).every(v => v);
 
-  // Calculer les compteurs pour les badges
-  const countCaracteristiques = [
-    meta.type_piece,
-    meta.dimensions,
-    meta.surface_sol_m2 || meta.surface_m2,
-    meta.acces_chantier,
-    meta.contraintes
+  // Compteurs pour badges
+  const countCarac = [
+    meta.type_piece, meta.dimensions, meta.surface_sol_m2 || meta.surface_m2,
+    meta.acces_chantier, meta.contraintes, meta.sol_actuel, meta.murs_actuels,
+    meta.travaux_sol, meta.travaux_murs, meta.travaux_plafond
   ].filter(Boolean).length;
 
   const countTravaux = [
     meta.elements_a_deposer?.length,
     meta.equipements_souhaites?.length,
     meta.reseaux,
-    meta.points_techniques,
-    meta.travaux_sol,
-    meta.travaux_murs,
-    meta.travaux_plafond,
-    meta.sol_actuel,
-    meta.murs_actuels
+    meta.points_techniques
   ].filter(Boolean).length;
 
-  const countCompetences = [
+  const countComp = [
     meta.competences_ok?.length,
     meta.competences_faibles?.length,
     meta.travaux_pro_suggeres?.length
   ].filter(Boolean).length;
 
-  const allOpen = Object.values(openSections).every(v => v);
-
   return (
     <>
-      {/* BREADCRUMB */}
+      {/* BREADCRUMB - CORRIGÉ: top 60px */}
       <div style={{ 
         position: 'fixed',
         top: '60px',
@@ -571,7 +466,7 @@ export default function ChantierEditPage() {
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         <div style={{ 
-          maxWidth: '800px', 
+          maxWidth: '1100px', 
           margin: '0 auto', 
           padding: '0.75rem 1rem',
           display: 'flex', 
@@ -594,68 +489,82 @@ export default function ChantierEditPage() {
 
       {/* CONTENU PRINCIPAL */}
       <div style={{ 
-        maxWidth: '800px', 
+        maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: '120px',
-        paddingBottom: '2rem'
+        paddingTop: '70px',
       }}>
         
-        {/* HEADER COMPACT */}
+        {/* CARTE PRINCIPALE - Style cohérent avec les autres pages */}
         <div style={{
-          background: 'linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, var(--orange) 25%, #1a1a1a) 100%)',
+          background: 'linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, var(--orange) 30%, #1a1a1a) 100%)',
           borderRadius: '16px',
           borderLeft: '4px solid var(--orange)',
-          padding: '1rem 1.25rem',
-          marginBottom: '1rem'
+          boxShadow: '0 4px 16px rgba(249, 115, 22, 0.15)',
+          overflow: 'hidden'
         }}>
-          {/* Ligne 1: Titre + Badge + Boutons */}
+          
+          {/* Header avec titre et badge */}
           <div style={{
+            padding: '1rem 1.25rem',
+            borderBottom: '1px solid rgba(255,255,255,0.08)',
             display: 'flex',
             justifyContent: 'space-between',
-            alignItems: 'flex-start',
+            alignItems: 'center',
             flexWrap: 'wrap',
-            gap: '0.75rem',
-            marginBottom: '0.75rem'
+            gap: '0.75rem'
           }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-              <span style={{ fontSize: '1.25rem' }}>🏗️</span>
-              <h1 style={{ 
-                fontSize: '1.15rem', 
-                fontWeight: '700',
-                color: 'var(--gray-light)',
-                margin: 0
-              }}>
-                {chantier.titre}
-              </h1>
-              <span style={{
-                padding: '0.15rem 0.5rem',
-                borderRadius: '10px',
-                fontSize: '0.7rem',
-                fontWeight: '600',
-                background: chantier.statut === 'nouveau' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                color: chantier.statut === 'nouveau' ? '#a855f7' : '#3b82f6'
-              }}>
-                {chantier.statut === 'nouveau' ? '✨ Nouveau' : '🔄 En cours'}
-              </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🏗️</span>
+              <div>
+                <h1 style={{ 
+                  fontSize: '1.25rem', 
+                  fontWeight: '700',
+                  color: 'var(--gray-light)',
+                  margin: 0
+                }}>
+                  {chantier.titre}
+                </h1>
+                <span style={{
+                  display: 'inline-block',
+                  padding: '0.15rem 0.5rem',
+                  borderRadius: '10px',
+                  fontSize: '0.7rem',
+                  fontWeight: '600',
+                  marginTop: '0.25rem',
+                  background: chantier.statut === 'nouveau' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                  color: chantier.statut === 'nouveau' ? '#a855f7' : '#3b82f6'
+                }}>
+                  {chantier.statut === 'nouveau' ? '✨ Nouveau' : '🔄 En cours'}
+                </span>
+              </div>
             </div>
             
-            {/* Boutons d'action */}
-            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Boutons d'action - TOUJOURS VISIBLES */}
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 onClick={handleModifier}
                 style={{
-                  padding: '0.45rem 0.85rem',
+                  padding: '0.5rem 1rem',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
                   color: 'var(--gray-light)',
-                  fontSize: '0.8rem',
+                  fontSize: '0.85rem',
                   fontWeight: '600',
                   cursor: 'pointer',
+                  transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.3rem'
+                  gap: '0.35rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                  e.currentTarget.style.borderColor = 'var(--gray-light)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
                 }}
               >
                 ✏️ Modifier
@@ -663,17 +572,26 @@ export default function ChantierEditPage() {
               <button
                 onClick={handleLancerPhasage}
                 style={{
-                  padding: '0.45rem 1rem',
+                  padding: '0.5rem 1.25rem',
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--orange)',
                   color: 'white',
-                  fontSize: '0.8rem',
+                  fontSize: '0.85rem',
                   fontWeight: '700',
                   cursor: 'pointer',
+                  transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.3rem'
+                  gap: '0.35rem'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
+                  e.currentTarget.style.transform = 'translateY(-1px)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = 'none';
+                  e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
                 {hasBrouillon ? '🔄 Reprendre le phasage' : '🚀 Lancer le phasage'}
@@ -681,256 +599,331 @@ export default function ChantierEditPage() {
             </div>
           </div>
 
-          {/* Ligne 2: Résumé rapide (toujours visible) */}
-          <div style={{
+          {/* Bouton Tout déplier/replier */}
+          <div style={{ 
+            padding: '0.5rem 1.25rem 0',
             display: 'flex',
-            flexWrap: 'wrap',
-            gap: '0.5rem',
-            paddingTop: '0.5rem',
-            borderTop: '1px solid rgba(255,255,255,0.08)'
+            justifyContent: 'flex-end'
           }}>
-            {chantier.budget_initial && (
-              <InfoChip 
-                icon="💰" 
-                label="Budget" 
-                value={`${chantier.budget_initial.toLocaleString()} €`}
-                subValue={meta.budget_inclut_materiaux ? '(mat. inclus)' : ''}
-              />
-            )}
-            {meta.disponibilite_heures_semaine && (
-              <InfoChip 
-                icon="⏰" 
-                label="Dispo" 
-                value={`${meta.disponibilite_heures_semaine}h/sem`}
-              />
-            )}
-            {meta.deadline_semaines && (
-              <InfoChip 
-                icon="📅" 
-                label="Objectif" 
-                value={`${meta.deadline_semaines} sem`}
-              />
-            )}
+            <button
+              onClick={toggleAll}
+              style={{
+                padding: '0.3rem 0.7rem',
+                borderRadius: '6px',
+                border: '1px solid rgba(255,255,255,0.15)',
+                background: 'transparent',
+                color: 'var(--gray)',
+                fontSize: '0.7rem',
+                cursor: 'pointer'
+              }}
+            >
+              {allOpen ? '▲ Tout replier' : '▼ Tout déplier'}
+            </button>
+          </div>
+
+          {/* Contenu avec ACCORDÉONS */}
+          <div style={{ padding: '0.75rem 1.25rem 1rem' }}>
+            
+            {/* ACCORDÉON 1: PROJET & BUDGET */}
+            <AccordionSection
+              icon="📋"
+              title="Projet & Budget"
+              isOpen={openSections.projet}
+              onToggle={() => toggleSection('projet')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Description */}
+                {chantier.description && (
+                  <CompactItem 
+                    icon="📋" 
+                    label="Projet" 
+                    value={chantier.description}
+                    fullWidth
+                  />
+                )}
+
+                {/* Budget + Dispo + Deadline */}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {chantier.budget_initial && (
+                    <CompactItem 
+                      icon="💰" 
+                      label="Budget" 
+                      value={`${chantier.budget_initial.toLocaleString()} €`}
+                      subValue={meta.budget_inclut_materiaux ? '(matériaux inclus)' : ''}
+                    />
+                  )}
+                  {meta.disponibilite_heures_semaine && (
+                    <CompactItem 
+                      icon="⏰" 
+                      label="Dispo" 
+                      value={`${meta.disponibilite_heures_semaine}h/sem`}
+                    />
+                  )}
+                  {meta.deadline_semaines && (
+                    <CompactItem 
+                      icon="📅" 
+                      label="Objectif" 
+                      value={`${meta.deadline_semaines} sem`}
+                    />
+                  )}
+                </div>
+
+                {/* État existant */}
+                {meta.etat_existant && (
+                  <CompactItem 
+                    icon="🏚️" 
+                    label="État existant" 
+                    value={meta.etat_existant}
+                    fullWidth
+                  />
+                )}
+              </div>
+            </AccordionSection>
+
+            {/* ACCORDÉON 2: CARACTÉRISTIQUES */}
+            <AccordionSection
+              icon="🏠"
+              title="Caractéristiques"
+              count={countCarac}
+              isOpen={openSections.caracteristiques}
+              onToggle={() => toggleSection('caracteristiques')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Type + Dimensions + Surfaces */}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {meta.type_piece && (
+                    <CompactItem icon="🏠" label="Type" value={meta.type_piece} />
+                  )}
+                  {meta.dimensions && (
+                    <CompactItem icon="📏" label="Dimensions" value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`} />
+                  )}
+                  {(meta.surface_sol_m2 || meta.surface_m2 || meta.surface_murs_m2) && (
+                    <CompactItem 
+                      icon="📐" 
+                      label="Surfaces sol / murs" 
+                      value={`${meta.surface_sol_m2 || meta.surface_m2 || '?'} m² / ${meta.surface_murs_m2 || '?'} m²`}
+                    />
+                  )}
+                </div>
+                
+                {/* Accès + Contraintes */}
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {meta.acces_chantier && (
+                    <CompactItem 
+                      icon="🚚" 
+                      label="Accès" 
+                      value={meta.acces_chantier}
+                    />
+                  )}
+                  <CompactItem 
+                    icon="📝" 
+                    label="Contraintes" 
+                    value={meta.contraintes || 'Aucune'}
+                  />
+                </div>
+
+                {/* Sol et murs actuels */}
+                {(meta.sol_actuel || meta.murs_actuels) && (
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {meta.sol_actuel && (
+                      <CompactItem 
+                        icon="🟫" 
+                        label="Sol actuel" 
+                        value={meta.sol_actuel}
+                      />
+                    )}
+                    {meta.murs_actuels && (
+                      <CompactItem 
+                        icon="🧱" 
+                        label="Murs actuels" 
+                        value={meta.murs_actuels}
+                      />
+                    )}
+                  </div>
+                )}
+                
+                {/* Travaux prévus */}
+                {(meta.travaux_sol || meta.travaux_murs || meta.travaux_plafond) && (
+                  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                    {meta.travaux_sol && (
+                      <CompactItem 
+                        icon="🔨" 
+                        label="Travaux sol" 
+                        value={meta.travaux_sol}
+                      />
+                    )}
+                    {meta.travaux_murs && (
+                      <CompactItem 
+                        icon="🔨" 
+                        label="Travaux murs" 
+                        value={meta.travaux_murs}
+                      />
+                    )}
+                    {meta.travaux_plafond && (
+                      <CompactItem 
+                        icon="🔨" 
+                        label="Travaux plafond" 
+                        value={meta.travaux_plafond}
+                      />
+                    )}
+                  </div>
+                )}
+              </div>
+            </AccordionSection>
+
+            {/* ACCORDÉON 3: TRAVAUX & ÉQUIPEMENTS */}
+            <AccordionSection
+              icon="🛠️"
+              title="Travaux & Équipements"
+              count={countTravaux}
+              isOpen={openSections.travaux}
+              onToggle={() => toggleSection('travaux')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Éléments à déposer */}
+                {meta.elements_a_deposer && meta.elements_a_deposer.length > 0 && (
+                  <TagsItem 
+                    icon="🗑️" 
+                    label="À déposer"
+                    tags={meta.elements_a_deposer}
+                    color="#ef4444"
+                  />
+                )}
+                
+                {/* Équipements souhaités */}
+                {meta.equipements_souhaites && meta.equipements_souhaites.length > 0 && (
+                  <TagsItem 
+                    icon="🛁" 
+                    label="Équipements à installer"
+                    tags={meta.equipements_souhaites}
+                    color="#3b82f6"
+                  />
+                )}
+
+                {/* Réseaux */}
+                {meta.reseaux && (
+                  <div style={{
+                    padding: '0.6rem 0.75rem',
+                    background: 'rgba(0,0,0,0.25)',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      marginBottom: '0.4rem'
+                    }}>
+                      <span style={{ fontSize: '0.85rem' }}>🔌</span>
+                      <span style={{
+                        fontSize: '0.65rem',
+                        color: 'var(--gray)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px'
+                      }}>
+                        Réseaux
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                      <NetworkChip icon="⚡" label="Élec" active={meta.reseaux.electricite_a_refaire} />
+                      <NetworkChip icon="💧" label="Plomb" active={meta.reseaux.plomberie_a_refaire} />
+                      <NetworkChip icon="💨" label="Ventil" active={meta.reseaux.ventilation_a_prevoir} />
+                    </div>
+                  </div>
+                )}
+
+                {/* Points techniques */}
+                {meta.points_techniques && (
+                  <div style={{
+                    padding: '0.6rem 0.75rem',
+                    background: 'rgba(0,0,0,0.25)',
+                    borderRadius: '8px'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.4rem',
+                      marginBottom: '0.4rem'
+                    }}>
+                      <span style={{ fontSize: '0.85rem' }}>🔧</span>
+                      <span style={{
+                        fontSize: '0.65rem',
+                        color: 'var(--gray)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.3px'
+                      }}>
+                        Points techniques
+                      </span>
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+                      {meta.points_techniques.nb_prises_a_ajouter !== undefined && meta.points_techniques.nb_prises_a_ajouter > 0 && (
+                        <TechChip icon="🔌" value={`${meta.points_techniques.nb_prises_a_ajouter} prises`} />
+                      )}
+                      {meta.points_techniques.nb_interrupteurs_a_ajouter !== undefined && meta.points_techniques.nb_interrupteurs_a_ajouter > 0 && (
+                        <TechChip icon="💡" value={`${meta.points_techniques.nb_interrupteurs_a_ajouter} inter.`} />
+                      )}
+                      {meta.points_techniques.nb_points_lumineux_a_ajouter !== undefined && meta.points_techniques.nb_points_lumineux_a_ajouter > 0 && (
+                        <TechChip icon="💡" value={`${meta.points_techniques.nb_points_lumineux_a_ajouter} pts lum.`} />
+                      )}
+                      {meta.points_techniques.nb_spots_led !== undefined && meta.points_techniques.nb_spots_led > 0 && (
+                        <TechChip icon="💡" value={`${meta.points_techniques.nb_spots_led} spots`} />
+                      )}
+                      {meta.points_techniques.nb_points_eau_a_ajouter !== undefined && meta.points_techniques.nb_points_eau_a_ajouter > 0 && (
+                        <TechChip icon="💧" value={`${meta.points_techniques.nb_points_eau_a_ajouter} pts eau`} />
+                      )}
+                      {meta.points_techniques.nb_evacuations_a_ajouter !== undefined && meta.points_techniques.nb_evacuations_a_ajouter > 0 && (
+                        <TechChip icon="🚿" value={`${meta.points_techniques.nb_evacuations_a_ajouter} évac.`} />
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+            </AccordionSection>
+
+            {/* ACCORDÉON 4: COMPÉTENCES */}
+            <AccordionSection
+              icon="👷"
+              title="Compétences"
+              count={countComp}
+              isOpen={openSections.competences}
+              onToggle={() => toggleSection('competences')}
+            >
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {/* Compétences OK */}
+                {meta.competences_ok && meta.competences_ok.length > 0 && (
+                  <TagsItem 
+                    icon="✅" 
+                    label="À l'aise avec"
+                    tags={meta.competences_ok}
+                    color="#10b981"
+                  />
+                )}
+
+                {/* Compétences faibles */}
+                {meta.competences_faibles && meta.competences_faibles.length > 0 && (
+                  <TagsItem 
+                    icon="⚠️" 
+                    label="Moins à l'aise"
+                    tags={meta.competences_faibles}
+                    color="#f59e0b"
+                  />
+                )}
+
+                {/* Pro suggéré - Toujours affiché */}
+                <TagsItem 
+                  icon="👷" 
+                  label="Pro suggéré"
+                  tags={meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 ? meta.travaux_pro_suggeres : ['Aucun']}
+                  color={meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 ? '#818cf8' : '#6b7280'}
+                />
+              </div>
+            </AccordionSection>
+
           </div>
         </div>
 
-        {/* BOUTON TOUT DÉPLIER/REPLIER */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'flex-end', 
-          marginBottom: '0.5rem' 
-        }}>
-          <button
-            onClick={toggleAll}
-            style={{
-              padding: '0.35rem 0.75rem',
-              borderRadius: '6px',
-              border: '1px solid rgba(255,255,255,0.15)',
-              background: 'transparent',
-              color: 'var(--gray)',
-              fontSize: '0.75rem',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.3rem'
-            }}
-          >
-            {allOpen ? '▲ Tout replier' : '▼ Tout déplier'}
-          </button>
-        </div>
-
-        {/* SECTIONS ACCORDÉON */}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-          
-          {/* Section PROJET */}
-          <AccordionSection
-            icon="📋"
-            title="Projet"
-            isOpen={openSections.projet}
-            onToggle={() => toggleSection('projet')}
-          >
-            {chantier.description && (
-              <p style={{ 
-                fontSize: '0.9rem', 
-                color: 'var(--gray-light)', 
-                margin: 0,
-                lineHeight: '1.5'
-              }}>
-                {chantier.description}
-              </p>
-            )}
-            {meta.etat_existant && (
-              <InfoRow icon="🏚️" label="État existant" value={meta.etat_existant} />
-            )}
-            {meta.style_souhaite && (
-              <InfoRow icon="🎨" label="Style souhaité" value={meta.style_souhaite} />
-            )}
-          </AccordionSection>
-
-          {/* Section CARACTÉRISTIQUES */}
-          <AccordionSection
-            icon="🏠"
-            title="Caractéristiques"
-            count={countCaracteristiques}
-            isOpen={openSections.caracteristiques}
-            onToggle={() => toggleSection('caracteristiques')}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                {meta.type_piece && (
-                  <InfoChip icon="🏠" label="Type" value={meta.type_piece} />
-                )}
-                {meta.dimensions && (
-                  <InfoChip icon="📏" label="Dimensions" value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`} />
-                )}
-                {(meta.surface_sol_m2 || meta.surface_m2) && (
-                  <InfoChip icon="📐" label="Surface" value={`${meta.surface_sol_m2 || meta.surface_m2} m²`} />
-                )}
-              </div>
-              {meta.acces_chantier && (
-                <InfoRow icon="🚚" label="Accès chantier" value={meta.acces_chantier} />
-              )}
-              {meta.contraintes && (
-                <InfoRow icon="⚠️" label="Contraintes" value={meta.contraintes} />
-              )}
-              {(meta.sol_actuel || meta.murs_actuels) && (
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
-                  {meta.sol_actuel && (
-                    <InfoChip icon="🟫" label="Sol actuel" value={meta.sol_actuel} />
-                  )}
-                  {meta.murs_actuels && (
-                    <InfoChip icon="🧱" label="Murs actuels" value={meta.murs_actuels} />
-                  )}
-                </div>
-              )}
-            </div>
-          </AccordionSection>
-
-          {/* Section TRAVAUX & ÉQUIPEMENTS */}
-          <AccordionSection
-            icon="🛠️"
-            title="Travaux & Équipements"
-            count={countTravaux}
-            isOpen={openSections.travaux}
-            onToggle={() => toggleSection('travaux')}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              
-              {/* À déposer */}
-              {meta.elements_a_deposer && meta.elements_a_deposer.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    🗑️ À déposer
-                  </div>
-                  <TagsList tags={meta.elements_a_deposer} color="#ef4444" />
-                </div>
-              )}
-
-              {/* Équipements à installer */}
-              {meta.equipements_souhaites && meta.equipements_souhaites.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    🛁 Équipements à installer
-                  </div>
-                  <TagsList tags={meta.equipements_souhaites} color="#3b82f6" />
-                </div>
-              )}
-
-              {/* Réseaux */}
-              {meta.reseaux && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    🔌 Réseaux
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                    <NetworkBadge icon="⚡" label="Élec" active={meta.reseaux.electricite_a_refaire} />
-                    <NetworkBadge icon="💧" label="Plomb" active={meta.reseaux.plomberie_a_refaire} />
-                    <NetworkBadge icon="💨" label="Ventil" active={meta.reseaux.ventilation_a_prevoir} />
-                  </div>
-                </div>
-              )}
-
-              {/* Points techniques */}
-              {meta.points_techniques && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    🔧 Points techniques
-                  </div>
-                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem' }}>
-                    {meta.points_techniques.nb_prises_a_ajouter !== undefined && meta.points_techniques.nb_prises_a_ajouter > 0 && (
-                      <span style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem' }}>
-                        🔌 {meta.points_techniques.nb_prises_a_ajouter} prises
-                      </span>
-                    )}
-                    {meta.points_techniques.nb_spots_led !== undefined && meta.points_techniques.nb_spots_led > 0 && (
-                      <span style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem' }}>
-                        💡 {meta.points_techniques.nb_spots_led} spots
-                      </span>
-                    )}
-                    {meta.points_techniques.nb_points_eau_a_ajouter !== undefined && meta.points_techniques.nb_points_eau_a_ajouter > 0 && (
-                      <span style={{ background: 'rgba(59, 130, 246, 0.15)', color: '#3b82f6', padding: '0.2rem 0.5rem', borderRadius: '12px', fontSize: '0.75rem' }}>
-                        💧 {meta.points_techniques.nb_points_eau_a_ajouter} pts eau
-                      </span>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {/* Travaux prévus */}
-              {(meta.travaux_sol || meta.travaux_murs || meta.travaux_plafond) && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    🔨 Travaux prévus
-                  </div>
-                  {meta.travaux_sol && <InfoRow icon="🟫" label="Sol" value={meta.travaux_sol} />}
-                  {meta.travaux_murs && <InfoRow icon="🧱" label="Murs" value={meta.travaux_murs} />}
-                  {meta.travaux_plafond && <InfoRow icon="⬜" label="Plafond" value={meta.travaux_plafond} />}
-                </div>
-              )}
-            </div>
-          </AccordionSection>
-
-          {/* Section COMPÉTENCES */}
-          <AccordionSection
-            icon="👷"
-            title="Compétences"
-            count={countCompetences}
-            isOpen={openSections.competences}
-            onToggle={() => toggleSection('competences')}
-          >
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {meta.competences_ok && meta.competences_ok.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    ✅ À l'aise avec
-                  </div>
-                  <TagsList tags={meta.competences_ok} color="#10b981" />
-                </div>
-              )}
-              {meta.competences_faibles && meta.competences_faibles.length > 0 && (
-                <div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                    ⚠️ Moins à l'aise
-                  </div>
-                  <TagsList tags={meta.competences_faibles} color="#f59e0b" />
-                </div>
-              )}
-              <div>
-                <div style={{ fontSize: '0.7rem', color: 'var(--gray)', textTransform: 'uppercase', marginBottom: '0.35rem' }}>
-                  👷 Pro suggéré
-                </div>
-                <TagsList 
-                  tags={meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 ? meta.travaux_pro_suggeres : ['Aucun']} 
-                  color={meta.travaux_pro_suggeres && meta.travaux_pro_suggeres.length > 0 ? '#818cf8' : '#6b7280'} 
-                />
-              </div>
-            </div>
-          </AccordionSection>
-        </div>
-
-        {/* Info phasage */}
+        {/* Info phasage - Plus discret */}
         <div style={{
-          marginTop: '1rem',
+          marginTop: '0.75rem',
           padding: '0.75rem 1rem',
           background: 'rgba(255,255,255,0.03)',
           borderRadius: '10px',
@@ -951,5 +944,163 @@ export default function ChantierEditPage() {
         </div>
       </div>
     </>
+  );
+}
+
+// ==================== COMPOSANTS COMPACTS ====================
+function TechChip({ 
+  icon, 
+  value 
+}: { 
+  icon: string; 
+  value: string;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.25rem',
+      padding: '0.2rem 0.5rem',
+      background: 'rgba(59, 130, 246, 0.15)',
+      border: '1px solid rgba(59, 130, 246, 0.3)',
+      borderRadius: '12px',
+      fontSize: '0.7rem',
+      color: '#3b82f6'
+    }}>
+      <span>{icon}</span>
+      <span>{value}</span>
+    </span>
+  );
+}
+
+function CompactItem({ 
+  icon, 
+  label, 
+  value,
+  subValue,
+  fullWidth = false
+}: { 
+  icon: string; 
+  label: string; 
+  value: string;
+  subValue?: string;
+  fullWidth?: boolean;
+}) {
+  return (
+    <div style={{
+      flex: fullWidth ? '1 1 100%' : '1 1 auto',
+      minWidth: fullWidth ? '100%' : '120px',
+      padding: '0.6rem 0.75rem',
+      background: 'rgba(0,0,0,0.25)',
+      borderRadius: '8px',
+      display: 'flex',
+      alignItems: 'flex-start',
+      gap: '0.5rem'
+    }}>
+      <span style={{ fontSize: '0.9rem', flexShrink: 0 }}>{icon}</span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{
+          fontSize: '0.65rem',
+          color: 'var(--gray)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px',
+          marginBottom: '0.15rem'
+        }}>
+          {label}
+        </div>
+        <div style={{
+          fontSize: '0.85rem',
+          color: 'var(--gray-light)',
+          lineHeight: '1.3',
+          wordBreak: 'break-word'
+        }}>
+          {value}
+          {subValue && (
+            <span style={{ fontSize: '0.75rem', color: 'var(--gray)', marginLeft: '0.25rem' }}>
+              {subValue}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function TagsItem({ 
+  icon, 
+  label, 
+  tags,
+  color
+}: { 
+  icon: string; 
+  label: string; 
+  tags: string[];
+  color: string;
+}) {
+  return (
+    <div style={{
+      padding: '0.6rem 0.75rem',
+      background: 'rgba(0,0,0,0.25)',
+      borderRadius: '8px'
+    }}>
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: '0.4rem',
+        marginBottom: '0.4rem'
+      }}>
+        <span style={{ fontSize: '0.85rem' }}>{icon}</span>
+        <span style={{
+          fontSize: '0.65rem',
+          color: 'var(--gray)',
+          textTransform: 'uppercase',
+          letterSpacing: '0.3px'
+        }}>
+          {label}
+        </span>
+      </div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.3rem' }}>
+        {tags.map((tag, idx) => (
+          <span key={idx} style={{
+            background: `${color}20`,
+            color: color,
+            padding: '0.15rem 0.5rem',
+            borderRadius: '12px',
+            fontSize: '0.75rem',
+            fontWeight: '500'
+          }}>
+            {tag}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function NetworkChip({ 
+  icon, 
+  label, 
+  active 
+}: { 
+  icon: string; 
+  label: string; 
+  active: boolean;
+}) {
+  return (
+    <span style={{
+      display: 'inline-flex',
+      alignItems: 'center',
+      gap: '0.25rem',
+      padding: '0.2rem 0.5rem',
+      background: active ? 'rgba(239, 68, 68, 0.15)' : 'rgba(16, 185, 129, 0.15)',
+      border: active ? '1px solid rgba(239, 68, 68, 0.3)' : '1px solid rgba(16, 185, 129, 0.3)',
+      borderRadius: '12px',
+      fontSize: '0.7rem',
+      color: active ? '#ef4444' : '#10b981'
+    }}>
+      <span>{icon}</span>
+      <span>{label}</span>
+      <span style={{ fontWeight: '600' }}>{active ? '⚠️' : '✓'}</span>
+    </span>
   );
 }
