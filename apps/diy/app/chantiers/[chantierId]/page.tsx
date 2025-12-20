@@ -464,7 +464,7 @@ export default function ChantierEditPage() {
       // Ouvrir l'assistant avec le contexte pré-phasage
       window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
         detail: {
-          pageContext: 'chantier_edit',
+          pageContext: 'pre_phasage',
           welcomeMessage: `🔍 Avant de créer les lots de travaux, j'ai besoin de quelques précisions sur ton projet...`,
           contextColor: 'var(--orange)',
           additionalContext: prePhasageContext
