@@ -697,15 +697,23 @@ export default function ChantierEditPage() {
                     <CompactItem icon="🏠" label="Type" value={meta.type_piece} />
                   )}
                   {meta.dimensions && (
-                    <CompactItem icon="📏" label="Dimensions" value={`${meta.dimensions.longueur_m}×${meta.dimensions.largeur_m}×${meta.dimensions.hauteur_m}m`} />
-                  )}
-                  {(meta.surface_sol_m2 || meta.surface_m2 || meta.surface_murs_m2) && (
                     <CompactItem 
-                      icon="📐" 
-                      label="Surfaces sol / murs" 
-                      value={`${meta.surface_sol_m2 || meta.surface_m2 || '?'} m² / ${meta.surface_murs_m2 || '?'} m²`}
+                      icon="📏" 
+                      label="Dimensions" 
+                      value={[
+                        meta.dimensions.longueur_m,
+                        meta.dimensions.largeur_m,
+                        meta.dimensions.hauteur_m
+                      ].filter(v => v != null).join('×') + 'm'} 
                     />
                   )}
+                  {(meta.surface_sol_m2 || meta.surface_m2) && (
+                  <CompactItem 
+                    icon="📐" 
+                    label="Surface" 
+                    value={`${meta.surface_sol_m2 || meta.surface_m2} m²${meta.surface_murs_m2 ? ` (murs: ${meta.surface_murs_m2} m²)` : ''}`}
+                  />
+                )}
                 </div>
                 
                 {/* Accès + Contraintes */}
