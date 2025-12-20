@@ -29,6 +29,7 @@ const PAGE_CONTEXT_TO_PROMPT_CODE: Record<string, string> = {
   'chantier_edit_details': 'system_chantier_edit',
   'aide_decouverte': 'system_aide_decouverte',
   'travaux_simple_decouverte': 'system_travaux_simple_decouverte',
+  'pre_phasage': 'system_pre_phasage',
   // Ajouter d'autres mappings ici au fur et à mesure
 };
 
@@ -118,6 +119,14 @@ export async function POST(request: NextRequest) {
     } else {
       // Pas de contexte vidéo, retirer le placeholder
       finalPrompt = finalPrompt.replace('{{VIDEO_CONTEXT}}', '');
+    }
+
+    // Remplacer {{PRE_PHASAGE_CONTEXT}} si présent
+    if (context && context.includes('=== PRÉ-PHASAGE :')) {
+      finalPrompt = finalPrompt.replace('{{PRE_PHASAGE_CONTEXT}}', context);
+      console.log('🔍 Contexte pré-phasage injecté dans le prompt');
+    } else {
+      finalPrompt = finalPrompt.replace('{{PRE_PHASAGE_CONTEXT}}', '');
     }
 
     // Ajouter le contexte pour les pages qui n'utilisent pas {{CHANTIER_CONTEXT}} ni {{VIDEO_CONTEXT}}
