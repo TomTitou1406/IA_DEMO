@@ -849,12 +849,12 @@ export default function ChatInterface({
         await persistMessage(assistantMessage);
       }
       
-      // Si recap détecté, ouvrir la modal et NE PAS lire l'audio
-      if (hasRecap && recap) {
-        setRecapData(recap);
-        setShowRecapModal(true);
-        // Pas de lecture audio, pas de fermeture assistant (la modal s'affiche par-dessus)
-      } else {
+       // Si recap détecté, créer directement le chantier (plus de modal intermédiaire)
+       if (hasRecap && recap) {
+          console.log('✅ Recap JSON détecté, création directe du chantier');
+          await handleValidateRecap(recap);
+          return;
+        }
         // Lecture audio SEULEMENT si PAS de recap
         if (voiceMode && autoPlayAudio) {
           setIsGeneratingAudio(true);
