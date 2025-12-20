@@ -866,10 +866,8 @@ export default function ChatInterface({
             setIsGeneratingAudio(false);
           }
         }
-      }
-
-    } catch (error) {
-      console.error('Erreur envoi message:', error);
+      } catch (error) {
+        console.error('Erreur envoi message:', error);
       
       // Message d'erreur
       const errorMessage: Message = {
