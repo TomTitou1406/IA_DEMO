@@ -110,7 +110,17 @@ export async function POST(request: NextRequest) {
       finalPrompt = finalPrompt.replace('{{CHANTIER_CONTEXT}}', '(Aucune donnée de chantier disponible)');
     }
 
-    // Ajouter le contexte pour les pages qui n'utilisent pas {{CHANTIER_CONTEXT}}
+    // Remplacer {{VIDEO_CONTEXT}} si présent
+    if (context && context.includes('=== CONTEXTE VIDÉO ===')) {
+      // Le contexte vidéo est fourni, l'injecter
+      finalPrompt = finalPrompt.replace('{{VIDEO_CONTEXT}}', context);
+      console.log('🎬 Contexte vidéo injecté dans le prompt');
+    } else {
+      // Pas de contexte vidéo, retirer le placeholder
+      finalPrompt = finalPrompt.replace('{{VIDEO_CONTEXT}}', '');
+    }
+
+    // Ajouter le contexte pour les pages qui n'utilisent pas {{CHANTIER_CONTEXT}} ni {{VIDEO_CONTEXT}}
     if (context && !finalPrompt.includes(context)) {
       finalPrompt += `\n\n---\nCONTEXTE ACTUEL :\n${context}`;
     }
