@@ -599,6 +599,7 @@ export default function ChantierEditPage() {
                 {hasBrouillon ? '🔄 Reprendre' : '🚀 Phasage'}
               </button>
             </div>
+          </div>
 
           {/* Bouton Tout déplier/replier */}
           <div style={{ 
