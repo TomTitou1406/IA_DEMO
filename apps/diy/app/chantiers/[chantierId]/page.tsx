@@ -251,7 +251,7 @@ export default function ChantierEditPage() {
           setTimeout(() => {
             window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
               detail: {
-                pageContext: 'chantier_edit',
+                pageContext: 'pre_phasage',
                 welcomeMessage: `🎬 Tu veux reproduire "${inspiration.title}" ?\n\nJ'ai analysé la vidéo. Quelques questions pour adapter à ta situation...`,
                 contextColor: 'var(--orange)',
                 additionalContext: videoContext
