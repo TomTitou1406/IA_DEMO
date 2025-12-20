@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
     // 2. Charger les types existants
     const { data: typesExistants } = await supabase
       .from('chantier_types_config')
-      .select('code, nom, icone')
+      .select('code, nom, icone, nb_utilisations')
       .eq('est_actif', true)
       .order('nb_utilisations', { ascending: false });
 
