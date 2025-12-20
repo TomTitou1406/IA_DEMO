@@ -121,13 +121,11 @@ Si nouveau type nécessaire :
       console.log(`✅ Type existant trouvé: ${finalCode}`);
 
       // Incrémenter le compteur d'utilisation
-      await supabase.rpc('increment_type_usage', { type_code: finalCode }).catch(() => {
-        // Si la fonction n'existe pas, on fait un UPDATE classique
-        supabase
-          .from('chantier_types_config')
-          .update({ nb_utilisations: (typesExistants?.find(t => t.code === finalCode) as any)?.nb_utilisations + 1 || 1 })
-          .eq('code', finalCode);
-      });
+      const currentCount = typesExistants?.find(t => t.code === finalCode)?.nb_utilisations || 0;
+      await supabase
+        .from('chantier_types_config')
+        .update({ nb_utilisations: currentCount + 1 })
+        .eq('code', finalCode);
 
     } else if (result.nouveau_type) {
       // Créer le nouveau type
