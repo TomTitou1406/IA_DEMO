@@ -76,6 +76,7 @@ export default function FloatingAssistant() {
   // Priorité : expertMode > overrideContext > default
   const pageContext = overrideContext?.pageContext || defaultPageContext;
   const welcomeMessage = overrideContext?.welcomeMessage || defaultWelcomeMessage;
+  const finalAdditionalContext = overrideContext?.additionalContext || additionalContext;
   
   // Couleur : priorité au contextColor explicite, sinon logique par défaut
   const contextColor = overrideContext?.contextColor
@@ -517,7 +518,7 @@ export default function FloatingAssistant() {
                     ? "Quel tutoriel cherches-tu ?"
                     : placeholder)}
             welcomeMessage={welcomeMessage}
-            additionalContext={additionalContext}
+            additionalContext={finalAdditionalContext}
             promptContext={{
               chantierId,
               travailId,
