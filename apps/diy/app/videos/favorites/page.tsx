@@ -180,23 +180,8 @@ export default function FavoritesPage() {
 
   const handleMettreEnOeuvre = () => {
     if (!selectedVideoData) return;
-    
-    // Stocker le contexte vidéo pour la création du chantier
-    const videoContext = {
-      titre: selectedVideoData.title,
-      description: '',
-      chapitres: selectedVideoData.chapters?.map(c => c.title) || [],
-      duree: selectedVideoData.duration,
-      dureeSeconds: selectedVideoData.duration_seconds,
-      source: selectedVideoData.channel_title,
-      videoId: selectedVideoData.video_id,
-      hasChapters: selectedVideoData.has_chapters || false
-    };
-    sessionStorage.setItem('pendingVideoContext', JSON.stringify(videoContext));
-    
-    // Fermer la modal et rediriger vers création chantier
     setShowPlayerModal(false);
-    router.push('/chantiers/nouveau?fromVideo=true');
+    setShowAnalysisModal(true);
   };
 
   // Convertir Favorite vers format VideoPlayerModal
