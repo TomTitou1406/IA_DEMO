@@ -221,21 +221,26 @@ export default function ChantierEditPage() {
             : 'Pas de chapitres détectés';
           
           const videoContext = `
-  === CONTEXTE VIDÉO ===
-  Le bricoleur veut reproduire ce tutoriel vidéo.
-  
-  Titre : ${inspiration.title}
-  Chaîne : ${inspiration.channel}
-  Durée : ${Math.round((inspiration.duration_seconds || 0) / 60)} minutes
-  
-  ${chapitresText}
-  
-  INSTRUCTIONS :
-  - Confirme que c'est bien ce projet qu'il veut réaliser
-  - NE REDEMANDE PAS les informations déjà connues (type de projet, étapes)
-  - Pose uniquement les questions manquantes : dimensions, budget, disponibilité, compétences
-  - Objectif : 3-4 échanges maximum
-  === FIN CONTEXTE VIDÉO ===
+          === CONTEXTE VIDÉO ===
+          Le bricoleur a regardé un tutoriel et veut RÉALISER ce projet chez lui.
+          
+          SON PROJET : ${inspiration.title.replace(/^(Comment |Tuto |DIY |Tutoriel )?/i, '')}
+          Source vidéo : ${inspiration.channel}
+          Durée du tuto : ${Math.round((inspiration.duration_seconds || 0) / 60)} minutes
+          
+          ${chapitresText}
+          
+          IMPORTANT - INTERPRÉTATION :
+          - Le TITRE de la vidéo = CE QUE le bricoleur veut FAIRE (pas apprendre)
+          - Les CHAPITRES = les étapes potentielles du projet
+          - Ton rôle : adapter ce projet à SA situation (dimensions, budget, compétences)
+          
+          COMPORTEMENT ATTENDU :
+          - Confirme en 1 phrase : "Tu veux [action du titre], c'est ça ?"
+          - NE REDEMANDE PAS le type de projet (on le connaît déjà)
+          - Pose directement les questions contextuelles : dimensions, emplacement, budget, dispo, compétences
+          - Objectif : 3-4 échanges maximum
+          === FIN CONTEXTE VIDÉO ===
           `.trim();
           
           // Ouvrir l'assistant avec le contexte vidéo
