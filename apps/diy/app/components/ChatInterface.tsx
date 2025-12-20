@@ -1171,7 +1171,7 @@ export default function ChatInterface({
         return projet.split(' ').slice(0, 3).join(' ');
       };
 
-      const titreShort = generateTitreShort(recap.projet);
+      const titreShort = recap.titre || generateTitreShort(recap.projet);
 
       // En mode modification, récupérer les données existantes pour fusion
      let existingMetadata: Record<string, any> = {};
@@ -1294,8 +1294,16 @@ export default function ChatInterface({
           metadata: newMetadata
         };
         
-        if (recap.projet) {
-          updateData.titre = titreShort;
+        // Mettre à jour le titre seulement si explicitement fourni
+        if (recap.titre) {
+          updateData.titre = recap.titre;
+        } else if (recap.projet && !existingMetadata.description) {
+          // Générer un titre seulement si pas de description existante (nouveau projet)
+          updateData.titre = generateTitreShort(recap.projet);
+        }
+        
+        // Mettre à jour la description seulement si c'est une vraie description (pas juste un titre)
+        if (recap.projet && recap.projet.length > 50) {
           updateData.description = recap.projet;
         }
         
