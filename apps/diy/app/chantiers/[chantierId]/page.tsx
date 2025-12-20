@@ -456,42 +456,44 @@ export default function ChantierEditPage() {
 
   // Lancer le phasage (génération des lots)
   const handleLancerPhasage = async () => {
-    const isReady = await checkPrePhasageRequirements();
+    const result = await checkPrePhasageRequirements();
+    
+    // Gérer le cas boolean (compatibilité) ou objet
+    const isReady = typeof result === 'boolean' ? result : result.ready;
+    const context = typeof result === 'boolean' ? '' : result.context;
+    const manquants = typeof result === 'boolean' ? [] : result.manquants;
     
     if (isReady) {
       router.push(`/chantiers/${chantierId}/phasage`);
     } else {
       // Construire un message d'accueil avec les premières questions
       const champsLabels: Record<string, string> = {
-        hauteur_exacte: 'la hauteur exacte',
+        hauteur_exacte: 'la hauteur exacte de la cloison',
         hauteur_sous_plafond: 'la hauteur sous plafond',
         longueur_totale: 'la longueur totale',
-        isolation_type: 'le type d\'isolation souhaité',
+        isolation_type: 'le type d\'isolation souhaité (phonique, thermique, aucune)',
         gaines_techniques: 'les gaines à passer (élec, eau...)',
         ouvertures_portes: 'les portes ou ouvertures prévues',
         fixation_plafond_type: 'le type de fixation au plafond',
         points_eau_existants: 'les points d\'eau existants',
         evacuation_existante: 'l\'évacuation existante',
-        ventilation_existante: 'la ventilation existante',
+        ventilation_existante: 'la ventilation',
       };
-
+  
       // Prendre les 2-3 premiers champs manquants pour les questions
-      const premieresQuestions = champsManquants
+      const premieresQuestions = manquants
         .slice(0, 3)
-        .map(c => champsLabels[c] || c.replace(/_/g, ' '))
-        .join(', ');
-
-      const welcomeMsg = `🔍 Avant de générer les lots de travaux, j'ai besoin de quelques précisions :
-
-Peux-tu me dire ${premieresQuestions} ?`;
-
+        .map(c => champsLabels[c] || c.replace(/_/g, ' '));
+  
+      const welcomeMsg = `🔍 Avant de générer les lots de travaux, j'ai besoin de quelques précisions :\n\n• ${premieresQuestions.join('\n• ')} ?`;
+  
       // Ouvrir l'assistant avec le contexte pré-phasage
       window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
         detail: {
           pageContext: 'pre_phasage',
           welcomeMessage: welcomeMsg,
           contextColor: 'var(--orange)',
-          additionalContext: prePhasageContext
+          additionalContext: context
         }
       }));
     }
