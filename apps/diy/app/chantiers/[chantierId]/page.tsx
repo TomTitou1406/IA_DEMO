@@ -269,7 +269,7 @@ export default function ChantierEditPage() {
           borderBottom: '1px solid rgba(255,255,255,0.08)',
         }}>
           <div style={{ 
-            maxWidth: '1100px', 
+            maxWidth: '700px', 
             margin: '0 auto', 
             padding: '0.75rem 1rem',
             display: 'flex', 
@@ -453,7 +453,7 @@ export default function ChantierEditPage() {
 
   return (
     <>
-      {/* BREADCRUMB - CORRIGÉ: top 60px */}
+      {/* BREADCRUMB */}
       <div style={{ 
         position: 'fixed',
         top: '60px',
@@ -466,7 +466,7 @@ export default function ChantierEditPage() {
         borderBottom: '1px solid rgba(255,255,255,0.08)',
       }}>
         <div style={{ 
-          maxWidth: '1100px', 
+          maxWidth: '700px', 
           margin: '0 auto', 
           padding: '0.75rem 1rem',
           display: 'flex', 
@@ -489,7 +489,7 @@ export default function ChantierEditPage() {
 
       {/* CONTENU PRINCIPAL */}
       <div style={{ 
-        maxWidth: '1100px', 
+        maxWidth: '700px', 
         margin: '0 auto', 
         padding: '1rem',
         paddingTop: '70px',
@@ -540,23 +540,24 @@ export default function ChantierEditPage() {
               </div>
             </div>
             
-            {/* Boutons d'action - TOUJOURS VISIBLES */}
-            <div style={{ display: 'flex', gap: '0.5rem' }}>
+            {/* Boutons d'action - Compacts */}
+            <div style={{ display: 'flex', gap: '0.4rem' }}>
               <button
                 onClick={handleModifier}
                 style={{
-                  padding: '0.5rem 1rem',
+                  padding: '0.4rem 0.75rem',
                   borderRadius: '8px',
                   border: '1px solid rgba(255,255,255,0.2)',
                   background: 'rgba(255,255,255,0.05)',
                   color: 'var(--gray-light)',
-                  fontSize: '0.85rem',
+                  fontSize: '0.8rem',
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.25rem',
+                  whiteSpace: 'nowrap'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
@@ -572,18 +573,19 @@ export default function ChantierEditPage() {
               <button
                 onClick={handleLancerPhasage}
                 style={{
-                  padding: '0.5rem 1.25rem',
+                  padding: '0.4rem 0.75rem',
                   borderRadius: '8px',
                   border: 'none',
                   background: 'var(--orange)',
                   color: 'white',
-                  fontSize: '0.85rem',
+                  fontSize: '0.8rem',
                   fontWeight: '700',
                   cursor: 'pointer',
                   transition: 'all 0.2s',
                   display: 'flex',
                   alignItems: 'center',
-                  gap: '0.35rem'
+                  gap: '0.25rem',
+                  whiteSpace: 'nowrap'
                 }}
                 onMouseEnter={(e) => {
                   e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
@@ -594,10 +596,9 @@ export default function ChantierEditPage() {
                   e.currentTarget.style.transform = 'translateY(0)';
                 }}
               >
-                {hasBrouillon ? '🔄 Reprendre le phasage' : '🚀 Lancer le phasage'}
+                {hasBrouillon ? '🔄 Reprendre' : '🚀 Phasage'}
               </button>
             </div>
-          </div>
 
           {/* Bouton Tout déplier/replier */}
           <div style={{ 
