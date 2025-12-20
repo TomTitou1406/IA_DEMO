@@ -321,36 +321,41 @@ export default function ChantierEditPage() {
 
   // Vérifier les prérequis avant phasage
   const checkPrePhasageRequirements = async (): Promise<boolean> => {
-    if (!chantier?.metadata?.type_piece) {
-      console.log('⚠️ Type de chantier non défini, phasage direct');
-      return true; // Pas de type = pas de vérification possible
-    }
+    if (!chantier) return true;
   
     try {
-      // Charger la config du type de chantier
-      const { data: typeConfig, error } = await supabase
-        .from('chantier_types_config')
-        .select('nom, champs_critiques_phasage, questions_specifiques')
-        .eq('code', chantier.metadata.type_piece)
-        .eq('est_actif', true)
-        .single();
+      // 1. Qualifier le type du chantier (via API)
+      console.log('🔍 Qualification du type de chantier...');
+      const qualifyResponse = await fetch('/api/chantiers/qualify-type', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chantierId })
+      });
   
-      if (error || !typeConfig) {
-        console.log('⚠️ Config type non trouvée, phasage direct');
+      if (!qualifyResponse.ok) {
+        console.error('❌ Erreur qualification type');
+        return true; // En cas d'erreur, on laisse passer
+      }
+  
+      const { code, isNew, typeConfig } = await qualifyResponse.json();
+      console.log(`✅ Type qualifié: ${code} (${isNew ? 'nouveau' : 'existant'})`);
+  
+      // Mettre à jour le state local
+      if (chantier.metadata) {
+        chantier.metadata.type_piece = code;
+      }
+  
+      // 2. Vérifier les champs critiques manquants
+      if (!typeConfig?.champs_critiques_phasage?.length) {
+        console.log('✅ Pas de champs critiques définis, phasage direct');
         return true;
       }
   
-      const champsCritiques: string[] = typeConfig.champs_critiques_phasage || [];
-      if (champsCritiques.length === 0) {
-        return true; // Pas de champs critiques = OK
-      }
-  
-      // Vérifier quels champs manquent
+      const champsCritiques: string[] = typeConfig.champs_critiques_phasage;
       const metadata = chantier.metadata || {};
       const manquants: string[] = [];
   
       for (const champ of champsCritiques) {
-        // Vérifier si le champ existe et a une valeur
         const valeur = (metadata as any)[champ];
         if (valeur === undefined || valeur === null || valeur === '') {
           manquants.push(champ);
@@ -362,8 +367,7 @@ export default function ChantierEditPage() {
         return true;
       }
   
-      // Construire le contexte pour l'assistant
-      const questionsSpecifiques = typeConfig.questions_specifiques || [];
+      // 3. Construire le contexte pour l'assistant
       const champsLabels: Record<string, string> = {
         hauteur_sous_plafond: 'Hauteur sous plafond',
         hauteur_exacte: 'Hauteur exacte',
@@ -371,6 +375,7 @@ export default function ChantierEditPage() {
         gaines_techniques: 'Gaines techniques à passer',
         ouvertures_portes: 'Portes ou ouvertures prévues',
         fixation_plafond: 'Type de fixation au plafond',
+        fixation_plafond_type: 'Type de fixation au plafond',
         points_eau_existants: 'Points d\'eau existants',
         evacuation_existante: 'Évacuation existante',
         ventilation_existante: 'Ventilation existante',
@@ -380,26 +385,49 @@ export default function ChantierEditPage() {
         dalle_existante: 'Dalle existante',
         acces_materiaux: 'Accès pour matériaux',
         revetement_choisi: 'Revêtement choisi',
-        // Ajouter d'autres labels selon besoin
+        longueur_totale: 'Longueur totale',
+        isolation_phonique_requise: 'Isolation phonique requise',
+        nombre_prises_souhaitees: 'Nombre de prises souhaitées',
+        placard_integre: 'Placard intégré prévu',
+        cheminee_existante: 'Cheminée existante',
+        points_lumineux_plafond: 'Points lumineux au plafond',
+        hauteur_faitage: 'Hauteur au faîtage',
+        type_charpente: 'Type de charpente',
+        isolation_existante: 'Isolation existante',
+        acces_combles: 'Accès aux combles',
+        plancher_existant: 'Plancher existant',
+        fenetre_toit_prevue: 'Fenêtre de toit prévue',
+        electricite_existante: 'Électricité existante',
+        ventilation_requise: 'Ventilation requise',
+        porte_type: 'Type de porte',
+        point_eau_prevu: 'Point d\'eau prévu',
+        arrivee_gaz: 'Arrivée de gaz',
+        hotte_evacuation_type: 'Type d\'évacuation hotte',
       };
   
-      const manquantsLabels = manquants.map(c => champsLabels[c] || c);
-      
+      const manquantsLabels = manquants.map(c => champsLabels[c] || c.replace(/_/g, ' '));
+      const questionsSpecifiques = typeConfig.questions_specifiques || [];
+  
       const context = `
   === PRÉ-PHASAGE : INFORMATIONS COMPLÉMENTAIRES ===
   Avant de générer les lots de travaux, j'ai besoin de quelques précisions.
   
-  TYPE DE CHANTIER : ${typeConfig.nom}
+  TYPE DE CHANTIER : ${typeConfig.icone} ${typeConfig.nom}
   
   INFORMATIONS MANQUANTES :
   ${manquantsLabels.map(l => `- ${l}`).join('\n')}
   
-  QUESTIONS À POSER :
+  QUESTIONS SUGGÉRÉES :
   ${questionsSpecifiques.map((q: string) => `- ${q}`).join('\n')}
   
+  DONNÉES DÉJÀ CONNUES :
+  ${JSON.stringify(metadata, null, 2)}
+  
   COMPORTEMENT :
-  - Pose ces questions de manière conversationnelle (2-3 max par message)
-  - Quand toutes les infos sont collectées, génère un JSON pour mise à jour :
+  - Pose 2-3 questions max par message, de manière conversationnelle
+  - Adapte les questions selon ce qui est déjà connu
+  - Quand TOUTES les infos manquantes sont collectées, génère ce JSON :
+  
   \`\`\`json
   {
     "pre_phasage_complete": true,
@@ -409,18 +437,20 @@ export default function ChantierEditPage() {
     }
   }
   \`\`\`
+  
+  Ensuite confirme que tu vas lancer le phasage.
   === FIN CONTEXTE PRÉ-PHASAGE ===
       `.trim();
   
       console.log('⚠️ Champs manquants pour phasage:', manquants);
       setChampsManquants(manquants);
       setPrePhasageContext(context);
-      
-      return false; // Données incomplètes
-      
+  
+      return false;
+  
     } catch (err) {
       console.error('Erreur vérification pré-phasage:', err);
-      return true; // En cas d'erreur, on laisse passer
+      return true;
     }
   };
 
