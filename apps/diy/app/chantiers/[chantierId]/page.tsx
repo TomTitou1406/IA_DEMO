@@ -320,8 +320,8 @@ export default function ChantierEditPage() {
   };
 
   // Vérifier les prérequis avant phasage
-  const checkPrePhasageRequirements = async (): Promise<boolean> => {
-    if (!chantier) return true;
+  const checkPrePhasageRequirements = async (): Promise<boolean | { ready: boolean; context: string; manquants: string[] }> => {
+    if (!chantier) return { ready: true, context: '', manquants: [] };
   
     try {
       // 1. Qualifier le type du chantier (via API)
@@ -334,7 +334,7 @@ export default function ChantierEditPage() {
   
       if (!qualifyResponse.ok) {
         console.error('❌ Erreur qualification type');
-        return true; // En cas d'erreur, on laisse passer
+        return { ready: true, context: '', manquants: [] };
       }
   
       const { code, isNew, typeConfig } = await qualifyResponse.json();
@@ -348,7 +348,7 @@ export default function ChantierEditPage() {
       // 2. Vérifier les champs critiques manquants
       if (!typeConfig?.champs_critiques_phasage?.length) {
         console.log('✅ Pas de champs critiques définis, phasage direct');
-        return true;
+        return { ready: true, context: '', manquants: [] };
       }
   
       const champsCritiques: string[] = typeConfig.champs_critiques_phasage;
@@ -364,7 +364,7 @@ export default function ChantierEditPage() {
   
       if (manquants.length === 0) {
         console.log('✅ Tous les champs critiques sont renseignés');
-        return true;
+        return { ready: true, context: '', manquants: [] };
       }
   
       // 3. Construire le contexte pour l'assistant
@@ -446,11 +446,11 @@ export default function ChantierEditPage() {
       setChampsManquants(manquants);
       setPrePhasageContext(context);
   
-      return false;
+      return { ready: false, context, manquants };
   
     } catch (err) {
       console.error('Erreur vérification pré-phasage:', err);
-      return true;
+      return { ready: true, context: '', manquants: [] };
     }
   };
 
@@ -461,11 +461,35 @@ export default function ChantierEditPage() {
     if (isReady) {
       router.push(`/chantiers/${chantierId}/phasage`);
     } else {
+      // Construire un message d'accueil avec les premières questions
+      const champsLabels: Record<string, string> = {
+        hauteur_exacte: 'la hauteur exacte',
+        hauteur_sous_plafond: 'la hauteur sous plafond',
+        longueur_totale: 'la longueur totale',
+        isolation_type: 'le type d\'isolation souhaité',
+        gaines_techniques: 'les gaines à passer (élec, eau...)',
+        ouvertures_portes: 'les portes ou ouvertures prévues',
+        fixation_plafond_type: 'le type de fixation au plafond',
+        points_eau_existants: 'les points d\'eau existants',
+        evacuation_existante: 'l\'évacuation existante',
+        ventilation_existante: 'la ventilation existante',
+      };
+
+      // Prendre les 2-3 premiers champs manquants pour les questions
+      const premieresQuestions = champsManquants
+        .slice(0, 3)
+        .map(c => champsLabels[c] || c.replace(/_/g, ' '))
+        .join(', ');
+
+      const welcomeMsg = `🔍 Avant de générer les lots de travaux, j'ai besoin de quelques précisions :
+
+Peux-tu me dire ${premieresQuestions} ?`;
+
       // Ouvrir l'assistant avec le contexte pré-phasage
       window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
         detail: {
           pageContext: 'pre_phasage',
-          welcomeMessage: `🔍 Avant de créer les lots de travaux, j'ai besoin de quelques précisions sur ton projet...`,
+          welcomeMessage: welcomeMsg,
           contextColor: 'var(--orange)',
           additionalContext: prePhasageContext
         }
