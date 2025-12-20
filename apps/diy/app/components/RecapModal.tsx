@@ -14,6 +14,7 @@ import { useState } from 'react';
 
 export interface RecapData {
   // === INFOS DE BASE ===
+  titre?: string;
   projet: string;
   type_piece?: string;
   
