@@ -17,6 +17,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import Link from 'next/link';
+import { supabase } from '@/app/lib/supabaseClient';
 
 interface ChantierData {
   id: string;
@@ -178,6 +179,9 @@ export default function ChantierEditPage() {
   const [loading, setLoading] = useState(!isCreation);
   const [error, setError] = useState<string | null>(null);
   const [hasBrouillon, setHasBrouillon] = useState(false);
+  const [showPrePhasageModal, setShowPrePhasageModal] = useState(false);
+  const [champsManquants, setChampsManquants] = useState<string[]>([]);
+  const [prePhasageContext, setPrePhasageContext] = useState<string>('');
   
   // États accordéons
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -315,9 +319,128 @@ export default function ChantierEditPage() {
     window.dispatchEvent(new CustomEvent('openAssistant'));
   };
 
+  // Vérifier les prérequis avant phasage
+  const checkPrePhasageRequirements = async (): Promise<boolean> => {
+    if (!chantier?.metadata?.type_piece) {
+      console.log('⚠️ Type de chantier non défini, phasage direct');
+      return true; // Pas de type = pas de vérification possible
+    }
+  
+    try {
+      // Charger la config du type de chantier
+      const { data: typeConfig, error } = await supabase
+        .from('chantier_types_config')
+        .select('nom, champs_critiques_phasage, questions_specifiques')
+        .eq('code', chantier.metadata.type_piece)
+        .eq('est_actif', true)
+        .single();
+  
+      if (error || !typeConfig) {
+        console.log('⚠️ Config type non trouvée, phasage direct');
+        return true;
+      }
+  
+      const champsCritiques: string[] = typeConfig.champs_critiques_phasage || [];
+      if (champsCritiques.length === 0) {
+        return true; // Pas de champs critiques = OK
+      }
+  
+      // Vérifier quels champs manquent
+      const metadata = chantier.metadata || {};
+      const manquants: string[] = [];
+  
+      for (const champ of champsCritiques) {
+        // Vérifier si le champ existe et a une valeur
+        const valeur = (metadata as any)[champ];
+        if (valeur === undefined || valeur === null || valeur === '') {
+          manquants.push(champ);
+        }
+      }
+  
+      if (manquants.length === 0) {
+        console.log('✅ Tous les champs critiques sont renseignés');
+        return true;
+      }
+  
+      // Construire le contexte pour l'assistant
+      const questionsSpecifiques = typeConfig.questions_specifiques || [];
+      const champsLabels: Record<string, string> = {
+        hauteur_sous_plafond: 'Hauteur sous plafond',
+        hauteur_exacte: 'Hauteur exacte',
+        isolation_type: 'Type d\'isolation',
+        gaines_techniques: 'Gaines techniques à passer',
+        ouvertures_portes: 'Portes ou ouvertures prévues',
+        fixation_plafond: 'Type de fixation au plafond',
+        points_eau_existants: 'Points d\'eau existants',
+        evacuation_existante: 'Évacuation existante',
+        ventilation_existante: 'Ventilation existante',
+        tableau_electrique_proche: 'Proximité tableau électrique',
+        nature_terrain: 'Nature du terrain',
+        pente_evacuation: 'Pente pour évacuation',
+        dalle_existante: 'Dalle existante',
+        acces_materiaux: 'Accès pour matériaux',
+        revetement_choisi: 'Revêtement choisi',
+        // Ajouter d'autres labels selon besoin
+      };
+  
+      const manquantsLabels = manquants.map(c => champsLabels[c] || c);
+      
+      const context = `
+  === PRÉ-PHASAGE : INFORMATIONS COMPLÉMENTAIRES ===
+  Avant de générer les lots de travaux, j'ai besoin de quelques précisions.
+  
+  TYPE DE CHANTIER : ${typeConfig.nom}
+  
+  INFORMATIONS MANQUANTES :
+  ${manquantsLabels.map(l => `- ${l}`).join('\n')}
+  
+  QUESTIONS À POSER :
+  ${questionsSpecifiques.map((q: string) => `- ${q}`).join('\n')}
+  
+  COMPORTEMENT :
+  - Pose ces questions de manière conversationnelle (2-3 max par message)
+  - Quand toutes les infos sont collectées, génère un JSON pour mise à jour :
+  \`\`\`json
+  {
+    "pre_phasage_complete": true,
+    "metadata_updates": {
+      "champ1": "valeur1",
+      "champ2": "valeur2"
+    }
+  }
+  \`\`\`
+  === FIN CONTEXTE PRÉ-PHASAGE ===
+      `.trim();
+  
+      console.log('⚠️ Champs manquants pour phasage:', manquants);
+      setChampsManquants(manquants);
+      setPrePhasageContext(context);
+      
+      return false; // Données incomplètes
+      
+    } catch (err) {
+      console.error('Erreur vérification pré-phasage:', err);
+      return true; // En cas d'erreur, on laisse passer
+    }
+  };
+
   // Lancer le phasage (génération des lots)
-  const handleLancerPhasage = () => {
-    router.push(`/chantiers/${chantierId}/phasage`);
+  const handleLancerPhasage = async () => {
+    const isReady = await checkPrePhasageRequirements();
+    
+    if (isReady) {
+      router.push(`/chantiers/${chantierId}/phasage`);
+    } else {
+      // Ouvrir l'assistant avec le contexte pré-phasage
+      window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
+        detail: {
+          pageContext: 'chantier_edit',
+          welcomeMessage: `🔍 Avant de créer les lots de travaux, j'ai besoin de quelques précisions sur ton projet...`,
+          contextColor: 'var(--orange)',
+          additionalContext: prePhasageContext
+        }
+      }));
+    }
   };
 
   // ==================== MODE CRÉATION ====================
