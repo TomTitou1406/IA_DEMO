@@ -612,9 +612,9 @@ export default function ChantierEditPage() {
               style={{
                 padding: '0.3rem 0.7rem',
                 borderRadius: '6px',
-                border: '1px solid rgba(255,255,255,0.15)',
-                background: 'transparent',
-                color: 'var(--gray)',
+                border: 'none',
+                background: 'rgba(255,255,255,0.08)',
+                color: 'var(--gray-light)',
                 fontSize: '0.7rem',
                 cursor: 'pointer'
               }}
