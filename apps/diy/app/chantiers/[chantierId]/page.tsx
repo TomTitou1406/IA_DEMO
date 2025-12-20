@@ -199,6 +199,69 @@ export default function ChantierEditPage() {
     }, {} as Record<string, boolean>);
     setOpenSections(newState);
   };
+
+  // Détection contexte vidéo (depuis "Mettre en œuvre")
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    
+    const urlParams = new URLSearchParams(window.location.search);
+    const fromVideo = urlParams.get('from') === 'video';
+    
+    if (fromVideo && chantierId === 'nouveau') {
+      const videoInspirationStr = sessionStorage.getItem('videoInspiration');
+      
+      if (videoInspirationStr) {
+        try {
+          const videoData = JSON.parse(videoInspirationStr);
+          const inspiration = videoData.inspiration;
+          
+          // Formater le contexte vidéo pour le prompt
+          const chapitresText = inspiration.chapters?.length > 0
+            ? `Chapitres détectés :\n${inspiration.chapters.map((c: any, i: number) => `${i + 1}. ${c.title}`).join('\n')}`
+            : 'Pas de chapitres détectés';
+          
+          const videoContext = `
+  === CONTEXTE VIDÉO ===
+  Le bricoleur veut reproduire ce tutoriel vidéo.
+  
+  Titre : ${inspiration.title}
+  Chaîne : ${inspiration.channel}
+  Durée : ${Math.round((inspiration.duration_seconds || 0) / 60)} minutes
+  
+  ${chapitresText}
+  
+  INSTRUCTIONS :
+  - Confirme que c'est bien ce projet qu'il veut réaliser
+  - NE REDEMANDE PAS les informations déjà connues (type de projet, étapes)
+  - Pose uniquement les questions manquantes : dimensions, budget, disponibilité, compétences
+  - Objectif : 3-4 échanges maximum
+  === FIN CONTEXTE VIDÉO ===
+          `.trim();
+          
+          // Ouvrir l'assistant avec le contexte vidéo
+          setTimeout(() => {
+            window.dispatchEvent(new CustomEvent('openAssistantWithContext', {
+              detail: {
+                pageContext: 'chantier_edit',
+                welcomeMessage: `🎬 Tu veux reproduire "${inspiration.title}" ?\n\nJ'ai analysé la vidéo. Quelques questions pour adapter à ta situation...`,
+                contextColor: 'var(--orange)',
+                additionalContext: videoContext
+              }
+            }));
+          }, 500);
+          
+          // Nettoyer le sessionStorage
+          sessionStorage.removeItem('videoInspiration');
+          
+          // Nettoyer l'URL (retirer ?from=video)
+          window.history.replaceState({}, '', '/chantiers/nouveau');
+          
+        } catch (e) {
+          console.error('Erreur parsing videoInspiration:', e);
+        }
+      }
+    }
+  }, [chantierId]);
   
   // Charger le chantier si mode édition
   useEffect(() => {
