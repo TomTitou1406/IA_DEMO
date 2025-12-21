@@ -711,9 +711,9 @@ function ChantierCard({
          {chantier.statut === 'nouveau' ? (
             <>
               <span>📅 Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}</span>
-              {(chantier as any).nb_lots_brouillon > 0 && (
+              {(chantier as any).nombre_travaux > 0 && (
                 <span style={{ color: 'var(--orange)' }}>
-                  ⚠️ {(chantier as any).nb_lots_brouillon} lots en brouillon
+                  ⚠️ {(chantier as any).nombre_travaux} lots en brouillon
                 </span>
               )}
             </>
