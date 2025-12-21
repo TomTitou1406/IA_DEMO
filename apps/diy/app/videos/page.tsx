@@ -249,9 +249,9 @@ function VideosContent() {
   const query = searchParams.get('q') || searchParams.get('search') || '';
 
   // Contexte pour attacher une vidéo à un niveau
-  const attachContext = searchParams.get('context'); // 'chantier', 'travail', 'etape', 'tache'
+  const attachContext = searchParams.get('context');
   const attachId = searchParams.get('id');
-  const attachTitre = searchParams.get('titre') || '';
+  const attachTitre = decodeURIComponent(searchParams.get('search') || '');
   
   const [videos, setVideos] = useState<Video[]>([]);
   const [shorts, setShorts] = useState<Video[]>([]);
@@ -456,13 +456,15 @@ function VideosContent() {
   };
 
   const handleAttachVideo = async (video: any) => {
-  if (!attachContext || !attachId) return;
-  
-  try {
-    const res = await fetch('/api/medias', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
+    console.log('🎬 handleAttachVideo appelé', { attachContext, attachId, video });
+    
+    if (!attachContext || !attachId) {
+      console.error('❌ Contexte manquant', { attachContext, attachId });
+      return;
+    }
+    
+    try {
+      const payload = {
         action: 'set_video',
         niveau: attachContext,
         niveau_id: attachId,
@@ -472,18 +474,28 @@ function VideosContent() {
           url: `https://www.youtube.com/watch?v=${video.id}`,
           thumbnail: video.thumbnail
         }
-      })
-    });
-    
-    if (res.ok) {
-      // Fermer le modal et retourner à la page précédente
-      setShowPlayerModal(false);
-      router.back();
+      };
+      console.log('📤 Envoi API:', payload);
+      
+      const res = await fetch('/api/medias', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await res.json();
+      console.log('📥 Réponse API:', result);
+      
+      if (res.ok) {
+        setShowPlayerModal(false);
+        router.back();
+      } else {
+        console.error('❌ Erreur API:', result);
+      }
+    } catch (error) {
+      console.error('❌ Erreur attachement vidéo:', error);
     }
-  } catch (error) {
-    console.error('Erreur attachement vidéo:', error);
-  }
-};
+  };
 
   const handleShowMoreVideos = () => {
     setVideosDisplayCount(prev => prev + videosPerPage);
