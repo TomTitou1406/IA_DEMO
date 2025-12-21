@@ -15,6 +15,7 @@
 
 import { useState, useEffect } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import GamificationBadge from './GamificationBadge';
 
 interface NavbarProps {
   className?: string;
@@ -563,6 +564,9 @@ export default function Navbar({ className }: NavbarProps) {
             ))}
           </nav>
 
+          {/* Badge Gamification */}
+          <GamificationBadge size={40} />
+
           <HelpButton />
         </div>
       </header>
@@ -636,6 +640,15 @@ export default function Navbar({ className }: NavbarProps) {
         {navItems.map(item => (
           <NavItemMobile key={item.id} item={item} />
         ))}
+        {/* Badge Gamification - Mobile */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column', 
+          alignItems: 'center',
+          flex: 1
+        }}>
+          <GamificationBadge size={32} />
+        </div>
         <HelpButton mobile />
       </nav>
 
