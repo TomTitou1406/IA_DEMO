@@ -802,6 +802,8 @@ export default function TravauxPage() {
                 });
                 setShowVideoModal(true);
               } else {
+                // Stocker l'URL de retour
+                sessionStorage.setItem('attachReturnUrl', window.location.href);
                 const searchQuery = encodeURIComponent(travail.titre);
                 window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
               }
@@ -1043,6 +1045,8 @@ export default function TravauxPage() {
                   });
                   setShowVideoModal(true);
                 } else {
+                  // Stocker l'URL de retour
+                  sessionStorage.setItem('attachReturnUrl', window.location.href);
                   const searchQuery = encodeURIComponent(chantier?.titre || '');
                   window.location.href = `/videos?context=chantier&id=${chantierId}&search=${searchQuery}`;
                 }
