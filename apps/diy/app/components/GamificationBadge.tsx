@@ -2,7 +2,7 @@
  * /app/components/GamificationBadge.tsx
  * Badge de gamification avec couronne de progression
  * 
- * @version 1.0 - Version démo (clic = +25%)
+ * @version 1.1 - Tooltip amélioré + reset
  */
 
 'use client';
@@ -24,7 +24,6 @@ interface GamificationBadgeProps {
 }
 
 export default function GamificationBadge({ size = 44 }: GamificationBadgeProps) {
-  // État persisté en localStorage pour la démo
   const [currentLevel, setCurrentLevel] = useState(1);
   const [progress, setProgress] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
@@ -50,6 +49,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
 
   const levelData = LEVELS[Math.min(currentLevel - 1, LEVELS.length - 1)];
   const nextLevelData = LEVELS[Math.min(currentLevel, LEVELS.length - 1)];
+  const isMaxLevel = currentLevel >= LEVELS.length;
 
   // Calcul du cercle SVG
   const strokeWidth = 3;
@@ -61,19 +61,24 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     const newProgress = progress + 25;
     
     if (newProgress >= 100) {
-      // Level up !
       if (currentLevel < LEVELS.length) {
         setCurrentLevel(prev => prev + 1);
         setProgress(0);
         setShowLevelUp(true);
         setTimeout(() => setShowLevelUp(false), 2000);
       } else {
-        // Max level atteint
         setProgress(100);
       }
     } else {
       setProgress(newProgress);
     }
+  };
+
+  const handleReset = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentLevel(1);
+    setProgress(0);
+    setShowTooltip(false);
   };
 
   return (
@@ -117,7 +122,6 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
             transform: 'rotate(-90deg)',
           }}
         >
-          {/* Cercle de fond */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -126,7 +130,6 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
             stroke="rgba(255, 255, 255, 0.1)"
             strokeWidth={strokeWidth}
           />
-          {/* Cercle de progression */}
           <circle
             cx={size / 2}
             cy={size / 2}
@@ -176,57 +179,130 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         </div>
       )}
 
-      {/* Tooltip */}
+      {/* Tooltip amélioré */}
       {showTooltip && !showLevelUp && (
         <div style={{
           position: 'absolute',
-          top: size + 8,
+          top: size + 12,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'rgba(0, 0, 0, 0.9)',
-          border: `1px solid ${levelData.color}`,
-          color: 'white',
-          padding: '0.5rem 0.75rem',
-          borderRadius: '8px',
-          fontSize: '0.75rem',
-          whiteSpace: 'nowrap',
+          background: `linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))`,
+          border: `2px solid ${levelData.color}`,
+          borderRadius: '12px',
+          padding: '0.75rem 1rem',
+          minWidth: '220px',
           zIndex: 100,
-          boxShadow: '0 4px 12px rgba(0,0,0,0.3)'
+          boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${levelData.color}40`,
         }}>
+          {/* Flèche */}
+          <div style={{
+            position: 'absolute',
+            top: -8,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            width: 0,
+            height: 0,
+            borderLeft: '8px solid transparent',
+            borderRight: '8px solid transparent',
+            borderBottom: `8px solid ${levelData.color}`,
+          }} />
+
+          {/* Header avec niveau */}
           <div style={{ 
-            fontWeight: '700', 
-            color: levelData.color,
-            marginBottom: '0.25rem',
             display: 'flex',
             alignItems: 'center',
-            gap: '0.35rem'
+            gap: '0.5rem',
+            marginBottom: '0.5rem',
+            paddingBottom: '0.5rem',
+            borderBottom: `1px solid ${levelData.color}40`
           }}>
-            {levelData.tool} Niveau {currentLevel}: {levelData.name}
+            <span style={{ fontSize: '1.5rem' }}>{levelData.tool}</span>
+            <div>
+              <div style={{ 
+                fontWeight: '700', 
+                color: levelData.color,
+                fontSize: '0.95rem'
+              }}>
+                Niveau {currentLevel}: {levelData.name}
+              </div>
+              <div style={{ 
+                fontSize: '0.7rem',
+                color: 'rgba(255,255,255,0.5)'
+              }}>
+                {isMaxLevel ? '🏆 Niveau maximum !' : `${6 - currentLevel} niveau${6 - currentLevel > 1 ? 'x' : ''} restant${6 - currentLevel > 1 ? 's' : ''}`}
+              </div>
+            </div>
           </div>
-          <div style={{ color: 'var(--gray)' }}>
-            {progress}% → {currentLevel < LEVELS.length ? `Prochain: ${nextLevelData.tool} ${nextLevelData.name}` : '🏆 Max atteint!'}
-          </div>
-          <div style={{ 
-            marginTop: '0.35rem',
-            paddingTop: '0.35rem',
-            borderTop: '1px solid rgba(255,255,255,0.1)',
-            fontSize: '0.65rem',
-            color: 'var(--gray)',
-            fontStyle: 'italic'
-          }}>
-            Clic pour simuler +25%
-          </div>
-        </div>
-      )}
 
-      {/* CSS Animation */}
-      <style jsx>{`
-        @keyframes levelUpPulse {
-          0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
-          50% { transform: translateX(-50%) scale(1.2); }
-          100% { transform: translateX(-50%) scale(1); opacity: 1; }
-        }
-      `}</style>
-    </div>
-  );
-}
+          {/* Barre de progression */}
+          <div style={{ marginBottom: '0.5rem' }}>
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              fontSize: '0.75rem',
+              color: 'rgba(255,255,255,0.7)',
+              marginBottom: '0.25rem'
+            }}>
+              <span>Progression</span>
+              <span style={{ color: levelData.color, fontWeight: '600' }}>{progress}%</span>
+            </div>
+            <div style={{
+              height: '6px',
+              background: 'rgba(255,255,255,0.1)',
+              borderRadius: '3px',
+              overflow: 'hidden'
+            }}>
+              <div style={{
+                width: `${progress}%`,
+                height: '100%',
+                background: `linear-gradient(90deg, ${levelData.color}, ${levelData.color}cc)`,
+                borderRadius: '3px',
+                transition: 'width 0.3s ease',
+                boxShadow: `0 0 10px ${levelData.color}80`
+              }} />
+            </div>
+          </div>
+
+          {/* Prochain niveau */}
+          {!isMaxLevel && (
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.4rem',
+              background: 'rgba(255,255,255,0.05)',
+              borderRadius: '6px',
+              fontSize: '0.75rem',
+              color: 'rgba(255,255,255,0.6)'
+            }}>
+              <span>Prochain:</span>
+              <span style={{ fontSize: '1rem' }}>{nextLevelData.tool}</span>
+              <span style={{ color: nextLevelData.color }}>{nextLevelData.name}</span>
+            </div>
+          )}
+
+          {/* Footer avec actions */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center',
+            marginTop: '0.5rem',
+            paddingTop: '0.5rem',
+            borderTop: '1px solid rgba(255,255,255,0.1)'
+          }}>
+            <span style={{ 
+              fontSize: '0.65rem',
+              color: 'rgba(255,255,255,0.4)',
+              fontStyle: 'italic'
+            }}>
+              Clic = +25% (démo)
+            </span>
+            <button
+              onClick={handleReset}
+              style={{
+                background: 'none',
+                border: 'none',
+                color: 'rgba(255,255,255,0.4)',
+                fontSize: '0.65rem',
+                cursor: 'pointer',
+                padding: '0.2rem 0.4rem
