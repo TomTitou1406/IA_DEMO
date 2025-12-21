@@ -358,35 +358,36 @@ export default function VideoPlayerModal({
                 >
                   🚀 Mettre en œuvre
                 </button>
-                {onAttach && (
-                  <button
-                    onClick={() => onAttach(video)}
-                    style={{
-                      padding: '0.75rem 1.25rem',
-                      borderRadius: '8px',
-                      border: 'none',
-                      background: 'var(--orange)',
-                      color: 'white',
-                      fontSize: '0.9rem',
-                      fontWeight: '600',
-                      cursor: 'pointer',
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.currentTarget.style.transform = 'scale(1.02)';
-                      e.currentTarget.style.boxShadow = '0 4px 15px rgba(249, 115, 22, 0.4)';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.currentTarget.style.transform = 'scale(1)';
-                      e.currentTarget.style.boxShadow = 'none';
-                    }}
-                  >
-                    📌 {attachLabel || 'Attacher'}
-                  </button>
-                )}
+              )}
+              
+              {onAttach && (
+                <button
+                  onClick={() => onAttach(video)}
+                  style={{
+                    padding: '0.75rem 1.25rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'var(--orange)',
+                    color: 'white',
+                    fontSize: '0.9rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s',
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.transform = 'scale(1.02)';
+                    e.currentTarget.style.boxShadow = '0 4px 15px rgba(249, 115, 22, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.transform = 'scale(1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  📌 {attachLabel || 'Attacher'}
+                </button>
               )}
             </div>
           )}
