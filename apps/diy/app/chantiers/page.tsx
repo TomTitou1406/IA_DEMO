@@ -48,20 +48,6 @@ interface Chantier {
   } | null;
 }
 
-// Modales photos et vidéos
-const [showPhotosModal, setShowPhotosModal] = useState(false);
-const [photosModalConfig, setPhotosModalConfig] = useState<{
-  niveau: 'chantier' | 'travail' | 'etape' | 'tache';
-  niveauId: string;
-  niveauTitre: string;
-  photos: any[];
-}>({ niveau: 'chantier', niveauId: '', niveauTitre: '', photos: [] });
-
-const [showVideoModal, setShowVideoModal] = useState(false);
-const [videoModalConfig, setVideoModalConfig] = useState<{
-  video: any;
-}>({ video: null });
-
 export default function ChantiersPage() {
   const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
@@ -72,8 +58,23 @@ export default function ChantiersPage() {
   const [showNouveaux, setShowNouveaux] = useState(false);
   const [showEnCours, setShowEnCours] = useState(false);
   const [showTermines, setShowTermines] = useState(false);
-
   const [isMobile, setIsMobile] = useState(false);
+  
+  // Modales photos et vidéos
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+  const [photosModalConfig, setPhotosModalConfig] = useState<{
+    niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+    niveauId: string;
+    niveauTitre: string;
+    photos: any[];
+  }>({ niveau: 'chantier', niveauId: '', niveauTitre: '', photos: [] });
+  
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoModalConfig, setVideoModalConfig] = useState<{
+    video: any;
+  }>({ video: null });
+
+  
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
