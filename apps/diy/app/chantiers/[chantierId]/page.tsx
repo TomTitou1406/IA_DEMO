@@ -807,88 +807,87 @@ export default function ChantierEditPage() {
               </div>
             </div>
             
-            {/* Ligne 2 : Boutons d'action */}
-            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
+            {/* Ligne 2 : Boutons d'action + Tout déplier */}
+            <div style={{ 
+              display: 'flex', 
+              justifyContent: 'space-between',
+              alignItems: 'center',
+              padding: '0.5rem 1.25rem 0'
+            }}>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <button
+                  onClick={handleModifier}
+                  style={{
+                    padding: '0.4rem 0.75rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    background: 'rgba(255,255,255,0.05)',
+                    color: 'var(--gray-light)',
+                    fontSize: '0.8rem',
+                    fontWeight: '600',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+                    e.currentTarget.style.borderColor = 'var(--gray-light)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                  }}
+                >
+                  ✏️ Modifier
+                </button>
+                <button
+                  onClick={hasBrouillon ? handleReprendrePhasage : handleLancerPhasage}
+                  style={{
+                    padding: '0.4rem 0.75rem',
+                    borderRadius: '8px',
+                    border: 'none',
+                    background: 'var(--orange)',
+                    color: 'white',
+                    fontSize: '0.8rem',
+                    fontWeight: '700',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
+                    e.currentTarget.style.transform = 'translateY(-1px)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.transform = 'translateY(0)';
+                  }}
+                >
+                  {hasBrouillon ? '🔄 Reprendre' : '🚀 Phasage'}
+                </button>
+              </div>
+              
               <button
-                onClick={handleModifier}
+                onClick={toggleAll}
                 style={{
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(255,255,255,0.2)',
-                  background: 'rgba(255,255,255,0.05)',
-                  color: 'var(--gray-light)',
-                  fontSize: '0.8rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
-                  e.currentTarget.style.borderColor = 'var(--gray-light)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.background = 'rgba(255,255,255,0.05)';
-                  e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
-                }}
-              >
-                ✏️ Modifier
-              </button>
-              <button
-                onClick={hasBrouillon ? handleReprendrePhasage : handleLancerPhasage}
-                style={{
-                  padding: '0.4rem 0.75rem',
-                  borderRadius: '8px',
+                  padding: '0.3rem 0.7rem',
+                  borderRadius: '6px',
                   border: 'none',
-                  background: 'var(--orange)',
-                  color: 'white',
-                  fontSize: '0.8rem',
-                  fontWeight: '700',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem',
-                  whiteSpace: 'nowrap'
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(249, 115, 22, 0.4)';
-                  e.currentTarget.style.transform = 'translateY(-1px)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = 'none';
-                  e.currentTarget.style.transform = 'translateY(0)';
+                  background: 'rgba(255,255,255,0.08)',
+                  color: 'var(--gray-light)',
+                  fontSize: '0.7rem',
+                  cursor: 'pointer'
                 }}
               >
-                {hasBrouillon ? '🔄 Reprendre' : '🚀 Phasage'}
+                {allOpen ? '▲ Tout replier' : '▼ Tout déplier'}
               </button>
             </div>
-          </div>
-
-          {/* Bouton Tout déplier/replier */}
-          <div style={{ 
-            padding: '0.5rem 1.25rem 0',
-            display: 'flex',
-            justifyContent: 'flex-end'
-          }}>
-            <button
-              onClick={toggleAll}
-              style={{
-                padding: '0.3rem 0.7rem',
-                borderRadius: '6px',
-                border: 'none',
-                background: 'rgba(255,255,255,0.08)',
-                color: 'var(--gray-light)',
-                fontSize: '0.7rem',
-                cursor: 'pointer'
-              }}
-            >
-              {allOpen ? '▲ Tout replier' : '▼ Tout déplier'}
-            </button>
-          </div>
 
           {/* Contenu avec ACCORDÉONS */}
           <div style={{ padding: '0.75rem 1.25rem 1rem' }}>
