@@ -485,6 +485,26 @@ export default function Navbar({ className }: NavbarProps) {
           <span>{mobile ? 'Compte' : 'Mon compte'}</span>
         </button>
 
+        {/* Pastille bons d'achat */}
+        {bonsCount > 0 && (
+          <span style={{
+            position: 'absolute',
+            top: mobile ? '0' : '-4px',
+            right: mobile ? 'calc(50% - 20px)' : '-8px',
+            background: '#10b981',
+            color: 'white',
+            fontSize: '0.6rem',
+            fontWeight: '700',
+            padding: '1px 5px',
+            borderRadius: '8px',
+            minWidth: '16px',
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(16, 185, 129, 0.5)',
+          }}>
+            {bonsCount}
+          </span>
+        )}
+
         {/* Tooltip Mon Compte */}
         {showTooltip && !mobile && (
           <div style={{
