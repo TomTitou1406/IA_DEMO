@@ -460,6 +460,10 @@ export default function ChantierEditPage() {
   // Lancer le phasage (génération des lots)
   const handleLancerPhasage = async () => {
     setIsQualifying(true);
+    
+    // Forcer le rendu avant l'appel API
+    await new Promise(resolve => setTimeout(resolve, 50));
+    
     const result = await checkPrePhasageRequirements();
   
     // Gérer le cas boolean (compatibilité) ou objet
