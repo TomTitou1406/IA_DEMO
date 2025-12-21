@@ -462,11 +462,12 @@ function TravailSimpleCard({
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.03)',
-      borderRadius: '12px',
-      border: '1px solid rgba(255,255,255,0.08)',
-      overflow: 'hidden'
-    }}>
+        background: 'rgba(255,255,255,0.03)',
+        borderRadius: '12px',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderLeft: '3px solid var(--blue)',
+        overflow: 'hidden'
+      }}>
       {/* Header */}
       <Link 
         href={`/chantiers/${travail.id}/travaux`}
@@ -622,12 +623,12 @@ function ChantierCard({
 
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.03)',
-      borderRadius: '12px',
-      border: '1px solid rgba(255,255,255,0.08)',
-      borderLeft: `3px solid ${status.color}`,
-      overflow: 'hidden'
-    }}>
+        background: 'rgba(255,255,255,0.03)',
+        borderRadius: '12px',
+        border: '1px solid rgba(255,255,255,0.08)',
+        borderLeft: '3px solid var(--orange)',
+        overflow: 'hidden'
+      }}>
       {/* Header */}
       <Link 
         href={linkHref}
@@ -740,7 +741,7 @@ function ChantierCard({
             flex: 1,
             padding: '0.75rem',
             textAlign: 'center',
-            color: status.color,
+            color: 'var(--orange)',
             fontSize: '0.85rem',
             fontWeight: '500',
             textDecoration: 'none',
