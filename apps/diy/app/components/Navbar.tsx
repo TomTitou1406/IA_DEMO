@@ -117,7 +117,6 @@ export default function Navbar({ className }: NavbarProps) {
     { id: 'home', icon: '🏠', label: 'Accueil', path: '/', color: '#f97316' },
     { id: 'projects', icon: '📁', label: 'Mes projets', path: '/chantiers', count: projectsCount, color: '#f97316' },
     { id: 'videos', icon: '❤️', label: 'Mes vidéos', path: '/videos/favorites', count: favoritesCount, color: '#ef4444' },
-    { id: 'account', icon: '👤', label: 'Mon compte', path: '/compte', count: bonsCount, color: '#3b82f6' },
   ];
 
   const openAssistantHelp = () => {
@@ -353,6 +352,161 @@ export default function Navbar({ className }: NavbarProps) {
           {!mobile && <span>Panier</span>}
           {mobile && <span>Panier</span>}
         </button>
+
+        {/* Mon Compte */}
+        const AccountButton = ({ mobile = false }: { mobile?: boolean }) => {
+          const [showTooltip, setShowTooltip] = useState(false);
+          const active = isActive('/compte');
+          
+          return (
+            <div 
+              style={{ position: 'relative', display: 'inline-block' }}
+              onMouseEnter={() => setShowTooltip(true)}
+              onMouseLeave={() => setShowTooltip(false)}
+            >
+              <button
+                style={{
+                  display: 'flex',
+                  flexDirection: mobile ? 'column' : 'row',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: mobile ? '0.2rem' : '0.4rem',
+                  padding: mobile ? '0.4rem' : '0.5rem 0.75rem',
+                  borderRadius: mobile ? '0' : '10px',
+                  border: 'none',
+                  background: active ? 'rgba(59, 130, 246, 0.15)' : 'transparent',
+                  color: active ? '#3b82f6' : 'rgba(255,255,255,0.7)',
+                  fontSize: mobile ? '0.6rem' : '0.85rem',
+                  fontWeight: active ? '600' : '500',
+                  cursor: 'pointer',
+                  position: 'relative',
+                  transition: 'all 0.3s ease',
+                  flex: mobile ? 1 : 'unset',
+                }}
+                onMouseEnter={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'rgba(59, 130, 246, 0.15)';
+                    e.currentTarget.style.color = '#3b82f6';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(59, 130, 246, 0.3)';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!active) {
+                    e.currentTarget.style.background = 'transparent';
+                    e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }
+                }}
+              >
+                <span style={{ 
+                  fontSize: mobile ? '1.3rem' : '1rem',
+                  transition: 'transform 0.2s ease'
+                }}>
+                  👤
+                </span>
+                <span>{mobile ? 'Compte' : 'Mon compte'}</span>
+              </button>
+
+        {/* Tooltip Menu */}
+        {showTooltip && !mobile && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            marginTop: '12px',
+            background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))',
+            border: '2px solid #3b82f6',
+            borderRadius: '12px',
+            padding: '0.75rem',
+            minWidth: '220px',
+            zIndex: 100,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(59, 130, 246, 0.3)',
+          }}>
+            {/* Flèche */}
+            <div style={{
+              position: 'absolute',
+              top: -8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderBottom: '8px solid #3b82f6',
+            }} />
+
+            {/* Options du menu */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '0.85rem',
+                cursor: 'not-allowed'
+              }}>
+                <span>⚙️</span>
+                <span>Mes préférences</span>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '0.85rem',
+                cursor: 'not-allowed'
+              }}>
+                <span>📊</span>
+                <span>Mon niveau d'expertise</span>
+              </div>
+              
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '0.85rem',
+                cursor: 'not-allowed'
+              }}>
+                <span>🎁</span>
+                <span>Mes bons d'achat</span>
+              </div>
+            </div>
+
+            {/* Badge coming soon */}
+            <div style={{
+              marginTop: '0.75rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              textAlign: 'center'
+            }}>
+              <span style={{
+                background: 'rgba(59, 130, 246, 0.2)',
+                color: '#3b82f6',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.7rem',
+                fontWeight: '600'
+              }}>
+                ✨ Bientôt disponible
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
         {/* Tooltip */}
         {showTooltip && !mobile && (
@@ -708,6 +862,7 @@ export default function Navbar({ className }: NavbarProps) {
             {navItems.map(item => (
               <NavItemDesktop key={item.id} item={item} />
             ))}
+            <AccountButton />
           </nav>
 
           {/* Badge Gamification */}
@@ -789,6 +944,7 @@ export default function Navbar({ className }: NavbarProps) {
         {navItems.map(item => (
           <NavItemMobile key={item.id} item={item} />
         ))}
+        <AccountButton mobile/>
         {/* Badge Gamification - Mobile */}
         <div style={{ 
           display: 'flex', 
