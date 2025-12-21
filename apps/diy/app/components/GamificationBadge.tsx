@@ -51,8 +51,6 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
       progress: progress,
       bons: bonsGagnes
     }));
-    // Dispatch event pour mettre à jour la pastille Mon compte
-    window.dispatchEvent(new CustomEvent('bonsUpdated', { detail: { count: bonsGagnes.length } }));
   }, [currentLevel, progress, bonsGagnes]);
 
   const levelData = LEVELS[Math.min(currentLevel - 1, LEVELS.length - 1)];
