@@ -4,7 +4,7 @@ import { supabase } from '../supabaseClient';
 const DEMO_USER_ID = '00000000-0000-0000-0000-000000000001';
 
 /**
- * Récupère le chantier de Christophe (user démo)
+ * Récupère le chantier de user démo
  */
 export async function getChantierDemo() {
   try {
@@ -161,14 +161,13 @@ export async function getAllChantiers() {
         )
       `)
       .order('created_at', { ascending: false });
-
     if (error) throw error;
-
     // Enrichir avec les statistiques
     return chantiers.map((chantier: any) => ({
       ...chantier,
       nombre_travaux: chantier.travaux?.length || 0,
-      travaux_termines: chantier.travaux?.filter((t: any) => t.statut === 'terminé').length || 0
+      travaux_termines: chantier.travaux?.filter((t: any) => t.statut === 'terminé').length || 0,
+      nb_lots_brouillon: chantier.brouillon_phasage?.lots?.length || 0  // ← AJOUTER
     }));
   } catch (error) {
     console.error('Error fetching all chantiers:', error);
