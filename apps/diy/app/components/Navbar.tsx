@@ -534,7 +534,7 @@ export default function Navbar({ className }: NavbarProps) {
               borderBottom: '8px solid #3b82f6',
             }} />
 
-            {/* Options du menu */}
+           {/* Options du menu */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
               <div style={{
                 display: 'flex',
@@ -563,7 +563,22 @@ export default function Navbar({ className }: NavbarProps) {
                 cursor: 'not-allowed'
               }}>
                 <span>📊</span>
-                <span>Mon niveau d'expertise</span>
+                <span>Mon expertise</span>
+              </div>
+
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.75rem',
+                padding: '0.5rem 0.75rem',
+                borderRadius: '8px',
+                background: 'rgba(255,255,255,0.05)',
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '0.85rem',
+                cursor: 'not-allowed'
+              }}>
+                <span>🧰</span>
+                <span>Mon matériel</span>
               </div>
               
               <div style={{
