@@ -30,6 +30,7 @@ export default function Navbar({ className }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
+  const [bonsCount, setBonsCount] = useState(0);
 
   useEffect(() => {
     loadCounts();
@@ -89,6 +90,23 @@ export default function Navbar({ className }: NavbarProps) {
     
     return () => window.removeEventListener('favoritesUpdated', handleUpdate);
   }, []);
+
+  useEffect(() => {
+    // Charger initial
+    const saved = localStorage.getItem('gamification');
+    if (saved) {
+      const data = JSON.parse(saved);
+      setBonsCount(data.bons?.length || 0);
+    }
+    
+    // Écouter les mises à jour
+    const handleBonsUpdate = (e: CustomEvent) => {
+      setBonsCount(e.detail.count);
+    };
+    
+    window.addEventListener('bonsUpdated', handleBonsUpdate as EventListener);
+    return () => window.removeEventListener('bonsUpdated', handleBonsUpdate as EventListener);
+  }, []);
   
   const isActive = (path: string) => {
     if (path === '/') return pathname === '/';
@@ -99,7 +117,7 @@ export default function Navbar({ className }: NavbarProps) {
     { id: 'home', icon: '🏠', label: 'Accueil', path: '/', color: '#f97316' },
     { id: 'projects', icon: '📁', label: 'Mes projets', path: '/chantiers', count: projectsCount, color: '#f97316' },
     { id: 'videos', icon: '❤️', label: 'Mes vidéos', path: '/videos/favorites', count: favoritesCount, color: '#ef4444' },
-    { id: 'account', icon: '👤', label: 'Mon compte', path: '/compte', color: '#3b82f6' },
+    { id: 'account', icon: '👤', label: 'Mon compte', path: '/compte', count: bonsCount, color: '#3b82f6' },
   ];
 
   const openAssistantHelp = () => {
