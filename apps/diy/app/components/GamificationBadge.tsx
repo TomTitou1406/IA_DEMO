@@ -305,4 +305,32 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
                 color: 'rgba(255,255,255,0.4)',
                 fontSize: '0.65rem',
                 cursor: 'pointer',
-                padding: '0.2rem 0.4rem
+                padding: '0.2rem 0.4rem',
+                borderRadius: '4px',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
+                e.currentTarget.style.color = '#ef4444';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'none';
+                e.currentTarget.style.color = 'rgba(255,255,255,0.4)';
+              }}
+            >
+              🔄 Reset
+            </button>
+          </div>
+        </div>
+      )}
+
+      <style jsx>{`
+        @keyframes levelUpPulse {
+          0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+          50% { transform: translateX(-50%) scale(1.2); }
+          100% { transform: translateX(-50%) scale(1); opacity: 1; }
+        }
+      `}</style>
+    </div>
+  );
+}
