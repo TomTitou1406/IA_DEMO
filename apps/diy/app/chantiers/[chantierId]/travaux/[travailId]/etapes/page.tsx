@@ -761,6 +761,7 @@ export default function TravailDetailPage() {
                   });
                   setShowVideoModal(true);
                 } else {
+                  sessionStorage.setItem('attachReturnUrl', window.location.href);
                   const searchQuery = encodeURIComponent(etape.titre);
                   window.location.href = `/videos?context=etape&id=${etape.id}&search=${searchQuery}`;
                 }
@@ -1010,6 +1011,7 @@ export default function TravailDetailPage() {
                   });
                   setShowVideoModal(true);
                 } else {
+                  sessionStorage.setItem('attachReturnUrl', window.location.href);
                   const searchQuery = encodeURIComponent(travail.titre);
                   window.location.href = `/videos?context=travail&id=${travailId}&search=${searchQuery}`;
                 }
