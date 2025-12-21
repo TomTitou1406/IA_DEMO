@@ -455,7 +455,7 @@ function VideosContent() {
     }));
   };
 
-  const handleAttachVideo = async (video: Video) => {
+  const handleAttachVideo = async (video: any) => {
   if (!attachContext || !attachId) return;
   
   try {
@@ -1058,7 +1058,7 @@ function VideosContent() {
           setShowPlayerModal(false);
           setShowAnalysisModal(true);
         }}
-        onAttach={attachContext ? (video) => handleAttachVideo(video) : undefined}
+        onAttach={attachContext ? handleAttachVideo : undefined}
         attachLabel={attachContext ? `Attacher à "${attachNiveauTitre}"` : undefined}
         isFavorite={selectedVideoData ? favoriteIds.has(selectedVideoData.id) : false}
         showMettreEnOeuvreButton={!attachContext}
