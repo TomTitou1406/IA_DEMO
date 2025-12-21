@@ -1172,7 +1172,7 @@ export default function ChantierEditPage() {
                     { key: 'nature_terrain', icon: '🌍', label: 'Nature terrain' },
                     { key: 'fondations_type', icon: '🧱', label: 'Type de fondations' },
                     { key: 'couverture_toit', icon: '🏠', label: 'Couverture toit' },
-                  ].filter(item => meta[item.key]);
+                  ].filter(item => (meta as any)[item.key]);
 
                   if (detailsTechniques.length === 0) return null;
 
@@ -1197,7 +1197,7 @@ export default function ChantierEditPage() {
                             key={item.key}
                             icon={item.icon} 
                             label={item.label} 
-                            value={String(meta[item.key])}
+                            value={String((meta as any)[item.key])}
                           />
                         ))}
                       </div>
