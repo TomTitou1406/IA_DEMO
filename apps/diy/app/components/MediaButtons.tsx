@@ -49,23 +49,21 @@ export default function MediaButtons({
   };
 
   const buttonStyle = {
-    padding: compact ? '0.3rem 0.5rem' : '0.4rem 0.7rem',
-    borderRadius: '8px',
-    border: '1px solid rgba(255,255,255,0.15)',
-    background: 'rgba(255,255,255,0.05)',
-    color: 'var(--gray-light)',
-    fontSize: compact ? '0.75rem' : '0.8rem',
+    padding: compact ? '0.25rem' : '0.35rem',
+    borderRadius: '6px',
+    border: 'none',
+    background: 'transparent',
+    color: 'var(--gray)',
+    fontSize: compact ? '1.1rem' : '1.3rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.3rem',
+    gap: '0.25rem',
     transition: 'all 0.2s'
   };
 
   const activeStyle = {
     ...buttonStyle,
-    background: 'rgba(249, 115, 22, 0.15)',
-    border: '1px solid var(--orange)',
     color: 'var(--orange)'
   };
 
@@ -77,12 +75,12 @@ export default function MediaButtons({
           onClick={onPhotoClick}
           style={photosCount > 0 ? activeStyle : buttonStyle}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+            e.currentTarget.style.color = 'var(--blue)';
+            e.currentTarget.style.transform = 'scale(1.15)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = photosCount > 0 
-              ? 'rgba(249, 115, 22, 0.2)' 
-              : 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.color = photosCount > 0 ? 'var(--orange)' : 'var(--gray)';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
           title={photosCount > 0 ? `${photosCount} photo(s)` : 'Ajouter une photo'}
         >
@@ -94,12 +92,12 @@ export default function MediaButtons({
           onClick={handleVideoClick}
           style={hasVideo ? activeStyle : buttonStyle}
           onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(255,255,255,0.15)';
+            e.currentTarget.style.color = 'var(--blue)';
+            e.currentTarget.style.transform = 'scale(1.15)';
           }}
           onMouseLeave={(e) => {
-            e.currentTarget.style.background = hasVideo 
-              ? 'rgba(249, 115, 22, 0.2)' 
-              : 'rgba(255,255,255,0.08)';
+            e.currentTarget.style.color = hasVideo ? 'var(--orange)' : 'var(--gray)';
+            e.currentTarget.style.transform = 'scale(1)';
           }}
           title={hasVideo ? videoTitre || 'Voir le tuto' : 'Trouver un tuto'}
         >
