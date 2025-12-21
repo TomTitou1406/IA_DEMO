@@ -1,8 +1,8 @@
 /**
  * /app/components/GamificationBadge.tsx
- * Badge de gamification avec couronne de progression
+ * Badge de gamification avec couronne de progression + bons d'achat
  * 
- * @version 1.1 - Tooltip amélioré + reset
+ * @version 1.2 - Tooltip sticky + double-clic reset + bons
  */
 
 'use client';
@@ -11,13 +11,15 @@ import { useState, useEffect } from 'react';
 
 // Niveaux et outils associés
 const LEVELS = [
-  { level: 1, tool: '🪛', name: 'Tournevis', color: '#6b7280' },
-  { level: 2, tool: '🔨', name: 'Marteau', color: '#3b82f6' },
-  { level: 3, tool: '🪚', name: 'Scie', color: '#10b981' },
-  { level: 4, tool: '🖌️', name: 'Pinceau', color: '#f59e0b' },
-  { level: 5, tool: '🔧', name: 'Clé à molette', color: '#8b5cf6' },
-  { level: 6, tool: '⚡', name: 'Pro', color: '#ef4444' },
+  { level: 1, tool: '🪛', name: 'Tournevis', color: '#6b7280', bon: null },
+  { level: 2, tool: '🔨', name: 'Marteau', color: '#3b82f6', bon: '🎁 Bon 5€ Leroy Merlin' },
+  { level: 3, tool: '🪚', name: 'Scie', color: '#10b981', bon: '🎁 Réduction 10% Castorama' },
+  { level: 4, tool: '🖌️', name: 'Pinceau', color: '#f59e0b', bon: '🎁 Pied à coulisse offert' },
+  { level: 5, tool: '🔧', name: 'Clé à molette', color: '#8b5cf6', bon: '🎁 Bon 15€ Brico Dépôt' },
+  { level: 6, tool: '⚡', name: 'Pro', color: '#ef4444', bon: '🎁 Bon 25€ Saint-Gobain' },
 ];
+
+const BONUS_MAX = '🎁 Kit tournevis pro offert';
 
 interface GamificationBadgeProps {
   size?: number;
@@ -28,6 +30,8 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
   const [progress, setProgress] = useState(0);
   const [showTooltip, setShowTooltip] = useState(false);
   const [showLevelUp, setShowLevelUp] = useState(false);
+  const [bonsGagnes, setBonsGagnes] = useState<string[]>([]);
+  const [tooltipLocked, setTooltipLocked] = useState(false);
 
   // Charger depuis localStorage
   useEffect(() => {
@@ -36,6 +40,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
       const data = JSON.parse(saved);
       setCurrentLevel(data.level || 1);
       setProgress(data.progress || 0);
+      setBonsGagnes(data.bons || []);
     }
   }, []);
 
@@ -43,9 +48,12 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
   useEffect(() => {
     localStorage.setItem('gamification', JSON.stringify({
       level: currentLevel,
-      progress: progress
+      progress: progress,
+      bons: bonsGagnes
     }));
-  }, [currentLevel, progress]);
+    // Dispatch event pour mettre à jour la pastille Mon compte
+    window.dispatchEvent(new CustomEvent('bonsUpdated', { detail: { count: bonsGagnes.length } }));
+  }, [currentLevel, progress, bonsGagnes]);
 
   const levelData = LEVELS[Math.min(currentLevel - 1, LEVELS.length - 1)];
   const nextLevelData = LEVELS[Math.min(currentLevel, LEVELS.length - 1)];
@@ -62,10 +70,21 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     
     if (newProgress >= 100) {
       if (currentLevel < LEVELS.length) {
-        setCurrentLevel(prev => prev + 1);
+        const newLevel = currentLevel + 1;
+        setCurrentLevel(newLevel);
         setProgress(0);
         setShowLevelUp(true);
         setTimeout(() => setShowLevelUp(false), 2000);
+        
+        // Ajouter le bon du nouveau niveau
+        const newLevelData = LEVELS[newLevel - 1];
+        if (newLevelData.bon) {
+          setBonsGagnes(prev => [...prev, newLevelData.bon!]);
+        }
+        // Bonus max level
+        if (newLevel === LEVELS.length) {
+          setBonsGagnes(prev => [...prev, BONUS_MAX]);
+        }
       } else {
         setProgress(100);
       }
@@ -74,22 +93,41 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     }
   };
 
-  const handleReset = (e: React.MouseEvent) => {
-    e.stopPropagation();
+  const handleDoubleClick = () => {
     setCurrentLevel(1);
     setProgress(0);
+    setBonsGagnes([]);
     setShowTooltip(false);
+    setTooltipLocked(false);
+  };
+
+  const handleMouseEnter = () => {
+    setShowTooltip(true);
+  };
+
+  const handleMouseLeave = () => {
+    if (!tooltipLocked) {
+      setShowTooltip(false);
+    }
+  };
+
+  const handleBadgeClick = () => {
+    setTooltipLocked(!tooltipLocked);
   };
 
   return (
     <div 
       style={{ position: 'relative', display: 'inline-block' }}
-      onMouseEnter={() => setShowTooltip(true)}
-      onMouseLeave={() => setShowTooltip(false)}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
     >
       {/* Badge principal */}
       <div
-        onClick={handleClick}
+        onClick={(e) => {
+          handleClick();
+          handleBadgeClick();
+        }}
+        onDoubleClick={handleDoubleClick}
         style={{
           width: size,
           height: size,
@@ -180,20 +218,26 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
       )}
 
       {/* Tooltip amélioré */}
-      {showTooltip && !showLevelUp && (
-        <div style={{
-          position: 'absolute',
-          top: size + 12,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          background: `linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))`,
-          border: `2px solid ${levelData.color}`,
-          borderRadius: '12px',
-          padding: '0.75rem 1rem',
-          minWidth: '220px',
-          zIndex: 100,
-          boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${levelData.color}40`,
-        }}>
+      {(showTooltip || tooltipLocked) && !showLevelUp && (
+        <div 
+          style={{
+            position: 'absolute',
+            top: size + 12,
+            left: '50%',
+            transform: 'translateX(-50%)',
+            background: `linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))`,
+            border: `2px solid ${levelData.color}`,
+            borderRadius: '12px',
+            padding: '0.75rem 1rem',
+            minWidth: '240px',
+            zIndex: 100,
+            boxShadow: `0 8px 32px rgba(0,0,0,0.5), 0 0 20px ${levelData.color}40`,
+          }}
+          onMouseEnter={() => setShowTooltip(true)}
+          onMouseLeave={() => {
+            if (!tooltipLocked) setShowTooltip(false);
+          }}
+        >
           {/* Flèche */}
           <div style={{
             position: 'absolute',
@@ -273,7 +317,8 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
               background: 'rgba(255,255,255,0.05)',
               borderRadius: '6px',
               fontSize: '0.75rem',
-              color: 'rgba(255,255,255,0.6)'
+              color: 'rgba(255,255,255,0.6)',
+              marginBottom: '0.5rem'
             }}>
               <span>Prochain:</span>
               <span style={{ fontSize: '1rem' }}>{nextLevelData.tool}</span>
@@ -281,45 +326,52 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
             </div>
           )}
 
-          {/* Footer avec actions */}
+          {/* Bons gagnés */}
+          {bonsGagnes.length > 0 && (
+            <div style={{
+              marginTop: '0.5rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid rgba(255,255,255,0.1)'
+            }}>
+              <div style={{ 
+                fontSize: '0.75rem', 
+                color: '#10b981', 
+                fontWeight: '600',
+                marginBottom: '0.35rem'
+              }}>
+                🎁 Bons gagnés ({bonsGagnes.length})
+              </div>
+              <div style={{ 
+                maxHeight: '80px', 
+                overflowY: 'auto',
+                fontSize: '0.7rem',
+                color: 'rgba(255,255,255,0.7)'
+              }}>
+                {bonsGagnes.map((bon, idx) => (
+                  <div key={idx} style={{ 
+                    padding: '0.2rem 0',
+                    borderBottom: idx < bonsGagnes.length - 1 ? '1px solid rgba(255,255,255,0.05)' : 'none'
+                  }}>
+                    {bon}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
             marginTop: '0.5rem',
             paddingTop: '0.5rem',
-            borderTop: '1px solid rgba(255,255,255,0.1)'
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            fontSize: '0.6rem',
+            color: 'rgba(255,255,255,0.4)'
           }}>
-            <span style={{ 
-              fontSize: '0.65rem',
-              color: 'rgba(255,255,255,0.4)',
-              fontStyle: 'italic'
-            }}>
-              Clic = +25% (démo)
-            </span>
-            <button
-              onClick={handleReset}
-              style={{
-                background: 'none',
-                border: 'none',
-                color: 'rgba(255,255,255,0.4)',
-                fontSize: '0.65rem',
-                cursor: 'pointer',
-                padding: '0.2rem 0.4rem',
-                borderRadius: '4px',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.background = 'rgba(239, 68, 68, 0.2)';
-                e.currentTarget.style.color = '#ef4444';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.background = 'none';
-                e.currentTarget.style.color = 'rgba(255,255,255,0.4)';
-              }}
-            >
-              🔄 Reset
-            </button>
+            <span>Clic = +25%</span>
+            <span>Double-clic = Reset</span>
           </div>
         </div>
       )}
