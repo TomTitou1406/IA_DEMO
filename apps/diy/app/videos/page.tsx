@@ -246,7 +246,12 @@ function LoadingSearch() {
 function VideosContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const query = searchParams.get('q') || '';
+  const query = searchParams.get('q') || searchParams.get('search') || '';
+
+  // Contexte pour attacher une vidéo à un niveau
+  const attachContext = searchParams.get('context'); // 'chantier', 'travail', 'etape', 'tache'
+  const attachId = searchParams.get('id');
+  const attachTitre = searchParams.get('titre') || '';
   
   const [videos, setVideos] = useState<Video[]>([]);
   const [shorts, setShorts] = useState<Video[]>([]);
@@ -262,6 +267,7 @@ function VideosContent() {
 
   // Modal analyse vidéo
   const [showAnalysisModal, setShowAnalysisModal] = useState(false);
+  const [attachNiveauTitre, setAttachNiveauTitre] = useState<string>(attachTitre);
     
   // Pagination côté client
   const [videosDisplayCount, setVideosDisplayCount] = useState(9);
@@ -281,6 +287,34 @@ function VideosContent() {
       setLoading(false);
     }
   }, [query]);
+
+  // Charger le titre du niveau si contexte d'attachement
+  useEffect(() => {
+    if (attachContext && attachId && !attachTitre) {
+      // Récupérer le titre depuis l'API
+      const fetchTitre = async () => {
+        try {
+          const tableMap: Record<string, string> = {
+            chantier: 'chantiers',
+            travail: 'travaux',
+            etape: 'etapes',
+            tache: 'taches'
+          };
+          const table = tableMap[attachContext];
+          if (table) {
+            const res = await fetch(`/api/generic?table=${table}&id=${attachId}&select=titre`);
+            const data = await res.json();
+            if (data.titre) {
+              setAttachNiveauTitre(data.titre);
+            }
+          }
+        } catch (e) {
+          console.error('Erreur récupération titre niveau:', e);
+        }
+      };
+      fetchTitre();
+    }
+  }, [attachContext, attachId, attachTitre]);
 
   const loadFavorites = async () => {
     try {
@@ -420,6 +454,36 @@ function VideosContent() {
       } 
     }));
   };
+
+  const handleAttachVideo = async (video: Video) => {
+  if (!attachContext || !attachId) return;
+  
+  try {
+    const res = await fetch('/api/medias', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        action: 'set_video',
+        niveau: attachContext,
+        niveau_id: attachId,
+        data: {
+          video_id: video.id,
+          titre: video.title,
+          url: `https://www.youtube.com/watch?v=${video.id}`,
+          thumbnail: video.thumbnail
+        }
+      })
+    });
+    
+    if (res.ok) {
+      // Fermer le modal et retourner à la page précédente
+      setShowPlayerModal(false);
+      router.back();
+    }
+  } catch (error) {
+    console.error('Erreur attachement vidéo:', error);
+  }
+};
 
   const handleShowMoreVideos = () => {
     setVideosDisplayCount(prev => prev + videosPerPage);
