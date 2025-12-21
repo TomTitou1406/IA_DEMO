@@ -140,6 +140,8 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
           cursor: 'pointer',
           position: 'relative',
           transition: 'transform 0.2s, box-shadow 0.2s',
+          outline: 'none',
+          WebkitTapHighlightColor: 'transparent',
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = 'scale(1.1)';
