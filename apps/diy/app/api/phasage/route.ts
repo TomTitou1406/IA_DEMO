@@ -155,6 +155,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         hasBrouillon: brouillonLots.length > 0,
+        nbLots: brouillonLots.length,
         lots: brouillonLots 
       });
     }
