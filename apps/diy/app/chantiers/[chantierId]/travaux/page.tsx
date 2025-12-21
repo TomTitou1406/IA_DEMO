@@ -11,6 +11,7 @@ import { getTravauxByChantier, annulerTravail, reactiverTravail, commencerTravai
 import NotesButton from '@/app/components/NotesButton';
 import Breadcrumb from '@/app/components/Breadcrumb';
 import ParentContext from '@/app/components/ParentContext';
+import MediaButtons from '@/app/components/MediaButtons';
 
 interface Chantier {
   id: string;
@@ -59,6 +60,13 @@ interface Travail {
       conseils?: string;
     }>;
   };
+  photos_urls?: any[];
+  video_aide?: {
+    video_id: string;
+    titre: string;
+    url: string;
+    thumbnail?: string;
+  } | null;
 }
 
 // ==================== MODALE FORÇAGE ====================
@@ -247,6 +255,8 @@ export default function TravauxPage() {
   const [showTermines, setShowTermines] = useState(false);
   const [showAVenir, setShowAVenir] = useState(false);
   const [showAnnulees, setShowAnnulees] = useState(false);
+  const [chantierPhotos, setChantierPhotos] = useState<any[]>([]);
+  const [chantierVideo, setChantierVideo] = useState<any>(null);
   const [modalConfig, setModalConfig] = useState<{
     isOpen: boolean;
     title: string;
@@ -283,6 +293,9 @@ export default function TravauxPage() {
           const statsData = await getChantierStats(chantierData.id);
           setStats(statsData);
           setTravaux(allTravaux);
+          // Charger les médias du chantier
+          setChantierPhotos(chantierData.photos_urls || []);
+          setChantierVideo(chantierData.video_aide || null);
         }
       } catch (error) {
         console.error('Error loading travaux:', error);
@@ -695,6 +708,35 @@ export default function TravauxPage() {
             </div>
           </>
         )}
+        {/* Boutons Photos & Vidéos */}
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'flex-end',
+          marginTop: '0.75rem',
+          paddingTop: '0.5rem',
+          borderTop: '1px solid rgba(255,255,255,0.06)'
+        }}>
+          <MediaButtons
+            niveau="travail"
+            niveauId={travail.id}
+            niveauTitre={travail.titre}
+            photosCount={travail.photos_urls?.length || 0}
+            hasVideo={!!travail.video_aide}
+            videoTitre={travail.video_aide?.titre}
+            compact
+            onPhotoClick={() => {
+              console.log('Photos lot:', travail.id);
+            }}
+            onVideoClick={() => {
+              if (travail.video_aide) {
+                window.open(`https://www.youtube.com/watch?v=${travail.video_aide.video_id}`, '_blank');
+              } else {
+                const searchQuery = encodeURIComponent(travail.titre);
+                window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
+              }
+            }}
+          />
+        </div>
       </div>
     );
   };
@@ -896,9 +938,33 @@ export default function TravauxPage() {
                 </span>
               </span>
             </div>
+            
+            {/* Photos et Vidéos du chantier */}
+            <MediaButtons
+              niveau="chantier"
+              niveauId={chantierId}
+              niveauTitre={chantier?.titre || ''}
+              photosCount={chantierPhotos.length}
+              hasVideo={!!chantierVideo}
+              videoTitre={chantierVideo?.titre}
+              onPhotoClick={() => {
+                // TODO: ouvrir modal photos
+                console.log('Photos chantier');
+              }}
+              onVideoClick={() => {
+                if (chantierVideo) {
+                  // Ouvrir le player avec la vidéo existante
+                  window.open(`https://www.youtube.com/watch?v=${chantierVideo.video_id}`, '_blank');
+                } else {
+                  // Lancer recherche vidéo
+                  const searchQuery = encodeURIComponent(chantier?.titre || '');
+                  window.location.href = `/videos?context=chantier&id=${chantierId}&search=${searchQuery}`;
+                }
+              }}
+            />
           </div>
         </div>
-
+       
         {/* Section EN COURS (collapsible) */}
         {enCours.length > 0 && (
           <section style={{ marginBottom: '1.5rem' }}>
