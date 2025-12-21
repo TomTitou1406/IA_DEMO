@@ -797,6 +797,57 @@ export default function ChatInterface({
           return;
         }
       }
+
+      // === DÉTECTION PRÉ-PHASAGE COMPLET ===
+      if (pageContext === 'pre_phasage') {
+        const prePhasageMatch = response.message.match(/```json[\s\S]*?"pre_phasage_complete"\s*:\s*true[\s\S]*?```/);
+        if (prePhasageMatch) {
+          try {
+            const json = JSON.parse(prePhasageMatch[0].replace(/```json|```/g, ''));
+            if (json.pre_phasage_complete && json.metadata_updates) {
+              console.log('✅ Pré-phasage complet, mise à jour metadata:', json.metadata_updates);
+              
+              // Mettre à jour les metadata du chantier en BDD
+              const chantierId = promptContext?.chantierId;
+              if (chantierId) {
+                const updateResponse = await fetch(`/api/chantiers/${chantierId}`, {
+                  method: 'PATCH',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ metadata_updates: json.metadata_updates })
+                });
+                
+                if (updateResponse.ok) {
+                  console.log('✅ Metadata mises à jour en BDD');
+                  
+                  // Afficher le message nettoyé (sans le JSON)
+                  const cleanMessage = response.message.replace(/```json[\s\S]*?```/g, '').trim();
+                  const assistantMessage: Message = {
+                    role: 'assistant',
+                    content: cleanMessage || 'Parfait ! Je lance la génération des lots de travaux.',
+                    timestamp: new Date().toISOString(),
+                  };
+                  
+                  if (disablePersistence) {
+                    setLocalMessages(prev => [...prev, assistantMessage]);
+                  } else {
+                    await persistMessage(assistantMessage);
+                  }
+                  
+                  // Rediriger vers le phasage après un court délai
+                  setTimeout(() => {
+                    window.location.href = `/chantiers/${chantierId}/phasage`;
+                  }, 1500);
+                  
+                  setLoading(false);
+                  return;
+                }
+              }
+            }
+          } catch (e) {
+            console.error('Erreur parsing pré-phasage JSON:', e);
+          }
+        }
+      }
  
       // Vérifier si la réponse contient un recap JSON (création chantier)
       const { hasRecap, recap, cleanContent } = extractRecapFromResponse(response.message);
