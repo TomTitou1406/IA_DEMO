@@ -888,6 +888,7 @@ export default function ChantierEditPage() {
                 {allOpen ? '▲ Tout replier' : '▼ Tout déplier'}
               </button>
             </div>
+          </div>
 
           {/* Contenu avec ACCORDÉONS */}
           <div style={{ padding: '0.75rem 1.25rem 1rem' }}>
