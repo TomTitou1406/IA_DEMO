@@ -62,42 +62,6 @@ const [videoModalConfig, setVideoModalConfig] = useState<{
   video: any;
 }>({ video: null });
 
-const handlePhotosChange = (niveauId: string, newPhotos: any[]) => {
-  setChantiers(prev => prev.map(c => 
-    c.id === niveauId ? { ...c, photos_urls: newPhotos } : c
-  ));
-};
-
-const openPhotosModal = (chantier: Chantier) => {
-  setPhotosModalConfig({
-    niveau: 'chantier',
-    niveauId: chantier.id,
-    niveauTitre: chantier.titre,
-    photos: chantier.photos_urls || []
-  });
-  setShowPhotosModal(true);
-};
-
-const openVideoModal = (chantier: Chantier) => {
-  if (chantier.video_aide?.video_id) {
-    setVideoModalConfig({
-      video: {
-        id: chantier.video_aide.video_id,
-        title: chantier.video_aide.titre,
-        thumbnail: chantier.video_aide.thumbnail,
-        channelTitle: '',
-        viewCount: 0,
-        duration: ''
-      }
-    });
-    setShowVideoModal(true);
-  } else {
-    sessionStorage.setItem('attachReturnUrl', window.location.href);
-    const searchQuery = encodeURIComponent(chantier.titre);
-    window.location.href = `/videos?context=chantier&id=${chantier.id}&search=${searchQuery}`;
-  }
-};
-
 export default function ChantiersPage() {
   const { showError, showSuccess, showWarning, showConfirm } = useToast();
   const [chantiers, setChantiers] = useState<Chantier[]>([]);
@@ -186,6 +150,42 @@ export default function ChantiersPage() {
     c.statut === 'en_cours' || c.statut === 'actif' || !c.statut
   );
   const termines = chantiersComplexes.filter(c => c.statut === 'terminé');
+
+  const handlePhotosChange = (niveauId: string, newPhotos: any[]) => {
+    setChantiers(prev => prev.map(c => 
+      c.id === niveauId ? { ...c, photos_urls: newPhotos } : c
+    ));
+  };
+  
+  const openPhotosModal = (chantier: Chantier) => {
+    setPhotosModalConfig({
+      niveau: 'chantier',
+      niveauId: chantier.id,
+      niveauTitre: chantier.titre,
+      photos: chantier.photos_urls || []
+    });
+    setShowPhotosModal(true);
+  };
+  
+  const openVideoModal = (chantier: Chantier) => {
+    if (chantier.video_aide?.video_id) {
+      setVideoModalConfig({
+        video: {
+          id: chantier.video_aide.video_id,
+          title: chantier.video_aide.titre,
+          thumbnail: chantier.video_aide.thumbnail,
+          channelTitle: '',
+          viewCount: 0,
+          duration: ''
+        }
+      });
+      setShowVideoModal(true);
+    } else {
+      sessionStorage.setItem('attachReturnUrl', window.location.href);
+      const searchQuery = encodeURIComponent(chantier.titre);
+      window.location.href = `/videos?context=chantier&id=${chantier.id}&search=${searchQuery}`;
+    }
+  };
 
   const handleDelete = async (id: string, titre: string) => {
     const confirmed = await showConfirm({
