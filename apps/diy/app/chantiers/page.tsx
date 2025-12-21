@@ -16,6 +16,9 @@ import Link from 'next/link';
 import { getAllChantiers, getChantierStats, getChantierEtapesStats, deleteChantier } from '../lib/services/chantierService';
 import Breadcrumb from '@/app/components/Breadcrumb';
 import { useToast } from '@/app/components/Toast';
+import MediaButtons from '@/app/components/MediaButtons';
+import PhotosModal from '@/app/components/PhotosModal';
+import VideoPlayerModal from '@/app/components/VideoPlayerModal';
 
 interface Chantier {
   id: string;
@@ -36,7 +39,64 @@ interface Chantier {
     termines: number;
     enCours: number;
   };
+  photos_urls?: any[];
+  video_aide?: {
+    video_id: string;
+    titre: string;
+    url: string;
+    thumbnail?: string;
+  } | null;
 }
+
+// Modales photos et vidéos
+const [showPhotosModal, setShowPhotosModal] = useState(false);
+const [photosModalConfig, setPhotosModalConfig] = useState<{
+  niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+  niveauId: string;
+  niveauTitre: string;
+  photos: any[];
+}>({ niveau: 'chantier', niveauId: '', niveauTitre: '', photos: [] });
+
+const [showVideoModal, setShowVideoModal] = useState(false);
+const [videoModalConfig, setVideoModalConfig] = useState<{
+  video: any;
+}>({ video: null });
+
+const handlePhotosChange = (niveauId: string, newPhotos: any[]) => {
+  setChantiers(prev => prev.map(c => 
+    c.id === niveauId ? { ...c, photos_urls: newPhotos } : c
+  ));
+};
+
+const openPhotosModal = (chantier: Chantier) => {
+  setPhotosModalConfig({
+    niveau: 'chantier',
+    niveauId: chantier.id,
+    niveauTitre: chantier.titre,
+    photos: chantier.photos_urls || []
+  });
+  setShowPhotosModal(true);
+};
+
+const openVideoModal = (chantier: Chantier) => {
+  if (chantier.video_aide?.video_id) {
+    setVideoModalConfig({
+      video: {
+        id: chantier.video_aide.video_id,
+        title: chantier.video_aide.titre,
+        thumbnail: chantier.video_aide.thumbnail,
+        channelTitle: '',
+        viewCount: 0,
+        duration: ''
+      }
+    });
+    setShowVideoModal(true);
+  } else {
+    sessionStorage.setItem('attachReturnUrl', window.location.href);
+    const searchQuery = encodeURIComponent(chantier.titre);
+    window.location.href = `/videos?context=chantier&id=${chantier.id}&search=${searchQuery}`;
+  }
+};
 
 export default function ChantiersPage() {
   const { showError, showSuccess, showWarning, showConfirm } = useToast();
@@ -271,10 +331,12 @@ export default function ChantiersPage() {
             onToggle={() => setShowSimples(!showSimples)}
           >
             {travauxSimples.map(travail => (
-              <TravailSimpleCard 
-                key={travail.id} 
+              <TravailSimpleCard
+                key={travail.id}
                 travail={travail}
                 onDelete={() => handleDelete(travail.id, travail.titre)}
+                onPhotoClick={() => openPhotosModal(travail)}
+                onVideoClick={() => openVideoModal(travail)}
               />
             ))}
           </Section>
@@ -307,6 +369,8 @@ export default function ChantiersPage() {
                   key={chantier.id} 
                   chantier={chantier}
                   onDelete={() => handleDelete(chantier.id, chantier.titre)}
+                  onPhotoClick={() => openPhotosModal(chantier)}
+                  onVideoClick={() => openVideoModal(chantier)}
                 />
               ))}
             </Section>
@@ -327,6 +391,8 @@ export default function ChantiersPage() {
                   key={chantier.id} 
                   chantier={chantier}
                   onDelete={() => handleDelete(chantier.id, chantier.titre)}
+                  onPhotoClick={() => openPhotosModal(chantier)}
+                  onVideoClick={() => openVideoModal(chantier)}
                 />
               ))}
             </Section>
@@ -347,6 +413,8 @@ export default function ChantiersPage() {
                   key={chantier.id} 
                   chantier={chantier}
                   onDelete={() => handleDelete(chantier.id, chantier.titre)}
+                  onPhotoClick={() => openPhotosModal(chantier)}
+                  onVideoClick={() => openVideoModal(chantier)}
                 />
               ))}
             </Section>
@@ -370,6 +438,30 @@ export default function ChantiersPage() {
           </div>
         )}
       </div>
+      {/* Modal Photos */}
+      <PhotosModal
+        isOpen={showPhotosModal}
+        onClose={() => setShowPhotosModal(false)}
+        niveau={photosModalConfig.niveau}
+        niveauId={photosModalConfig.niveauId}
+        niveauTitre={photosModalConfig.niveauTitre}
+        photos={photosModalConfig.photos}
+        onPhotosChange={(newPhotos) => {
+          handlePhotosChange(photosModalConfig.niveauId, newPhotos);
+          setPhotosModalConfig(prev => ({ ...prev, photos: newPhotos }));
+        }}
+      />
+
+      {/* Modal Vidéo */}
+      <VideoPlayerModal
+        video={videoModalConfig.video}
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        showFavoriteButton={false}
+        showMettreEnOeuvreButton={false}
+        onAttach={undefined}
+        attachLabel={undefined}
+      />
     </>
   );
 }
@@ -458,10 +550,14 @@ function Section({ title, icon, count, color, isExpanded, onToggle, children }: 
 // Card pour travaux simples
 function TravailSimpleCard({ 
   travail, 
-  onDelete 
+  onDelete,
+  onPhotoClick,
+  onVideoClick
 }: { 
   travail: Chantier;
   onDelete: () => void;
+  onPhotoClick: () => void;
+  onVideoClick: () => void;
 }) {
   // Utiliser etapesStats pour les travaux simples
   const etapesStats = (travail as any).etapesStats;
@@ -563,6 +659,26 @@ function TravailSimpleCard({
         </div>
       </Link>
 
+      {/* Boutons Photos & Vidéos */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '0.5rem 1rem',
+        borderTop: '1px solid rgba(255,255,255,0.05)'
+      }}>
+        <MediaButtons
+          niveau="chantier"
+          niveauId={travail.id}
+          niveauTitre={travail.titre}
+          photosCount={travail.photos_urls?.length || 0}
+          hasVideo={!!travail.video_aide?.video_id}
+          videoTitre={travail.video_aide?.titre}
+          compact
+          onPhotoClick={onPhotoClick}
+          onVideoClick={onVideoClick}
+        />
+      </div>
+
       {/* Actions */}
       <div style={{
         display: 'flex',
@@ -607,10 +723,14 @@ function TravailSimpleCard({
 // Card pour chantiers complexes
 function ChantierCard({ 
   chantier, 
-  onDelete 
+  onDelete,
+  onPhotoClick,
+  onVideoClick
 }: { 
   chantier: Chantier;
   onDelete: () => void;
+  onPhotoClick: () => void;
+  onVideoClick: () => void;
 }) {
   const stats = chantier.stats;
   const progression = stats?.total 
@@ -738,6 +858,26 @@ function ChantierCard({
           )}
         </div>
       </Link>
+
+      {/* Boutons Photos & Vidéos */}
+      <div style={{
+        display: 'flex',
+        justifyContent: 'flex-end',
+        padding: '0.5rem 1rem',
+        borderTop: '1px solid rgba(255,255,255,0.05)'
+      }}>
+        <MediaButtons
+          niveau="chantier"
+          niveauId={chantier.id}
+          niveauTitre={chantier.titre}
+          photosCount={chantier.photos_urls?.length || 0}
+          hasVideo={!!chantier.video_aide?.video_id}
+          videoTitre={chantier.video_aide?.titre}
+          compact
+          onPhotoClick={onPhotoClick}
+          onVideoClick={onVideoClick}
+        />
+      </div>
 
       {/* Actions */}
       <div style={{
