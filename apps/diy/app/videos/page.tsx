@@ -475,7 +475,6 @@ function VideosContent() {
           thumbnail: video.thumbnail
         }
       };
-      console.log('📤 Envoi API:', payload);
       
       const res = await fetch('/api/medias', {
         method: 'POST',
@@ -483,14 +482,16 @@ function VideosContent() {
         body: JSON.stringify(payload)
       });
       
-      const result = await res.json();
-      console.log('📥 Réponse API:', result);
-      
       if (res.ok) {
         setShowPlayerModal(false);
-        router.back();
-      } else {
-        console.error('❌ Erreur API:', result);
+        // Retour avec rafraîchissement forcé
+        const returnUrl = sessionStorage.getItem('attachReturnUrl');
+        if (returnUrl) {
+          sessionStorage.removeItem('attachReturnUrl');
+          window.location.href = returnUrl;
+        } else {
+          window.location.href = document.referrer || '/chantiers';
+        }
       }
     } catch (error) {
       console.error('❌ Erreur attachement vidéo:', error);
@@ -824,6 +825,46 @@ function VideosContent() {
           
           {/* Actions */}
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+            {/* Bouton Retour - uniquement en mode attachement */}
+            {attachContext && (
+              <button
+                onClick={() => {
+                  // Retour avec rafraîchissement
+                  const returnUrl = sessionStorage.getItem('attachReturnUrl');
+                  if (returnUrl) {
+                    sessionStorage.removeItem('attachReturnUrl');
+                    window.location.href = returnUrl;
+                  } else {
+                    window.location.href = document.referrer || '/chantiers';
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid var(--orange)',
+                  background: 'rgba(249, 115, 22, 0.1)',
+                  color: 'var(--orange)',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                  transition: 'all 0.3s'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'var(--orange)';
+                  e.currentTarget.style.color = 'white';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'rgba(249, 115, 22, 0.1)';
+                  e.currentTarget.style.color = 'var(--orange)';
+                }}
+              >
+                ← Retour aux travaux en cours
+              </button>
+            )}
+            
             {/* Bouton Favoris */}
             <button
               onClick={() => {
