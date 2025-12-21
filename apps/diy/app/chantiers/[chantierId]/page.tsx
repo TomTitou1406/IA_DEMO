@@ -761,14 +761,13 @@ export default function ChantierEditPage() {
             padding: '1rem 1.25rem',
             borderBottom: '1px solid rgba(255,255,255,0.08)',
             display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            flexWrap: 'wrap',
+            flexDirection: 'column',
             gap: '0.75rem'
           }}>
+            {/* Ligne 1 : Titre + badges */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
               <span style={{ fontSize: '1.5rem' }}>🏗️</span>
-              <div>
+              <div style={{ flex: 1 }}>
                 <h1 style={{ 
                   fontSize: '1.25rem', 
                   fontWeight: '700',
@@ -777,23 +776,37 @@ export default function ChantierEditPage() {
                 }}>
                   {chantier.titre}
                 </h1>
-                <span style={{
-                  display: 'inline-block',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '10px',
-                  fontSize: '0.7rem',
-                  fontWeight: '600',
-                  marginTop: '0.25rem',
-                  background: chantier.statut === 'nouveau' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(59, 130, 246, 0.2)',
-                  color: chantier.statut === 'nouveau' ? '#a855f7' : '#3b82f6'
-                }}>
-                  {chantier.statut === 'nouveau' ? '✨ Nouveau' : '🔄 En cours'}
-                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '0.25rem', flexWrap: 'wrap' }}>
+                  <span style={{
+                    display: 'inline-block',
+                    padding: '0.15rem 0.5rem',
+                    borderRadius: '10px',
+                    fontSize: '0.7rem',
+                    fontWeight: '600',
+                    background: chantier.statut === 'nouveau' ? 'rgba(168, 85, 247, 0.2)' : 'rgba(59, 130, 246, 0.2)',
+                    color: chantier.statut === 'nouveau' ? '#a855f7' : '#3b82f6'
+                  }}>
+                    {chantier.statut === 'nouveau' ? '✨ Nouveau' : '🔄 En cours'}
+                  </span>
+                  {hasBrouillon && (
+                    <span style={{
+                      display: 'inline-block',
+                      padding: '0.15rem 0.5rem',
+                      borderRadius: '10px',
+                      fontSize: '0.7rem',
+                      fontWeight: '600',
+                      background: 'rgba(249, 115, 22, 0.2)',
+                      color: 'var(--orange)'
+                    }}>
+                      ⚠️ {travaux.length} lots en brouillon
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
             
-            {/* Boutons d'action - Compacts */}
-            <div style={{ display: 'flex', gap: '0.4rem' }}>
+            {/* Ligne 2 : Boutons d'action */}
+            <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
               <button
                 onClick={handleModifier}
                 style={{
