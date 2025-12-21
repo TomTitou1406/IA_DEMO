@@ -298,7 +298,7 @@ export default function ChantiersPage() {
               title="Chantiers à configurer"
               icon="✨"
               count={nouveaux.length}
-              color="var(--purple)"
+              color="var(--orange)"
               isExpanded={showNouveaux}
               onToggle={() => setShowNouveaux(!showNouveaux)}
             >
@@ -318,7 +318,7 @@ export default function ChantiersPage() {
               title="Chantiers en cours"
               icon="🏗️"
               count={enCours.length}
-              color="var(--blue)"
+              color="var(--orange)"
               isExpanded={showEnCours}
               onToggle={() => setShowEnCours(!showEnCours)}
             >
@@ -338,7 +338,7 @@ export default function ChantiersPage() {
               title="Terminés"
               icon="✅"
               count={termines.length}
-              color="var(--green)"
+              color="var(--orange)"
               isExpanded={showTermines}
               onToggle={() => setShowTermines(!showTermines)}
             >
@@ -375,16 +375,6 @@ export default function ChantiersPage() {
 }
 
 // ==================== COMPOSANTS ====================
-
-interface SectionProps {
-  title: string;
-  icon: string;
-  count: number;
-  color: string;
-  isExpanded: boolean;
-  onToggle: () => void;
-  children: React.ReactNode;
-}
 
 function Section({ title, icon, count, color, isExpanded, onToggle, children }: SectionProps) {
   return (
@@ -430,7 +420,14 @@ function Section({ title, icon, count, color, isExpanded, onToggle, children }: 
           {count}
         </span>
       </div>
-
+      
+      {/* Séparateur dégradé */}
+      <div style={{
+        height: '2px',
+        background: `linear-gradient(to right, transparent, ${color})`,
+        marginBottom: '0.75rem'
+      }} />
+      
       {/* Contenu */}
       {isExpanded && (
         <div style={{ 
