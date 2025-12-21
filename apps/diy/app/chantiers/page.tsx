@@ -27,6 +27,7 @@ interface Chantier {
   statut: string;
   type_projet?: 'simple' | 'complexe';
   created_at: string;
+  brouillon_phasage?: { lots: any[] } | null;
   stats?: {
     progressionMoyenne: number;
     heuresEffectuees: number;
