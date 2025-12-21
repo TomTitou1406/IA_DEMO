@@ -630,53 +630,6 @@ export default function TravailDetailPage() {
               }}>
                 {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
               </span>
-              {/* Boutons Photos & Vidéos */}
-                <div style={{ 
-                  display: 'flex', 
-                  justifyContent: 'flex-end',
-                  marginTop: '0.75rem',
-                  paddingTop: '0.5rem',
-                  borderTop: '1px solid rgba(255,255,255,0.06)'
-                }}>
-                  <MediaButtons
-                    niveau="etape"
-                    niveauId={etape.id}
-                    niveauTitre={etape.titre}
-                    photosCount={etape.photos_urls?.length || 0}
-                    hasVideo={!!etape.video_aide?.video_id}
-                    videoTitre={etape.video_aide?.titre}
-                    compact
-                    onPhotoClick={() => {
-                      setPhotosModalConfig({
-                        niveau: 'etape',
-                        niveauId: etape.id,
-                        niveauTitre: etape.titre,
-                        photos: etape.photos_urls || []
-                      });
-                      setShowPhotosModal(true);
-                    }}
-                    onVideoClick={() => {
-                      if (etape.video_aide?.video_id) {
-                        setVideoModalConfig({
-                          niveau: 'etape',
-                          niveauId: etape.id,
-                          video: {
-                            id: etape.video_aide.video_id,
-                            title: etape.video_aide.titre,
-                            thumbnail: etape.video_aide.thumbnail,
-                            channelTitle: '',
-                            viewCount: 0,
-                            duration: ''
-                          }
-                        });
-                        setShowVideoModal(true);
-                      } else {
-                        const searchQuery = encodeURIComponent(etape.titre);
-                        window.location.href = `/videos?context=etape&id=${etape.id}&search=${searchQuery}`;
-                      }
-                    }}
-                  />
-                </div>
             </div>
           </>
         )}
@@ -767,6 +720,53 @@ export default function TravailDetailPage() {
             )}
           </div>
         )}
+        {/* Boutons Photos & Vidéos */}
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'flex-end',
+            marginTop: '0.75rem',
+            paddingTop: '0.5rem',
+            borderTop: '1px solid rgba(255,255,255,0.06)'
+          }}>
+            <MediaButtons
+              niveau="etape"
+              niveauId={etape.id}
+              niveauTitre={etape.titre}
+              photosCount={etape.photos_urls?.length || 0}
+              hasVideo={!!etape.video_aide?.video_id}
+              videoTitre={etape.video_aide?.titre}
+              compact
+              onPhotoClick={() => {
+                setPhotosModalConfig({
+                  niveau: 'etape',
+                  niveauId: etape.id,
+                  niveauTitre: etape.titre,
+                  photos: etape.photos_urls || []
+                });
+                setShowPhotosModal(true);
+              }}
+              onVideoClick={() => {
+                if (etape.video_aide?.video_id) {
+                  setVideoModalConfig({
+                    niveau: 'etape',
+                    niveauId: etape.id,
+                    video: {
+                      id: etape.video_aide.video_id,
+                      title: etape.video_aide.titre,
+                      thumbnail: etape.video_aide.thumbnail,
+                      channelTitle: '',
+                      viewCount: 0,
+                      duration: ''
+                    }
+                  });
+                  setShowVideoModal(true);
+                } else {
+                  const searchQuery = encodeURIComponent(etape.titre);
+                  window.location.href = `/videos?context=etape&id=${etape.id}&search=${searchQuery}`;
+                }
+              }}
+            />
+          </div>
       </div>
     );
   };
