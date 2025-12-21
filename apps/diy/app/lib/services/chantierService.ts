@@ -167,7 +167,6 @@ export async function getAllChantiers() {
       ...chantier,
       nombre_travaux: chantier.travaux?.length || 0,
       travaux_termines: chantier.travaux?.filter((t: any) => t.statut === 'terminé').length || 0,
-      nb_lots_brouillon: chantier.brouillon_phasage?.lots?.length || 0  // ← AJOUTER
     }));
   } catch (error) {
     console.error('Error fetching all chantiers:', error);
