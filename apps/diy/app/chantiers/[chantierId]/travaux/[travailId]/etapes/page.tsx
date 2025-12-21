@@ -9,10 +9,12 @@ import CardButton from '@/app/components/CardButton';
 import { terminerToutesLesTaches } from '@/app/lib/services/tachesService';
 import { useRouter } from 'next/navigation';
 import NotesButton from '@/app/components/NotesButton';
-// NOUVEAUX IMPORTS
 import Breadcrumb from '@/app/components/Breadcrumb';
 import ParentContext from '@/app/components/ParentContext';
 import { getChantierMinimal } from '@/app/lib/services/parentContextService';
+import MediaButtons from '@/app/components/MediaButtons';
+import PhotosModal from '@/app/components/PhotosModal';
+import VideoPlayerModal from '@/app/components/VideoPlayerModal';
 
 interface Etape {
   id: string;
@@ -31,6 +33,13 @@ interface Etape {
   nombre_taches?: number;        
   taches_terminees?: number;
   taches_brouillon?: number;
+  photos_urls?: any[];
+  video_aide?: {
+    video_id: string;
+    titre: string;
+    url: string;
+    thumbnail?: string;
+  } | null;
 }
 
 interface Travail {
@@ -47,6 +56,13 @@ interface Travail {
     nom: string;
     code: string;
   };
+  photos_urls?: any[];
+  video_aide?: {
+    video_id: string;
+    titre: string;
+    url: string;
+    thumbnail?: string;
+  } | null;
 }
 
 export default function TravailDetailPage() {
@@ -75,6 +91,57 @@ export default function TravailDetailPage() {
 
   // NOUVEAU : État pour le chantier parent
   const [chantierParent, setChantierParent] = useState<{ titre: string } | null>(null);
+
+  // Modales photos et vidéos
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+  const [photosModalConfig, setPhotosModalConfig] = useState<{
+    niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+    niveauId: string;
+    niveauTitre: string;
+    photos: any[];
+  }>({ niveau: 'travail', niveauId: '', niveauTitre: '', photos: [] });
+  
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoModalConfig, setVideoModalConfig] = useState<{
+    niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+    niveauId: string;
+    video: any;
+  }>({ niveau: 'travail', niveauId: '', video: null });
+
+  const handlePhotosChange = (niveau: string, niveauId: string, newPhotos: any[]) => {
+    if (niveau === 'travail') {
+      setTravail(prev => prev ? { ...prev, photos_urls: newPhotos } : null);
+    } else if (niveau === 'etape') {
+      setEtapes(prev => prev.map(e => 
+        e.id === niveauId ? { ...e, photos_urls: newPhotos } : e
+      ));
+    }
+  };
+  
+  const handleDetachVideo = async (niveau: string, niveauId: string) => {
+    try {
+      await fetch('/api/medias', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'remove_video',
+          niveau,
+          niveau_id: niveauId
+        })
+      });
+      
+      if (niveau === 'travail') {
+        setTravail(prev => prev ? { ...prev, video_aide: null } : null);
+      } else if (niveau === 'etape') {
+        setEtapes(prev => prev.map(e => 
+          e.id === niveauId ? { ...e, video_aide: null } : e
+        ));
+      }
+      setShowVideoModal(false);
+    } catch (error) {
+      console.error('Erreur détachement vidéo:', error);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -563,10 +630,57 @@ export default function TravailDetailPage() {
               }}>
                 {getDifficultyIcon(etape.difficulte)} {etape.difficulte}
               </span>
+              {/* Boutons Photos & Vidéos */}
+                <div style={{ 
+                  display: 'flex', 
+                  justifyContent: 'flex-end',
+                  marginTop: '0.75rem',
+                  paddingTop: '0.5rem',
+                  borderTop: '1px solid rgba(255,255,255,0.06)'
+                }}>
+                  <MediaButtons
+                    niveau="etape"
+                    niveauId={etape.id}
+                    niveauTitre={etape.titre}
+                    photosCount={etape.photos_urls?.length || 0}
+                    hasVideo={!!etape.video_aide?.video_id}
+                    videoTitre={etape.video_aide?.titre}
+                    compact
+                    onPhotoClick={() => {
+                      setPhotosModalConfig({
+                        niveau: 'etape',
+                        niveauId: etape.id,
+                        niveauTitre: etape.titre,
+                        photos: etape.photos_urls || []
+                      });
+                      setShowPhotosModal(true);
+                    }}
+                    onVideoClick={() => {
+                      if (etape.video_aide?.video_id) {
+                        setVideoModalConfig({
+                          niveau: 'etape',
+                          niveauId: etape.id,
+                          video: {
+                            id: etape.video_aide.video_id,
+                            title: etape.video_aide.titre,
+                            thumbnail: etape.video_aide.thumbnail,
+                            channelTitle: '',
+                            viewCount: 0,
+                            duration: ''
+                          }
+                        });
+                        setShowVideoModal(true);
+                      } else {
+                        const searchQuery = encodeURIComponent(etape.titre);
+                        window.location.href = `/videos?context=etape&id=${etape.id}&search=${searchQuery}`;
+                      }
+                    }}
+                  />
+                </div>
             </div>
           </>
         )}
-  
+          
         {/* Contenu détaillé - expandable */}
         {isExpanded && (
           <div style={{
@@ -862,6 +976,45 @@ export default function TravailDetailPage() {
                 </span>
               </span>
             </div>
+            
+            {/* Photos et Vidéos du lot */}
+            <MediaButtons
+              niveau="travail"
+              niveauId={travailId}
+              niveauTitre={travail.titre}
+              photosCount={travail.photos_urls?.length || 0}
+              hasVideo={!!travail.video_aide?.video_id}
+              videoTitre={travail.video_aide?.titre}
+              onPhotoClick={() => {
+                setPhotosModalConfig({
+                  niveau: 'travail',
+                  niveauId: travailId,
+                  niveauTitre: travail.titre,
+                  photos: travail.photos_urls || []
+                });
+                setShowPhotosModal(true);
+              }}
+              onVideoClick={() => {
+                if (travail.video_aide?.video_id) {
+                  setVideoModalConfig({
+                    niveau: 'travail',
+                    niveauId: travailId,
+                    video: {
+                      id: travail.video_aide.video_id,
+                      title: travail.video_aide.titre,
+                      thumbnail: travail.video_aide.thumbnail,
+                      channelTitle: '',
+                      viewCount: 0,
+                      duration: ''
+                    }
+                  });
+                  setShowVideoModal(true);
+                } else {
+                  const searchQuery = encodeURIComponent(travail.titre);
+                  window.location.href = `/videos?context=travail&id=${travailId}&search=${searchQuery}`;
+                }
+              }}
+            />
           </div>
         </div>
 
@@ -950,6 +1103,31 @@ export default function TravailDetailPage() {
           onConfirm={modalConfig.onConfirm}
           onCancel={() => setModalConfig({ ...modalConfig, isOpen: false })}
           type="warning"
+        />
+
+        {/* Modal Photos */}
+        <PhotosModal
+          isOpen={showPhotosModal}
+          onClose={() => setShowPhotosModal(false)}
+          niveau={photosModalConfig.niveau}
+          niveauId={photosModalConfig.niveauId}
+          niveauTitre={photosModalConfig.niveauTitre}
+          photos={photosModalConfig.photos}
+          onPhotosChange={(newPhotos) => {
+            handlePhotosChange(photosModalConfig.niveau, photosModalConfig.niveauId, newPhotos);
+            setPhotosModalConfig(prev => ({ ...prev, photos: newPhotos }));
+          }}
+        />
+  
+        {/* Modal Vidéo */}
+        <VideoPlayerModal
+          video={videoModalConfig.video}
+          isOpen={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          showFavoriteButton={false}
+          showMettreEnOeuvreButton={false}
+          onAttach={undefined}
+          attachLabel={undefined}
         />
       </div>
     </>
