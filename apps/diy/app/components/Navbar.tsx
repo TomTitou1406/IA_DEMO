@@ -287,6 +287,134 @@ export default function Navbar({ className }: NavbarProps) {
     );
   };
 
+  const CartButton = ({ mobile = false }: { mobile?: boolean }) => {
+    const [showTooltip, setShowTooltip] = useState(false);
+    
+    return (
+      <div 
+        style={{ position: 'relative', display: 'inline-block' }}
+        onMouseEnter={() => setShowTooltip(true)}
+        onMouseLeave={() => setShowTooltip(false)}
+      >
+        <button
+          style={{
+            display: 'flex',
+            flexDirection: mobile ? 'column' : 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: mobile ? '0.2rem' : '0.4rem',
+            padding: mobile ? '0.4rem' : '0.5rem 0.75rem',
+            borderRadius: mobile ? '0' : '10px',
+            border: 'none',
+            background: 'transparent',
+            color: 'rgba(255,255,255,0.7)',
+            fontSize: mobile ? '0.6rem' : '0.85rem',
+            fontWeight: '500',
+            cursor: 'pointer',
+            position: 'relative',
+            transition: 'all 0.3s ease',
+            flex: mobile ? 1 : 'unset',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+            e.currentTarget.style.color = '#10b981';
+            e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent';
+            e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
+            e.currentTarget.style.boxShadow = 'none';
+          }}
+        >
+          <span style={{ 
+            fontSize: mobile ? '1.3rem' : '1.1rem',
+            transition: 'transform 0.2s ease'
+          }}>
+            🛒
+          </span>
+          {!mobile && <span>Panier</span>}
+          {mobile && <span>Panier</span>}
+        </button>
+
+        {/* Tooltip */}
+        {showTooltip && !mobile && (
+          <div style={{
+            position: 'absolute',
+            top: '100%',
+            left: '50%',
+            transform: 'translateX(-50%)',
+            marginTop: '12px',
+            background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))',
+            border: '2px solid #10b981',
+            borderRadius: '12px',
+            padding: '0.75rem 1rem',
+            minWidth: '240px',
+            zIndex: 100,
+            boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(16, 185, 129, 0.3)',
+          }}>
+            {/* Flèche */}
+            <div style={{
+              position: 'absolute',
+              top: -8,
+              left: '50%',
+              transform: 'translateX(-50%)',
+              width: 0,
+              height: 0,
+              borderLeft: '8px solid transparent',
+              borderRight: '8px solid transparent',
+              borderBottom: '8px solid #10b981',
+            }} />
+
+            {/* Contenu */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem',
+            }}>
+              <span style={{ fontSize: '2rem' }}>🛠️</span>
+              <div>
+                <div style={{ 
+                  fontWeight: '600', 
+                  color: '#10b981',
+                  fontSize: '0.9rem',
+                  marginBottom: '0.25rem'
+                }}>
+                  Panier technique
+                </div>
+                <div style={{ 
+                  fontSize: '0.8rem',
+                  color: 'rgba(255,255,255,0.6)',
+                  lineHeight: '1.4'
+                }}>
+                  Votre panier technique sera bientôt disponible !
+                </div>
+              </div>
+            </div>
+
+            {/* Badge coming soon */}
+            <div style={{
+              marginTop: '0.5rem',
+              paddingTop: '0.5rem',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              textAlign: 'center'
+            }}>
+              <span style={{
+                background: 'rgba(16, 185, 129, 0.2)',
+                color: '#10b981',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                fontSize: '0.7rem',
+                fontWeight: '600'
+              }}>
+                ✨ Bientôt disponible
+              </span>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
+
   const HelpModal = () => {
     return (
       <div 
@@ -567,6 +695,9 @@ export default function Navbar({ className }: NavbarProps) {
           {/* Badge Gamification */}
           <GamificationBadge size={40} />
 
+          {/* Panier */}
+          <CartButton />
+
           <HelpButton />
         </div>
       </header>
@@ -648,6 +779,10 @@ export default function Navbar({ className }: NavbarProps) {
           flex: 1
         }}>
           <GamificationBadge size={32} />
+          
+          {/* Panier - Mobile */}
+          <CartButton mobile />
+          
         </div>
         <HelpButton mobile />
       </nav>
