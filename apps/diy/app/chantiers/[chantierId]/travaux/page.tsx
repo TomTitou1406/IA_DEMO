@@ -729,7 +729,9 @@ export default function TravauxPage() {
             }}
             onVideoClick={() => {
               if (travail.video_aide) {
-                window.open(`https://www.youtube.com/watch?v=${travail.video_aide.video_id}`, '_blank');
+                // TODO: Ouvrir VideoPlayerModal avec cette vidéo
+                console.log('Ouvrir vidéo:', chantierVideo);
+                alert(`Vidéo: ${chantierVideo.titre}\n\nLe player intégré arrive bientôt !`);
               } else {
                 const searchQuery = encodeURIComponent(travail.titre);
                 window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
@@ -954,7 +956,9 @@ export default function TravauxPage() {
               onVideoClick={() => {
                 if (chantierVideo) {
                   // Ouvrir le player avec la vidéo existante
-                  window.open(`https://www.youtube.com/watch?v=${chantierVideo.video_id}`, '_blank');
+                  // TODO: Ouvrir VideoPlayerModal avec cette vidéo
+                  console.log('Ouvrir vidéo:', chantierVideo);
+                  alert(`Vidéo: ${chantierVideo.titre}\n\nLe player intégré arrive bientôt !`);
                 } else {
                   // Lancer recherche vidéo
                   const searchQuery = encodeURIComponent(chantier?.titre || '');
