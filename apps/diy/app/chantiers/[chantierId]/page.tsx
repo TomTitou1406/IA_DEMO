@@ -1156,6 +1156,54 @@ export default function ChantierEditPage() {
                     </div>
                   </div>
                 )}
+                
+               {/* Détails techniques (champs spécifiques au type) */}
+                {(() => {
+                  const detailsTechniques = [
+                    { key: 'type_portes', icon: '🚪', label: 'Type de portes' },
+                    { key: 'nombre_modules', icon: '📦', label: 'Nombre de modules' },
+                    { key: 'amenagement_interieur', icon: '🗄️', label: 'Aménagement intérieur' },
+                    { key: 'eclairage_integre', icon: '💡', label: 'Éclairage intégré' },
+                    { key: 'dimensions_niche', icon: '📐', label: 'Dimensions niche' },
+                    { key: 'hauteur_sous_plafond', icon: '📏', label: 'Hauteur sous plafond' },
+                    { key: 'isolation_type', icon: '🧊', label: 'Isolation' },
+                    { key: 'gaines_techniques', icon: '🔌', label: 'Gaines techniques' },
+                    { key: 'fixation_plafond_type', icon: '🔩', label: 'Fixation plafond' },
+                    { key: 'nature_terrain', icon: '🌍', label: 'Nature terrain' },
+                    { key: 'fondations_type', icon: '🧱', label: 'Type de fondations' },
+                    { key: 'couverture_toit', icon: '🏠', label: 'Couverture toit' },
+                  ].filter(item => meta[item.key]);
+
+                  if (detailsTechniques.length === 0) return null;
+
+                  return (
+                    <div style={{ 
+                      marginTop: '0.5rem',
+                      paddingTop: '0.5rem',
+                      borderTop: '1px dashed rgba(255,255,255,0.1)'
+                    }}>
+                      <div style={{ 
+                        fontSize: '0.7rem', 
+                        color: 'var(--gray)', 
+                        marginBottom: '0.4rem',
+                        textTransform: 'uppercase',
+                        letterSpacing: '0.5px'
+                      }}>
+                        Détails techniques
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                        {detailsTechniques.map(item => (
+                          <CompactItem 
+                            key={item.key}
+                            icon={item.icon} 
+                            label={item.label} 
+                            value={String(meta[item.key])}
+                          />
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             </AccordionSection>
 
