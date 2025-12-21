@@ -457,12 +457,7 @@ export default function ChantierEditPage() {
   // Lancer le phasage (génération des lots)
   const handleLancerPhasage = async () => {
     const result = await checkPrePhasageRequirements();
-
-  // Reprendre un phasage existant (brouillon) - pas de pré-phasage
-  const handleReprendrePhasage = () => {
-    router.push(`/chantiers/${chantierId}/phasage`);
-  };
-    
+  
     // Gérer le cas boolean (compatibilité) ou objet
     const isReady = typeof result === 'boolean' ? result : result.ready;
     const context = typeof result === 'boolean' ? '' : result.context;
@@ -502,6 +497,11 @@ export default function ChantierEditPage() {
         }
       }));
     }
+  };
+
+  // Reprendre un phasage existant (brouillon) - pas de pré-phasage
+  const handleReprendrePhasage = () => {
+    router.push(`/chantiers/${chantierId}/phasage`);
   };
 
   // ==================== MODE CRÉATION ====================
