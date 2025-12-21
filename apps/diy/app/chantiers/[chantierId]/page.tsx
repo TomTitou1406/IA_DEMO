@@ -183,6 +183,7 @@ export default function ChantierEditPage() {
   const [showPrePhasageModal, setShowPrePhasageModal] = useState(false);
   const [champsManquants, setChampsManquants] = useState<string[]>([]);
   const [prePhasageContext, setPrePhasageContext] = useState<string>('');
+  const [isQualifying, setIsQualifying] = useState(false);
   
   // États accordéons
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({
@@ -458,6 +459,7 @@ export default function ChantierEditPage() {
 
   // Lancer le phasage (génération des lots)
   const handleLancerPhasage = async () => {
+    setIsQualifying(true);
     const result = await checkPrePhasageRequirements();
   
     // Gérer le cas boolean (compatibilité) ou objet
@@ -468,6 +470,7 @@ export default function ChantierEditPage() {
     if (isReady) {
       router.push(`/chantiers/${chantierId}/phasage`);
     } else {
+      setIsQualifying(false);
       // Construire un message d'accueil avec les premières questions
       const champsLabels: Record<string, string> = {
         hauteur_exacte: 'la hauteur exacte de la cloison',
@@ -869,7 +872,7 @@ export default function ChantierEditPage() {
                     e.currentTarget.style.transform = 'translateY(0)';
                   }}
                 >
-                  {hasBrouillon ? '🔄 Reprendre' : '🚀 Phasage'}
+                  {isQualifying ? '⏳ Analyse...' : (hasBrouillon ? '🔄 Reprendre' : '🚀 Phasage')}
                 </button>
               </div>
               
