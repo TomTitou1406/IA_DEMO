@@ -142,7 +142,7 @@ const handleMouseLeave = (e: React.MouseEvent<HTMLElement>) => {
       {icon && <span>{icon}</span>}
       <span>
         {label}
-        {count !== undefined && ` (${count})`}
+        {count !== undefined && count > 0 && ` (${count})`}
       </span>
     </>
   );
