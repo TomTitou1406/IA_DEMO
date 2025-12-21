@@ -49,22 +49,23 @@ export default function MediaButtons({
   };
 
   const buttonStyle = {
-    padding: compact ? '0.25rem 0.4rem' : '0.35rem 0.6rem',
-    borderRadius: '6px',
-    border: 'none',
-    background: 'rgba(255,255,255,0.08)',
+    padding: compact ? '0.3rem 0.5rem' : '0.4rem 0.7rem',
+    borderRadius: '8px',
+    border: '1px solid rgba(255,255,255,0.15)',
+    background: 'rgba(255,255,255,0.05)',
     color: 'var(--gray-light)',
-    fontSize: compact ? '0.7rem' : '0.75rem',
+    fontSize: compact ? '0.75rem' : '0.8rem',
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem',
+    gap: '0.3rem',
     transition: 'all 0.2s'
   };
 
   const activeStyle = {
     ...buttonStyle,
-    background: 'rgba(249, 115, 22, 0.2)',
+    background: 'rgba(249, 115, 22, 0.15)',
+    border: '1px solid var(--orange)',
     color: 'var(--orange)'
   };
 
