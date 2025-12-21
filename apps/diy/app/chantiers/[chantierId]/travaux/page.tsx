@@ -12,6 +12,8 @@ import NotesButton from '@/app/components/NotesButton';
 import Breadcrumb from '@/app/components/Breadcrumb';
 import ParentContext from '@/app/components/ParentContext';
 import MediaButtons from '@/app/components/MediaButtons';
+import PhotosModal from '@/app/components/PhotosModal';
+import VideoPlayerModal from '@/app/components/VideoPlayerModal';
 
 interface Chantier {
   id: string;
@@ -274,6 +276,57 @@ export default function TravauxPage() {
     isOpen: boolean;
     travail: Travail | null;
   }>({ isOpen: false, travail: null });
+
+  // Modales photos et vidéos
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+  const [photosModalConfig, setPhotosModalConfig] = useState<{
+    niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+    niveauId: string;
+    niveauTitre: string;
+    photos: any[];
+  }>({ niveau: 'chantier', niveauId: '', niveauTitre: '', photos: [] });
+  
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoModalConfig, setVideoModalConfig] = useState<{
+    niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+    niveauId: string;
+    video: any;
+  }>({ niveau: 'chantier', niveauId: '', video: null });
+
+  const handlePhotosChange = (niveau: string, niveauId: string, newPhotos: any[]) => {
+    if (niveau === 'chantier') {
+      setChantierPhotos(newPhotos);
+    } else if (niveau === 'travail') {
+      setTravaux(prev => prev.map(t => 
+        t.id === niveauId ? { ...t, photos_urls: newPhotos } : t
+      ));
+    }
+  };
+  
+  const handleDetachVideo = async (niveau: string, niveauId: string) => {
+    try {
+      await fetch('/api/medias', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'remove_video',
+          niveau,
+          niveau_id: niveauId
+        })
+      });
+      
+      if (niveau === 'chantier') {
+        setChantierVideo(null);
+      } else if (niveau === 'travail') {
+        setTravaux(prev => prev.map(t => 
+          t.id === niveauId ? { ...t, video_aide: null } : t
+        ));
+      }
+      setShowVideoModal(false);
+    } catch (error) {
+      console.error('Erreur détachement vidéo:', error);
+    }
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -725,11 +778,29 @@ export default function TravauxPage() {
             videoTitre={travail.video_aide?.titre}
             compact
             onPhotoClick={() => {
-              console.log('Photos lot:', travail.id);
+              setPhotosModalConfig({
+                niveau: 'travail',
+                niveauId: travail.id,
+                niveauTitre: travail.titre,
+                photos: travail.photos_urls || []
+              });
+              setShowPhotosModal(true);
             }}
             onVideoClick={() => {
               if (travail.video_aide?.video_id) {
-                window.open(`https://www.youtube.com/watch?v=${travail.video_aide.video_id}`, '_blank');
+                setVideoModalConfig({
+                  niveau: 'travail',
+                  niveauId: travail.id,
+                  video: {
+                    id: travail.video_aide.video_id,
+                    title: travail.video_aide.titre,
+                    thumbnail: travail.video_aide.thumbnail,
+                    channelTitle: '',
+                    viewCount: 0,
+                    duration: ''
+                  }
+                });
+                setShowVideoModal(true);
               } else {
                 const searchQuery = encodeURIComponent(travail.titre);
                 window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
@@ -948,17 +1019,30 @@ export default function TravauxPage() {
               hasVideo={!!chantierVideo?.video_id}
               videoTitre={chantierVideo?.titre}
               onPhotoClick={() => {
-                // TODO: ouvrir modal photos
-                console.log('Photos chantier');
+                setPhotosModalConfig({
+                  niveau: 'chantier',
+                  niveauId: chantierId,
+                  niveauTitre: chantier?.titre || '',
+                  photos: chantierPhotos
+                });
+                setShowPhotosModal(true);
               }}
               onVideoClick={() => {
-                if (chantierVideo) {
-                  // Ouvrir le player avec la vidéo existante
-                  // TODO: Ouvrir VideoPlayerModal avec cette vidéo
-                  console.log('Ouvrir vidéo:', chantierVideo);
-                  alert(`Vidéo: ${chantierVideo.titre}\n\nLe player intégré arrive bientôt !`);
+                if (chantierVideo?.video_id) {
+                  setVideoModalConfig({
+                    niveau: 'chantier',
+                    niveauId: chantierId,
+                    video: {
+                      id: chantierVideo.video_id,
+                      title: chantierVideo.titre,
+                      thumbnail: chantierVideo.thumbnail,
+                      channelTitle: '',
+                      viewCount: 0,
+                      duration: ''
+                    }
+                  });
+                  setShowVideoModal(true);
                 } else {
-                  // Lancer recherche vidéo
                   const searchQuery = encodeURIComponent(chantier?.titre || '');
                   window.location.href = `/videos?context=chantier&id=${chantierId}&search=${searchQuery}`;
                 }
@@ -1060,6 +1144,32 @@ export default function TravauxPage() {
           travail={showForcageModal.travail}
           onClose={() => setShowForcageModal({ isOpen: false, travail: null })}
         />
+
+        {/* Modal Photos */}
+        <PhotosModal
+          isOpen={showPhotosModal}
+          onClose={() => setShowPhotosModal(false)}
+          niveau={photosModalConfig.niveau}
+          niveauId={photosModalConfig.niveauId}
+          niveauTitre={photosModalConfig.niveauTitre}
+          photos={photosModalConfig.photos}
+          onPhotosChange={(newPhotos) => {
+            handlePhotosChange(photosModalConfig.niveau, photosModalConfig.niveauId, newPhotos);
+            setPhotosModalConfig(prev => ({ ...prev, photos: newPhotos }));
+          }}
+        />
+  
+        {/* Modal Vidéo */}
+        <VideoPlayerModal
+          video={videoModalConfig.video}
+          isOpen={showVideoModal}
+          onClose={() => setShowVideoModal(false)}
+          showFavoriteButton={false}
+          showMettreEnOeuvreButton={false}
+          onAttach={undefined}
+          attachLabel={undefined}
+        />
+        
       </div>
     </>
   );
