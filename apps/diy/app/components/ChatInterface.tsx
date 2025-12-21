@@ -840,6 +840,10 @@ export default function ChatInterface({
                   await persistMessage(assistantMessage);
                 }
                 
+                // Fermer l'assistant et nettoyer avant la redirection
+                window.dispatchEvent(new CustomEvent('closeAssistant'));
+                sessionStorage.removeItem('floating_assistant_open');
+                
                 // Rediriger vers le phasage après un court délai
                 setTimeout(() => {
                   window.location.href = `/chantiers/${chantierId}/phasage`;
