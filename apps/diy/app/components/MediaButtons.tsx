@@ -84,7 +84,23 @@ export default function MediaButtons({
           }}
           title={photosCount > 0 ? `${photosCount} photo(s)` : 'Ajouter une photo'}
         >
-          📷 {photosCount > 0 && <span>{photosCount}</span>}
+          📷 {photosCount > 0 && (
+            <span style={{
+              background: 'var(--blue)',
+              color: 'white',
+              fontSize: '0.65rem',
+              fontWeight: '700',
+              minWidth: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: '2px'
+            }}>
+              {photosCount}
+            </span>
+          )}
         </button>
 
         {/* Bouton Vidéo */}
@@ -101,7 +117,23 @@ export default function MediaButtons({
           }}
           title={hasVideo ? videoTitre || 'Voir le tuto' : 'Trouver un tuto'}
         >
-          🎬 {hasVideo && <span>1</span>}
+          🎬 {hasVideo && (
+            <span style={{
+              background: 'var(--blue)',
+              color: 'white',
+              fontSize: '0.65rem',
+              fontWeight: '700',
+              minWidth: '16px',
+              height: '16px',
+              borderRadius: '50%',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              marginLeft: '2px'
+            }}>
+              1
+            </span>
+          )}
         </button>
       </div>
 
