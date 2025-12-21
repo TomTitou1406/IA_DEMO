@@ -1045,7 +1045,6 @@ function VideosContent() {
           
         />
       )}
-      {/* Modal Player Vidéo */}
       <VideoPlayerModal
         video={selectedVideoData}
         isOpen={showPlayerModal}
@@ -1055,11 +1054,14 @@ function VideosContent() {
             toggleFavorite(selectedVideoData, new MouseEvent('click') as any);
           }
         }}
-        onMettreEnOeuvre={() => {
+        onMettreEnOeuvre={attachContext ? undefined : () => {
           setShowPlayerModal(false);
           setShowAnalysisModal(true);
         }}
+        onAttach={attachContext ? (video) => handleAttachVideo(video) : undefined}
+        attachLabel={attachContext ? `Attacher à "${attachNiveauTitre}"` : undefined}
         isFavorite={selectedVideoData ? favoriteIds.has(selectedVideoData.id) : false}
+        showMettreEnOeuvreButton={!attachContext}
       />
     </div>
   );
