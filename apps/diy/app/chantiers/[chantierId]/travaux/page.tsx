@@ -295,7 +295,7 @@ export default function TravauxPage() {
           setTravaux(allTravaux);
           // Charger les médias du chantier
           setChantierPhotos(chantierData.photos_urls || []);
-          setChantierVideo(chantierData.video_aide || null);
+          setChantierVideo(chantierData.video_aide?.video_id ? chantierData.video_aide : null);
         }
       } catch (error) {
         console.error('Error loading travaux:', error);
@@ -721,7 +721,7 @@ export default function TravauxPage() {
             niveauId={travail.id}
             niveauTitre={travail.titre}
             photosCount={travail.photos_urls?.length || 0}
-            hasVideo={!!travail.video_aide}
+            hasVideo={!!travail.video_aide?.video_id}
             videoTitre={travail.video_aide?.titre}
             compact
             onPhotoClick={() => {
@@ -947,7 +947,7 @@ export default function TravauxPage() {
               niveauId={chantierId}
               niveauTitre={chantier?.titre || ''}
               photosCount={chantierPhotos.length}
-              hasVideo={!!chantierVideo}
+              hasVideo={!!chantierVideo?.video_id}
               videoTitre={chantierVideo?.titre}
               onPhotoClick={() => {
                 // TODO: ouvrir modal photos
