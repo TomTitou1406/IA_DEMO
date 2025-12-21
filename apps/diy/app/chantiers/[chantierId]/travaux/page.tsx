@@ -729,9 +729,10 @@ export default function TravauxPage() {
             }}
             onVideoClick={() => {
               if (travail.video_aide) {
+                onVideoClick={() => {
+              if (travail.video_aide?.video_id) {
                 // TODO: Ouvrir VideoPlayerModal avec cette vidéo
-                console.log('Ouvrir vidéo:', chantierVideo);
-                alert(`Vidéo: ${chantierVideo.titre}\n\nLe player intégré arrive bientôt !`);
+                window.open(`https://www.youtube.com/watch?v=${travail.video_aide.video_id}`, '_blank');
               } else {
                 const searchQuery = encodeURIComponent(travail.titre);
                 window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
