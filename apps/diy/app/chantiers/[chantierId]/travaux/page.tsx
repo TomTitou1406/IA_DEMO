@@ -728,10 +728,7 @@ export default function TravauxPage() {
               console.log('Photos lot:', travail.id);
             }}
             onVideoClick={() => {
-              if (travail.video_aide) {
-                onVideoClick={() => {
               if (travail.video_aide?.video_id) {
-                // TODO: Ouvrir VideoPlayerModal avec cette vidéo
                 window.open(`https://www.youtube.com/watch?v=${travail.video_aide.video_id}`, '_blank');
               } else {
                 const searchQuery = encodeURIComponent(travail.titre);
