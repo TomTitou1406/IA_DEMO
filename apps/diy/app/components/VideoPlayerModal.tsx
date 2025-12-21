@@ -303,6 +303,7 @@ export default function VideoPlayerModal({
               display: 'flex',
               gap: '0.75rem',
               flexWrap: 'wrap',
+              justifyContent: 'center',
             }}>
               {showFavoriteButton && onFavoriteToggle && (
                 <button
