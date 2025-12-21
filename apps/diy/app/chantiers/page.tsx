@@ -376,6 +376,18 @@ export default function ChantiersPage() {
 
 // ==================== COMPOSANTS ====================
 
+interface SectionProps {
+  title: string;
+  icon: string;
+  count: number;
+  color: string;
+  isExpanded: boolean;
+  onToggle: () => void;
+  children: React.ReactNode;
+}
+
+// ==================== COMPOSANTS ====================
+
 function Section({ title, icon, count, color, isExpanded, onToggle, children }: SectionProps) {
   return (
     <section style={{ marginBottom: '1.5rem' }}>
