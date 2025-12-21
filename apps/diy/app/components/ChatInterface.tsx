@@ -807,40 +807,46 @@ export default function ChatInterface({
             if (json.pre_phasage_complete && json.metadata_updates) {
               console.log('✅ Pré-phasage complet, mise à jour metadata:', json.metadata_updates);
               
-              // Mettre à jour les metadata du chantier en BDD
               const chantierId = promptContext?.chantierId;
               if (chantierId) {
-                const updateResponse = await fetch(`/api/chantiers/${chantierId}`, {
-                  method: 'PATCH',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ metadata_updates: json.metadata_updates })
-                });
+                // Utiliser le service existant
+                const { updateChantier, getChantierById } = await import('../lib/services/chantierService');
                 
-                if (updateResponse.ok) {
-                  console.log('✅ Metadata mises à jour en BDD');
-                  
-                  // Afficher le message nettoyé (sans le JSON)
-                  const cleanMessage = response.message.replace(/```json[\s\S]*?```/g, '').trim();
-                  const assistantMessage: Message = {
-                    role: 'assistant',
-                    content: cleanMessage || 'Parfait ! Je lance la génération des lots de travaux.',
-                    timestamp: new Date().toISOString(),
-                  };
-                  
-                  if (disablePersistence) {
-                    setLocalMessages(prev => [...prev, assistantMessage]);
-                  } else {
-                    await persistMessage(assistantMessage);
-                  }
-                  
-                  // Rediriger vers le phasage après un court délai
-                  setTimeout(() => {
-                    window.location.href = `/chantiers/${chantierId}/phasage`;
-                  }, 1500);
-                  
-                  setLoading(false);
-                  return;
+                // Charger les metadata existantes
+                const existingChantier = await getChantierById(chantierId);
+                const existingMetadata = existingChantier?.metadata || {};
+                
+                // Fusionner les metadata
+                const updatedMetadata = {
+                  ...existingMetadata,
+                  ...json.metadata_updates
+                };
+                
+                // Mettre à jour
+                await updateChantier(chantierId, { metadata: updatedMetadata });
+                console.log('✅ Metadata mises à jour en BDD');
+                
+                // Afficher le message nettoyé (sans le JSON)
+                const cleanMessage = response.message.replace(/```json[\s\S]*?```/g, '').trim();
+                const assistantMessage: Message = {
+                  role: 'assistant',
+                  content: cleanMessage || 'Parfait ! Je lance la génération des lots de travaux.',
+                  timestamp: new Date().toISOString(),
+                };
+                
+                if (disablePersistence) {
+                  setLocalMessages(prev => [...prev, assistantMessage]);
+                } else {
+                  await persistMessage(assistantMessage);
                 }
+                
+                // Rediriger vers le phasage après un court délai
+                setTimeout(() => {
+                  window.location.href = `/chantiers/${chantierId}/phasage`;
+                }, 1500);
+                
+                setLoading(false);
+                return;
               }
             }
           } catch (e) {
