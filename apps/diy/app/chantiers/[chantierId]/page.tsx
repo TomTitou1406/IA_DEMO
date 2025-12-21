@@ -179,6 +179,7 @@ export default function ChantierEditPage() {
   const [loading, setLoading] = useState(!isCreation);
   const [error, setError] = useState<string | null>(null);
   const [hasBrouillon, setHasBrouillon] = useState(false);
+  const [nbLotsBrouillon, setNbLotsBrouillon] = useState(0);
   const [showPrePhasageModal, setShowPrePhasageModal] = useState(false);
   const [champsManquants, setChampsManquants] = useState<string[]>([]);
   const [prePhasageContext, setPrePhasageContext] = useState<string>('');
@@ -300,6 +301,7 @@ export default function ChantierEditPage() {
           });
           const brouillonData = await brouillonRes.json();
           setHasBrouillon(brouillonData.hasBrouillon || false);
+          setNbLotsBrouillon(brouillonData.nbLots || 0);
         } catch (e) {
           console.error('Erreur vérification brouillon:', e);
         }
@@ -798,7 +800,7 @@ export default function ChantierEditPage() {
                       background: 'rgba(249, 115, 22, 0.2)',
                       color: 'var(--orange)'
                     }}>
-                      ⚠️ {travaux.length} lots en brouillon
+                      ⚠️ {nbLotsBrouillon} lots en brouillon
                     </span>
                   )}
                 </div>
