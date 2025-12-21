@@ -544,7 +544,7 @@ export default function TravauxPage() {
               )}
 
               {/* Bouton REPRENDRE MISE EN ŒUVRE (si étapes brouillon) */}
-              {travail.etapes_brouillon && travail.etapes_brouillon > 0 && (
+              {travail.etapes_brouillon > 0 && (
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
