@@ -94,11 +94,14 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
   };
 
   const handleDoubleClick = () => {
-    setCurrentLevel(1);
-    setProgress(0);
-    setBonsGagnes([]);
-    setShowTooltip(false);
-    setTooltipLocked(false);
+    // Reset uniquement si niveau max atteint
+    if (currentLevel >= LEVELS.length) {
+      setCurrentLevel(1);
+      setProgress(0);
+      setBonsGagnes([]);
+      setShowTooltip(false);
+      setTooltipLocked(false);
+    }
   };
 
   const handleMouseEnter = () => {
