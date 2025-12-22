@@ -1055,10 +1055,13 @@ export default function TravauxPage() {
                   });
                   setShowVideoModal(true);
                 } else {
-                  // Stocker l'URL de retour
-                  sessionStorage.setItem('attachReturnUrl', window.location.href);
-                  const searchQuery = encodeURIComponent(chantier?.titre || '');
-                  window.location.href = `/videos?context=chantier&id=${chantierId}&search=${searchQuery}`;
+                  // Ouvrir modale de choix
+                  setVideoChoiceContext({
+                    niveau: 'chantier',
+                    id: chantierId,
+                    titre: chantier?.titre || ''
+                  });
+                  setShowVideoChoiceModal(true);
                 }
               }}
             />
