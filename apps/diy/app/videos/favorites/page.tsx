@@ -208,11 +208,11 @@ export default function FavoritesPage() {
       return;
     }
     
-   const payload = {
+    const payload = {
       action: 'set_video',
       niveau: attachContext,
       niveau_id: attachId,
-      video: {
+      data: {
         video_id: selectedVideoData.video_id,
         titre: selectedVideoData.title,
         url: `https://www.youtube.com/watch?v=${selectedVideoData.video_id}`,
