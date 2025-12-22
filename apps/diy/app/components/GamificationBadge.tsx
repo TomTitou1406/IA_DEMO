@@ -225,7 +225,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
           top: size + 10,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
+          background: levelData.color,
           color: 'white',
           padding: '0.25rem 0.5rem',
           borderRadius: '4px',
@@ -233,7 +233,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
           fontWeight: '700',
           whiteSpace: 'nowrap',
           animation: 'levelUpPulse 0.5s ease',
-          boxShadow: '0 2px 10px rgba(245, 158, 11, 0.5)',
+          boxShadow: `0 2px 10px ${levelData.color}80`,
           zIndex: 100
         }}>
           🎉 Niveau débloqué !
