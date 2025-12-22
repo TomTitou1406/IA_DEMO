@@ -208,10 +208,10 @@ export default function FavoritesPage() {
       return;
     }
     
-    const payload = {
+   const payload = {
       action: 'set_video',
       niveau: attachContext,
-      niveauId: attachId,
+      niveau_id: attachId,
       video: {
         video_id: selectedVideoData.video_id,
         titre: selectedVideoData.title,
