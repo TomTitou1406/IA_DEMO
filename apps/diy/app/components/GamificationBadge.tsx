@@ -2,7 +2,7 @@
  * /app/components/GamificationBadge.tsx
  * Badge de gamification avec couronne de progression + bons d'achat
  * 
- * @version 1.2 - Tooltip sticky + double-clic reset + bons
+ * @version 1.3 - Tooltip vers le haut pour mobile
  */
 
 'use client';
@@ -44,7 +44,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     }
   }, []);
 
-// Sauvegarder dans localStorage
+  // Sauvegarder dans localStorage
   useEffect(() => {
     localStorage.setItem('gamification', JSON.stringify({
       level: currentLevel,
@@ -53,7 +53,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     }));
     // Notifier Navbar uniquement quand les bons changent
     window.dispatchEvent(new CustomEvent('bonsUpdated', { detail: { count: bonsGagnes.length } }));
-  }, [bonsGagnes]); // Seulement quand bonsGagnes change
+  }, [bonsGagnes]);
 
   // Sauvegarder progression séparément (sans dispatch)
   useEffect(() => {
@@ -213,7 +213,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
       {showLevelUp && (
         <div style={{
           position: 'absolute',
-          top: -10,
+          bottom: size + 10,
           left: '50%',
           transform: 'translateX(-50%)',
           background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
@@ -231,12 +231,12 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         </div>
       )}
 
-      {/* Tooltip amélioré */}
+      {/* Tooltip amélioré - vers le haut */}
       {(showTooltip || tooltipLocked) && !showLevelUp && (
         <div 
           style={{
             position: 'absolute',
-            top: size + 12,
+            bottom: size + 12,
             left: '50%',
             transform: 'translateX(-50%)',
             background: `linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))`,
@@ -252,17 +252,17 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
             if (!tooltipLocked) setShowTooltip(false);
           }}
         >
-          {/* Flèche */}
+          {/* Flèche vers le bas */}
           <div style={{
             position: 'absolute',
-            top: -8,
+            bottom: -8,
             left: '50%',
             transform: 'translateX(-50%)',
             width: 0,
             height: 0,
             borderLeft: '8px solid transparent',
             borderRight: '8px solid transparent',
-            borderBottom: `8px solid ${levelData.color}`,
+            borderTop: `8px solid ${levelData.color}`,
           }} />
 
           {/* Header avec niveau */}
