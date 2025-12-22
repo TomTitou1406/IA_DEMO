@@ -1001,7 +1001,7 @@ export default function Navbar({ className }: NavbarProps) {
         {/* Panier - Mobile */}
         <CartButton mobile />
         
-        <HelpButton mobile />>
+        <HelpButton mobile />
       </nav>
 
       <div style={{ height: isMobile ? '42px' : '50px' }} />
