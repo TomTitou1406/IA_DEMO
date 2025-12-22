@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import VideoAnalysisModal from '@/app/components/VideoAnalysisModal';
 import VideoPlayerModal from '@/app/components/VideoPlayerModal';
@@ -98,11 +98,17 @@ export default function FavoritesPage() {
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [allExpanded, setAllExpanded] = useState(true);
 
-  // Mode attachement (depuis chantier/lot/étape)
-  const searchParams = useSearchParams();
-  const attachContext = searchParams.get('context');
-  const attachId = searchParams.get('id');
-  const attachTitre = decodeURIComponent(searchParams.get('titre') || '');
+ // Mode attachement (depuis chantier/lot/étape)
+  const [attachContext, setAttachContext] = useState<string | null>(null);
+  const [attachId, setAttachId] = useState<string | null>(null);
+  const [attachTitre, setAttachTitre] = useState<string>('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    setAttachContext(params.get('context'));
+    setAttachId(params.get('id'));
+    setAttachTitre(decodeURIComponent(params.get('titre') || ''));
+  }, []);
   
   useEffect(() => {
     loadFavorites();
