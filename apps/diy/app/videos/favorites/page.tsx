@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import VideoAnalysisModal from '@/app/components/VideoAnalysisModal';
 import VideoPlayerModal from '@/app/components/VideoPlayerModal';
@@ -97,6 +97,12 @@ export default function FavoritesPage() {
   // v1.3 : Volets collapsables
   const [openGroups, setOpenGroups] = useState<Set<string>>(new Set());
   const [allExpanded, setAllExpanded] = useState(true);
+
+  // Mode attachement (depuis chantier/lot/étape)
+  const searchParams = useSearchParams();
+  const attachContext = searchParams.get('context');
+  const attachId = searchParams.get('id');
+  const attachTitre = decodeURIComponent(searchParams.get('titre') || '');
   
   useEffect(() => {
     loadFavorites();
@@ -182,6 +188,42 @@ export default function FavoritesPage() {
     if (!selectedVideoData) return;
     setShowPlayerModal(false);
     setShowAnalysisModal(true);
+  };
+
+  // Attacher une vidéo au contexte (chantier/lot/étape)
+  const handleAttachVideo = async () => {
+    if (!selectedVideoData || !attachContext || !attachId) return;
+    
+    try {
+      const res = await fetch('/api/medias', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'set_video',
+          niveau: attachContext,
+          niveauId: attachId,
+          video: {
+            video_id: selectedVideoData.video_id,
+            titre: selectedVideoData.title,
+            url: `https://www.youtube.com/watch?v=${selectedVideoData.video_id}`,
+            thumbnail: selectedVideoData.thumbnail
+          }
+        })
+      });
+      
+      if (res.ok) {
+        setShowPlayerModal(false);
+        const returnUrl = sessionStorage.getItem('attachReturnUrl');
+        if (returnUrl) {
+          sessionStorage.removeItem('attachReturnUrl');
+          window.location.href = returnUrl;
+        } else {
+          router.back();
+        }
+      }
+    } catch (error) {
+      console.error('Erreur attachement vidéo:', error);
+    }
   };
 
   // Convertir Favorite vers format VideoPlayerModal
@@ -646,6 +688,36 @@ export default function FavoritesPage() {
             >
               🏠
             </button>
+
+            {/* Bouton Retour en mode attachement */}
+            {attachContext && (
+              <button
+                onClick={() => {
+                  const returnUrl = sessionStorage.getItem('attachReturnUrl');
+                  if (returnUrl) {
+                    sessionStorage.removeItem('attachReturnUrl');
+                    window.location.href = returnUrl;
+                  } else {
+                    router.back();
+                  }
+                }}
+                style={{
+                  padding: '0.5rem 1rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: 'var(--orange)',
+                  color: 'white',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.4rem',
+                }}
+              >
+                ← Retour aux travaux
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -813,10 +885,12 @@ export default function FavoritesPage() {
             removeFavorite(selectedVideoData.video_id, { stopPropagation: () => {} } as React.MouseEvent);
           }
         }}
-        onMettreEnOeuvre={handleMettreEnOeuvre}
-        isFavorite={true} // Toujours true car on est sur la page favoris
-        showFavoriteButton={true}
-        showMettreEnOeuvreButton={true}
+        onMettreEnOeuvre={attachContext ? undefined : handleMettreEnOeuvre}
+        isFavorite={true}
+        showFavoriteButton={!attachContext}
+        showMettreEnOeuvreButton={!attachContext}
+        onAttach={attachContext ? handleAttachVideo : undefined}
+        attachLabel={attachContext ? `📌 Attacher à ${attachTitre || attachContext}` : undefined}
       />
 
       {/* Modal analyse vidéo */}
