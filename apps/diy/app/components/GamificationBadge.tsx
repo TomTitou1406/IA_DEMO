@@ -44,14 +44,25 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     }
   }, []);
 
-  // Sauvegarder dans localStorage
+// Sauvegarder dans localStorage
   useEffect(() => {
     localStorage.setItem('gamification', JSON.stringify({
       level: currentLevel,
       progress: progress,
       bons: bonsGagnes
     }));
-  }, [currentLevel, progress, bonsGagnes]);
+    // Notifier Navbar uniquement quand les bons changent
+    window.dispatchEvent(new CustomEvent('bonsUpdated', { detail: { count: bonsGagnes.length } }));
+  }, [bonsGagnes]); // Seulement quand bonsGagnes change
+
+  // Sauvegarder progression séparément (sans dispatch)
+  useEffect(() => {
+    localStorage.setItem('gamification', JSON.stringify({
+      level: currentLevel,
+      progress: progress,
+      bons: bonsGagnes
+    }));
+  }, [currentLevel, progress]);
 
   const levelData = LEVELS[Math.min(currentLevel - 1, LEVELS.length - 1)];
   const nextLevelData = LEVELS[Math.min(currentLevel, LEVELS.length - 1)];
