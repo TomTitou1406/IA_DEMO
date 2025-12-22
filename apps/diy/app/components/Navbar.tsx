@@ -92,6 +92,14 @@ export default function Navbar({ className }: NavbarProps) {
   }, []);
 
   useEffect(() => {
+    const saved = localStorage.getItem('gamification');
+    if (saved) {
+      const data = JSON.parse(saved);
+      setBonsCount(data.bons?.length || 0);
+    }
+  }, []);
+
+  useEffect(() => {
     // Charger initial
     const saved = localStorage.getItem('gamification');
     if (saved) {
