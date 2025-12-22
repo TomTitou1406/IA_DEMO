@@ -32,7 +32,16 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [bonsGagnes, setBonsGagnes] = useState<string[]>([]);
   const [tooltipLocked, setTooltipLocked] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);  // ← AJOUTE ICI
 
+  // Détection mobile
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+  
   // Charger depuis localStorage
   useEffect(() => {
     const saved = localStorage.getItem('gamification');
@@ -231,8 +240,8 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         </div>
       )}
 
-      {/* Tooltip amélioré - vers le haut */}
-      {(showTooltip || tooltipLocked) && !showLevelUp && (
+      {/* Tooltip amélioré - vers le haut (desktop uniquement) */}
+      {(showTooltip || tooltipLocked) && !showLevelUp && !isMobile && (
         <div 
           style={{
             position: 'absolute',
