@@ -98,7 +98,6 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         setTimeout(() => setShowLevelUp(false), 2000);
         
         // Ajouter le bon du nouveau niveau
-        const newLevelData = LEVELS[newLevel - 1];
         if (newLevelData.bon) {
           setBonsGagnes(prev => [...prev, newLevelData.bon!]);
         }
