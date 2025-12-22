@@ -362,14 +362,14 @@ export default function Navbar({ className }: NavbarProps) {
           {mobile && <span>Panier</span>}
         </button>
 
-        {/* Tooltip Panier - vers le haut */}
+        {/* Tooltip Panier */}
         {showTooltip && !mobile && (
           <div style={{
             position: 'absolute',
-            bottom: '100%',
+            top: '100%',
             left: '50%',
             transform: 'translateX(-50%)',
-            marginBottom: '12px',
+            marginTop: '12px',
             background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))',
             border: '2px solid #10b981',
             borderRadius: '12px',
@@ -378,17 +378,17 @@ export default function Navbar({ className }: NavbarProps) {
             zIndex: 100,
             boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(16, 185, 129, 0.3)',
           }}>
-            {/* Flèche vers le bas */}
+            {/* Flèche vers le haut */}
             <div style={{
               position: 'absolute',
-              bottom: -8,
+              top: -8,
               left: '50%',
               transform: 'translateX(-50%)',
               width: 0,
               height: 0,
               borderLeft: '8px solid transparent',
               borderRight: '8px solid transparent',
-              borderTop: '8px solid #10b981',
+              borderBottom: '8px solid #10b981',
             }} />
 
             {/* Contenu */}
@@ -514,14 +514,14 @@ export default function Navbar({ className }: NavbarProps) {
           </span>
         )}
 
-        {/* Tooltip Mon Compte - vers le haut */}
+        {/* Tooltip Mon Compte */}
         {showTooltip && !mobile && (
           <div style={{
             position: 'absolute',
-            bottom: '100%',
+            top: '100%',
             left: '50%',
             transform: 'translateX(-50%)',
-            marginBottom: '12px',
+            marginTop: '12px',
             background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))',
             border: '2px solid #3b82f6',
             borderRadius: '12px',
@@ -530,17 +530,17 @@ export default function Navbar({ className }: NavbarProps) {
             zIndex: 100,
             boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(59, 130, 246, 0.3)',
           }}>
-            {/* Flèche vers le bas */}
+            {/* Flèche vers le haut */}
             <div style={{
               position: 'absolute',
-              bottom: -8,
+              top: -8,
               left: '50%',
               transform: 'translateX(-50%)',
               width: 0,
               height: 0,
               borderLeft: '8px solid transparent',
               borderRight: '8px solid transparent',
-              borderTop: '8px solid #3b82f6',
+              borderBottom: '8px solid #3b82f6',
             }} />
 
            {/* Options du menu */}
