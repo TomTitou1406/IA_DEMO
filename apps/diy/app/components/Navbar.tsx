@@ -986,7 +986,8 @@ export default function Navbar({ className }: NavbarProps) {
         {navItems.map(item => (
           <NavItemMobile key={item.id} item={item} />
         ))}
-        <AccountButton mobile/>
+        <AccountButton mobile />
+        
         {/* Badge Gamification - Mobile */}
         <div style={{ 
           display: 'flex', 
@@ -994,13 +995,13 @@ export default function Navbar({ className }: NavbarProps) {
           alignItems: 'center',
           flex: 1
         }}>
-          <GamificationBadge size={32} />
-          
-          {/* Panier - Mobile */}
-          <CartButton mobile />
-          
+          <GamificationBadge size={28} />
         </div>
-        <HelpButton mobile />
+
+        {/* Panier - Mobile */}
+        <CartButton mobile />
+        
+        <HelpButton mobile />>
       </nav>
 
       <div style={{ height: isMobile ? '42px' : '50px' }} />
