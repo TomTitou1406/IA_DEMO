@@ -32,7 +32,8 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
   const [showLevelUp, setShowLevelUp] = useState(false);
   const [bonsGagnes, setBonsGagnes] = useState<string[]>([]);
   const [tooltipLocked, setTooltipLocked] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);  // ← AJOUTE ICI
+  const [isMobile, setIsMobile] = useState(false);
+  const [levelUpColor, setLevelUpColor] = useState('#f59e0b');
 
   // Détection mobile
   useEffect(() => {
@@ -93,6 +94,8 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         setProgress(0);
         setShowLevelUp(true);
         setTimeout(() => setShowLevelUp(false), 2000);
+        const newLevelData = LEVELS[newLevel - 1];  // ← Couleur du niveau qu'on atteint
+        setLevelUpColor(newLevelData.color);        // ← Sauvegarder
         
         // Ajouter le bon du nouveau niveau
         const newLevelData = LEVELS[newLevel - 1];
@@ -225,7 +228,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
           top: size + 10,
           left: '50%',
           transform: 'translateX(-50%)',
-          background: levelData.color,
+          background: levelUpColor,
           color: 'white',
           padding: '0.25rem 0.5rem',
           borderRadius: '4px',
@@ -233,7 +236,7 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
           fontWeight: '700',
           whiteSpace: 'nowrap',
           animation: 'levelUpPulse 0.5s ease',
-          boxShadow: `0 2px 10px ${levelData.color}80`,
+          boxShadow: `0 2px 10px ${levelUpColor}80`,
           zIndex: 100
         }}>
           🎉 Niveau débloqué !
