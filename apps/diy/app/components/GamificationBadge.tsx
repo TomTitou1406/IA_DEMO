@@ -240,12 +240,12 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         </div>
       )}
 
-      {/* Tooltip amélioré - vers le haut (desktop uniquement) */}
+     {/* Tooltip amélioré */}
       {(showTooltip || tooltipLocked) && !showLevelUp && !isMobile && (
         <div 
           style={{
             position: 'absolute',
-            bottom: size + 12,
+            top: size + 12,
             left: '50%',
             transform: 'translateX(-50%)',
             background: `linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))`,
@@ -261,17 +261,17 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
             if (!tooltipLocked) setShowTooltip(false);
           }}
         >
-          {/* Flèche vers le bas */}
+          {/* Flèche */}
           <div style={{
             position: 'absolute',
-            bottom: -8,
+            top: -8,
             left: '50%',
             transform: 'translateX(-50%)',
             width: 0,
             height: 0,
             borderLeft: '8px solid transparent',
             borderRight: '8px solid transparent',
-            borderTop: `8px solid ${levelData.color}`,
+            borderBottom: `8px solid ${levelData.color}`,
           }} />
 
           {/* Header avec niveau */}
