@@ -198,24 +198,40 @@ export default function FavoritesPage() {
 
   // Attacher une vidéo au contexte (chantier/lot/étape)
   const handleAttachVideo = async () => {
-    if (!selectedVideoData || !attachContext || !attachId) return;
+    console.log('=== DEBUG ATTACH ===');
+    console.log('attachContext:', attachContext);
+    console.log('attachId:', attachId);
+    console.log('selectedVideoData:', selectedVideoData);
+    
+    if (!selectedVideoData || !attachContext || !attachId) {
+      console.log('BLOCKED - Missing data');
+      return;
+    }
+    
+    const payload = {
+      action: 'set_video',
+      niveau: attachContext,
+      niveauId: attachId,
+      video: {
+        video_id: selectedVideoData.video_id,
+        titre: selectedVideoData.title,
+        url: `https://www.youtube.com/watch?v=${selectedVideoData.video_id}`,
+        thumbnail: selectedVideoData.thumbnail
+      }
+    };
+    
+    console.log('Payload:', JSON.stringify(payload, null, 2));
     
     try {
       const res = await fetch('/api/medias', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'set_video',
-          niveau: attachContext,
-          niveauId: attachId,
-          video: {
-            video_id: selectedVideoData.video_id,
-            titre: selectedVideoData.title,
-            url: `https://www.youtube.com/watch?v=${selectedVideoData.video_id}`,
-            thumbnail: selectedVideoData.thumbnail
-          }
-        })
+        body: JSON.stringify(payload)
       });
+      
+      console.log('Response status:', res.status);
+      const data = await res.json();
+      console.log('Response data:', data);
       
       if (res.ok) {
         setShowPlayerModal(false);
