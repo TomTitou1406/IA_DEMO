@@ -293,6 +293,13 @@ export default function TravauxPage() {
     video: any;
   }>({ niveau: 'chantier', niveauId: '', video: null });
 
+  const [showVideoChoiceModal, setShowVideoChoiceModal] = useState(false);
+  const [videoChoiceContext, setVideoChoiceContext] = useState<{
+    niveau: string;
+    id: string;
+    titre: string;
+  } | null>(null);
+
   const handlePhotosChange = (niveau: string, niveauId: string, newPhotos: any[]) => {
     if (niveau === 'chantier') {
       setChantierPhotos(newPhotos);
@@ -802,10 +809,13 @@ export default function TravauxPage() {
                 });
                 setShowVideoModal(true);
               } else {
-                // Stocker l'URL de retour
-                sessionStorage.setItem('attachReturnUrl', window.location.href);
-                const searchQuery = encodeURIComponent(travail.titre);
-                window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
+                // Ouvrir modale de choix
+                setVideoChoiceContext({
+                  niveau: 'travail',
+                  id: travail.id,
+                  titre: travail.titre
+                });
+                setShowVideoChoiceModal(true);
               }
             }}
           />
@@ -1173,8 +1183,146 @@ export default function TravauxPage() {
           onAttach={undefined}
           attachLabel={undefined}
         />
-        
-      </div>
+
+        {/* Modale choix source vidéo */}
+        {showVideoChoiceModal && videoChoiceContext && (
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            background: 'rgba(0,0,0,0.8)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 2000,
+            padding: '1rem'
+          }}
+          onClick={() => setShowVideoChoiceModal(false)}
+          >
+            <div 
+              style={{
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                borderRadius: '16px',
+                padding: '1.5rem',
+                maxWidth: '340px',
+                width: '100%',
+                border: '1px solid rgba(255,255,255,0.1)'
+              }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 style={{ 
+                color: 'white', 
+                margin: '0 0 0.5rem 0',
+                fontSize: '1.1rem',
+                textAlign: 'center'
+              }}>
+                🎬 Ajouter un tuto vidéo
+              </h3>
+              <p style={{
+                color: 'rgba(255,255,255,0.6)',
+                fontSize: '0.85rem',
+                textAlign: 'center',
+                margin: '0 0 1.5rem 0'
+              }}>
+                Pour : {videoChoiceContext.titre}
+              </p>
+  
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+                {/* Option 1 : Rechercher */}
+                <button
+                  onClick={() => {
+                    setShowVideoChoiceModal(false);
+                    sessionStorage.setItem('attachReturnUrl', window.location.href);
+                    const searchQuery = encodeURIComponent(videoChoiceContext.titre);
+                    window.location.href = `/videos?context=${videoChoiceContext.niveau}&id=${videoChoiceContext.id}&search=${searchQuery}`;
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '1rem',
+                    borderRadius: '12px',
+                    border: '2px solid var(--green)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    color: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'var(--green)';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <span style={{ fontSize: '1.5rem' }}>🔍</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: '600' }}>Rechercher un tuto</div>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Trouver une nouvelle vidéo</div>
+                  </div>
+                </button>
+  
+                {/* Option 2 : Favoris */}
+                <button
+                  onClick={() => {
+                    setShowVideoChoiceModal(false);
+                    sessionStorage.setItem('attachReturnUrl', window.location.href);
+                    window.location.href = `/videos/favorites?context=${videoChoiceContext.niveau}&id=${videoChoiceContext.id}&titre=${encodeURIComponent(videoChoiceContext.titre)}`;
+                  }}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.75rem',
+                    padding: '1rem',
+                    borderRadius: '12px',
+                    border: '2px solid #ef4444',
+                    background: 'rgba(239, 68, 68, 0.1)',
+                    color: 'white',
+                    cursor: 'pointer',
+                    transition: 'all 0.3s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = '#ef4444';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)';
+                    e.currentTarget.style.boxShadow = 'none';
+                  }}
+                >
+                  <span style={{ fontSize: '1.5rem' }}>❤️</span>
+                  <div style={{ textAlign: 'left' }}>
+                    <div style={{ fontWeight: '600' }}>Mes favoris</div>
+                    <div style={{ fontSize: '0.75rem', opacity: 0.7 }}>Choisir parmi mes vidéos sauvées</div>
+                  </div>
+                </button>
+              </div>
+  
+              {/* Bouton Annuler */}
+              <button
+                onClick={() => setShowVideoChoiceModal(false)}
+                style={{
+                  width: '100%',
+                  marginTop: '1rem',
+                  padding: '0.75rem',
+                  borderRadius: '8px',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                  background: 'transparent',
+                  color: 'rgba(255,255,255,0.6)',
+                  cursor: 'pointer',
+                  fontSize: '0.85rem'
+                }}
+              >
+                Annuler
+              </button>
+            </div>
+          </div>
+        )}
+       </div>
     </>
   );
 }
