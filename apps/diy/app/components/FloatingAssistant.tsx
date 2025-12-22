@@ -257,7 +257,7 @@ export default function FloatingAssistant() {
           style={{
             position: 'fixed',
             bottom: '6rem',
-            right: 'max(2rem, calc((100vw - 1200px) / 2 + 2rem))',
+            right: '2rem',
             left: 'auto',
             transform: 'none',
             width: '80px',
@@ -541,12 +541,13 @@ export default function FloatingAssistant() {
         }
         @media (max-width: 768px) {
           .floating-assistant-btn {
-            bottom: 5.5rem !important;
-            right: 1rem !important;
+            bottom: auto !important;
+            top: 60px !important;
+            right: 0.75rem !important;
             left: auto !important;
             transform: none !important;
-            width: 64px !important;
-            height: 64px !important;
+            width: 50px !important;
+            height: 50px !important;
           }
         }
       `}</style>
