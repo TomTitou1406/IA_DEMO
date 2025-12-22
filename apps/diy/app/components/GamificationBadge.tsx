@@ -90,12 +90,12 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
     if (newProgress >= 100) {
       if (currentLevel < LEVELS.length) {
         const newLevel = currentLevel + 1;
+        const newLevelData = LEVELS[newLevel - 1];
+        setLevelUpColor(newLevelData.color);
         setCurrentLevel(newLevel);
         setProgress(0);
         setShowLevelUp(true);
         setTimeout(() => setShowLevelUp(false), 2000);
-        const newLevelData = LEVELS[newLevel - 1];  // ← Couleur du niveau qu'on atteint
-        setLevelUpColor(newLevelData.color);        // ← Sauvegarder
         
         // Ajouter le bon du nouveau niveau
         const newLevelData = LEVELS[newLevel - 1];
