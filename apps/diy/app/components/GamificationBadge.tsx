@@ -218,11 +218,11 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
         </span>
       </div>
 
-      {/* Animation Level Up */}
+     {/* Animation Niveau débloqué */}
       {showLevelUp && (
         <div style={{
           position: 'absolute',
-          bottom: size + 10,
+          top: size + 10,
           left: '50%',
           transform: 'translateX(-50%)',
           background: 'linear-gradient(135deg, #fbbf24, #f59e0b)',
@@ -236,10 +236,10 @@ export default function GamificationBadge({ size = 44 }: GamificationBadgeProps)
           boxShadow: '0 2px 10px rgba(245, 158, 11, 0.5)',
           zIndex: 100
         }}>
-          🎉 LEVEL UP!
+          🎉 Niveau débloqué !
         </div>
       )}
-
+      
      {/* Tooltip amélioré */}
       {(showTooltip || tooltipLocked) && !showLevelUp && !isMobile && (
         <div 
