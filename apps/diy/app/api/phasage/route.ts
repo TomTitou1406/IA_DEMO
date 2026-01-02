@@ -141,6 +141,29 @@ async function loadPromptPhasage(): Promise<string> {
   return data.prompt_text;
 }
 
+// ==================== CHARGEMENT GRILLE COÛTS ====================
+
+async function loadGrilleCouts(): Promise<string> {
+  const { data, error } = await supabase
+    .from('grille_couts_expertise')
+    .select('code_expertise, libelle, unite_reference, mo_pro_min, mo_pro_max, mo_pro_moyen, description_unite')
+    .order('libelle');
+
+  if (error || !data || data.length === 0) {
+    console.warn('⚠️ Grille de coûts non trouvée');
+    return 'Grille de coûts non disponible - estimer au mieux.';
+  }
+
+  let grille = '| Expertise | Unité | Tarif MO Pro (min-max) | Tarif moyen |\n';
+  grille += '|-----------|-------|------------------------|-------------|\n';
+  
+  data.forEach((row) => {
+    grille += `| ${row.libelle} (${row.code_expertise}) | ${row.unite_reference} | ${row.mo_pro_min}€ - ${row.mo_pro_max}€ | ${row.mo_pro_moyen}€ |\n`;
+  });
+
+  return grille;
+}
+
 // ==================== ROUTE POST ====================
 
 export async function POST(request: NextRequest) {
@@ -309,14 +332,19 @@ export async function POST(request: NextRequest) {
     const reglesFormatted = formatReglesForPrompt(regles);
     console.log(`📝 ${regles.length} règles chargées`);
 
-    // 4. Charger le prompt
+    // 4. Charger la grille de coûts
+    const grilleCouts = await loadGrilleCouts();
+    console.log('💰 Grille de coûts chargée');
+
+    // 5. Charger le prompt
     let prompt = await loadPromptPhasage();
     console.log('📄 Prompt chargé');
 
-    // 5. Injecter le contexte, la config type et les règles
+    // 6. Injecter le contexte, la config type, les règles et la grille de coûts
     prompt = prompt.replace('{{CHANTIER_CONTEXT}}', chantierContext);
     prompt = prompt.replace('{{TYPE_CONFIG}}', typeConfigFormatted || 'Aucune configuration spécifique disponible pour ce type de projet.');
     prompt = prompt.replace('{{REGLES_PHASAGE}}', reglesFormatted);
+    prompt = prompt.replace('{{GRILLE_COUTS}}', grilleCouts);
 
     console.log('🤖 Appel OpenAI...');
 
@@ -330,7 +358,7 @@ export async function POST(request: NextRequest) {
       temperature: 0.2,
       max_tokens: 4000,
     });
-
+    
     const responseText = completion.choices[0]?.message?.content || '';
     console.log('✅ Réponse OpenAI reçue');
 
