@@ -1294,7 +1294,7 @@ export default function PhasagePage() {
                     }}>
                       {lot.cout_materiaux_estime || lot.couts?.materiaux_estime || lot.cout_estime || 0} €
                     </span>
-                    {(lot.economie_diy || lot.couts?.economie_diy) && (lot.economie_diy || lot.couts?.economie_diy) > 0 && (
+                    {(lot.economie_diy ?? lot.couts?.economie_diy ?? 0) > 0 && (
                       <span style={{
                         background: 'rgba(139, 92, 246, 0.15)',
                         padding: '0.2rem 0.5rem',
@@ -1302,7 +1302,7 @@ export default function PhasagePage() {
                         fontSize: '0.75rem',
                         color: '#8b5cf6'
                       }}>
-                        💰 -{lot.economie_diy || lot.couts?.economie_diy} €
+                        💰 -{lot.economie_diy ?? lot.couts?.economie_diy} €
                       </span>
                     )}
                     <span style={{
