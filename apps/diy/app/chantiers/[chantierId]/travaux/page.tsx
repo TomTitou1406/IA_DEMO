@@ -69,6 +69,10 @@ interface Travail {
     url: string;
     thumbnail?: string;
   } | null;
+  cout_estime?: number;
+  cout_materiaux_estime?: number;
+  cout_mo_pro_estime?: number;
+  economie_diy?: number;
 }
 
 // ==================== MODALE FORÇAGE ====================
@@ -504,6 +508,48 @@ export default function TravauxPage() {
                 {travail.description}
               </p>
             )}
+            {/* Tags coûts/économies */}
+            <div style={{ 
+              display: 'flex', 
+              flexWrap: 'wrap', 
+              gap: '0.4rem', 
+              marginTop: '0.5rem',
+              marginLeft: '40px'
+            }}>
+              {(travail.cout_materiaux_estime || travail.cout_estime) && (
+                <span style={{
+                  background: 'rgba(16, 185, 129, 0.15)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '12px',
+                  fontSize: '0.75rem',
+                  color: '#10b981'
+                }}>
+                  🛒 {travail.cout_materiaux_estime || travail.cout_estime} €
+                </span>
+              )}
+              {(travail.economie_diy ?? 0) > 0 && (
+                <span style={{
+                  background: 'rgba(139, 92, 246, 0.15)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '12px',
+                  fontSize: '0.75rem',
+                  color: '#8b5cf6'
+                }}>
+                  💰 -{travail.economie_diy} €
+                </span>
+              )}
+              {travail.duree_estimee_heures && (
+                <span style={{
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '12px',
+                  fontSize: '0.75rem',
+                  color: '#f59e0b'
+                }}>
+                  ⏱️ {travail.duree_estimee_heures}h
+                </span>
+              )}
+            </div>
             {travail.blocage_raison && (
               <p style={{ 
                 fontSize: '0.85rem', 
