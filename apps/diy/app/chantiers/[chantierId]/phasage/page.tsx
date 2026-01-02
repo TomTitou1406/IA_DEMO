@@ -556,7 +556,7 @@ export default function PhasagePage() {
           analyse: 'Brouillon chargé - Vous pouvez continuer votre phasage.',
           lots: brouillonData.lots,
           alertes: [],
-          budget_total_estime: brouillonData.lots.reduce((s: number, l: LotGenere) => s + (l.cout_estime || 0), 0),
+          budget_total_estime: brouillonData.lots.reduce((s: number, l: any) => s + (l.cout_materiaux_estime || l.cout_estime || 0), 0),
           duree_totale_estimee_heures: brouillonData.lots.reduce((s: number, l: LotGenere) => s + (l.duree_estimee_heures || 0), 0),
         });
         setLoading(false);
@@ -1281,8 +1281,19 @@ export default function PhasagePage() {
                       fontSize: '0.75rem',
                       color: '#10b981'
                     }}>
-                      {lot.cout_estime} €
+                      {lot.cout_materiaux_estime || lot.cout_estime || 0} €
                     </span>
+                    {lot.economie_diy && lot.economie_diy > 0 && (
+                      <span style={{
+                        background: 'rgba(139, 92, 246, 0.15)',
+                        padding: '0.2rem 0.5rem',
+                        borderRadius: '12px',
+                        fontSize: '0.75rem',
+                        color: '#8b5cf6'
+                      }}>
+                        💰 -{lot.economie_diy} €
+                      </span>
+                    )}
                     <span style={{
                       background: 'rgba(245, 158, 11, 0.15)',
                       padding: '0.2rem 0.5rem',
