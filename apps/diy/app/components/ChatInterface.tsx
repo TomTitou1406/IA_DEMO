@@ -1356,9 +1356,13 @@ export default function ChatInterface({
           
           chantier = await createChantier(createData);
           console.log('✅ Chantier créé:', chantier);
-        }
+        } else {
+          // MODE MODIFICATION - Ne changer que les champs nécessaires
+          const updateData: Record<string, any> = {
+            metadata: newMetadata
+          };
         
-        // Mettre à jour le titre seulement si explicitement fourni
+          // Mettre à jour le titre seulement si explicitement fourni
         if (recap.titre) {
           updateData.titre = recap.titre;
         } else if (recap.projet && !existingMetadata.description) {
