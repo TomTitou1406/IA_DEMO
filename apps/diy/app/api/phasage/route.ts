@@ -348,7 +348,7 @@ export async function POST(request: NextRequest) {
 
     console.log('🤖 Appel OpenAI...');
 
-    // 5. Appeler OpenAI
+    // 7. Appeler OpenAI
     const completion = await openai.chat.completions.create({
       model: 'gpt-4o-mini',
       messages: [
@@ -362,7 +362,7 @@ export async function POST(request: NextRequest) {
     const responseText = completion.choices[0]?.message?.content || '';
     console.log('✅ Réponse OpenAI reçue');
 
-    // 6. Parser le JSON
+    // 8. Parser le JSON
     let result: ResultatPhasage;
     try {
       const jsonMatch = responseText.match(/\{[\s\S]*\}/);
