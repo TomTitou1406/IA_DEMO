@@ -28,6 +28,13 @@ interface LotGenere {
   cout_materiaux_estime?: number;
   cout_mo_pro_estime?: number;
   economie_diy?: number;
+  couts?: { 
+    materiaux_estime?: number;
+    mo_pro_estime?: number;
+    total_si_pro?: number;
+    total_diy?: number;
+    economie_diy?: number;
+  };
   prerequis_stricts: number[];
   points_attention?: string;
   dependances_type: 'sequentiel' | 'parallele';
@@ -560,7 +567,7 @@ export default function PhasagePage() {
           analyse: 'Brouillon chargé - Vous pouvez continuer votre phasage.',
           lots: brouillonData.lots,
           alertes: [],
-          budget_total_estime: brouillonData.lots.reduce((s: number, l: any) => s + (l.cout_materiaux_estime || l.cout_estime || 0), 0),
+          budget_total_estime: brouillonData.lots.reduce((s: number, l: any) => s + (l.cout_materiaux_estime || l.couts?.materiaux_estime || l.cout_estime || 0), 0),
           duree_totale_estimee_heures: brouillonData.lots.reduce((s: number, l: LotGenere) => s + (l.duree_estimee_heures || 0), 0),
         });
         setLoading(false);
@@ -1285,9 +1292,9 @@ export default function PhasagePage() {
                       fontSize: '0.75rem',
                       color: '#10b981'
                     }}>
-                      {lot.cout_materiaux_estime || lot.cout_estime || 0} €
+                      {lot.cout_materiaux_estime || lot.couts?.materiaux_estime || lot.cout_estime || 0} €
                     </span>
-                    {lot.economie_diy && lot.economie_diy > 0 && (
+                    {(lot.economie_diy || lot.couts?.economie_diy) && (lot.economie_diy || lot.couts?.economie_diy) > 0 && (
                       <span style={{
                         background: 'rgba(139, 92, 246, 0.15)',
                         padding: '0.2rem 0.5rem',
@@ -1295,7 +1302,7 @@ export default function PhasagePage() {
                         fontSize: '0.75rem',
                         color: '#8b5cf6'
                       }}>
-                        💰 -{lot.economie_diy} €
+                        💰 -{lot.economie_diy || lot.couts?.economie_diy} €
                       </span>
                     )}
                     <span style={{
