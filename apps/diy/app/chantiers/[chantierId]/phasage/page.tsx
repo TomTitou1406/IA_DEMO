@@ -554,6 +554,7 @@ export default function PhasagePage() {
       if (brouillonData.hasBrouillon && brouillonData.lots?.length > 0) {
         // Charger le brouillon existant
         setLots(brouillonData.lots);
+        console.log('🔍 Lots chargés:', brouillonData.lots);
         setPhasage({
           ready_for_phasage: true,
           analyse: 'Brouillon chargé - Vous pouvez continuer votre phasage.',
