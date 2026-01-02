@@ -1341,25 +1341,22 @@ export default function ChatInterface({
      let chantier: any;
 
       // En mode création
-      if (!isModification) {
-        const createData = {
-          titre: titreShort || 'Mon chantier',
-          description: recap.projet,
-          budget_initial: recap.budget_max,
-          taille_projet: phase1Synthese?.taille_projet || 'moyen',
-          duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
-            ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
-            : undefined,
-          metadata: newMetadata
-        };
-        
-        chantier = await createChantier(createData);
-        console.log('✅ Chantier créé:', chantier);
-      } else {
-        // MODE MODIFICATION - Ne changer que les champs nécessaires
-        const updateData: Record<string, any> = {
-          metadata: newMetadata
-        };
+        if (!isModification) {
+          const createData = {
+            titre: titreShort || 'Mon chantier',
+            description: recap.projet,
+            budget_initial: recap.budget_max,
+            type_chantier: phase1Synthese?.type_projet || recap.type_piece || null,
+            taille_projet: phase1Synthese?.taille_projet || 'moyen',
+            duree_estimee_heures: (recap.disponibilite_heures_semaine && recap.deadline_semaines) 
+              ? recap.disponibilite_heures_semaine * recap.deadline_semaines 
+              : undefined,
+            metadata: newMetadata
+          };
+          
+          chantier = await createChantier(createData);
+          console.log('✅ Chantier créé:', chantier);
+        }
         
         // Mettre à jour le titre seulement si explicitement fourni
         if (recap.titre) {
