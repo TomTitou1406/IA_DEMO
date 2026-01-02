@@ -26,6 +26,10 @@ import {
   validerBrouillon,
   type ResultatPhasage 
 } from '@/app/lib/services/phasageService';
+import { 
+  getChantierTypeConfig, 
+  formatTypeConfigForAI 
+} from '@/app/lib/services/chantierTypeService';
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
@@ -33,10 +37,10 @@ const openai = new OpenAI({
 
 // ==================== CHARGEMENT CONTEXTE CHANTIER ====================
 
-async function loadChantierContext(chantierId: string): Promise<string> {
+async function loadChantierContext(chantierId: string): Promise<{ context: string; typeCode: string | null }> {
   const { data: chantier, error } = await supabase
     .from('chantiers')
-    .select('id, titre, description, statut, budget_initial, duree_estimee_heures, metadata')
+    .select('id, titre, description, statut, budget_initial, duree_estimee_heures, metadata, type_chantier')
     .eq('id', chantierId)
     .single();
 
@@ -46,7 +50,15 @@ async function loadChantierContext(chantierId: string): Promise<string> {
 
   const meta = chantier.metadata || {};
   
+  // Extraire le type de projet (priorité : type_chantier > metadata.type_piece > metadata.type_projet)
+  const typeCode = chantier.type_chantier || meta.type_piece || meta.type_projet || null;
+  
   let context = `## INFORMATIONS DU PROJET\n\n`;
+  
+  // Ajouter le type explicitement si connu
+  if (typeCode) {
+    context += `**Type de projet :** ${typeCode}\n`;
+  }
   context += `**Titre :** ${chantier.titre || 'Non défini'}\n`;
   context += `**Description :** ${chantier.description || 'Non définie'}\n\n`;
   
@@ -109,7 +121,7 @@ async function loadChantierContext(chantierId: string): Promise<string> {
     context += `\n**Contraintes particulières :** ${meta.contraintes}\n`;
   }
 
-  return context;
+  return { context, typeCode };
 }
 
 // ==================== CHARGEMENT PROMPT ====================
@@ -277,20 +289,33 @@ export async function POST(request: NextRequest) {
     console.log('🚀 Démarrage phasage pour chantier:', chantierId);
 
     // 1. Charger le contexte du chantier
-    const chantierContext = await loadChantierContext(chantierId);
-    console.log('📋 Contexte chantier chargé');
+    const { context: chantierContext, typeCode } = await loadChantierContext(chantierId);
+    console.log('📋 Contexte chantier chargé, type:', typeCode || 'non défini');
 
-    // 2. Charger les règles de phasage
+    // 2. Charger la configuration du type de projet
+    let typeConfigFormatted = '';
+    if (typeCode) {
+      const typeConfig = await getChantierTypeConfig(typeCode);
+      if (typeConfig) {
+        typeConfigFormatted = formatTypeConfigForAI(typeConfig);
+        console.log('🏷️ Config type chargée:', typeConfig.nom);
+      } else {
+        console.log('⚠️ Pas de config trouvée pour le type:', typeCode);
+      }
+    }
+
+    // 3. Charger les règles de phasage
     const regles = await loadReglesPhasage();
     const reglesFormatted = formatReglesForPrompt(regles);
-    console.log(`📏 ${regles.length} règles chargées`);
+    console.log(`📝 ${regles.length} règles chargées`);
 
-    // 3. Charger le prompt
+    // 4. Charger le prompt
     let prompt = await loadPromptPhasage();
-    console.log('📝 Prompt chargé');
+    console.log('📄 Prompt chargé');
 
-    // 4. Injecter le contexte et les règles
+    // 5. Injecter le contexte, la config type et les règles
     prompt = prompt.replace('{{CHANTIER_CONTEXT}}', chantierContext);
+    prompt = prompt.replace('{{TYPE_CONFIG}}', typeConfigFormatted || 'Aucune configuration spécifique disponible pour ce type de projet.');
     prompt = prompt.replace('{{REGLES_PHASAGE}}', reglesFormatted);
 
     console.log('🤖 Appel OpenAI...');
