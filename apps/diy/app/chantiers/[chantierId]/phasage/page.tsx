@@ -761,7 +761,7 @@ export default function PhasagePage() {
 
   // ==================== CALCULS ====================
 
-  const budgetTotal = lots.reduce((sum, l) => sum + (l.cout_estime || 0), 0);
+  const budgetTotal = lots.reduce((sum, l) => sum + (l.cout_materiaux_estime || l.couts?.materiaux_estime || l.cout_estime || 0), 0);
   const dureeTotal = lots.reduce((sum, l) => sum + (l.duree_estimee_heures || 0), 0);
 
   // ==================== RENDU ====================
@@ -1292,7 +1292,7 @@ export default function PhasagePage() {
                       fontSize: '0.75rem',
                       color: '#10b981'
                     }}>
-                      {lot.cout_materiaux_estime || lot.couts?.materiaux_estime || lot.cout_estime || 0} €
+                      🛒 {lot.cout_materiaux_estime || lot.couts?.materiaux_estime || lot.cout_estime || 0} €
                     </span>
                     {(lot.economie_diy ?? lot.couts?.economie_diy ?? 0) > 0 && (
                       <span style={{
