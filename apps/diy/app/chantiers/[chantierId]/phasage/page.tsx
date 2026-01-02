@@ -25,6 +25,9 @@ interface LotGenere {
   niveau_requis: 'debutant' | 'intermediaire' | 'confirme';
   duree_estimee_heures: number;
   cout_estime: number;
+  cout_materiaux_estime?: number;
+  cout_mo_pro_estime?: number;
+  economie_diy?: number;
   prerequis_stricts: number[];
   points_attention?: string;
   dependances_type: 'sequentiel' | 'parallele';
