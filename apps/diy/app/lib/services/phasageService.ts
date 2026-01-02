@@ -149,26 +149,37 @@ export async function saveLots(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     // Préparer les données
-    const travauxData = lots.map((lot: any) => ({
-      chantier_id: chantierId,
-      titre: lot.titre,
-      description: lot.description,
-      ordre: lot.ordre,
-      niveau: 'lot',
-      code_expertise: lot.code_expertise,
-      niveau_requis: lot.niveau_requis,
-      duree_estimee_heures: lot.duree_estimee_heures,
-      cout_estime: lot.cout_estime,
-      prerequis_stricts: lot.prerequis_stricts || [],
-      points_attention: lot.points_attention || null,
-      statut: statut,
-      progression: 0,
-      forcages: lot.forcages || { forcages: [] },  // ✅ AJOUTÉ
-    }));
+    const travauxData = lots.map((lot: any) => {
+      // Extraire le coût estimé (nouveau format ou ancien)
+      let coutEstime = null;
+      if (lot.couts && typeof lot.couts === 'object') {
+        // Nouveau format : prendre total_diy (coût pour le bricoleur = matériaux)
+        coutEstime = lot.couts.total_diy || lot.couts.materiaux_estime || null;
+      } else if (lot.cout_estime !== undefined && lot.cout_estime !== null) {
+        // Ancien format
+        coutEstime = lot.cout_estime;
+      }
+
+      return {
+        chantier_id: chantierId,
+        titre: lot.titre,
+        description: lot.description,
+        ordre: lot.ordre,
+        niveau: 'lot',
+        code_expertise: lot.code_expertise,
+        niveau_requis: lot.niveau_requis,
+        duree_estimee_heures: lot.duree_estimee_heures,
+        cout_estime: coutEstime,
+        prerequis_stricts: lot.prerequis_stricts || [],
+        points_attention: lot.points_attention || null,
+        statut: statut,
+        progression: 0,
+        forcages: lot.forcages || { forcages: [] },
+      };
+    });
 
     // Insérer les lots
     const { error } = await supabase.from('travaux').insert(travauxData);
-
     if (error) throw error;
 
     // Mettre à jour le statut du chantier seulement si on valide (pas brouillon)
