@@ -366,7 +366,7 @@ export default function ChantierEditPage() {
       }
 
       // Filtrer les champs non pertinents selon le contexte
-      const reseaux = metadata.reseaux || {};
+      const reseaux = (metadata.reseaux || {}) as Record<string, any>;
       
       const champsAExclure: string[] = [];
       
