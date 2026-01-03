@@ -371,17 +371,17 @@ export default function ChantierEditPage() {
       const champsAExclure: string[] = [];
       
       // Pas de question électricité si pas de travaux électriques
-      if (reseaux.electricite_a_refaire === false) {
+      if ((reseaux as any).electricite_a_refaire === false) {
         champsAExclure.push('tableau_electrique_proche', 'tableau_electrique_etat', 'norme_nfc15100', 'consuel_necessaire', 'nb_circuits_a_creer');
       }
       
       // Pas de question ventilation si déjà existante ou pas à prévoir
-      if (metadata.ventilation_existante === true || reseaux.ventilation_a_prevoir === false) {
+      if ((metadata as any).ventilation_existante === true || (reseaux as any).ventilation_a_prevoir === false) {
         champsAExclure.push('ventilation_requise', 'ventilation_prevue');
       }
       
       // Pas de question plomberie si pas de travaux plomberie
-      if (reseaux.plomberie_a_refaire === false) {
+      if ((reseaux as any).plomberie_a_refaire === false) {
         champsAExclure.push('points_eau_a_creer', 'evacuations_a_creer', 'materiau_canalisations');
       }
       
