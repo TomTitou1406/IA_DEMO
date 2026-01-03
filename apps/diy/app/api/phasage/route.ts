@@ -69,7 +69,7 @@ async function loadChantierContext(chantierId: string): Promise<{ context: strin
   // Budget & Planning
   const budget = chantier.budget_initial || meta.budget_max;
   if (budget) {
-    context += `**Budget :** ${budget}€ ${meta.budget_inclut_materiaux ? '(matériaux inclus)' : '(hors matériaux)'}\n`;
+    context += `**Budget :** ${budget}€ ${meta.budget_inclut_materiaux ? '(équipements inclus)' : '(hors équipements)'}\n`;
   }
   if (meta.disponibilite_heures_semaine) {
     context += `**Disponibilité :** ${meta.disponibilite_heures_semaine}h/semaine\n`;
