@@ -332,7 +332,7 @@ export default function RecapModal({
                   <RecapChip 
                     icon="💰" 
                     value={`${recap.budget_max.toLocaleString()} €`}
-                    subValue={recap.budget_inclut_materiaux ? 'matériaux inclus' : 'hors matériaux'}
+                    subValue={recap.budget_inclut_materiaux ? 'équipements inclus' : 'hors équipements'}
                   />
                 )}
                 {recap.disponibilite_heures_semaine && (
