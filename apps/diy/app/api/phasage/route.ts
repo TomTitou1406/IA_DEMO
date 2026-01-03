@@ -126,10 +126,17 @@ async function loadChantierContext(chantierId: string): Promise<{ context: strin
 
 // ==================== CHARGEMENT PROMPT ====================
 
-async function loadPromptPhasage(): Promise<string> {
+interface PromptConfig {
+  prompt_text: string;
+  model: string;
+  temperature: number;
+  max_tokens: number;
+}
+
+async function loadPromptPhasage(): Promise<PromptConfig> {
   const { data, error } = await supabase
     .from('prompts_library')
-    .select('prompt_text')
+    .select('prompt_text, model, temperature, max_tokens')
     .eq('code', 'system_phasage')
     .eq('est_actif', true)
     .single();
@@ -138,7 +145,12 @@ async function loadPromptPhasage(): Promise<string> {
     throw new Error('Prompt system_phasage non trouvé');
   }
 
-  return data.prompt_text;
+  return {
+    prompt_text: data.prompt_text,
+    model: data.model || 'gpt-4o-mini',
+    temperature: data.temperature ?? 0.3,
+    max_tokens: data.max_tokens || 4000
+  };
 }
 
 // ==================== CHARGEMENT GRILLE COÛTS ====================
@@ -336,9 +348,10 @@ export async function POST(request: NextRequest) {
     const grilleCouts = await loadGrilleCouts();
     console.log('💰 Grille de coûts chargée');
 
-    // 5. Charger le prompt
-    let prompt = await loadPromptPhasage();
-    console.log('📄 Prompt chargé');
+    // 5. Charger le prompt et ses paramètres
+    const promptConfig = await loadPromptPhasage();
+    let prompt = promptConfig.prompt_text;
+    console.log(`📄 Prompt chargé (model: ${promptConfig.model}, temp: ${promptConfig.temperature})`);
 
     // 6. Injecter le contexte, la config type, les règles et la grille de coûts
     prompt = prompt.replace('{{CHANTIER_CONTEXT}}', chantierContext);
@@ -350,13 +363,13 @@ export async function POST(request: NextRequest) {
 
     // 7. Appeler OpenAI
     const completion = await openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: promptConfig.model,
       messages: [
         { role: 'system', content: prompt },
         { role: 'user', content: 'Génère le phasage de ce projet en JSON.' }
       ],
-      temperature: 0.2,
-      max_tokens: 4000,
+      temperature: promptConfig.temperature,
+      max_tokens: promptConfig.max_tokens,
     });
     
     const responseText = completion.choices[0]?.message?.content || '';
