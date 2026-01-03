@@ -371,42 +371,8 @@ export default function ChantierEditPage() {
       }
   
       // 3. Construire le contexte pour l'assistant
-      const champsLabels: Record<string, string> = {
-        hauteur_sous_plafond: 'Hauteur sous plafond',
-        hauteur_exacte: 'Hauteur exacte',
-        isolation_type: 'Type d\'isolation',
-        gaines_techniques: 'Gaines techniques à passer',
-        ouvertures_portes: 'Portes ou ouvertures prévues',
-        fixation_plafond: 'Type de fixation au plafond',
-        fixation_plafond_type: 'Type de fixation au plafond',
-        points_eau_existants: 'Points d\'eau existants',
-        evacuation_existante: 'Évacuation existante',
-        ventilation_existante: 'Ventilation existante',
-        tableau_electrique_proche: 'Proximité tableau électrique',
-        nature_terrain: 'Nature du terrain',
-        pente_evacuation: 'Pente pour évacuation',
-        dalle_existante: 'Dalle existante',
-        acces_materiaux: 'Accès pour matériaux',
-        revetement_choisi: 'Revêtement choisi',
-        longueur_totale: 'Longueur totale',
-        isolation_phonique_requise: 'Isolation phonique requise',
-        nombre_prises_souhaitees: 'Nombre de prises souhaitées',
-        placard_integre: 'Placard intégré prévu',
-        cheminee_existante: 'Cheminée existante',
-        points_lumineux_plafond: 'Points lumineux au plafond',
-        hauteur_faitage: 'Hauteur au faîtage',
-        type_charpente: 'Type de charpente',
-        isolation_existante: 'Isolation existante',
-        acces_combles: 'Accès aux combles',
-        plancher_existant: 'Plancher existant',
-        fenetre_toit_prevue: 'Fenêtre de toit prévue',
-        electricite_existante: 'Électricité existante',
-        ventilation_requise: 'Ventilation requise',
-        porte_type: 'Type de porte',
-        point_eau_prevu: 'Point d\'eau prévu',
-        arrivee_gaz: 'Arrivée de gaz',
-        hotte_evacuation_type: 'Type d\'évacuation hotte',
-      };
+      // Labels chargés depuis la config type (BDD)
+      const champsLabels = typeConfig?.champs_labels || {};
   
       const manquantsLabels = manquants.map(c => champsLabels[c] || c.replace(/_/g, ' '));
       const questionsSpecifiques = typeConfig.questions_specifiques || [];
@@ -427,9 +393,13 @@ export default function ChantierEditPage() {
   ${JSON.stringify(metadata, null, 2)}
   
   COMPORTEMENT :
+  - Pose UNIQUEMENT des questions sur les INFORMATIONS MANQUANTES listées ci-dessus
+  - NE POSE JAMAIS de question si l'information existe déjà dans DONNÉES DÉJÀ CONNUES
+  - NE POSE PAS de question sur l'électricité si electricite_a_refaire = false
+  - NE POSE PAS de question sur la ventilation si ventilation_existante = true ou ventilation_a_prevoir = false
+  - NE POSE PAS de question sur la plomberie si toutes les infos plomberie sont déjà présentes
   - Pose 2-3 questions max par message, de manière conversationnelle
-  - Adapte les questions selon ce qui est déjà connu
-  - Quand TOUTES les infos manquantes sont collectées, génère ce JSON :
+  - Quand TOUTES les INFORMATIONS MANQUANTES sont collectées, génère ce JSON :
   
   \`\`\`json
   {
@@ -449,11 +419,11 @@ export default function ChantierEditPage() {
       setChampsManquants(manquants);
       setPrePhasageContext(context);
   
-      return { ready: false, context, manquants };
+      return { ready: false, context, manquants, typeConfig };
   
     } catch (err) {
       console.error('Erreur vérification pré-phasage:', err);
-      return { ready: true, context: '', manquants: [] };
+      return { ready: true, context: '', manquants: [], typeConfig: null };
     }
   };
 
@@ -470,29 +440,24 @@ export default function ChantierEditPage() {
     const isReady = typeof result === 'boolean' ? result : result.ready;
     const context = typeof result === 'boolean' ? '' : result.context;
     const manquants = typeof result === 'boolean' ? [] : result.manquants;
+    const typeConfig = typeof result === 'boolean' ? null : result.typeConfig;
     
     if (isReady) {
       router.push(`/chantiers/${chantierId}/phasage`);
     } else {
       setIsQualifying(false);
       // Construire un message d'accueil avec les premières questions
-      const champsLabels: Record<string, string> = {
-        hauteur_exacte: 'la hauteur exacte de la cloison',
-        hauteur_sous_plafond: 'la hauteur sous plafond',
-        longueur_totale: 'la longueur totale',
-        isolation_type: 'le type d\'isolation souhaité (phonique, thermique, aucune)',
-        gaines_techniques: 'les gaines à passer (élec, eau...)',
-        ouvertures_portes: 'les portes ou ouvertures prévues',
-        fixation_plafond_type: 'le type de fixation au plafond',
-        points_eau_existants: 'les points d\'eau existants',
-        evacuation_existante: 'l\'évacuation existante',
-        ventilation_existante: 'la ventilation',
-      };
+      // Labels depuis la config type (BDD) + transformation conversationnelle
+      const champsLabelsFromDB = typeConfig?.champs_labels || {};
   
       // Prendre les 2-3 premiers champs manquants pour les questions
       const premieresQuestions = manquants
         .slice(0, 3)
-        .map(c => champsLabels[c] || c.replace(/_/g, ' '));
+        .map(c => {
+          const label = champsLabelsFromDB[c] || c.replace(/_/g, ' ');
+          // Transformer en format conversationnel (ajouter article)
+          return label.toLowerCase();
+        });
   
       const welcomeMsg = `🔍 Avant de générer les lots de travaux, j'ai besoin de quelques précisions :\n\n• ${premieresQuestions.join('\n• ')} ?`;
   
