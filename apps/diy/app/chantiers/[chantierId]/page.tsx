@@ -917,7 +917,7 @@ export default function ChantierEditPage() {
                       icon="💰" 
                       label="Budget" 
                       value={`${chantier.budget_initial.toLocaleString()} €`}
-                      subValue={meta.budget_inclut_materiaux ? '(matériaux inclus)' : ''}
+                      subValue={meta.budget_inclut_materiaux ? '(équipements inclus)' : ''}
                     />
                   )}
                   {meta.disponibilite_heures_semaine && (
