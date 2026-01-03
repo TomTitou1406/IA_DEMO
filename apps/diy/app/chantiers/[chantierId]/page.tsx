@@ -323,7 +323,7 @@ export default function ChantierEditPage() {
   };
 
   // Vérifier les prérequis avant phasage
-  const checkPrePhasageRequirements = async (): Promise<boolean | { ready: boolean; context: string; manquants: string[] }> => {
+  const checkPrePhasageRequirements = async (): Promise<boolean | { ready: boolean; context: string; manquants: string[]; typeConfig: any }> => {
     if (!chantier) return { ready: true, context: '', manquants: [] };
   
     try {
