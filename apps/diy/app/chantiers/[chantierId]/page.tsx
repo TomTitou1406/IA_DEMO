@@ -364,8 +364,35 @@ export default function ChantierEditPage() {
           manquants.push(champ);
         }
       }
+
+      // Filtrer les champs non pertinents selon le contexte
+      const reseaux = metadata.reseaux || {};
+      
+      const champsAExclure: string[] = [];
+      
+      // Pas de question électricité si pas de travaux électriques
+      if (reseaux.electricite_a_refaire === false) {
+        champsAExclure.push('tableau_electrique_proche', 'tableau_electrique_etat', 'norme_nfc15100', 'consuel_necessaire', 'nb_circuits_a_creer');
+      }
+      
+      // Pas de question ventilation si déjà existante ou pas à prévoir
+      if (metadata.ventilation_existante === true || reseaux.ventilation_a_prevoir === false) {
+        champsAExclure.push('ventilation_requise', 'ventilation_prevue');
+      }
+      
+      // Pas de question plomberie si pas de travaux plomberie
+      if (reseaux.plomberie_a_refaire === false) {
+        champsAExclure.push('points_eau_a_creer', 'evacuations_a_creer', 'materiau_canalisations');
+      }
+      
+      // Appliquer le filtre
+      const manquantsFiltres = manquants.filter(champ => !champsAExclure.includes(champ));
+      
+      console.log('🔍 Champs manquants avant filtre:', manquants);
+      console.log('🔍 Champs exclus:', champsAExclure.filter(c => manquants.includes(c)));
+      console.log('🔍 Champs manquants après filtre:', manquantsFiltres);
   
-      if (manquants.length === 0) {
+      if (manquantsFiltres.length === 0) {
         console.log('✅ Tous les champs critiques sont renseignés');
         return { ready: true, context: '', manquants: [], typeConfig: null };
       }
@@ -374,7 +401,7 @@ export default function ChantierEditPage() {
       // Labels chargés depuis la config type (BDD)
       const champsLabels = typeConfig?.champs_labels || {};
   
-      const manquantsLabels = manquants.map(c => champsLabels[c] || c.replace(/_/g, ' '));
+      const manquantsLabels = manquantsFiltres.map(c => champsLabels[c] || c.replace(/_/g, ' '));
       const questionsSpecifiques = typeConfig.questions_specifiques || [];
   
       const context = `
@@ -415,11 +442,11 @@ export default function ChantierEditPage() {
   === FIN CONTEXTE PRÉ-PHASAGE ===
       `.trim();
   
-      console.log('⚠️ Champs manquants pour phasage:', manquants);
-      setChampsManquants(manquants);
+      console.log('⚠️ Champs manquants pour phasage:', manquantsFiltres);
+      setChampsManquants(manquantsFiltres);
       setPrePhasageContext(context);
   
-      return { ready: false, context, manquants, typeConfig };
+      return { ready: false, context, manquants: manquantsFiltres, typeConfig };
   
     } catch (err) {
       console.error('Erreur vérification pré-phasage:', err);
