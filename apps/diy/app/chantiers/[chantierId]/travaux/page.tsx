@@ -516,7 +516,17 @@ export default function TravauxPage() {
               marginTop: '0.5rem',
               marginLeft: '40px'
             }}>
-              {(travail.cout_materiaux_estime || travail.cout_estime) && (
+              {travail.statut === 'à_venir' ? (
+                <span style={{
+                  background: 'rgba(107, 114, 128, 0.15)',
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '12px',
+                  fontSize: '0.75rem',
+                  color: '#9ca3af'
+                }}>
+                  🛒 À calculer
+                </span>
+              ) : (travail.cout_materiaux_estime || travail.cout_estime) ? (
                 <span style={{
                   background: 'rgba(16, 185, 129, 0.15)',
                   padding: '0.2rem 0.5rem',
@@ -526,7 +536,7 @@ export default function TravauxPage() {
                 }}>
                   🛒 {travail.cout_materiaux_estime || travail.cout_estime} €
                 </span>
-              )}
+              ) : null}
               {(travail.economie_diy ?? 0) > 0 && (
                 <span style={{
                   background: 'rgba(139, 92, 246, 0.15)',
