@@ -324,7 +324,7 @@ export default function ChantierEditPage() {
 
   // Vérifier les prérequis avant phasage
   const checkPrePhasageRequirements = async (): Promise<boolean | { ready: boolean; context: string; manquants: string[]; typeConfig: any }> => {
-    if (!chantier) return { ready: true, context: '', manquants: [] };
+    if (!chantier) return { ready: true, context: '', manquants: [], typeConfig: null };
   
     try {
       // 1. Qualifier le type du chantier (via API)
@@ -337,7 +337,7 @@ export default function ChantierEditPage() {
   
       if (!qualifyResponse.ok) {
         console.error('❌ Erreur qualification type');
-        return { ready: true, context: '', manquants: [] };
+        return { ready: true, context: '', manquants: [], typeConfig: null };
       }
   
       const { code, isNew, typeConfig } = await qualifyResponse.json();
@@ -351,7 +351,7 @@ export default function ChantierEditPage() {
       // 2. Vérifier les champs critiques manquants
       if (!typeConfig?.champs_critiques_phasage?.length) {
         console.log('✅ Pas de champs critiques définis, phasage direct');
-        return { ready: true, context: '', manquants: [] };
+        return { ready: true, context: '', manquants: [], typeConfig: null };
       }
   
       const champsCritiques: string[] = typeConfig.champs_critiques_phasage;
@@ -367,7 +367,7 @@ export default function ChantierEditPage() {
   
       if (manquants.length === 0) {
         console.log('✅ Tous les champs critiques sont renseignés');
-        return { ready: true, context: '', manquants: [] };
+        return { ready: true, context: '', manquants: [], typeConfig: null };
       }
   
       // 3. Construire le contexte pour l'assistant
