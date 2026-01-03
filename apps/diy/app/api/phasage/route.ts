@@ -104,6 +104,11 @@ async function loadChantierContext(chantierId: string): Promise<{ context: strin
       context += `**Réseaux :** ${reseauxList.join(', ')}\n`;
     }
   }
+
+  // Équipements existants à déposer (info cruciale pour rénovation)
+  if (meta.points_eau_existants) {
+    context += `**Équipements existants à retirer :** ${meta.points_eau_existants}\n`;
+  }
   
   // Compétences du bricoleur
   if (meta.competences_ok && meta.competences_ok.length > 0) {
