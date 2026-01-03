@@ -471,7 +471,7 @@ Aucune donnée existante.`
     // Budget & Planning
     const budget = chantier.budget_initial || meta.budget_max;
     if (budget) {
-      contextForAI += `**Budget :** ${budget}€ ${meta.budget_inclut_materiaux ? '(équipements inclus)' : '(hors équipements)'}\n
+      contextForAI += `**Budget :** ${budget}€ ${meta.budget_inclut_materiaux ? '(équipements inclus)' : '(hors équipements)'}\n`;
     }
     if (meta.disponibilite_heures_semaine) {
       contextForAI += `**Disponibilité :** ${meta.disponibilite_heures_semaine}h/semaine\n`;
