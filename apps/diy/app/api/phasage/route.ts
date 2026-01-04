@@ -158,6 +158,102 @@ async function loadPromptPhasage(): Promise<PromptConfig> {
   };
 }
 
+// ==================== CHARGEMENT PROMPT AUTO-CONTRÔLE ====================
+
+async function loadPromptAutocontrole(): Promise<PromptConfig> {
+  const { data, error } = await supabase
+    .from('prompts_library')
+    .select('prompt_text, model, temperature, max_tokens')
+    .eq('code', 'system_autocontrole_phasage')
+    .eq('est_actif', true)
+    .single();
+
+  if (error || !data) {
+    console.warn('⚠️ Prompt system_autocontrole_phasage non trouvé, skip auto-contrôle');
+    return null as any; // Sera géré dans le flux principal
+  }
+
+  return {
+    prompt_text: data.prompt_text,
+    model: data.model || 'gpt-4o',
+    temperature: data.temperature ?? 0.3,
+    max_tokens: data.max_tokens || 4000
+  };
+}
+
+// ==================== AUTO-CONTRÔLE PHASAGE ====================
+
+async function autoControlePhasage(
+  lotsGeneres: any[], 
+  contextResume: string,
+  typeCode: string | null
+): Promise<{ lots: any[]; corrections: string[] }> {
+  
+  // 1. Charger le prompt d'auto-contrôle
+  const promptConfig = await loadPromptAutocontrole();
+  
+  if (!promptConfig) {
+    console.log('⏭️ Auto-contrôle désactivé (prompt non trouvé)');
+    return { lots: lotsGeneres, corrections: [] };
+  }
+
+  console.log('🔍 Démarrage auto-contrôle phasage...');
+
+  // 2. Préparer le contexte résumé pour l'audit
+  let contextAutocontrole = `Type de projet : ${typeCode || 'Non défini'}\n`;
+  contextAutocontrole += contextResume;
+
+  // 3. Préparer les lots en JSON
+  const lotsJSON = JSON.stringify(lotsGeneres, null, 2);
+
+  // 4. Construire le prompt final
+  let prompt = promptConfig.prompt_text;
+  prompt = prompt.replace('{{AUTOCONTROLE_CONTEXT}}', contextAutocontrole);
+  prompt = prompt.replace('{{LOTS_BRUTS}}', lotsJSON);
+
+  // 5. Appeler OpenAI
+  try {
+    const completion = await openai.chat.completions.create({
+      model: promptConfig.model,
+      messages: [
+        { role: 'system', content: prompt },
+        { role: 'user', content: 'Audite et corrige ce phasage. Retourne le JSON des lots corrigés.' }
+      ],
+      temperature: promptConfig.temperature,
+      max_tokens: promptConfig.max_tokens,
+    });
+
+    const responseText = completion.choices[0]?.message?.content || '';
+    
+    // 6. Parser la réponse JSON
+    const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      console.warn('⚠️ Auto-contrôle : pas de JSON trouvé, on garde les lots originaux');
+      return { lots: lotsGeneres, corrections: [] };
+    }
+
+    const result = JSON.parse(jsonMatch[0]);
+    
+    // 7. Extraire les lots audités et les corrections
+    const lotsAudites = result.lots_audites || result.lots || lotsGeneres;
+    const corrections = result.corrections_appliquees || [];
+
+    if (corrections.length > 0) {
+      console.log(`✅ Auto-contrôle terminé : ${corrections.length} correction(s)`);
+      corrections.forEach((c: string) => console.log(`   → ${c}`));
+    } else {
+      console.log('✅ Auto-contrôle terminé : aucune correction nécessaire');
+    }
+
+    return { lots: lotsAudites, corrections };
+
+  } catch (error) {
+    console.error('❌ Erreur auto-contrôle:', error);
+    // En cas d'erreur, on retourne les lots originaux (fail-safe)
+    return { lots: lotsGeneres, corrections: [] };
+  }
+}
+
 // ==================== CHARGEMENT GRILLE COÛTS ====================
 
 async function loadGrilleCouts(): Promise<string> {
@@ -397,11 +493,27 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(`🎉 Phasage généré : ${result.lots?.length || 0} lots`);
+   console.log(`🎉 Phasage généré : ${result.lots?.length || 0} lots`);
+
+    // 9. Auto-contrôle du phasage
+    const { lots: lotsAudites, corrections } = await autoControlePhasage(
+      result.lots || [],
+      chantierContext,
+      typeCode
+    );
+
+    // 10. Remplacer les lots par les lots audités
+    result.lots = lotsAudites;
+
+    console.log(`🏁 Phasage final : ${result.lots?.length || 0} lots`);
 
     return NextResponse.json({
       success: true,
-      phasage: result
+      phasage: result,
+      autocontrole: {
+        corrections_appliquees: corrections,
+        nb_corrections: corrections.length
+      }
     });
 
   } catch (error) {
