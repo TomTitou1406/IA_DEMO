@@ -1308,7 +1308,7 @@ export default function Navbar({ className }: NavbarProps) {
         <HelpButton mobile />
       </nav>
 
-      <div style={{ height: isMobile ? '36px' : '50px' }} />
+      <div style={{ height: isMobile ? '30px' : '42px' }} />
       {isMobile && <div style={{ height: '65px' }} />}
 
       {showCartModal && <CartModal />}
