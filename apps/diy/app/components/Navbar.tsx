@@ -1232,7 +1232,7 @@ export default function Navbar({ className }: NavbarProps) {
           left: 0,
           right: 0,
           zIndex: 1000,
-          padding: '0.5rem 1rem',
+          padding: '0.4rem 1rem',
           background: isScrolled ? 'rgba(10, 10, 10, 0.9)' : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
@@ -1240,9 +1240,10 @@ export default function Navbar({ className }: NavbarProps) {
           transition: 'all 0.3s ease',
           display: isMobile ? 'flex' : 'none',
           alignItems: 'center',
-          justifyContent: 'center',
+          justifyContent: 'space-between',
         }}
       >
+        {/* Logo gauche */}
         <button
           onClick={() => router.push('/')}
           style={{
@@ -1271,6 +1272,29 @@ export default function Navbar({ className }: NavbarProps) {
             Papi<span style={{ color: '#f97316' }}>Bricole</span>
           </span>
         </button>
+
+        {/* Droite : Gamification + Compte */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <GamificationBadge size={32} />
+          <button
+            onClick={() => router.push('/compte')}
+            style={{
+              width: '36px',
+              height: '36px',
+              borderRadius: '50%',
+              background: 'rgba(255,255,255,0.1)',
+              border: '2px solid rgba(255,255,255,0.2)',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '1.1rem',
+              transition: 'all 0.2s'
+            }}
+          >
+            👤
+          </button>
+        </div>
       </header>
 
       <nav
@@ -1294,18 +1318,7 @@ export default function Navbar({ className }: NavbarProps) {
         {navItems.map(item => (
           <NavItemMobile key={item.id} item={item} />
         ))}
-        <AccountButton mobile />
         
-        {/* Badge Gamification - Mobile */}
-        <div style={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          alignItems: 'center',
-          flex: 1
-        }}>
-          <GamificationBadge size={28} />
-        </div>
-
         {/* Panier - Mobile */}
         <CartButton mobile />
         
