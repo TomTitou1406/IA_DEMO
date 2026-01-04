@@ -32,6 +32,15 @@ export default function Navbar({ className }: NavbarProps) {
   const [showHelpModal, setShowHelpModal] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const [bonsCount, setBonsCount] = useState(0);
+  
+  // État pour le panier global
+  const [showCartModal, setShowCartModal] = useState(false);
+  const [cartData, setCartData] = useState<{
+    articles: any[];
+    totalGeneral: number;
+    lotsCount: number;
+    chantiersCount: number;
+  }>({ articles: [], totalGeneral: 0, lotsCount: 0, chantiersCount: 0 });
 
   useEffect(() => {
     loadCounts();
@@ -81,15 +90,39 @@ export default function Navbar({ className }: NavbarProps) {
       console.log('Compteur favoris non disponible');
     }
   };
+
+  const loadCartData = async () => {
+    try {
+      const res = await fetch('/api/panier/global');
+      if (res.ok) {
+        const data = await res.json();
+        setCartData({
+          articles: data.articles || [],
+          totalGeneral: data.totalGeneral || 0,
+          lotsCount: data.lotsCount || 0,
+          chantiersCount: data.chantiersCount || 0
+        });
+      }
+    } catch (e) {
+      console.log('Panier global non disponible');
+    }
+  };
   
   useEffect(() => {
     loadCounts();
     loadFavoritesCount();
+    loadCartData();
     
     const handleUpdate = () => loadFavoritesCount();
     window.addEventListener('favoritesUpdated', handleUpdate);
     
-    return () => window.removeEventListener('favoritesUpdated', handleUpdate);
+    const handleCartUpdate = () => loadCartData();
+    window.addEventListener('cartUpdated', handleCartUpdate);
+    
+    return () => {
+      window.removeEventListener('favoritesUpdated', handleUpdate);
+      window.removeEventListener('cartUpdated', handleCartUpdate);
+    };
   }, []);
 
   useEffect(() => {
@@ -314,133 +347,78 @@ export default function Navbar({ className }: NavbarProps) {
   };
 
   const CartButton = ({ mobile = false }: { mobile?: boolean }) => {
-    const [showTooltip, setShowTooltip] = useState(false);
+    const hasItems = cartData.totalGeneral > 0;
     
     return (
-      <div 
-        style={{ position: 'relative', display: 'inline-block' }}
-        onMouseEnter={() => setShowTooltip(true)}
-        onMouseLeave={() => setShowTooltip(false)}
+      <button
+        onClick={() => setShowCartModal(true)}
+        style={{
+          display: 'flex',
+          flexDirection: mobile ? 'column' : 'row',
+          alignItems: 'center',
+          justifyContent: 'center',
+          gap: mobile ? '0.2rem' : '0.4rem',
+          padding: mobile ? '0.4rem' : '0.5rem 0.75rem',
+          borderRadius: mobile ? '0' : '10px',
+          border: hasItems ? '1px solid rgba(16, 185, 129, 0.4)' : 'none',
+          background: hasItems ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+          color: hasItems ? '#10b981' : 'rgba(255,255,255,0.7)',
+          fontSize: mobile ? '0.6rem' : '0.85rem',
+          fontWeight: hasItems ? '600' : '500',
+          cursor: 'pointer',
+          position: 'relative',
+          transition: 'all 0.3s ease',
+          flex: mobile ? 1 : 'unset',
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
+          e.currentTarget.style.color = '#10b981';
+          e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.background = hasItems ? 'rgba(16, 185, 129, 0.1)' : 'transparent';
+          e.currentTarget.style.color = hasItems ? '#10b981' : 'rgba(255,255,255,0.7)';
+          e.currentTarget.style.boxShadow = 'none';
+        }}
       >
-        <button
-          style={{
-            display: 'flex',
-            flexDirection: mobile ? 'column' : 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-            gap: mobile ? '0.2rem' : '0.4rem',
-            padding: mobile ? '0.4rem' : '0.5rem 0.75rem',
-            borderRadius: mobile ? '0' : '10px',
-            border: 'none',
-            background: 'transparent',
-            color: 'rgba(255,255,255,0.7)',
-            fontSize: mobile ? '0.6rem' : '0.85rem',
-            fontWeight: '500',
-            cursor: 'pointer',
-            position: 'relative',
-            transition: 'all 0.3s ease',
-            flex: mobile ? 1 : 'unset',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-            e.currentTarget.style.color = '#10b981';
-            e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent';
-            e.currentTarget.style.color = 'rgba(255,255,255,0.7)';
-            e.currentTarget.style.boxShadow = 'none';
-          }}
-        >
-          <span style={{ 
-            fontSize: mobile ? '1.3rem' : '1.1rem',
-            transition: 'transform 0.2s ease'
-          }}>
-            🛒
-          </span>
-          {!mobile && <span>Panier</span>}
-          {mobile && <span>Panier</span>}
-        </button>
-
-        {/* Tooltip Panier */}
-        {showTooltip && !mobile && (
-          <div style={{
-            position: 'absolute',
-            top: '100%',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            marginTop: '12px',
-            background: 'linear-gradient(135deg, rgba(20, 20, 20, 0.98), rgba(30, 30, 30, 0.98))',
-            border: '2px solid #10b981',
-            borderRadius: '12px',
-            padding: '0.75rem 1rem',
-            minWidth: '240px',
-            zIndex: 100,
-            boxShadow: '0 8px 32px rgba(0,0,0,0.5), 0 0 20px rgba(16, 185, 129, 0.3)',
-          }}>
-            {/* Flèche vers le haut */}
-            <div style={{
+        <span style={{ 
+          fontSize: mobile ? '1.3rem' : '1.1rem',
+          position: 'relative'
+        }}>
+          🛒
+          {hasItems && (
+            <span style={{
               position: 'absolute',
-              top: -8,
-              left: '50%',
-              transform: 'translateX(-50%)',
-              width: 0,
-              height: 0,
-              borderLeft: '8px solid transparent',
-              borderRight: '8px solid transparent',
-              borderBottom: '8px solid #10b981',
-            }} />
-
-            {/* Contenu */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
+              top: '-6px',
+              right: '-10px',
+              background: '#10b981',
+              color: 'white',
+              fontSize: '0.55rem',
+              fontWeight: '700',
+              padding: '1px 4px',
+              borderRadius: '6px',
+              minWidth: '14px',
+              textAlign: 'center',
+              boxShadow: '0 2px 8px rgba(16, 185, 129, 0.4)'
             }}>
-              <span style={{ fontSize: '2rem' }}>🛠️</span>
-              <div>
-                <div style={{ 
-                  fontWeight: '600', 
-                  color: '#10b981',
-                  fontSize: '0.9rem',
-                  marginBottom: '0.25rem'
-                }}>
-                  Panier technique
-                </div>
-                <div style={{ 
-                  fontSize: '0.8rem',
-                  color: 'rgba(255,255,255,0.6)',
-                  lineHeight: '1.4'
-                }}>
-                  Votre panier technique sera bientôt disponible !
-                </div>
-              </div>
-            </div>
-
-            {/* Badge coming soon */}
-            <div style={{
-              marginTop: '0.5rem',
-              paddingTop: '0.5rem',
-              borderTop: '1px solid rgba(255,255,255,0.1)',
-              textAlign: 'center'
-            }}>
-              <span style={{
-                background: 'rgba(16, 185, 129, 0.2)',
-                color: '#10b981',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '4px',
-                fontSize: '0.7rem',
-                fontWeight: '600'
-              }}>
-                ✨ Bientôt disponible
-              </span>
-            </div>
-          </div>
+              {cartData.lotsCount}
+            </span>
+          )}
+        </span>
+        {!mobile && (
+          <span>
+            {hasItems ? `${cartData.totalGeneral.toLocaleString()}€` : 'Panier'}
+          </span>
         )}
-      </div>
+        {mobile && (
+          <span style={{ fontSize: '0.55rem' }}>
+            {hasItems ? `${cartData.totalGeneral}€` : 'Panier'}
+          </span>
+        )}
+      </button>
     );
   };
-
+  
   const AccountButton = ({ mobile = false }: { mobile?: boolean }) => {
     const [showTooltip, setShowTooltip] = useState(false);
     const active = isActive('/compte');
@@ -815,6 +793,299 @@ export default function Navbar({ className }: NavbarProps) {
     );
   };
 
+  // ==================== MODALE PANIER GLOBAL ====================
+  const CartModal = () => {
+    if (!showCartModal) return null;
+
+    // Regrouper les articles par nom
+    const articlesGroupes = cartData.articles.reduce((acc: any[], article: any) => {
+      const existing = acc.find(a => a.nom.toLowerCase() === article.nom.toLowerCase());
+      if (existing) {
+        existing.quantite += article.quantite_prevue || 0;
+        existing.total += article.cout_total_prevu || 0;
+        existing.lots.push({
+          titre: article.lot_titre,
+          chantier: article.chantier_titre,
+          quantite: article.quantite_prevue
+        });
+      } else {
+        acc.push({
+          nom: article.nom,
+          categorie: article.categorie,
+          unite: article.unite,
+          quantite: article.quantite_prevue || 0,
+          prixUnitaire: article.cout_unitaire_prevu || 0,
+          total: article.cout_total_prevu || 0,
+          lots: [{
+            titre: article.lot_titre,
+            chantier: article.chantier_titre,
+            quantite: article.quantite_prevue
+          }]
+        });
+      }
+      return acc;
+    }, []);
+
+    const materiaux = articlesGroupes.filter(a => (a.categorie || '').toLowerCase() === 'materiau');
+    const consommables = articlesGroupes.filter(a => (a.categorie || '').toLowerCase() === 'consommable');
+    const totalMateriaux = materiaux.reduce((sum, a) => sum + a.total, 0);
+    const totalConsommables = consommables.reduce((sum, a) => sum + a.total, 0);
+
+    return (
+      <div style={{
+        position: 'fixed',
+        inset: 0,
+        background: 'rgba(0, 0, 0, 0.85)',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        zIndex: 2000,
+        padding: '1rem',
+        animation: 'fadeIn 0.2s ease-out'
+      }}
+      onClick={() => setShowCartModal(false)}
+      >
+        <div 
+          style={{
+            background: '#1a1a1a',
+            borderRadius: '16px',
+            border: '1px solid var(--green)',
+            maxWidth: '600px',
+            width: '100%',
+            maxHeight: '85vh',
+            overflow: 'hidden',
+            display: 'flex',
+            flexDirection: 'column',
+            animation: 'slideUp 0.3s ease-out'
+          }}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div style={{
+            background: 'rgba(16, 185, 129, 0.15)',
+            padding: '1rem 1.25rem',
+            borderBottom: '1px solid rgba(16, 185, 129, 0.3)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <span style={{ fontSize: '1.5rem' }}>🛒</span>
+              <div>
+                <h3 style={{ margin: 0, color: 'var(--gray-light)', fontSize: '1.1rem', fontWeight: '600' }}>
+                  Liste de courses
+                </h3>
+                <p style={{ margin: 0, color: 'var(--gray)', fontSize: '0.85rem' }}>
+                  {cartData.lotsCount} lot{cartData.lotsCount > 1 ? 's' : ''} • {cartData.chantiersCount} chantier{cartData.chantiersCount > 1 ? 's' : ''}
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCartModal(false)}
+              style={{
+                background: 'transparent',
+                border: 'none',
+                color: 'var(--gray)',
+                fontSize: '1.5rem',
+                cursor: 'pointer',
+                padding: '0.25rem'
+              }}
+            >
+              ×
+            </button>
+          </div>
+          
+          {/* Body */}
+          <div style={{ padding: '1.25rem', overflowY: 'auto', flex: 1 }}>
+            {cartData.articles.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--gray)' }}>
+                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🛒</span>
+                <p style={{ margin: 0 }}>Votre panier est vide</p>
+                <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.85rem', opacity: 0.7 }}>
+                  Générez des paniers depuis vos lots de travaux
+                </p>
+              </div>
+            ) : (
+              <>
+                {/* Disclaimer */}
+                <div style={{
+                  background: 'rgba(245, 158, 11, 0.15)',
+                  border: '1px solid rgba(245, 158, 11, 0.4)',
+                  borderRadius: '8px',
+                  padding: '0.75rem',
+                  marginBottom: '1rem',
+                  fontSize: '0.8rem',
+                  color: '#fbbf24'
+                }}>
+                  ⚠️ <strong>Estimations indicatives</strong> basées sur des moyennes GSB. 
+                  Articles identiques regroupés.
+                </div>
+
+                {/* Matériaux */}
+                {materiaux.length > 0 && (
+                  <div style={{ marginBottom: '1.5rem' }}>
+                    <div style={{ 
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '0.75rem'
+                    }}>
+                      <h4 style={{ 
+                        color: 'var(--gray-light)', 
+                        fontSize: '0.95rem', 
+                        margin: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        📦 Matériaux
+                      </h4>
+                      <span style={{ color: 'var(--green)', fontSize: '0.85rem', fontWeight: '700' }}>
+                        {totalMateriaux}€
+                      </span>
+                    </div>
+                    {materiaux.map((article, idx) => (
+                      <div 
+                        key={idx}
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          borderRadius: '8px',
+                          padding: '0.75rem',
+                          marginBottom: '0.5rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ color: 'var(--gray-light)', margin: 0, fontSize: '0.9rem', fontWeight: '500' }}>
+                              {article.nom}
+                            </p>
+                            <p style={{ color: 'var(--gray-light)', margin: '0.25rem 0 0 0', fontSize: '0.75rem', opacity: 0.8 }}>
+                              {article.quantite} {article.unite} × {article.prixUnitaire}€
+                            </p>
+                          </div>
+                          <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '0.95rem' }}>
+                            {article.total}€
+                          </span>
+                        </div>
+                        {/* Sources */}
+                        <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                          <p style={{ color: 'var(--gray)', margin: 0, fontSize: '0.7rem' }}>
+                            ↳ {article.lots.map((l: any) => `${l.titre} (${l.quantite})`).join(' + ')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Consommables */}
+                {consommables.length > 0 && (
+                  <div style={{ marginBottom: '1rem' }}>
+                    <div style={{ 
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      marginBottom: '0.75rem'
+                    }}>
+                      <h4 style={{ 
+                        color: 'var(--gray-light)', 
+                        fontSize: '0.95rem', 
+                        margin: 0,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        🧴 Consommables
+                      </h4>
+                      <span style={{ color: 'var(--green)', fontSize: '0.85rem', fontWeight: '700' }}>
+                        {totalConsommables}€
+                      </span>
+                    </div>
+                    {consommables.map((article, idx) => (
+                      <div 
+                        key={idx}
+                        style={{
+                          background: 'rgba(255,255,255,0.03)',
+                          borderRadius: '8px',
+                          padding: '0.75rem',
+                          marginBottom: '0.5rem'
+                        }}
+                      >
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                          <div style={{ flex: 1 }}>
+                            <p style={{ color: 'var(--gray-light)', margin: 0, fontSize: '0.9rem', fontWeight: '500' }}>
+                              {article.nom}
+                            </p>
+                            <p style={{ color: 'var(--gray-light)', margin: '0.25rem 0 0 0', fontSize: '0.75rem', opacity: 0.8 }}>
+                              {article.quantite} {article.unite} × {article.prixUnitaire}€
+                            </p>
+                          </div>
+                          <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '0.95rem' }}>
+                            {article.total}€
+                          </span>
+                        </div>
+                        {/* Sources */}
+                        <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
+                          <p style={{ color: 'var(--gray)', margin: 0, fontSize: '0.7rem' }}>
+                            ↳ {article.lots.map((l: any) => `${l.titre} (${l.quantite})`).join(' + ')}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+          </div>
+          
+          {/* Footer */}
+          {cartData.articles.length > 0 && (
+            <div style={{
+              padding: '1rem 1.25rem',
+              borderTop: '1px solid rgba(255,255,255,0.1)',
+              background: 'rgba(16, 185, 129, 0.05)'
+            }}>
+              <div style={{ 
+                display: 'flex', 
+                justifyContent: 'space-between',
+                alignItems: 'center'
+              }}>
+                <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '1rem' }}>
+                  Total estimé
+                </span>
+                <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '1.3rem' }}>
+                  {cartData.totalGeneral.toLocaleString()}€
+                </span>
+              </div>
+            </div>
+          )}
+
+          {/* Bouton fermer */}
+          <div style={{
+            padding: '1rem 1.25rem',
+            borderTop: '1px solid rgba(255,255,255,0.1)',
+            textAlign: 'center'
+          }}>
+            <button
+              onClick={() => setShowCartModal(false)}
+              style={{
+                background: 'rgba(255,255,255,0.1)',
+                border: 'none',
+                padding: '0.6rem 2rem',
+                borderRadius: '8px',
+                color: 'var(--gray-light)',
+                cursor: 'pointer',
+                fontSize: '0.9rem'
+              }}
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <>
       <header
@@ -1002,7 +1273,7 @@ export default function Navbar({ className }: NavbarProps) {
       <div style={{ height: isMobile ? '42px' : '50px' }} />
       {isMobile && <div style={{ height: '65px' }} />}
 
-      {showHelpModal && <HelpModal />}
+      {showCartModal && <CartModal />}
 
       <style jsx global>{`
         @keyframes badgePop {
