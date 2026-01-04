@@ -406,7 +406,7 @@ function PanierModal({
                     marginBottom: '0.5rem'
                   }}>
                     <h4 style={{ 
-                      color: 'var(--gray-light)', 
+                      color: 'var(--green)', 
                       fontSize: '0.9rem', 
                       margin: 0,
                       display: 'flex',
@@ -416,9 +416,9 @@ function PanierModal({
                       📦 Matériaux
                     </h4>
                     <span style={{ 
-                      color: 'var(--gray)', 
-                      fontSize: '0.75rem',
-                      fontWeight: '600'
+                      color: 'var(--green)', 
+                      fontSize: '0.8rem',
+                      fontWeight: '700'
                     }}>
                       Total TTC
                     </span>
@@ -485,7 +485,7 @@ function PanierModal({
                     marginBottom: '0.5rem'
                   }}>
                     <h4 style={{ 
-                      color: 'var(--gray-light)', 
+                      color: 'var(--green)', 
                       fontSize: '0.9rem', 
                       margin: 0,
                       display: 'flex',
@@ -495,9 +495,9 @@ function PanierModal({
                       🧴 Consommables
                     </h4>
                     <span style={{ 
-                      color: 'var(--gray)', 
-                      fontSize: '0.75rem',
-                      fontWeight: '600'
+                      color: 'var(--greeb)', 
+                      fontSize: '0.8rem',
+                      fontWeight: '700'
                     }}>
                       Total TTC
                     </span>
@@ -597,8 +597,8 @@ function PanierModal({
               marginBottom: '0.5rem',
               fontSize: '0.85rem'
             }}>
-              <span style={{ color: 'var(--gray)' }}>Matériaux</span>
-              <span style={{ color: 'var(--gray-light)' }}>{panier.total_materiaux || 0}€</span>
+              <span style={{ color: 'var(--gray-light)' }}>Matériaux</span>
+              <span style={{ color: 'var(--green)', fontWeight: '600' }}>{panier.total_materiaux || 0}€</span>
             </div>
             <div style={{ 
               display: 'flex', 
@@ -606,8 +606,8 @@ function PanierModal({
               marginBottom: '0.75rem',
               fontSize: '0.85rem'
             }}>
-              <span style={{ color: 'var(--gray)' }}>Consommables</span>
-              <span style={{ color: 'var(--gray-light)' }}>{panier.total_consommables || 0}€</span>
+              <span style={{ color: 'var(--gray-light)' }}>Consommables</span>
+              <span style={{ color: 'var(--green)', fontWeight: '600' }}>{panier.total_consommables || 0}€</span>
             </div>
             <div style={{ 
               display: 'flex', 
@@ -615,7 +615,7 @@ function PanierModal({
               paddingTop: '0.75rem',
               borderTop: '1px solid rgba(255,255,255,0.1)'
             }}>
-              <span style={{ color: 'var(--gray-light)', fontWeight: '600', fontSize: '1rem' }}>
+              <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '1rem' }}>
                 Total estimé
               </span>
               <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '1.2rem' }}>
@@ -624,6 +624,233 @@ function PanierModal({
             </div>
           </div>
         )}
+
+        {/* Bouton fermer */}
+        <div style={{
+          padding: '1rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          textAlign: 'center'
+        }}>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'rgba(255,255,255,0.1)',
+              border: 'none',
+              padding: '0.6rem 2rem',
+              borderRadius: '8px',
+              color: 'var(--gray-light)',
+              cursor: 'pointer',
+              fontSize: '0.9rem'
+            }}
+          >
+            Fermer
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ==================== MODALE RECAP PANIERS CHANTIER ====================
+function PanierChantierModal({ 
+  isOpen, 
+  chantier,
+  travaux,
+  onClose,
+  onGenererPanier,
+  onVoirPanier
+}: { 
+  isOpen: boolean; 
+  chantier: any;
+  travaux: any[];
+  onClose: () => void;
+  onGenererPanier: (travail: any) => void;
+  onVoirPanier: (travail: any) => void;
+}) {
+  if (!isOpen || !chantier) return null;
+  
+  const totalPaniers = travaux.reduce((sum, t) => sum + (t.cout_materiaux_estime || 0), 0);
+  const lotsAvecPanier = travaux.filter(t => t.cout_materiaux_estime && t.cout_materiaux_estime > 0).length;
+  
+  return (
+    <div style={{
+      position: 'fixed',
+      inset: 0,
+      background: 'rgba(0, 0, 0, 0.85)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      zIndex: 1000,
+      padding: '1rem'
+    }}>
+      <div style={{
+        background: '#1a1a1a',
+        borderRadius: '16px',
+        border: '1px solid var(--green)',
+        maxWidth: '550px',
+        width: '100%',
+        maxHeight: '85vh',
+        overflow: 'hidden',
+        display: 'flex',
+        flexDirection: 'column'
+      }}>
+        {/* Header */}
+        <div style={{
+          background: 'rgba(16, 185, 129, 0.15)',
+          padding: '1rem 1.25rem',
+          borderBottom: '1px solid rgba(16, 185, 129, 0.3)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <span style={{ fontSize: '1.5rem' }}>🛒</span>
+            <div>
+              <h3 style={{ margin: 0, color: 'var(--gray-light)', fontSize: '1rem', fontWeight: '600' }}>
+                Paniers techniques
+              </h3>
+              <p style={{ margin: 0, color: 'var(--gray)', fontSize: '0.85rem' }}>
+                {chantier.titre}
+              </p>
+            </div>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              background: 'transparent',
+              border: 'none',
+              color: 'var(--gray)',
+              fontSize: '1.5rem',
+              cursor: 'pointer',
+              padding: '0.25rem'
+            }}
+          >
+            ×
+          </button>
+        </div>
+        
+        {/* Body - Liste des lots */}
+        <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', flex: 1 }}>
+          {/* Disclaimer */}
+          <div style={{
+            background: 'rgba(245, 158, 11, 0.15)',
+            border: '1px solid rgba(245, 158, 11, 0.4)',
+            borderRadius: '8px',
+            padding: '0.75rem',
+            marginBottom: '1rem',
+            fontSize: '0.8rem',
+            color: '#fbbf24'
+          }}>
+            ⚠️ <strong>Estimations indicatives</strong> basées sur des moyennes GSB. 
+            À affiner selon votre configuration réelle.
+          </div>
+
+          {/* Liste des lots */}
+          {travaux
+            .sort((a, b) => a.ordre - b.ordre)
+            .map((travail) => {
+              const hasPanier = travail.cout_materiaux_estime && travail.cout_materiaux_estime > 0;
+              
+              return (
+                <div 
+                  key={travail.id}
+                  style={{
+                    background: 'rgba(255,255,255,0.03)',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '0.5rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s',
+                    border: '1px solid transparent'
+                  }}
+                  onClick={() => {
+                    onClose();
+                    if (hasPanier) {
+                      onVoirPanier(travail);
+                    } else {
+                      onGenererPanier(travail);
+                    }
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.3)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                    e.currentTarget.style.borderColor = 'transparent';
+                  }}
+                >
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <span style={{
+                      background: hasPanier ? 'var(--green)' : 'var(--gray)',
+                      color: 'white',
+                      width: '24px',
+                      height: '24px',
+                      borderRadius: '50%',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      fontSize: '0.75rem',
+                      fontWeight: '700'
+                    }}>
+                      {travail.ordre}
+                    </span>
+                    <div>
+                      <p style={{ 
+                        color: 'var(--gray-light)', 
+                        margin: 0, 
+                        fontSize: '0.9rem',
+                        fontWeight: '500'
+                      }}>
+                        {travail.titre}
+                      </p>
+                    </div>
+                  </div>
+                  
+                  {hasPanier ? (
+                    <span style={{ 
+                      color: 'var(--green)', 
+                      fontWeight: '700',
+                      fontSize: '0.95rem'
+                    }}>
+                      {travail.cout_materiaux_estime}€
+                    </span>
+                  ) : (
+                    <span style={{ 
+                      color: 'var(--gray)', 
+                      fontSize: '0.8rem',
+                      fontStyle: 'italic'
+                    }}>
+                      À calculer →
+                    </span>
+                  )}
+                </div>
+              );
+            })}
+        </div>
+        
+        {/* Footer avec total */}
+        <div style={{
+          padding: '1rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.1)',
+          background: 'rgba(16, 185, 129, 0.05)'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
+            <span style={{ color: 'var(--gray-light)', fontWeight: '600' }}>
+              Total estimé ({lotsAvecPanier}/{travaux.length} lots)
+            </span>
+            <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '1.3rem' }}>
+              {totalPaniers.toLocaleString()}€
+            </span>
+          </div>
+        </div>
 
         {/* Bouton fermer */}
         <div style={{
@@ -715,6 +942,9 @@ export default function TravauxPage() {
     panier: any | null;
     error: string | null;
   }>({ travail: null, loading: false, panier: null, error: null });
+  
+  // État pour la modale récap paniers chantier
+  const [showPanierChantierModal, setShowPanierChantierModal] = useState(false);
 
   const handlePhotosChange = (niveau: string, niveauId: string, newPhotos: any[]) => {
     if (niveau === 'chantier') {
@@ -1535,24 +1765,43 @@ export default function TravauxPage() {
               </span>
             </div>
             
-            {/* Total Paniers techniques */}
+            {/* Total Paniers techniques - Cliquable */}
             {(() => {
               const totalPaniers = travaux.reduce((sum, t) => sum + (t.cout_materiaux_estime || 0), 0);
               const lotsAvecPanier = travaux.filter(t => t.cout_materiaux_estime && t.cout_materiaux_estime > 0).length;
-              if (totalPaniers > 0) {
-                return (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontSize: '1.1rem' }}>🛒</span>
-                    <span>
-                      <strong style={{ color: 'var(--green)', fontWeight: '700' }}>
-                        {totalPaniers.toLocaleString()}€
-                      </strong>
-                      <span style={{ opacity: 0.6 }}> ({lotsAvecPanier}/{travaux.length} lots)</span>
-                    </span>
-                  </div>
-                );
-              }
-              return null;
+              return (
+                <div 
+                  onClick={() => setShowPanierChantierModal(true)}
+                  style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem',
+                    cursor: 'pointer',
+                    padding: '0.4rem 0.8rem',
+                    borderRadius: '8px',
+                    border: '1px solid rgba(16, 185, 129, 0.4)',
+                    background: 'rgba(16, 185, 129, 0.1)',
+                    transition: 'all 0.2s'
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)';
+                    e.currentTarget.style.borderColor = 'var(--green)';
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                    e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                  }}
+                  title="Voir tous les paniers"
+                >
+                  <span style={{ fontSize: '1.1rem' }}>🛒</span>
+                  <span>
+                    <strong style={{ color: 'var(--green)', fontWeight: '700' }}>
+                      {totalPaniers > 0 ? `${totalPaniers.toLocaleString()}€` : 'Paniers'}
+                    </strong>
+                    <span style={{ opacity: 0.7, color: 'var(--gray-light)' }}> ({lotsAvecPanier}/{travaux.length})</span>
+                  </span>
+                </div>
+              );
             })()}
 
             {/* Tâches */}
@@ -1887,6 +2136,15 @@ export default function TravauxPage() {
               handleGenererPanier(panierModalConfig.travail);
             }
           }}
+        />
+        {/* Modal Récap Paniers Chantier */}
+        <PanierChantierModal
+          isOpen={showPanierChantierModal}
+          chantier={chantier}
+          travaux={travaux}
+          onClose={() => setShowPanierChantierModal(false)}
+          onGenererPanier={(travail) => handleGenererPanier(travail)}
+          onVoirPanier={(travail) => handleVoirPanier(travail)}
         />
        </div>
     </>
