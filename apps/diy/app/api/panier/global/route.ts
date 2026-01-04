@@ -52,14 +52,14 @@ export async function GET(request: NextRequest) {
     }
 
     // Récupérer les infos des lots
-    const lotIds = [...new Set(articles.map(a => a.travail_id).filter(Boolean))];
+    const lotIds = Array.from(new Set(articles.map(a => a.travail_id).filter(Boolean)));
     const { data: lots } = await supabase
       .from('travaux')
       .select('id, titre, chantier_id')
       .in('id', lotIds);
 
     // Récupérer les infos des chantiers
-    const chantierIds = [...new Set(articles.map(a => a.chantier_id).filter(Boolean))];
+    const chantierIds = Array.from(new Set(articles.map(a => a.chantier_id).filter(Boolean)));
     const { data: chantiers } = await supabase
       .from('chantiers')
       .select('id, titre')
