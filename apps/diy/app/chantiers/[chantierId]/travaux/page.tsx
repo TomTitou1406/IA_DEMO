@@ -411,45 +411,52 @@ function PanierModal({
                   </h4>
                   {panier.articles
                     .filter((a: any) => a.categorie === 'materiau')
-                    .map((article: any, idx: number) => (
-                      <div 
-                        key={idx}
-                        style={{
-                          background: 'rgba(255,255,255,0.03)',
-                          borderRadius: '8px',
-                          padding: '0.75rem',
-                          marginBottom: '0.5rem',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <p style={{ 
-                            color: 'var(--gray-light)', 
-                            margin: 0, 
-                            fontSize: '0.9rem',
-                            fontWeight: '500'
+                    .map((article: any, idx: number) => {
+                      const quantite = article.quantite ?? article.quantite_prevue ?? 0;
+                      const unite = article.unite ?? '';
+                      const prixUnitaire = article.prix_unitaire ?? article.cout_unitaire_prevu ?? 0;
+                      const prixTotal = article.prix_total ?? article.cout_total_prevu ?? 0;
+                      
+                      return (
+                        <div 
+                          key={idx}
+                          style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            borderRadius: '8px',
+                            padding: '0.75rem',
+                            marginBottom: '0.5rem',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <p style={{ 
+                              color: 'var(--gray-light)', 
+                              margin: 0, 
+                              fontSize: '0.9rem',
+                              fontWeight: '500'
+                            }}>
+                              {article.nom}
+                            </p>
+                            <p style={{ 
+                              color: 'var(--gray)', 
+                              margin: '0.25rem 0 0 0', 
+                              fontSize: '0.75rem' 
+                            }}>
+                              {quantite} {unite} × {prixUnitaire}€
+                            </p>
+                          </div>
+                          <span style={{ 
+                            color: 'var(--green)', 
+                            fontWeight: '700',
+                            fontSize: '0.95rem'
                           }}>
-                            {article.nom}
-                          </p>
-                          <p style={{ 
-                            color: 'var(--gray)', 
-                            margin: '0.25rem 0 0 0', 
-                            fontSize: '0.75rem' 
-                          }}>
-                            {article.quantite} {article.unite} × {article.prix_unitaire}€
-                          </p>
+                            {prixTotal}€
+                          </span>
                         </div>
-                        <span style={{ 
-                          color: 'var(--green)', 
-                          fontWeight: '700',
-                          fontSize: '0.95rem'
-                        }}>
-                          {article.prix_total}€
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               )}
 
@@ -468,45 +475,52 @@ function PanierModal({
                   </h4>
                   {panier.articles
                     .filter((a: any) => a.categorie === 'consommable')
-                    .map((article: any, idx: number) => (
-                      <div 
-                        key={idx}
-                        style={{
-                          background: 'rgba(255,255,255,0.03)',
-                          borderRadius: '8px',
-                          padding: '0.75rem',
-                          marginBottom: '0.5rem',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center'
-                        }}
-                      >
-                        <div style={{ flex: 1 }}>
-                          <p style={{ 
-                            color: 'var(--gray-light)', 
-                            margin: 0, 
-                            fontSize: '0.9rem',
-                            fontWeight: '500'
+                    .map((article: any, idx: number) => {
+                      const quantite = article.quantite ?? article.quantite_prevue ?? 0;
+                      const unite = article.unite ?? '';
+                      const prixUnitaire = article.prix_unitaire ?? article.cout_unitaire_prevu ?? 0;
+                      const prixTotal = article.prix_total ?? article.cout_total_prevu ?? 0;
+                      
+                      return (
+                        <div 
+                          key={idx}
+                          style={{
+                            background: 'rgba(255,255,255,0.03)',
+                            borderRadius: '8px',
+                            padding: '0.75rem',
+                            marginBottom: '0.5rem',
+                            display: 'flex',
+                            justifyContent: 'space-between',
+                            alignItems: 'center'
+                          }}
+                        >
+                          <div style={{ flex: 1 }}>
+                            <p style={{ 
+                              color: 'var(--gray-light)', 
+                              margin: 0, 
+                              fontSize: '0.9rem',
+                              fontWeight: '500'
+                            }}>
+                              {article.nom}
+                            </p>
+                            <p style={{ 
+                              color: 'var(--gray)', 
+                              margin: '0.25rem 0 0 0', 
+                              fontSize: '0.75rem' 
+                            }}>
+                              {quantite} {unite} × {prixUnitaire}€
+                            </p>
+                          </div>
+                          <span style={{ 
+                            color: 'var(--green)', 
+                            fontWeight: '700',
+                            fontSize: '0.95rem'
                           }}>
-                            {article.nom}
-                          </p>
-                          <p style={{ 
-                            color: 'var(--gray)', 
-                            margin: '0.25rem 0 0 0', 
-                            fontSize: '0.75rem' 
-                          }}>
-                            {article.quantite} {article.unite} × {article.prix_unitaire}€
-                          </p>
+                            {prixTotal}€
+                          </span>
                         </div>
-                        <span style={{ 
-                          color: 'var(--green)', 
-                          fontWeight: '700',
-                          fontSize: '0.95rem'
-                        }}>
-                          {article.prix_total}€
-                        </span>
-                      </div>
-                    ))}
+                      );
+                    })}
                 </div>
               )}
 
