@@ -15,6 +15,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import MediaButtons from '@/app/components/MediaButtons';
 
 interface TravailSimple {
   id: string;
@@ -100,7 +101,6 @@ export default function TravauxSimplesPage() {
 
     const statusColor = getStatusColor(travail.statut);
     
-    // Couleurs RGB pour les dégradés
     const getStatusRgb = (statut: string) => {
       switch (statut) {
         case 'terminé': return '16, 185, 129';
@@ -147,7 +147,7 @@ export default function TravauxSimplesPage() {
             margin: 0,
             fontSize: '1rem',
             fontWeight: '600',
-            color: 'var(--gray-light)',
+            color: 'white',
             lineHeight: '1.4',
             flex: 1
           }}>
@@ -186,93 +186,37 @@ export default function TravauxSimplesPage() {
           }}></div>
         </div>
 
-        {/* Ligne 3 : Stats + Icônes médias */}
+        {/* Ligne 3 : Stats + MediaButtons */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          fontSize: '0.85rem',
-          color: 'var(--gray)'
+          fontSize: '0.85rem'
         }}>
           {/* Stats gauche */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'white' }}>
             <span>✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
             {travail.duree_estimee_heures && (
               <span>⏱️ {formatDuree(travail.duree_estimee_heures)}</span>
             )}
           </div>
 
-          {/* Icônes médias droite */}
-          <div 
-            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
-            onClick={(e) => e.preventDefault()}
-          >
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // TODO: Ouvrir modal photos
+          {/* MediaButtons droite */}
+          <div onClick={(e) => e.preventDefault()}>
+            <MediaButtons
+              niveau="travail"
+              niveauId={travail.id}
+              niveauTitre={travail.titre}
+              photosCount={0}
+              hasVideo={false}
+              onPhotoClick={() => {
                 console.log('Photos:', travail.id);
               }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.3rem',
-                opacity: 0.6,
-                transition: 'opacity 0.2s',
-                fontSize: '1rem'
+              onVideoClick={() => {
+                const searchQuery = encodeURIComponent(travail.titre);
+                window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
               }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-              title="Photos"
-            >
-              📷
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // TODO: Ouvrir recherche vidéo
-                console.log('Vidéo:', travail.id);
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.3rem',
-                opacity: 0.6,
-                transition: 'opacity 0.2s',
-                fontSize: '1rem'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-              title="Vidéo d'aide"
-            >
-              🎬
-            </button>
-            <button
-              onClick={(e) => {
-                e.preventDefault();
-                e.stopPropagation();
-                // TODO: Confirmer suppression
-                console.log('Supprimer:', travail.id);
-              }}
-              style={{
-                background: 'none',
-                border: 'none',
-                cursor: 'pointer',
-                padding: '0.3rem',
-                opacity: 0.6,
-                transition: 'opacity 0.2s',
-                fontSize: '1rem'
-              }}
-              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-              title="Supprimer"
-            >
-              🗑️
-            </button>
+            />
           </div>
         </div>
       </Link>
@@ -322,25 +266,15 @@ export default function TravauxSimplesPage() {
             gap: '0.5rem',
             background: 'none',
             border: 'none',
-            borderBottom: `2px solid rgb(${rgb})`,
+            borderBottom: `2px solid transparent`,
+            borderImage: `linear-gradient(90deg, transparent 0%, rgb(${rgb}) 100%) 1`,
             cursor: 'pointer',
             padding: '0.5rem 0',
             paddingBottom: '0.75rem',
             width: '100%',
-            textAlign: 'left',
-            position: 'relative'
+            textAlign: 'left'
           }}
         >
-          {/* Dégradé sous la ligne */}
-          <div style={{
-            position: 'absolute',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            height: '2px',
-            background: `linear-gradient(90deg, rgb(${rgb}) 0%, transparent 100%)`
-          }} />
-          
           <span style={{
             color: 'var(--gray)',
             fontSize: '0.8rem',
