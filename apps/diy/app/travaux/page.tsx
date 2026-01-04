@@ -93,102 +93,87 @@ export default function TravauxSimplesPage() {
   const termines = travaux.filter(t => t.statut === 'terminé');
 
   // Card compacte pour un travail simple
-    const TravailCard = ({ travail }: { travail: TravailSimple }) => {
+  const TravailCard = ({ travail }: { travail: TravailSimple }) => {
     const progression = travail.nombre_etapes > 0 
       ? Math.round((travail.etapes_terminees / travail.nombre_etapes) * 100)
       : 0;
 
     const statusColor = getStatusColor(travail.statut);
     
-    // Couleurs de fond selon statut (plus prononcées)
-    const getBgGradient = (statut: string) => {
+    // Couleurs RGB pour les dégradés
+    const getStatusRgb = (statut: string) => {
       switch (statut) {
-        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0.15) 100%)';
-        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.35) 0%, rgba(37, 99, 235, 0.15) 100%)';
-        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.35) 0%, rgba(249, 115, 22, 0.15) 100%)';
-        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.35) 0%, rgba(239, 68, 68, 0.15) 100%)';
-        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0.15) 100%)';
+        case 'terminé': return '16, 185, 129';
+        case 'en_cours': return '37, 99, 235';
+        case 'bloqué': return '249, 115, 22';
+        case 'annulé': return '239, 68, 68';
+        default: return '139, 92, 246';
       }
     };
 
-    const getBgGradientHover = (statut: string) => {
-      switch (statut) {
-        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.5) 0%, rgba(16, 185, 129, 0.25) 100%)';
-        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.5) 0%, rgba(37, 99, 235, 0.25) 100%)';
-        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.5) 0%, rgba(249, 115, 22, 0.25) 100%)';
-        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.5) 0%, rgba(239, 68, 68, 0.25) 100%)';
-        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0.25) 100%)';
-      }
-    };
+    const rgb = getStatusRgb(travail.statut);
 
     return (
       <Link
         href={`/chantiers/${travail.chantier_id}/travaux/${travail.id}/etapes`}
         style={{
           display: 'block',
-          background: getBgGradient(travail.statut),
-          borderRadius: '16px',
-          padding: '1.25rem',
-          marginBottom: '1rem',
+          background: `linear-gradient(90deg, transparent 0%, rgba(${rgb}, 0.15) 50%, rgba(${rgb}, 0.4) 100%)`,
+          borderRadius: '12px',
+          borderLeft: `5px solid rgb(${rgb})`,
+          padding: '1rem 1.25rem',
+          marginBottom: '0.75rem',
           textDecoration: 'none',
-          transition: 'all 0.3s ease',
-          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
-          border: '1px solid rgba(255, 255, 255, 0.1)'
+          transition: 'all 0.3s ease'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = getBgGradientHover(travail.statut);
-          e.currentTarget.style.transform = 'translateY(-4px)';
-          e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.3)';
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
+          e.currentTarget.style.background = `linear-gradient(90deg, rgba(${rgb}, 0.05) 0%, rgba(${rgb}, 0.25) 50%, rgba(${rgb}, 0.5) 100%)`;
+          e.currentTarget.style.transform = 'translateX(4px)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = getBgGradient(travail.statut);
-          e.currentTarget.style.transform = 'translateY(0)';
-          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
-          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+          e.currentTarget.style.background = `linear-gradient(90deg, transparent 0%, rgba(${rgb}, 0.15) 50%, rgba(${rgb}, 0.4) 100%)`;
+          e.currentTarget.style.transform = 'translateX(0)';
         }}
       >
-        {/* Header : Titre + Badge % */}
+        {/* Ligne 1 : Titre + Badge % */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
           gap: '1rem',
-          marginBottom: '1rem'
+          marginBottom: '0.75rem'
         }}>
           <h3 style={{
             margin: 0,
-            fontSize: '1.1rem',
-            fontWeight: '700',
-            color: 'white',
+            fontSize: '1rem',
+            fontWeight: '600',
+            color: 'var(--gray-light)',
             lineHeight: '1.4',
             flex: 1
           }}>
-            🔧 {travail.titre}
+            {travail.titre}
           </h3>
           <span style={{
             background: statusColor,
             color: 'white',
-            padding: '0.35rem 0.75rem',
-            borderRadius: '20px',
-            fontSize: '0.9rem',
+            padding: '0.25rem 0.6rem',
+            borderRadius: '12px',
+            fontSize: '0.85rem',
             fontWeight: '700',
-            minWidth: '50px',
-            textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
+            minWidth: '45px',
+            textAlign: 'center'
           }}>
             {progression}%
           </span>
         </div>
 
-        {/* Progress bar */}
+        {/* Ligne 2 : Progress bar */}
         <div style={{
-          height: '10px',
-          background: 'rgba(0, 0, 0, 0.3)',
-          borderRadius: '5px',
+          height: '6px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '3px',
           overflow: 'hidden',
-          marginBottom: '1rem',
-          boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
+          marginBottom: '0.75rem'
         }}>
           <div style={{
             width: `${Math.max(progression, 2)}%`,
@@ -196,66 +181,99 @@ export default function TravauxSimplesPage() {
             background: progression === 100 
               ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' 
               : 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)',
-            borderRadius: '5px',
-            transition: 'width 0.5s ease',
-            boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
+            borderRadius: '3px',
+            transition: 'width 0.5s ease'
           }}></div>
         </div>
 
-        {/* Footer : Stats */}
+        {/* Ligne 3 : Stats + Icônes médias */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '0.75rem'
+          fontSize: '0.85rem',
+          color: 'var(--gray)'
         }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            fontSize: '0.9rem'
-          }}>
-            <span style={{ 
-              display: 'flex', 
-              alignItems: 'center', 
-              gap: '0.4rem',
-              background: 'rgba(0, 0, 0, 0.2)',
-              padding: '0.3rem 0.6rem',
-              borderRadius: '8px'
-            }}>
-              <span style={{ color: '#10b981' }}>✅</span>
-              <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                {travail.etapes_terminees}/{travail.nombre_etapes} étapes
-              </span>
-            </span>
+          {/* Stats gauche */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <span>✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
             {travail.duree_estimee_heures && (
-              <span style={{ 
-                display: 'flex', 
-                alignItems: 'center', 
-                gap: '0.4rem',
-                background: 'rgba(0, 0, 0, 0.2)',
-                padding: '0.3rem 0.6rem',
-                borderRadius: '8px'
-              }}>
-                <span>⏱️</span>
-                <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
-                  {formatDuree(travail.duree_estimee_heures)}
-                </span>
-              </span>
+              <span>⏱️ {formatDuree(travail.duree_estimee_heures)}</span>
             )}
           </div>
-          
-          <span style={{
-            background: 'rgba(255, 255, 255, 0.15)',
-            color: 'white',
-            padding: '0.3rem 0.75rem',
-            borderRadius: '8px',
-            fontSize: '0.8rem',
-            fontWeight: '600'
-          }}>
-            {getStatusLabel(travail.statut)} →
-          </span>
+
+          {/* Icônes médias droite */}
+          <div 
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+            onClick={(e) => e.preventDefault()}
+          >
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // TODO: Ouvrir modal photos
+                console.log('Photos:', travail.id);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.3rem',
+                opacity: 0.6,
+                transition: 'opacity 0.2s',
+                fontSize: '1rem'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+              title="Photos"
+            >
+              📷
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // TODO: Ouvrir recherche vidéo
+                console.log('Vidéo:', travail.id);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.3rem',
+                opacity: 0.6,
+                transition: 'opacity 0.2s',
+                fontSize: '1rem'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+              title="Vidéo d'aide"
+            >
+              🎬
+            </button>
+            <button
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                // TODO: Confirmer suppression
+                console.log('Supprimer:', travail.id);
+              }}
+              style={{
+                background: 'none',
+                border: 'none',
+                cursor: 'pointer',
+                padding: '0.3rem',
+                opacity: 0.6,
+                transition: 'opacity 0.2s',
+                fontSize: '1rem'
+              }}
+              onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+              onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+              title="Supprimer"
+            >
+              🗑️
+            </button>
+          </div>
         </div>
       </Link>
     );
@@ -279,8 +297,23 @@ export default function TravauxSimplesPage() {
 
     if (items.length === 0) return null;
 
+    // Convertir la couleur en RGB pour le dégradé
+    const getColorRgb = (cssColor: string) => {
+      switch (cssColor) {
+        case 'var(--green)': return '16, 185, 129';
+        case 'var(--blue)': return '37, 99, 235';
+        case 'var(--orange)': return '249, 115, 22';
+        case 'var(--red)': return '239, 68, 68';
+        case 'var(--purple)': return '139, 92, 246';
+        default: return '107, 114, 128';
+      }
+    };
+
+    const rgb = getColorRgb(color);
+
     return (
       <div style={{ marginBottom: '1.5rem' }}>
+        {/* Header avec dégradé */}
         <button
           onClick={() => setIsOpen(!isOpen)}
           style={{
@@ -289,12 +322,25 @@ export default function TravauxSimplesPage() {
             gap: '0.5rem',
             background: 'none',
             border: 'none',
+            borderBottom: `2px solid rgb(${rgb})`,
             cursor: 'pointer',
             padding: '0.5rem 0',
+            paddingBottom: '0.75rem',
             width: '100%',
-            textAlign: 'left'
+            textAlign: 'left',
+            position: 'relative'
           }}
         >
+          {/* Dégradé sous la ligne */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: `linear-gradient(90deg, rgb(${rgb}) 0%, transparent 100%)`
+          }} />
+          
           <span style={{
             color: 'var(--gray)',
             fontSize: '0.8rem',
@@ -324,7 +370,7 @@ export default function TravauxSimplesPage() {
         </button>
         
         {isOpen && (
-          <div style={{ marginTop: '0.5rem' }}>
+          <div style={{ marginTop: '0.75rem' }}>
             {items.map(travail => (
               <TravailCard key={travail.id} travail={travail} />
             ))}
