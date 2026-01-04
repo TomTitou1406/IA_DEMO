@@ -397,66 +397,7 @@ function PanierModal({
               </div>
 
               {/* Matériaux */}
-              {panier.articles?.filter((a: any) => a.categorie === 'materiau').length > 0 && (
-                <div style={{ marginBottom: '1rem' }}>
-                  <h4 style={{ 
-                    color: 'var(--gray-light)', 
-                    fontSize: '0.9rem', 
-                    marginBottom: '0.5rem',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem'
-                  }}>
-                    📦 Matériaux
-                  </h4>
-                  {panier.articles
-                    .filter((a: any) => a.categorie === 'materiau')
-                    .map((article: any, idx: number) => {
-                      const quantite = article.quantite ?? article.quantite_prevue ?? 0;
-                      const unite = article.unite ?? '';
-                      const prixUnitaire = article.prix_unitaire ?? article.cout_unitaire_prevu ?? 0;
-                      const prixTotal = article.prix_total ?? article.cout_total_prevu ?? 0;
-                      
-                      return (
-                        <div 
-                          key={idx}
-                          style={{
-                            background: 'rgba(255,255,255,0.03)',
-                            borderRadius: '8px',
-                            padding: '0.75rem',
-                            marginBottom: '0.5rem',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center'
-                          }}
-                        >
-                          <div style={{ flex: 1 }}>
-                            <p style={{ 
-                              color: 'var(--gray-light)', 
-                              margin: 0, 
-                              fontSize: '0.9rem',
-                              fontWeight: '500'
-                            }}>
-                              {article.nom}
-                            </p>
-                            <p style={{ 
-                              color: 'var(--gray)', 
-                              margin: '0.25rem 0 0 0', 
-                              fontSize: '0.75rem' 
-                            }}>
-                              {quantite} {unite} × {prixUnitaire}€
-                            </p>
-                          </div>
-                          <span style={{ 
-                            color: 'var(--green)', 
-                            fontWeight: '700',
-                            fontSize: '0.95rem'
-                          }}>
-                            {prixTotal}€
-                          </span>
-                        </div>
-                      );
-                    })}
+              {panier.articles
                 </div>
               )}
 
@@ -978,61 +919,21 @@ export default function TravauxPage() {
               marginLeft: '40px'
             }}>
               {(travail.statut === 'à_venir' || travail.statut === 'en_cours') && !travail.cout_materiaux_estime && !travail.cout_estime ? (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleGenererPanier(travail);
-                  }}
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    border: '1px dashed #10b981',
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '8px',
-                    fontSize: '0.75rem',
-                    color: '#10b981',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontWeight: '500'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.3)';
-                    e.currentTarget.style.borderStyle = 'solid';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
-                    e.currentTarget.style.borderStyle = 'dashed';
-                  }}
-                  title="Cliquez pour générer le panier"
-                >
-                  🛒 Générer panier
-                </button>
+                <CardButton
+                  variant="secondary"
+                  color="var(--green)"
+                  icon="🛒"
+                  label="Générer panier"
+                  onClick={() => handleGenererPanier(travail)}
+                />
               ) : (travail.cout_materiaux_estime || travail.cout_estime) ? (
-                <button 
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleVoirPanier(travail);
-                  }}
-                  style={{
-                    background: 'rgba(16, 185, 129, 0.2)',
-                    border: '1px solid #10b981',
-                    padding: '0.3rem 0.6rem',
-                    borderRadius: '8px',
-                    fontSize: '0.75rem',
-                    color: '#10b981',
-                    cursor: 'pointer',
-                    transition: 'all 0.2s',
-                    fontWeight: '600'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.35)';
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
-                  }}
-                  title="Cliquez pour voir le panier"
-                >
-                  🛒 Voir panier ({travail.cout_materiaux_estime || travail.cout_estime}€)
-                </button>
+                <CardButton
+                  variant="primary"
+                  color="var(--green)"
+                  icon="🛒"
+                  label={`Voir panier (${travail.cout_materiaux_estime || travail.cout_estime}€)`}
+                  onClick={() => handleVoirPanier(travail)}
+                />
               ) : null}
               {(travail.economie_diy ?? 0) > 0 && (
                 <span style={{
