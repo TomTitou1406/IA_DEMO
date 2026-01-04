@@ -93,31 +93,31 @@ export default function TravauxSimplesPage() {
   const termines = travaux.filter(t => t.statut === 'terminé');
 
   // Card compacte pour un travail simple
-  const TravailCard = ({ travail }: { travail: TravailSimple }) => {
+    const TravailCard = ({ travail }: { travail: TravailSimple }) => {
     const progression = travail.nombre_etapes > 0 
       ? Math.round((travail.etapes_terminees / travail.nombre_etapes) * 100)
       : 0;
 
     const statusColor = getStatusColor(travail.statut);
     
-    // Couleurs de fond selon statut
+    // Couleurs de fond selon statut (plus prononcées)
     const getBgGradient = (statut: string) => {
       switch (statut) {
-        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)';
-        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%)';
-        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.05) 100%)';
-        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%)';
-        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)';
+        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.35) 0%, rgba(16, 185, 129, 0.15) 100%)';
+        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.35) 0%, rgba(37, 99, 235, 0.15) 100%)';
+        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.35) 0%, rgba(249, 115, 22, 0.15) 100%)';
+        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.35) 0%, rgba(239, 68, 68, 0.15) 100%)';
+        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.35) 0%, rgba(139, 92, 246, 0.15) 100%)';
       }
     };
 
     const getBgGradientHover = (statut: string) => {
       switch (statut) {
-        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)';
-        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(37, 99, 235, 0.1) 100%)';
-        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.1) 100%)';
-        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%)';
-        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.1) 100%)';
+        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.5) 0%, rgba(16, 185, 129, 0.25) 100%)';
+        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.5) 0%, rgba(37, 99, 235, 0.25) 100%)';
+        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.5) 0%, rgba(249, 115, 22, 0.25) 100%)';
+        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.5) 0%, rgba(239, 68, 68, 0.25) 100%)';
+        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.5) 0%, rgba(139, 92, 246, 0.25) 100%)';
       }
     };
 
@@ -127,100 +127,134 @@ export default function TravauxSimplesPage() {
         style={{
           display: 'block',
           background: getBgGradient(travail.statut),
-          border: `1px solid ${statusColor}`,
-          borderLeft: `4px solid ${statusColor}`,
-          borderRadius: '12px',
-          padding: '1rem 1.25rem',
-          marginBottom: '0.75rem',
+          borderRadius: '16px',
+          padding: '1.25rem',
+          marginBottom: '1rem',
           textDecoration: 'none',
-          transition: 'all 0.2s ease'
+          transition: 'all 0.3s ease',
+          boxShadow: '0 4px 15px rgba(0, 0, 0, 0.2)',
+          border: '1px solid rgba(255, 255, 255, 0.1)'
         }}
         onMouseEnter={(e) => {
           e.currentTarget.style.background = getBgGradientHover(travail.statut);
-          e.currentTarget.style.transform = 'translateX(4px)';
-          e.currentTarget.style.boxShadow = `0 4px 20px rgba(37, 99, 235, 0.3)`;
+          e.currentTarget.style.transform = 'translateY(-4px)';
+          e.currentTarget.style.boxShadow = '0 8px 30px rgba(0, 0, 0, 0.3)';
+          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.2)';
         }}
         onMouseLeave={(e) => {
           e.currentTarget.style.background = getBgGradient(travail.statut);
-          e.currentTarget.style.transform = 'translateX(0)';
-          e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.transform = 'translateY(0)';
+          e.currentTarget.style.boxShadow = '0 4px 15px rgba(0, 0, 0, 0.2)';
+          e.currentTarget.style.borderColor = 'rgba(255, 255, 255, 0.1)';
         }}
       >
-        {/* Ligne 1 : Titre + % */}
+        {/* Header : Titre + Badge % */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '0.6rem'
+          alignItems: 'flex-start',
+          gap: '1rem',
+          marginBottom: '1rem'
         }}>
           <h3 style={{
             margin: 0,
-            fontSize: '1.05rem',
-            fontWeight: '600',
-            color: 'var(--gray-light)',
-            flex: 1,
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            marginRight: '1rem'
+            fontSize: '1.1rem',
+            fontWeight: '700',
+            color: 'white',
+            lineHeight: '1.4',
+            flex: 1
           }}>
             🔧 {travail.titre}
           </h3>
           <span style={{
-            fontSize: '1rem',
+            background: statusColor,
+            color: 'white',
+            padding: '0.35rem 0.75rem',
+            borderRadius: '20px',
+            fontSize: '0.9rem',
             fontWeight: '700',
-            color: statusColor,
             minWidth: '50px',
-            textAlign: 'right'
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
           }}>
             {progression}%
           </span>
         </div>
 
-        {/* Ligne 2 : Progress bar */}
+        {/* Progress bar */}
         <div style={{
-          height: '8px',
-          background: 'rgba(255,255,255,0.1)',
-          borderRadius: '4px',
+          height: '10px',
+          background: 'rgba(0, 0, 0, 0.3)',
+          borderRadius: '5px',
           overflow: 'hidden',
-          marginBottom: '0.6rem'
+          marginBottom: '1rem',
+          boxShadow: 'inset 0 2px 4px rgba(0, 0, 0, 0.2)'
         }}>
           <div style={{
-            width: `${progression}%`,
+            width: `${Math.max(progression, 2)}%`,
             height: '100%',
             background: progression === 100 
-              ? 'var(--green)' 
-              : 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
-            borderRadius: '4px',
-            transition: 'width 0.5s ease'
+              ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' 
+              : 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)',
+            borderRadius: '5px',
+            transition: 'width 0.5s ease',
+            boxShadow: '0 0 10px rgba(59, 130, 246, 0.5)'
           }}></div>
         </div>
 
-        {/* Ligne 3 : Stats */}
+        {/* Footer : Stats */}
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '1.25rem',
-          fontSize: '0.85rem',
-          color: 'var(--gray)'
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.75rem'
         }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-            <span style={{ color: 'var(--green)' }}>✅</span>
-            <span>{travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
-          </span>
-          {travail.duree_estimee_heures && (
-            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-              <span>⏱️</span>
-              <span>{formatDuree(travail.duree_estimee_heures)}</span>
-            </span>
-          )}
-          <span style={{
-            marginLeft: 'auto',
-            color: statusColor,
-            fontWeight: '600',
-            fontSize: '0.8rem'
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            fontSize: '0.9rem'
           }}>
-            {getStatusLabel(travail.statut)}
+            <span style={{ 
+              display: 'flex', 
+              alignItems: 'center', 
+              gap: '0.4rem',
+              background: 'rgba(0, 0, 0, 0.2)',
+              padding: '0.3rem 0.6rem',
+              borderRadius: '8px'
+            }}>
+              <span style={{ color: '#10b981' }}>✅</span>
+              <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                {travail.etapes_terminees}/{travail.nombre_etapes} étapes
+              </span>
+            </span>
+            {travail.duree_estimee_heures && (
+              <span style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: '0.4rem',
+                background: 'rgba(0, 0, 0, 0.2)',
+                padding: '0.3rem 0.6rem',
+                borderRadius: '8px'
+              }}>
+                <span>⏱️</span>
+                <span style={{ color: 'rgba(255, 255, 255, 0.9)' }}>
+                  {formatDuree(travail.duree_estimee_heures)}
+                </span>
+              </span>
+            )}
+          </div>
+          
+          <span style={{
+            background: 'rgba(255, 255, 255, 0.15)',
+            color: 'white',
+            padding: '0.3rem 0.75rem',
+            borderRadius: '8px',
+            fontSize: '0.8rem',
+            fontWeight: '600'
+          }}>
+            {getStatusLabel(travail.statut)} →
           </span>
         </div>
       </Link>
