@@ -13,7 +13,7 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getAllChantiers, getChantierStats, getChantierEtapesStats, deleteChantier } from '../lib/services/chantierService';
+import { getAllChantiers, getChantierStats, getChantierEtapesStats, deleteChantier } from '@/app/lib/services/chantierService';
 import Breadcrumb from '@/app/components/Breadcrumb';
 import { useToast } from '@/app/components/Toast';
 import MediaButtons from '@/app/components/MediaButtons';
