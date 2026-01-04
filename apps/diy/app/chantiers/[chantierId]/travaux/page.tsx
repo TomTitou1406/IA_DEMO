@@ -1136,175 +1136,93 @@ export default function TravauxPage() {
   const TravailCard = ({ travail }: { travail: Travail }) => {
     const isAnnulee = travail.statut === 'annulé';
     const statusColor = getStatusColor(travail.statut);
+    const progression = travail.progression || 0;
+    
+    // RGB pour le dégradé
+    const getStatusRgb = (statut: string) => {
+      switch (statut) {
+        case 'terminé': return '16, 185, 129';
+        case 'en_cours': return '37, 99, 235';
+        case 'bloqué': return '249, 115, 22';
+        case 'annulé': return '239, 68, 68';
+        case 'à_venir': return '139, 92, 246';
+        default: return '139, 92, 246';
+      }
+    };
+    const rgb = getStatusRgb(travail.statut);
     
     return (
       <div style={{
-        background: `linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, ${statusColor} 50%, #1a1a1a) 100%)`,
+        background: `linear-gradient(90deg, transparent 0%, rgba(${rgb}, 0.15) 50%, rgba(${rgb}, 0.4) 100%)`,
         borderRadius: '12px',
-        padding: '1rem',
+        borderLeft: `5px solid rgb(${rgb})`,
+        padding: '1rem 1.25rem',
         marginBottom: '0.75rem',
-        borderLeft: `4px solid ${statusColor}`,
-        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-        transition: 'all 0.2s',
-     }}
-     onMouseEnter={(e) => {
-        const rgba = statusColor === 'var(--blue)' ? 'rgba(37, 99, 235, 0.25)' :
-                     statusColor === 'var(--orange)' ? 'rgba(255, 107, 53, 0.25)' :
-                     statusColor === 'var(--green)' ? 'rgba(16, 185, 129, 0.25)' :
-                     statusColor === 'var(--purple)' ? 'rgba(168, 85, 247, 0.25)' :
-                     statusColor === 'var(--red)' ? 'rgba(239, 68, 68, 0.25)' :
-                     'rgba(107, 114, 128, 0.25)';
-        e.currentTarget.style.boxShadow = `0 4px 16px ${rgba}`;
-      }}
-      onMouseLeave={(e) => {
-        e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
+        transition: 'all 0.3s ease'
       }}>
-        {/* Header : Titre + Boutons EN LIGNE à droite */}
+        
+        {/* LIGNE 1 : Header - Titre + Boutons (SANS Annuler) */}
         <div style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'flex-start',
-          marginBottom: '0.75rem',
+          marginBottom: '0.5rem',
           gap: '1rem'
         }}>
-          <div style={{ flex: 1 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.35rem' }}>
-              <span style={{
-                background: statusColor,
-                color: 'white',
-                minWidth: '32px',
-                width: '32px',
-                height: '32px',
-                borderRadius: '50%',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontWeight: '700',
-                fontSize: '0.9rem',
-                flexShrink: 0
-              }}>
-                {travail.ordre}
-              </span>
-              <h3 style={{ 
-                fontSize: '1.05rem', 
-                margin: 0,
-                color: 'var(--gray-light)',
-                fontWeight: '700',
-                lineHeight: '1.2'
-              }}>
-                {getStatusIcon(travail.statut)} {travail.titre}
-                {travail.forcages?.forcages && travail.forcages.forcages.length > 0 && (
-                  <span 
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setShowForcageModal({ isOpen: true, travail });
-                    }}
-                    style={{ 
-                      marginLeft: '0.5rem',
-                      fontSize: '0.75rem',
-                      background: 'rgba(239, 68, 68, 0.2)',
-                      border: '1px solid #ef4444',
-                      borderRadius: '4px',
-                      padding: '0.15rem 0.4rem',
-                      color: '#ef4444',
-                      fontWeight: '600',
-                      cursor: 'pointer'
-                    }}
-                    title="Cliquez pour voir les forçages"
-                  >
-                    ⚡ Forcé
-                  </span>
-                )}
-              </h3>
-            </div>
-            {/* Description en dessous */}
-            {travail.description && (
-              <p style={{ 
-                fontSize: '0.85rem', 
-                color: 'var(--gray)', 
-                margin: 0,
-                marginLeft: '40px',
-                lineHeight: '1.4'
-              }}>
-                {travail.description}
-              </p>
-            )}
-            {/* Tags coûts/économies */}
-            <div style={{ 
-              display: 'flex', 
-              flexWrap: 'wrap', 
-              gap: '0.4rem', 
-              marginTop: '0.5rem',
-              marginLeft: '40px'
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+            <span style={{
+              background: statusColor,
+              color: 'white',
+              minWidth: '32px',
+              width: '32px',
+              height: '32px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontWeight: '700',
+              fontSize: '0.9rem',
+              flexShrink: 0
             }}>
-              {(travail.statut === 'à_venir' || travail.statut === 'en_cours') && !travail.cout_materiaux_estime && !travail.cout_estime ? (
-                <CardButton
-                  variant="secondary"
-                  color="var(--green)"
-                  icon="🛒"
-                  label="Générer panier"
-                  onClick={() => handleGenererPanier(travail)}
-                />
-              ) : (travail.cout_materiaux_estime || travail.cout_estime) ? (
-                <CardButton
-                  variant="primary"
-                  color="var(--green)"
-                  icon="🛒"
-                  label={`Voir panier (${travail.cout_materiaux_estime || travail.cout_estime}€)`}
-                  onClick={() => handleVoirPanier(travail)}
-                />
-              ) : null}
-              {(travail.economie_diy ?? 0) > 0 && (
-                <span style={{
-                  background: 'rgba(139, 92, 246, 0.15)',
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '12px',
-                  fontSize: '0.75rem',
-                  color: '#8b5cf6'
-                }}>
-                  💰 -{travail.economie_diy} €
+              {travail.ordre}
+            </span>
+            <h3 style={{ 
+              fontSize: '1.05rem', 
+              margin: 0,
+              color: 'white',
+              fontWeight: '700',
+              lineHeight: '1.2'
+            }}>
+              {getStatusIcon(travail.statut)} {travail.titre}
+              {travail.forcages?.forcages && travail.forcages.forcages.length > 0 && (
+                <span 
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowForcageModal({ isOpen: true, travail });
+                  }}
+                  style={{ 
+                    marginLeft: '0.5rem',
+                    fontSize: '0.75rem',
+                    background: 'rgba(239, 68, 68, 0.2)',
+                    border: '1px solid #ef4444',
+                    borderRadius: '4px',
+                    padding: '0.15rem 0.4rem',
+                    color: '#ef4444',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                  title="Cliquez pour voir les forçages"
+                >
+                  ⚡ Forcé
                 </span>
               )}
-              {travail.duree_estimee_heures && (
-                <span style={{
-                  background: 'rgba(245, 158, 11, 0.15)',
-                  padding: '0.2rem 0.5rem',
-                  borderRadius: '12px',
-                  fontSize: '0.75rem',
-                  color: '#f59e0b'
-                }}>
-                  ⏱️ {travail.duree_estimee_heures}h
-                </span>
-              )}
-            </div>
-            {travail.blocage_raison && (
-              <p style={{ 
-                fontSize: '0.85rem', 
-                color: 'var(--orange)', 
-                margin: 0,
-                marginTop: '0.5rem',
-                marginLeft: '40px',
-                fontStyle: 'italic',
-                padding: '0.5rem',
-                background: 'rgba(255, 107, 53, 0.1)',
-                borderRadius: '6px',
-                border: '1px solid rgba(255, 107, 53, 0.2)'
-              }}>
-                💬 {travail.blocage_raison}
-              </p>
-            )}
+            </h3>
           </div>
           
-          {/* BOUTONS EN LIGNE (horizontal) À DROITE */}
+          {/* Boutons action (SANS Annuler) */}
           {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
-            <div style={{ 
-              display: 'flex', 
-              gap: '0.5rem', 
-              flexShrink: 0,
-              alignItems: 'flex-start'
-            }}>
-
-              {/* Bouton VOIR LES ÉTAPES (seulement si étapes VALIDÉES, pas brouillon) */}
+            <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+              {/* Bouton VOIR LES ÉTAPES */}
               {(travail.statut === 'en_cours' || travail.statut === 'à_venir') && 
                travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && 
                (!travail.etapes_brouillon || travail.etapes_brouillon === 0) && (
@@ -1318,7 +1236,7 @@ export default function TravauxPage() {
                 />
               )}
               
-              {/* Bouton REPORTER pour EN COURS à 0% */}
+              {/* Bouton REPORTER */}
               {travail.statut === 'en_cours' && travail.progression === 0 && (
                 <CardButton
                   variant="secondary"
@@ -1329,7 +1247,7 @@ export default function TravauxPage() {
                     setModalConfig({
                       isOpen: true,
                       title: 'Reporter cette tâche ?',
-                      message: `"${travail.titre}" reviendra dans "À venir". Vous pourrez la redémarrer plus tard.`,
+                      message: `"${travail.titre}" reviendra dans "À venir".`,
                       onConfirm: async () => {
                         await reporterTravail(travail.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
@@ -1340,7 +1258,7 @@ export default function TravauxPage() {
                 />
               )}
               
-              {/* Bouton TOUT TERMINER pour EN COURS */}
+              {/* Bouton TOUT TERMINER */}
               {travail.statut === 'en_cours' && (
                 <CardButton
                   variant="secondary"
@@ -1351,7 +1269,7 @@ export default function TravauxPage() {
                     setModalConfig({
                       isOpen: true,
                       title: 'Tout terminer ?',
-                      message: `Toutes les étapes et tâches de "${travail.titre}" seront marquées comme terminées.`,
+                      message: `Toutes les étapes de "${travail.titre}" seront marquées terminées.`,
                       onConfirm: async () => {
                         await terminerToutesLesEtapes(travail.id);
                         await terminerTravail(travail.id);
@@ -1363,20 +1281,18 @@ export default function TravauxPage() {
                 />
               )}
 
-              {/* Bouton DÉBLOQUER pour BLOQUÉS */}
+              {/* Bouton DÉBLOQUER */}
               {travail.statut === 'bloqué' && (
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
                   icon="🔓"
                   label="Débloquer"
-                  onClick={() => {
-                    console.log('Débloquer travail:', travail.id);
-                  }}
+                  onClick={() => console.log('Débloquer:', travail.id)}
                 />
               )}
 
-              {/* Bouton REPRENDRE MISE EN ŒUVRE (si étapes brouillon) */}
+              {/* Bouton REPRENDRE MISE EN ŒUVRE */}
               {(travail.etapes_brouillon || 0) > 0 && (
                 <CardButton
                   variant="primary"
@@ -1384,26 +1300,22 @@ export default function TravauxPage() {
                   icon="🔧"
                   label="Reprendre mise en œuvre"
                   count={travail.etapes_brouillon}
-                  onClick={() => {
-                    router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`);
-                  }}
+                  onClick={() => router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`)}
                 />
               )}
 
-              {/* Bouton METTRE EN ŒUVRE pour À VENIR SANS étapes ET sans brouillon */}
+              {/* Bouton METTRE EN ŒUVRE */}
               {travail.statut === 'à_venir' && (!travail.nombre_etapes || travail.nombre_etapes === 0) && (!travail.etapes_brouillon || travail.etapes_brouillon === 0) && (
                 <CardButton
                   variant="primary"
                   color="var(--green)"
                   icon="🔧"
                   label="Mettre en œuvre"
-                  onClick={() => {
-                    router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`);
-                  }}
+                  onClick={() => router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`)}
                 />
               )}
 
-              {/* Bouton COMMENCER pour À VENIR AVEC étapes */}
+              {/* Bouton COMMENCER */}
               {travail.statut === 'à_venir' && travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && (
                 <CardButton
                   variant="primary"
@@ -1414,30 +1326,9 @@ export default function TravauxPage() {
                     setModalConfig({
                       isOpen: true,
                       title: 'Démarrer cette tâche ?',
-                      message: `"${travail.titre}" passera en cours et vous pourrez suivre sa progression.`,
+                      message: `"${travail.titre}" passera en cours.`,
                       onConfirm: async () => {
                         await commencerTravail(travail.id);
-                        setModalConfig({ ...modalConfig, isOpen: false });
-                        window.location.reload();
-                      }
-                    });
-                  }}
-                />
-              )}
-              
-              {/* Bouton ANNULER (pour en_cours, bloqué, à_venir) */}
-              {travail.statut !== 'terminé' && (
-                <CardButton
-                  variant="danger"
-                  icon="🗑️"
-                  label="Annuler"
-                  onClick={() => {
-                    setModalConfig({
-                      isOpen: true,
-                      title: 'Annuler cette tâche ?',
-                      message: `"${travail.titre}" sera marquée comme annulée. Vous pourrez toujours la réactiver plus tard.`,
-                      onConfirm: async () => {
-                        await annulerTravail(travail.id);
                         setModalConfig({ ...modalConfig, isOpen: false });
                         window.location.reload();
                       }
@@ -1459,7 +1350,7 @@ export default function TravauxPage() {
                 setModalConfig({
                   isOpen: true,
                   title: 'Réactiver cette tâche ?',
-                  message: `"${travail.titre}" reviendra dans "À venir" et pourra être planifiée.`,
+                  message: `"${travail.titre}" reviendra dans "À venir".`,
                   onConfirm: async () => {
                     await reactiverTravail(travail.id);
                     setModalConfig({ ...modalConfig, isOpen: false });
@@ -1471,127 +1362,198 @@ export default function TravauxPage() {
           )}
         </div>
 
-        {/* Progress bar OU Slider inline */}
-        {travail.statut === 'en_cours' && (
-          <>
-            {/* Barre de progression AUTO */}
-            {travail.statut === 'en_cours' && (
-              <div style={{ marginBottom: '0.5rem' }}>
-                <div style={{
-                  width: '100%',
-                  height: '6px',
-                  background: 'rgba(255,255,255,0.08)',
-                  borderRadius: '10px',
-                  overflow: 'hidden',
-                  marginBottom: '0.4rem'
-                }}>
-                  <div style={{
-                    width: `${travail.progression}%`,
-                    height: '100%',
-                    background: 'var(--blue)',
-                    transition: 'width 0.5s ease'
-                  }}></div>
-                </div>
-              </div>
-            )}
-
-            {/* Stats en ligne - TOUJOURS VISIBLE */}
-            <div style={{ 
-              display: 'flex',
-              flexWrap: 'wrap',
-              alignItems: 'center',
-              gap: '1.5rem',
-              fontSize: '0.85rem',
-              color: 'var(--gray)'
-            }}>
-              {/* % complété */}
-              <span style={{ 
-                color: 'var(--gray-light)', 
-                fontWeight: '700'
-              }}>
-                {travail.progression}% complété
-              </span>
-            
-              {/* Durée estimée */}
-              {travail.duree_estimee_heures && (
-                <span>⏱️ {travail.duree_estimee_heures}h estimées</span>
-              )}
-            
-              {/* Étapes avec détail */}
-              {travail.nombre_etapes && travail.nombre_etapes > 0 && (
-                <span>
-                  ✅ {travail.etapes_terminees || 0}/{travail.nombre_etapes}
-                  {(travail.etapes_terminees || 0) > 0 && (
-                    <span style={{ color: 'var(--green)', marginLeft: '0.5rem', fontWeight: '600' }}>
-                      • {travail.etapes_terminees} terminée{(travail.etapes_terminees || 0) > 1 ? 's' : ''}
-                    </span>
-                  )}
-                  {(travail.etapes_en_cours || 0) > 0 && (
-                    <span style={{ color: 'var(--blue)', marginLeft: '0.5rem', fontWeight: '600' }}>
-                      • {travail.etapes_en_cours} en cours
-                    </span>
-                  )}
-                  {(travail.etapes_bloquees || 0) > 0 && (
-                    <span style={{ color: 'var(--orange)', marginLeft: '0.5rem', fontWeight: '600' }}>
-                      • {travail.etapes_bloquees} bloquée{(travail.etapes_bloquees || 0) > 1 ? 's' : ''}
-                    </span>
-                  )}
-                </span>
-              )}
-            </div>
-          </>
+        {/* LIGNE 2 : Description */}
+        {travail.description && (
+          <p style={{ 
+            fontSize: '0.85rem', 
+            color: 'rgba(255,255,255,0.7)', 
+            margin: 0,
+            marginBottom: '0.75rem',
+            marginLeft: '40px',
+            lineHeight: '1.4'
+          }}>
+            {travail.description}
+          </p>
         )}
-        {/* Boutons Photos & Vidéos */}
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'flex-end',
-          marginTop: '0.75rem',
-          paddingTop: '0.5rem',
-          borderTop: '1px solid rgba(255,255,255,0.06)'
+
+        {/* Blocage raison si présent */}
+        {travail.blocage_raison && (
+          <p style={{ 
+            fontSize: '0.85rem', 
+            color: 'var(--orange)', 
+            margin: 0,
+            marginBottom: '0.75rem',
+            marginLeft: '40px',
+            fontStyle: 'italic',
+            padding: '0.5rem',
+            background: 'rgba(255, 107, 53, 0.1)',
+            borderRadius: '6px',
+            border: '1px solid rgba(255, 107, 53, 0.2)'
+          }}>
+            💬 {travail.blocage_raison}
+          </p>
+        )}
+
+        {/* LIGNE 3 : Progress bar */}
+        <div style={{
+          height: '6px',
+          background: 'rgba(255, 255, 255, 0.1)',
+          borderRadius: '3px',
+          overflow: 'hidden',
+          marginBottom: '0.75rem'
         }}>
-          <MediaButtons
-            niveau="travail"
-            niveauId={travail.id}
-            niveauTitre={travail.titre}
-            photosCount={travail.photos_urls?.length || 0}
-            hasVideo={!!travail.video_aide?.video_id}
-            videoTitre={travail.video_aide?.titre}
-            compact
-            onPhotoClick={() => {
-              setPhotosModalConfig({
-                niveau: 'travail',
-                niveauId: travail.id,
-                niveauTitre: travail.titre,
-                photos: travail.photos_urls || []
-              });
-              setShowPhotosModal(true);
-            }}
-            onVideoClick={() => {
-              if (travail.video_aide?.video_id) {
-                setVideoModalConfig({
+          <div style={{
+            width: `${Math.max(progression, 2)}%`,
+            height: '100%',
+            background: progression === 100 
+              ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' 
+              : `linear-gradient(90deg, rgb(${rgb}) 0%, #10b981 100%)`,
+            borderRadius: '3px',
+            transition: 'width 0.5s ease'
+          }}></div>
+        </div>
+
+        {/* LIGNE 4 : Stats + Panier + MediaButtons + Poubelle */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          fontSize: '0.85rem',
+          color: 'white'
+        }}>
+          {/* Gauche : %, Panier, Durée, Étapes */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+            <span style={{ fontWeight: '700' }}>{progression}%</span>
+            
+            {/* Bouton Panier */}
+            {(travail.statut === 'à_venir' || travail.statut === 'en_cours') && !travail.cout_materiaux_estime && !travail.cout_estime ? (
+              <button
+                onClick={() => handleGenererPanier(travail)}
+                style={{
+                  background: 'var(--green)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.25rem 0.6rem',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}
+              >
+                🛒 Générer panier
+              </button>
+            ) : (travail.cout_materiaux_estime || travail.cout_estime) ? (
+              <button
+                onClick={() => handleVoirPanier(travail)}
+                style={{
+                  background: 'var(--green)',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '8px',
+                  padding: '0.25rem 0.6rem',
+                  fontSize: '0.8rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.3rem'
+                }}
+              >
+                🛒 {travail.cout_materiaux_estime || travail.cout_estime}€
+              </button>
+            ) : null}
+            
+            {/* Durée (sans fond) */}
+            {travail.duree_estimee_heures && (
+              <span>⏱️ {travail.duree_estimee_heures}h</span>
+            )}
+            
+            {/* Étapes */}
+            {travail.nombre_etapes !== undefined && travail.nombre_etapes > 0 && (
+              <span>✅ {travail.etapes_terminees || 0}/{travail.nombre_etapes} étapes</span>
+            )}
+          </div>
+
+          {/* Droite : MediaButtons + Poubelle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <MediaButtons
+              niveau="travail"
+              niveauId={travail.id}
+              niveauTitre={travail.titre}
+              photosCount={travail.photos_urls?.length || 0}
+              hasVideo={!!travail.video_aide?.video_id}
+              videoTitre={travail.video_aide?.titre}
+              compact
+              onPhotoClick={() => {
+                setPhotosModalConfig({
                   niveau: 'travail',
                   niveauId: travail.id,
-                  video: {
-                    id: travail.video_aide.video_id,
-                    title: travail.video_aide.titre,
-                    thumbnail: travail.video_aide.thumbnail,
-                    channelTitle: '',
-                    viewCount: 0,
-                    duration: ''
-                  }
+                  niveauTitre: travail.titre,
+                  photos: travail.photos_urls || []
                 });
-                setShowVideoModal(true);
-              } else {
-                // Ouvrir modale de choix
-                setVideoChoiceContext({
-                  niveau: 'travail',
-                  id: travail.id,
-                  titre: travail.titre
-                });
-                setShowVideoChoiceModal(true);
-              }
-            }}
-          />
+                setShowPhotosModal(true);
+              }}
+              onVideoClick={() => {
+                if (travail.video_aide?.video_id) {
+                  setVideoModalConfig({
+                    niveau: 'travail',
+                    niveauId: travail.id,
+                    video: {
+                      id: travail.video_aide.video_id,
+                      title: travail.video_aide.titre,
+                      thumbnail: travail.video_aide.thumbnail,
+                      channelTitle: '',
+                      viewCount: 0,
+                      duration: ''
+                    }
+                  });
+                  setShowVideoModal(true);
+                } else {
+                  setVideoChoiceContext({
+                    niveau: 'travail',
+                    id: travail.id,
+                    titre: travail.titre
+                  });
+                  setShowVideoChoiceModal(true);
+                }
+              }}
+            />
+            
+            {/* Poubelle (remplace bouton Annuler) */}
+            {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
+              <button
+                onClick={() => {
+                  setModalConfig({
+                    isOpen: true,
+                    title: 'Annuler cette tâche ?',
+                    message: `"${travail.titre}" sera marquée comme annulée.`,
+                    onConfirm: async () => {
+                      await annulerTravail(travail.id);
+                      setModalConfig({ ...modalConfig, isOpen: false });
+                      window.location.reload();
+                    }
+                  });
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.3rem',
+                  opacity: 0.6,
+                  transition: 'opacity 0.2s',
+                  fontSize: '1rem'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                title="Annuler"
+              >
+                🗑️
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );
