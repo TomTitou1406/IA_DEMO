@@ -99,14 +99,35 @@ export default function TravauxSimplesPage() {
       : 0;
 
     const statusColor = getStatusColor(travail.statut);
+    
+    // Couleurs de fond selon statut
+    const getBgGradient = (statut: string) => {
+      switch (statut) {
+        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%)';
+        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.15) 0%, rgba(37, 99, 235, 0.05) 100%)';
+        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.15) 0%, rgba(249, 115, 22, 0.05) 100%)';
+        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%)';
+        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.15) 0%, rgba(139, 92, 246, 0.05) 100%)';
+      }
+    };
+
+    const getBgGradientHover = (statut: string) => {
+      switch (statut) {
+        case 'terminé': return 'linear-gradient(135deg, rgba(16, 185, 129, 0.25) 0%, rgba(16, 185, 129, 0.1) 100%)';
+        case 'en_cours': return 'linear-gradient(135deg, rgba(37, 99, 235, 0.25) 0%, rgba(37, 99, 235, 0.1) 100%)';
+        case 'bloqué': return 'linear-gradient(135deg, rgba(249, 115, 22, 0.25) 0%, rgba(249, 115, 22, 0.1) 100%)';
+        case 'annulé': return 'linear-gradient(135deg, rgba(239, 68, 68, 0.25) 0%, rgba(239, 68, 68, 0.1) 100%)';
+        default: return 'linear-gradient(135deg, rgba(139, 92, 246, 0.25) 0%, rgba(139, 92, 246, 0.1) 100%)';
+      }
+    };
 
     return (
       <Link
         href={`/chantiers/${travail.chantier_id}/travaux/${travail.id}/etapes`}
         style={{
           display: 'block',
-          background: `linear-gradient(135deg, ${statusColor}15 0%, ${statusColor}05 100%)`,
-          border: `1px solid ${statusColor}30`,
+          background: getBgGradient(travail.statut),
+          border: `1px solid ${statusColor}`,
           borderLeft: `4px solid ${statusColor}`,
           borderRadius: '12px',
           padding: '1rem 1.25rem',
@@ -115,12 +136,12 @@ export default function TravauxSimplesPage() {
           transition: 'all 0.2s ease'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = `linear-gradient(135deg, ${statusColor}25 0%, ${statusColor}10 100%)`;
+          e.currentTarget.style.background = getBgGradientHover(travail.statut);
           e.currentTarget.style.transform = 'translateX(4px)';
-          e.currentTarget.style.boxShadow = `0 4px 20px ${statusColor}20`;
+          e.currentTarget.style.boxShadow = `0 4px 20px rgba(37, 99, 235, 0.3)`;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = `linear-gradient(135deg, ${statusColor}15 0%, ${statusColor}05 100%)`;
+          e.currentTarget.style.background = getBgGradient(travail.statut);
           e.currentTarget.style.transform = 'translateX(0)';
           e.currentTarget.style.boxShadow = 'none';
         }}
