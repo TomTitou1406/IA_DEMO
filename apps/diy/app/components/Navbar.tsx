@@ -1040,7 +1040,7 @@ export default function Navbar({ className }: NavbarProps) {
                               {article.nom}
                             </p>
                             <p style={{ color: 'var(--gray-light)', margin: '0.25rem 0 0 0', fontSize: '0.75rem', opacity: 0.8 }}>
-                              {article.quantite} {article.unite} × {article.prixUnitaire}€
+                              {article.prixUnitaire}€/{article.unite} × {article.quantite}
                             </p>
                           </div>
                           <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '0.95rem' }}>
