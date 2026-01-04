@@ -5,13 +5,14 @@
  * - Travaux simples (tâches ponctuelles)
  * - Chantiers (projets structurés)
  * 
- * Design : 2 cards horizontales style Home
+ * Design : 2 cards horizontales style Home avec images
  * 
- * @version 1.0
+ * @version 1.1
  * @date 04 janvier 2026
  * 
  * Changelog :
- * - v1.0 : Création du HUB avec 2 cards (travaux simples + chantiers)
+ * - v1.1 : Ajout images, texte modifié, counts
+ * - v1.0 : Création du HUB avec 2 cards
  */
 
 'use client';
@@ -47,8 +48,8 @@ export default function ChantiersHubPage() {
     }
 
     try {
-      // Compter les chantiers
-      const chantiersRes = await fetch('/api/chantiers?count_only=true');
+      // Compter les chantiers (type complexe)
+      const chantiersRes = await fetch('/api/chantiers?type=complexe&count_only=true');
       if (chantiersRes.ok) {
         const data = await chantiersRes.json();
         setCounts(prev => ({ ...prev, chantiers: data.count || 0 }));
@@ -125,19 +126,29 @@ export default function ChantiersHubPage() {
             e.currentTarget.style.borderColor = 'transparent';
           }}
         >
+          {/* Image */}
           <div style={{
-            width: '60px',
-            height: '60px',
-            minWidth: '60px',
+            width: '70px',
+            height: '70px',
+            minWidth: '70px',
             borderRadius: '12px',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.75rem'
+            overflow: 'hidden',
+            background: 'rgba(255,255,255,0.1)'
           }}>
-            🔧
+            <img 
+              src="/images/travaux_liste.webp" 
+              alt="Travaux simples"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
+          
           <div style={{ flex: 1 }}>
             <h2 style={{ 
               margin: 0, 
@@ -165,7 +176,7 @@ export default function ChantiersHubPage() {
               fontSize: '0.85rem', 
               opacity: 0.9 
             }}>
-              Tâches ponctuelles sans prise de tête
+              Petits travaux faciles de bricolage
             </p>
           </div>
           <span style={{ fontSize: '1.5rem', opacity: 0.8 }}>→</span>
@@ -197,19 +208,29 @@ export default function ChantiersHubPage() {
             e.currentTarget.style.borderColor = 'transparent';
           }}
         >
+          {/* Image */}
           <div style={{
-            width: '60px',
-            height: '60px',
-            minWidth: '60px',
+            width: '70px',
+            height: '70px',
+            minWidth: '70px',
             borderRadius: '12px',
-            background: 'rgba(255,255,255,0.2)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            fontSize: '1.75rem'
+            overflow: 'hidden',
+            background: 'rgba(255,255,255,0.1)'
           }}>
-            🏗️
+            <img 
+              src="/images/chantiers_liste.webp" 
+              alt="Chantiers"
+              style={{
+                width: '100%',
+                height: '100%',
+                objectFit: 'cover'
+              }}
+              onError={(e) => {
+                (e.target as HTMLImageElement).style.display = 'none';
+              }}
+            />
           </div>
+          
           <div style={{ flex: 1 }}>
             <h2 style={{ 
               margin: 0, 
