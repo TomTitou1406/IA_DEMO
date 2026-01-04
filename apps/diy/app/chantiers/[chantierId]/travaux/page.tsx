@@ -1781,30 +1781,38 @@ export default function TravauxPage() {
                     borderRadius: '8px',
                     border: '1px solid rgba(16, 185, 129, 0.4)',
                     background: 'rgba(16, 185, 129, 0.1)',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    color: 'var(--green)'
                   }}
                   onMouseEnter={(e) => {
                     e.currentTarget.style.background = '#10b981';
                     e.currentTarget.style.borderColor = '#10b981';
-                    e.currentTarget.style.color = 'white';
                     e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
                     e.currentTarget.style.transform = 'translateY(-2px)';
+                    // Passer tous les textes en blanc
+                    e.currentTarget.querySelectorAll('strong, span').forEach((el: any) => {
+                      el.dataset.originalColor = el.style.color;
+                      el.style.color = 'white';
+                    });
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
                     e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-                    e.currentTarget.style.color = '';
                     e.currentTarget.style.boxShadow = 'none';
                     e.currentTarget.style.transform = 'translateY(0)';
+                    // Restaurer les couleurs originales
+                    e.currentTarget.querySelectorAll('strong, span').forEach((el: any) => {
+                      el.style.color = el.dataset.originalColor || '';
+                    });
                   }}
                   title="Voir tous les paniers"
                 >
                   <span style={{ fontSize: '1.1rem' }}>🛒</span>
                   <span>
-                    <strong style={{ color: 'var(--green)', fontWeight: '700' }}>
+                    <strong style={{ fontWeight: '700' }}>
                       {totalPaniers > 0 ? `${totalPaniers.toLocaleString()}€` : 'Paniers'}
                     </strong>
-                    <span style={{ opacity: 0.7, color: 'var(--gray-light)' }}> ({lotsAvecPanier}/{travaux.length})</span>
+                    <span style={{ opacity: 0.7, marginLeft: '0.3rem' }}>({lotsAvecPanier}/{travaux.length})</span>
                   </span>
                 </div>
               );
