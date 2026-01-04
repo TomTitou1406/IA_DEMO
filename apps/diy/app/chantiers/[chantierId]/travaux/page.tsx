@@ -459,7 +459,7 @@ function PanierModal({
                               fontSize: '0.75rem',
                               opacity: 0.8
                             }}>
-                              {quantite} {unite} × {prixUnitaire}€
+                              {prixUnitaire}€/{unite} × {quantite}
                             </p>
                           </div>
                           <span style={{ 
@@ -538,7 +538,7 @@ function PanierModal({
                               fontSize: '0.75rem',
                               opacity: 0.8
                             }}>
-                              {quantite} {unite} × {prixUnitaire}€
+                              {prixUnitaire}€/{unite} × {quantite}
                             </p>
                           </div>
                           <span style={{ 
