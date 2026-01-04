@@ -360,8 +360,8 @@ export default function Navbar({ className }: NavbarProps) {
           gap: mobile ? '0.2rem' : '0.5rem',
           padding: mobile ? '0.4rem' : '0.5rem 0.85rem',
           borderRadius: mobile ? '0' : '10px',
-          border: hasItems && !mobile ? '1px solid #10b981' : '1px solid transparent',
-          background: hasItems && !mobile ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+          border: '1px solid transparent',
+          background: 'transparent',
           color: hasItems ? '#10b981' : 'rgba(255,255,255,0.7)',
           fontSize: mobile ? '0.6rem' : '0.85rem',
           fontWeight: hasItems ? '600' : '500',
@@ -378,8 +378,8 @@ export default function Navbar({ className }: NavbarProps) {
           e.currentTarget.style.transform = 'translateY(-2px)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = hasItems && !mobile ? 'rgba(16, 185, 129, 0.15)' : 'transparent';
-          e.currentTarget.style.borderColor = hasItems && !mobile ? '#10b981' : 'transparent';
+          e.currentTarget.style.background = 'transparent';
+          e.currentTarget.style.borderColor = 'transparent';
           e.currentTarget.style.borderColor = hasItems ? '#10b981' : 'transparent';
           e.currentTarget.style.boxShadow = 'none';
           e.currentTarget.style.transform = 'translateY(0)';
@@ -1274,26 +1274,9 @@ export default function Navbar({ className }: NavbarProps) {
         </button>
 
         {/* Droite : Gamification + Compte */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <GamificationBadge size={32} />
-          <button
-            onClick={() => router.push('/compte')}
-            style={{
-              width: '36px',
-              height: '36px',
-              borderRadius: '50%',
-              background: 'rgba(255,255,255,0.1)',
-              border: '2px solid rgba(255,255,255,0.2)',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              fontSize: '1.1rem',
-              transition: 'all 0.2s'
-            }}
-          >
-            👤
-          </button>
+          <AccountButton mobile />
         </div>
       </header>
 
@@ -1325,7 +1308,7 @@ export default function Navbar({ className }: NavbarProps) {
         <HelpButton mobile />
       </nav>
 
-      <div style={{ height: isMobile ? '42px' : '50px' }} />
+      <div style={{ height: isMobile ? '36px' : '50px' }} />
       {isMobile && <div style={{ height: '65px' }} />}
 
       {showCartModal && <CartModal />}
