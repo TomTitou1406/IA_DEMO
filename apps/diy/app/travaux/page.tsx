@@ -98,29 +98,31 @@ export default function TravauxSimplesPage() {
       ? Math.round((travail.etapes_terminees / travail.nombre_etapes) * 100)
       : 0;
 
+    const statusColor = getStatusColor(travail.statut);
+
     return (
       <Link
         href={`/chantiers/${travail.chantier_id}/travaux/${travail.id}/etapes`}
         style={{
           display: 'block',
-          background: 'rgba(255,255,255,0.03)',
-          border: `1px solid ${getStatusColor(travail.statut)}30`,
-          borderLeft: `4px solid ${getStatusColor(travail.statut)}`,
+          background: `linear-gradient(135deg, ${statusColor}15 0%, ${statusColor}05 100%)`,
+          border: `1px solid ${statusColor}30`,
+          borderLeft: `4px solid ${statusColor}`,
           borderRadius: '12px',
-          padding: '0.85rem 1rem',
+          padding: '1rem 1.25rem',
           marginBottom: '0.75rem',
           textDecoration: 'none',
           transition: 'all 0.2s ease'
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.06)';
+          e.currentTarget.style.background = `linear-gradient(135deg, ${statusColor}25 0%, ${statusColor}10 100%)`;
           e.currentTarget.style.transform = 'translateX(4px)';
-          e.currentTarget.style.borderColor = getStatusColor(travail.statut);
+          e.currentTarget.style.boxShadow = `0 4px 20px ${statusColor}20`;
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+          e.currentTarget.style.background = `linear-gradient(135deg, ${statusColor}15 0%, ${statusColor}05 100%)`;
           e.currentTarget.style.transform = 'translateX(0)';
-          e.currentTarget.style.borderColor = `${getStatusColor(travail.statut)}30`;
+          e.currentTarget.style.boxShadow = 'none';
         }}
       >
         {/* Ligne 1 : Titre + % */}
@@ -128,11 +130,11 @@ export default function TravauxSimplesPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '0.5rem'
+          marginBottom: '0.6rem'
         }}>
           <h3 style={{
             margin: 0,
-            fontSize: '1rem',
+            fontSize: '1.05rem',
             fontWeight: '600',
             color: 'var(--gray-light)',
             flex: 1,
@@ -144,10 +146,10 @@ export default function TravauxSimplesPage() {
             🔧 {travail.titre}
           </h3>
           <span style={{
-            fontSize: '0.9rem',
+            fontSize: '1rem',
             fontWeight: '700',
-            color: getStatusColor(travail.statut),
-            minWidth: '45px',
+            color: statusColor,
+            minWidth: '50px',
             textAlign: 'right'
           }}>
             {progression}%
@@ -156,11 +158,11 @@ export default function TravauxSimplesPage() {
 
         {/* Ligne 2 : Progress bar */}
         <div style={{
-          height: '6px',
+          height: '8px',
           background: 'rgba(255,255,255,0.1)',
-          borderRadius: '3px',
+          borderRadius: '4px',
           overflow: 'hidden',
-          marginBottom: '0.5rem'
+          marginBottom: '0.6rem'
         }}>
           <div style={{
             width: `${progression}%`,
@@ -168,6 +170,7 @@ export default function TravauxSimplesPage() {
             background: progression === 100 
               ? 'var(--green)' 
               : 'linear-gradient(90deg, var(--blue) 0%, var(--green) 100%)',
+            borderRadius: '4px',
             transition: 'width 0.5s ease'
           }}></div>
         </div>
@@ -176,22 +179,25 @@ export default function TravauxSimplesPage() {
         <div style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '1rem',
-          fontSize: '0.8rem',
+          gap: '1.25rem',
+          fontSize: '0.85rem',
           color: 'var(--gray)'
         }}>
-          <span>
-            ✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes
+          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            <span style={{ color: 'var(--green)' }}>✅</span>
+            <span>{travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
           </span>
           {travail.duree_estimee_heures && (
-            <span>
-              ⏱️ {formatDuree(travail.duree_estimee_heures)}
+            <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+              <span>⏱️</span>
+              <span>{formatDuree(travail.duree_estimee_heures)}</span>
             </span>
           )}
           <span style={{
             marginLeft: 'auto',
-            color: getStatusColor(travail.statut),
-            fontWeight: '500'
+            color: statusColor,
+            fontWeight: '600',
+            fontSize: '0.8rem'
           }}>
             {getStatusLabel(travail.statut)}
           </span>
@@ -353,7 +359,7 @@ export default function TravauxSimplesPage() {
           }}
         >
           <span>+</span>
-          <span>Nouveau travail</span>
+          <span>Nouveau</span>
         </button>
       </div>
 
