@@ -964,57 +964,61 @@ export default function TravauxPage() {
               marginLeft: '40px'
             }}>
               {(travail.statut === 'à_venir' || travail.statut === 'en_cours') && !travail.cout_materiaux_estime && !travail.cout_estime ? (
-                <span 
+                <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleGenererPanier(travail);
                   }}
                   style={{
-                    background: 'rgba(107, 114, 128, 0.15)',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '12px',
+                    background: 'rgba(16, 185, 129, 0.15)',
+                    border: '1px dashed #10b981',
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '8px',
                     fontSize: '0.75rem',
-                    color: '#9ca3af',
+                    color: '#10b981',
                     cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    fontWeight: '500'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)';
-                    e.currentTarget.style.color = '#10b981';
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.3)';
+                    e.currentTarget.style.borderStyle = 'solid';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(107, 114, 128, 0.15)';
-                    e.currentTarget.style.color = '#9ca3af';
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.borderStyle = 'dashed';
                   }}
                   title="Cliquez pour générer le panier"
                 >
-                  🛒 À calculer
-                </span>
+                  🛒 Générer panier
+                </button>
               ) : (travail.cout_materiaux_estime || travail.cout_estime) ? (
-                <span 
+                <button 
                   onClick={(e) => {
                     e.stopPropagation();
                     handleVoirPanier(travail);
                   }}
                   style={{
-                    background: 'rgba(16, 185, 129, 0.15)',
-                    padding: '0.2rem 0.5rem',
-                    borderRadius: '12px',
+                    background: 'rgba(16, 185, 129, 0.2)',
+                    border: '1px solid #10b981',
+                    padding: '0.3rem 0.6rem',
+                    borderRadius: '8px',
                     fontSize: '0.75rem',
                     color: '#10b981',
                     cursor: 'pointer',
-                    transition: 'all 0.2s'
+                    transition: 'all 0.2s',
+                    fontWeight: '600'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.3)';
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.35)';
                   }}
                   onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.15)';
+                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
                   }}
                   title="Cliquez pour voir le panier"
                 >
-                  🛒 {travail.cout_materiaux_estime || travail.cout_estime} €
-                </span>
+                  🛒 Voir panier ({travail.cout_materiaux_estime || travail.cout_estime}€)
+                </button>
               ) : null}
               {(travail.economie_diy ?? 0) > 0 && (
                 <span style={{
