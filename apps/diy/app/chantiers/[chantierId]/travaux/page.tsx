@@ -384,31 +384,45 @@ function PanierModal({
             <>
               {/* Note explicative */}
               <div style={{
-                background: 'rgba(245, 158, 11, 0.1)',
-                border: '1px solid rgba(245, 158, 11, 0.3)',
+                background: 'rgba(245, 158, 11, 0.15)',
+                border: '1px solid rgba(245, 158, 11, 0.4)',
                 borderRadius: '8px',
                 padding: '0.75rem',
                 marginBottom: '1rem',
                 fontSize: '0.8rem',
-                color: '#f59e0b'
+                color: '#fbbf24'
               }}>
-                💡 Estimation basée sur les prix moyens GSB (Leroy Merlin, Castorama). 
-                Les prix réels peuvent varier selon les enseignes et promotions.
+                ⚠️ <strong>Estimation indicative</strong> basée sur des moyennes GSB. 
+                Quantités et prix à affiner selon votre configuration réelle.
               </div>
 
               {/* Matériaux */}
               {panier.articles?.filter((a: any) => a.categorie === 'materiau').length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
-                  <h4 style={{ 
-                    color: 'var(--gray-light)', 
-                    fontSize: '0.9rem', 
-                    marginBottom: '0.5rem',
+                  <div style={{ 
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    marginBottom: '0.5rem'
                   }}>
-                    📦 Matériaux
-                  </h4>
+                    <h4 style={{ 
+                      color: 'var(--gray-light)', 
+                      fontSize: '0.9rem', 
+                      margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      📦 Matériaux
+                    </h4>
+                    <span style={{ 
+                      color: 'var(--gray)', 
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}>
+                      Total TTC
+                    </span>
+                  </div>
                   {panier.articles
                     .filter((a: any) => a.categorie === 'consommable')
                     .map((article: any, idx: number) => {
@@ -440,9 +454,10 @@ function PanierModal({
                               {article.nom}
                             </p>
                             <p style={{ 
-                              color: 'var(--gray)', 
+                              color: 'var(--gray-light)', 
                               margin: '0.25rem 0 0 0', 
-                              fontSize: '0.75rem' 
+                              fontSize: '0.75rem',
+                              opacity: 0.8
                             }}>
                               {quantite} {unite} × {prixUnitaire}€
                             </p>
@@ -463,16 +478,30 @@ function PanierModal({
               {/* Consommables */}
               {panier.articles?.filter((a: any) => a.categorie === 'consommable').length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
-                  <h4 style={{ 
-                    color: 'var(--gray-light)', 
-                    fontSize: '0.9rem', 
-                    marginBottom: '0.5rem',
+                  <div style={{ 
                     display: 'flex',
+                    justifyContent: 'space-between',
                     alignItems: 'center',
-                    gap: '0.5rem'
+                    marginBottom: '0.5rem'
                   }}>
-                    🧴 Consommables
-                  </h4>
+                    <h4 style={{ 
+                      color: 'var(--gray-light)', 
+                      fontSize: '0.9rem', 
+                      margin: 0,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}>
+                      🧴 Consommables
+                    </h4>
+                    <span style={{ 
+                      color: 'var(--gray)', 
+                      fontSize: '0.75rem',
+                      fontWeight: '600'
+                    }}>
+                      Total TTC
+                    </span>
+                  </div>
                   {panier.articles
                     .filter((a: any) => a.categorie === 'consommable')
                     .map((article: any, idx: number) => {
@@ -504,9 +533,10 @@ function PanierModal({
                               {article.nom}
                             </p>
                             <p style={{ 
-                              color: 'var(--gray)', 
+                              color: 'var(--gray-light)', 
                               margin: '0.25rem 0 0 0', 
-                              fontSize: '0.75rem' 
+                              fontSize: '0.75rem',
+                              opacity: 0.8
                             }}>
                               {quantite} {unite} × {prixUnitaire}€
                             </p>
