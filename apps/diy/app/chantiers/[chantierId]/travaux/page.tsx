@@ -1784,12 +1784,18 @@ export default function TravauxPage() {
                     transition: 'all 0.2s'
                   }}
                   onMouseEnter={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.25)';
-                    e.currentTarget.style.borderColor = 'var(--green)';
+                    e.currentTarget.style.background = '#10b981';
+                    e.currentTarget.style.borderColor = '#10b981';
+                    e.currentTarget.style.color = 'white';
+                    e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
+                    e.currentTarget.style.transform = 'translateY(-2px)';
                   }}
                   onMouseLeave={(e) => {
                     e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
                     e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                    e.currentTarget.style.color = '';
+                    e.currentTarget.style.boxShadow = 'none';
+                    e.currentTarget.style.transform = 'translateY(0)';
                   }}
                   title="Voir tous les paniers"
                 >
