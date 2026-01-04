@@ -15,16 +15,18 @@ export default function HomePage() {
       {/* Navigation Cards */}
       <div className="hub-grid">
         {/* Card 1 : Mes Projets - ACTIVE */}
-        <div className="main-card card-orange">
+        <Link href="/chantiers" className="main-card card-orange">
           <div className="card-illu">
             <img src="/images/chantiers.webp" alt="Mes projets" />
           </div>
-          <h3>Travaux et Chantiers</h3>
-          <p>Crée et pilote tes chantiers</p>
-          <Link href="/chantiers" className="main-btn btn-orange">
+          <div className="card-content">
+            <h3>Travaux et Chantiers</h3>
+            <p>Crée et pilote tes chantiers</p>
+          </div>
+          <span className="main-btn btn-orange">
             Accéder à mes projets
-          </Link>
-        </div>
+          </span>
+        </Link>
 
         {/* Card 2 : Assistance - ACTIVE */}
         <div 
@@ -42,8 +44,10 @@ export default function HomePage() {
           <div className="card-illu">
             <img src="/images/assistance.webp" alt="Besoin d'aide" />
           </div>
-          <h3>J'ai besoin d'aide</h3>
-          <p>Coup de pouce précis et rapide</p>
+          <div className="card-content">
+            <h3>J'ai besoin d'aide</h3>
+            <p>Coup de pouce précis et rapide</p>
+          </div>
           <button className="main-btn btn-blue">
             Bricolons ensemble
           </button>
@@ -65,8 +69,10 @@ export default function HomePage() {
           <div className="card-illu">
             <img src="/images/tutos.webp" alt="Tous les tutos utiles" />
           </div>
-          <h3>Tutos & Astuces</h3>
-          <p>Guides vidéos illustrés</p>
+          <div className="card-content">
+            <h3>Tutos & Astuces</h3>
+            <p>Guides vidéos illustrés</p>
+          </div>
           <button className="main-btn btn-green">
             Chercher une vidéo
           </button>
@@ -75,3 +81,4 @@ export default function HomePage() {
     </div>
   );
 }
+
