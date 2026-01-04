@@ -397,7 +397,7 @@ function PanierModal({
               </div>
 
               {/* Matériaux */}
-              {panier.articles?.filter((a: any) => a.categorie === 'materiau').length > 0 && (
+              {panier.articles?.filter((a: any) => (a.categorie || '').toLowerCase() === 'materiau').length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
                   <div style={{ 
                     display: 'flex',
@@ -424,7 +424,7 @@ function PanierModal({
                     </span>
                   </div>
                   {panier.articles
-                    .filter((a: any) => a.categorie === 'consommable')
+                    .filter((a: any) => (a.categorie || '').toLowerCase() === 'materiau')
                     .map((article: any, idx: number) => {
                       const quantite = article.quantite ?? article.quantite_prevue ?? 0;
                       const unite = article.unite ?? '';
@@ -476,7 +476,7 @@ function PanierModal({
               )}
 
               {/* Consommables */}
-              {panier.articles?.filter((a: any) => a.categorie === 'consommable').length > 0 && (
+              {panier.articles?.filter((a: any) => (a.categorie || '').toLowerCase() === 'consommable').length > 0 && (
                 <div style={{ marginBottom: '1rem' }}>
                   <div style={{ 
                     display: 'flex',
@@ -503,7 +503,7 @@ function PanierModal({
                     </span>
                   </div>
                   {panier.articles
-                    .filter((a: any) => a.categorie === 'consommable')
+                    .filter((a: any) => (a.categorie || '').toLowerCase() === 'consommable')
                     .map((article: any, idx: number) => {
                       const quantite = article.quantite ?? article.quantite_prevue ?? 0;
                       const unite = article.unite ?? '';
