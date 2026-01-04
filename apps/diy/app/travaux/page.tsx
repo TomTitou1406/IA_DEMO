@@ -475,7 +475,7 @@ export default function TravauxSimplesPage() {
   return (
     <>
       <Breadcrumb 
-        currentLevel="travaux_simples"
+        currentLevel="chantiers"
       />
 
       <div style={{ 
