@@ -1535,19 +1535,25 @@ export default function TravauxPage() {
               </span>
             </div>
             
-            {/* Budget - SANS COULEUR VERTE */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>💰</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats?.budgetReel?.toLocaleString() || 0}€
-                </strong>
-                <span style={{ opacity: 0.6 }}> / {stats?.budgetEstime?.toLocaleString() || 0}€</span>
-                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                  {stats?.progressionBudget || 0}%
-                </span>
-              </span>
-            </div>
+            {/* Total Paniers techniques */}
+            {(() => {
+              const totalPaniers = travaux.reduce((sum, t) => sum + (t.cout_materiaux_estime || 0), 0);
+              const lotsAvecPanier = travaux.filter(t => t.cout_materiaux_estime && t.cout_materiaux_estime > 0).length;
+              if (totalPaniers > 0) {
+                return (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                    <span style={{ fontSize: '1.1rem' }}>🛒</span>
+                    <span>
+                      <strong style={{ color: 'var(--green)', fontWeight: '700' }}>
+                        {totalPaniers.toLocaleString()}€
+                      </strong>
+                      <span style={{ opacity: 0.6 }}> ({lotsAvecPanier}/{travaux.length} lots)</span>
+                    </span>
+                  </div>
+                );
+              }
+              return null;
+            })()}
 
             {/* Tâches */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
