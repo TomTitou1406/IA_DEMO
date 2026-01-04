@@ -394,72 +394,76 @@ export default function ChantiersListePage() {
             </div>
           )}
 
-          {/* Stats */}
+          {/* Stats + MediaButtons + Delete */}
           <div style={{
             display: 'flex',
-            flexWrap: 'wrap',
-            gap: '1rem',
+            alignItems: 'center',
+            justifyContent: 'space-between',
             fontSize: '0.85rem',
             color: 'white'
           }}>
-            {chantier.statut === 'nouveau' ? (
-              <>
-                <span>📅 Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}</span>
-                {(chantier as any).nombre_travaux > 0 && (
-                  <span style={{ color: 'var(--orange)' }}>
-                    ⚠️ {(chantier as any).nombre_travaux} lots en brouillon
-                  </span>
-                )}
-              </>
-            ) : (
-              <>
-                {stats && <span>📦 {stats.total} lots</span>}
-                {stats && <span>✅ {stats.termines} terminés</span>}
-                {chantier.budget_initial > 0 && (
-                  <span>💰 {chantier.budget_initial.toLocaleString()}€</span>
-                )}
-              </>
-            )}
+            {/* Stats gauche */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+              {chantier.statut === 'nouveau' ? (
+                <>
+                  <span>📅 Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}</span>
+                  {(chantier as any).nombre_travaux > 0 && (
+                    <span style={{ color: 'var(--orange)' }}>
+                      ⚠️ {(chantier as any).nombre_travaux} lots en brouillon
+                    </span>
+                  )}
+                </>
+              ) : (
+                <>
+                  {stats && <span>📦 {stats.total} lots</span>}
+                  {stats && <span>✅ {stats.termines} terminés</span>}
+                  {chantier.budget_initial > 0 && (
+                    <span>💰 {chantier.budget_initial.toLocaleString()}€</span>
+                  )}
+                </>
+              )}
+            </div>
+
+            {/* MediaButtons + Delete droite */}
+            <div 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MediaButtons
+                niveau="chantier"
+                niveauId={chantier.id}
+                niveauTitre={chantier.titre}
+                photosCount={chantier.photos_urls?.length || 0}
+                hasVideo={!!chantier.video_aide?.video_id}
+                videoTitre={chantier.video_aide?.titre}
+                compact
+                onPhotoClick={() => openPhotosModal(chantier)}
+                onVideoClick={() => openVideoModal(chantier)}
+              />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete(chantier);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.3rem',
+                  opacity: 0.6,
+                  transition: 'opacity 0.2s',
+                  fontSize: '1rem'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                title="Supprimer"
+              >
+                🗑️
+              </button>
+            </div>
           </div>
         </Link>
-
-        {/* Zone MediaButtons + Delete */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.5rem 1.25rem',
-          borderTop: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <MediaButtons
-            niveau="chantier"
-            niveauId={chantier.id}
-            niveauTitre={chantier.titre}
-            photosCount={chantier.photos_urls?.length || 0}
-            hasVideo={!!chantier.video_aide?.video_id}
-            videoTitre={chantier.video_aide?.titre}
-            compact
-            onPhotoClick={() => openPhotosModal(chantier)}
-            onVideoClick={() => openVideoModal(chantier)}
-          />
-          <button
-            onClick={() => handleDelete(chantier)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.3rem',
-              opacity: 0.6,
-              transition: 'opacity 0.2s',
-              fontSize: '1rem'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-            title="Supprimer"
-          >
-            🗑️
-          </button>
-        </div>
       </div>
     );
   };
@@ -524,7 +528,7 @@ export default function ChantiersListePage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: isMobile ? '0.5rem' : '2rem',
+        paddingTop: isMobile ? '1rem' : '3rem',
         paddingBottom: '100px'
       }}>
         {/* Header */}
