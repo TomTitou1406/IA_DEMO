@@ -360,8 +360,8 @@ export default function Navbar({ className }: NavbarProps) {
           gap: mobile ? '0.2rem' : '0.5rem',
           padding: mobile ? '0.4rem' : '0.5rem 0.85rem',
           borderRadius: mobile ? '0' : '10px',
-          border: hasItems ? '1px solid #10b981' : '1px solid transparent',
-          background: hasItems ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
+          border: hasItems && !mobile ? '1px solid #10b981' : '1px solid transparent',
+          background: hasItems && !mobile ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
           color: hasItems ? '#10b981' : 'rgba(255,255,255,0.7)',
           fontSize: mobile ? '0.6rem' : '0.85rem',
           fontWeight: hasItems ? '600' : '500',
@@ -378,8 +378,8 @@ export default function Navbar({ className }: NavbarProps) {
           e.currentTarget.style.transform = 'translateY(-2px)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = hasItems ? 'rgba(16, 185, 129, 0.15)' : 'transparent';
-          e.currentTarget.style.color = hasItems ? '#10b981' : 'rgba(255,255,255,0.7)';
+          e.currentTarget.style.background = hasItems && !mobile ? 'rgba(16, 185, 129, 0.15)' : 'transparent';
+          e.currentTarget.style.borderColor = hasItems && !mobile ? '#10b981' : 'transparent';
           e.currentTarget.style.borderColor = hasItems ? '#10b981' : 'transparent';
           e.currentTarget.style.boxShadow = 'none';
           e.currentTarget.style.transform = 'translateY(0)';
