@@ -242,19 +242,31 @@ ul {
   -webkit-backdrop-filter: blur(10px);
   border-radius: var(--card-radius);
   box-shadow: 0 4px 14px 1px rgba(0, 0, 0, 0.3);
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  flex-direction: row;
   align-items: center;
+  gap: 1rem;
   position: relative;
   border: 3px solid transparent;
-  min-height: 320px;  
+  min-height: auto;  
   width: 100%;
-  max-width: 300px;  
-  margin: 0 auto;
+  max-width: 100%;  
+  margin: 0;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   will-change: transform;
+}
+
+/* Desktop : retour au format portrait */
+@media (min-width: 640px) {
+  .main-card {
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 1.5rem;
+    min-height: 320px;
+    max-width: 300px;
+    margin: 0 auto;
+  }
 }
 
 /* VRAIES COULEURS VIVES */
@@ -301,40 +313,92 @@ ul {
   transform: none;
 }
 
-/* ✅ TITRE CARTE PLUS GROS */
-.main-card h3 {
-  font-size: 2rem;  
-  margin: 0.25em 0 0.25em 0;
-  text-align: center;
-  font-weight: 700;
-  line-height: 1.1;
+/* Conteneur texte pour mobile */
+.main-card .card-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
-/* ✅ TEXTE DESCRIPTION CENTRÉ + ESPACEMENT */
+/* TITRE CARTE */
+.main-card h3 {
+  font-size: 1.1rem;  
+  margin: 0;
+  text-align: left;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+/* TEXTE DESCRIPTION */
 .main-card p {
   color: white;
-  margin-bottom: 1.5rem;
-  margin-top: 0.25rem;  /* ✅ Espace après titre */
-  text-align: center;
-  line-height: 1.6;
-  font-size: 0.95rem;
+  margin: 0;
+  text-align: left;
+  line-height: 1.4;
+  font-size: 0.8rem;
+  opacity: 0.9;
+}
+
+/* Bouton caché sur mobile (la carte entière est cliquable) */
+.main-card .main-btn {
+  display: none;
+}
+
+/* Desktop : retour au style original */
+@media (min-width: 640px) {
+  .main-card h3 {
+    font-size: 2rem;
+    margin: 0.25em 0 0.25em 0;
+    text-align: center;
+  }
+  
+  .main-card p {
+    margin-bottom: 1.5rem;
+    margin-top: 0.25rem;
+    text-align: center;
+    font-size: 0.95rem;
+    opacity: 1;
+  }
+  
+  .main-card .main-btn {
+    display: flex;
+  }
 }
 
 .card-illu {
-  width: 100%;
-  margin-bottom: 1.5rem;
+  width: 70px;
+  min-width: 70px;
+  margin-bottom: 0;
 }
 
 .card-illu img {
-  width: 100%;
-  max-width: 200px;
-  height: auto;
+  width: 70px;
+  height: 70px;
+  object-fit: cover;
   display: block;
-  margin: 0 auto;
-  border-radius: 20px;
-  box-shadow: 0 20px 50px -10px rgba(44, 38, 15, 0.65);
+  border-radius: 12px;
+  box-shadow: 0 8px 20px -5px rgba(44, 38, 15, 0.5);
   background: #f7f5ef;
   transition: box-shadow 0.25s, transform 0.18s;
+}
+
+/* Desktop : illu plus grande */
+@media (min-width: 640px) {
+  .card-illu {
+    width: 100%;
+    min-width: auto;
+    margin-bottom: 1.5rem;
+  }
+  
+  .card-illu img {
+    width: 100%;
+    max-width: 200px;
+    height: auto;
+    margin: 0 auto;
+    border-radius: 20px;
+    box-shadow: 0 20px 50px -10px rgba(44, 38, 15, 0.65);
+  }
 }
 
 /* ----- BUTTONS ----- */
