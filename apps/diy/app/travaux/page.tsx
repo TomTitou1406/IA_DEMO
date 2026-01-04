@@ -1,21 +1,22 @@
 /**
- * /app/travaux/page.tsx
+ * Page Travaux Simples
  * 
- * Page liste des travaux simples (tâches ponctuelles mono-lot)
- * Design : Cards compactes avec progress bar visible
+ * Liste des travaux simples (type_projet = 'simple')
+ * avec cards compactes et progress bar
  * 
- * @version 1.0
+ * @version 1.2
  * @date 04 janvier 2026
- * 
- * Changelog :
- * - v1.0 : Création avec cards compactes et progress bar
  */
 
 'use client';
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Breadcrumb from '@/app/components/Breadcrumb';
 import MediaButtons from '@/app/components/MediaButtons';
+import PhotosModal from '@/app/components/PhotosModal';
+import VideoPlayerModal from '@/app/components/VideoPlayerModal';
+import { useToast } from '@/app/components/Toast';
 
 interface TravailSimple {
   id: string;
@@ -29,15 +30,45 @@ interface TravailSimple {
   duree_estimee_heures?: number;
   duree_reelle_heures?: number;
   updated_at: string;
+  photos_urls?: any[];
+  video_aide?: {
+    video_id: string;
+    titre: string;
+    url: string;
+    thumbnail?: string;
+  } | null;
 }
 
 export default function TravauxSimplesPage() {
+  const { showError, showSuccess, showConfirm } = useToast();
   const [travaux, setTravaux] = useState<TravailSimple[]>([]);
   const [loading, setLoading] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
 
+  // Sections collapsibles
+  const [sectionsOpen, setSectionsOpen] = useState({
+    en_cours: true,
+    a_faire: true,
+    bloque: true,
+    termine: false
+  });
+
+  // Modales photos et vidéos
+  const [showPhotosModal, setShowPhotosModal] = useState(false);
+  const [photosModalConfig, setPhotosModalConfig] = useState<{
+    niveau: 'chantier' | 'travail' | 'etape' | 'tache';
+    niveauId: string;
+    niveauTitre: string;
+    photos: any[];
+  }>({ niveau: 'travail', niveauId: '', niveauTitre: '', photos: [] });
+
+  const [showVideoModal, setShowVideoModal] = useState(false);
+  const [videoModalConfig, setVideoModalConfig] = useState<{
+    video: any;
+  }>({ video: null });
+
   useEffect(() => {
-    const handleResize = () => setIsMobile(window.innerWidth < 640);
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
@@ -49,199 +80,124 @@ export default function TravauxSimplesPage() {
 
   const loadTravaux = async () => {
     try {
-      const res = await fetch('/api/travaux-simples');
-      if (res.ok) {
-        const data = await res.json();
+      const response = await fetch('/api/travaux-simples');
+      const data = await response.json();
+      if (data.success) {
         setTravaux(data.travaux || []);
       }
-    } catch (e) {
-      console.error('Erreur chargement travaux simples:', e);
+    } catch (error) {
+      console.error('Erreur chargement travaux:', error);
+      showError('Erreur lors du chargement des travaux');
     } finally {
       setLoading(false);
     }
   };
 
-  const getStatusColor = (statut: string) => {
-    switch (statut) {
-      case 'terminé': return 'var(--green)';
-      case 'en_cours': return 'var(--blue)';
-      case 'bloqué': return 'var(--orange)';
-      case 'annulé': return 'var(--red)';
-      default: return 'var(--purple)';
+  // Gestion des photos
+  const openPhotosModal = (travail: TravailSimple) => {
+    setPhotosModalConfig({
+      niveau: 'travail',
+      niveauId: travail.id,
+      niveauTitre: travail.titre,
+      photos: travail.photos_urls || []
+    });
+    setShowPhotosModal(true);
+  };
+
+  const handlePhotosChange = (niveauId: string, newPhotos: any[]) => {
+    setTravaux(prev => prev.map(t => 
+      t.id === niveauId ? { ...t, photos_urls: newPhotos } : t
+    ));
+  };
+
+  // Gestion des vidéos
+  const openVideoModal = (travail: TravailSimple) => {
+    if (travail.video_aide?.video_id) {
+      setVideoModalConfig({
+        video: {
+          id: travail.video_aide.video_id,
+          title: travail.video_aide.titre,
+          thumbnail: travail.video_aide.thumbnail,
+          channelTitle: '',
+          viewCount: 0,
+          duration: ''
+        }
+      });
+      setShowVideoModal(true);
+    } else {
+      sessionStorage.setItem('attachReturnUrl', window.location.href);
+      const searchQuery = encodeURIComponent(travail.titre);
+      window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
     }
   };
 
-  const getStatusLabel = (statut: string) => {
+  // Suppression
+  const handleDelete = async (travail: TravailSimple) => {
+    const confirmed = await showConfirm({
+      title: 'Supprimer ce travail',
+      message: `Supprimer "${travail.titre}" ?`,
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger'
+    });
+
+    if (confirmed) {
+      try {
+        const response = await fetch(`/api/chantiers/${travail.chantier_id}`, {
+          method: 'DELETE'
+        });
+        if (response.ok) {
+          setTravaux(prev => prev.filter(t => t.id !== travail.id));
+          showSuccess('Travail supprimé');
+        }
+      } catch (error) {
+        showError('Erreur lors de la suppression');
+      }
+    }
+  };
+
+  // Grouper par statut
+  const enCours = travaux.filter(t => t.statut === 'en_cours' || !t.statut);
+  const aFaire = travaux.filter(t => t.statut === 'a_faire');
+  const bloques = travaux.filter(t => t.statut === 'bloque');
+  const termines = travaux.filter(t => t.statut === 'termine' || t.statut === 'terminé');
+
+  // Helpers
+  const getStatusColor = (statut: string) => {
     switch (statut) {
-      case 'terminé': return 'Terminé';
-      case 'en_cours': return 'En cours';
-      case 'bloqué': return 'Bloqué';
-      case 'annulé': return 'Annulé';
-      default: return 'À faire';
+      case 'termine':
+      case 'terminé': return 'var(--green)';
+      case 'en_cours': return 'var(--blue)';
+      case 'bloque': return 'var(--orange)';
+      case 'annule': return 'var(--red)';
+      default: return 'var(--blue)';
     }
   };
 
   const formatDuree = (heures?: number) => {
-    if (!heures) return '';
+    if (!heures) return null;
     if (heures < 1) return `${Math.round(heures * 60)}min`;
     return `${heures}h`;
   };
 
-  // Grouper par statut
-  const enCours = travaux.filter(t => t.statut === 'en_cours');
-  const aFaire = travaux.filter(t => t.statut === 'à_venir' || !t.statut);
-  const bloques = travaux.filter(t => t.statut === 'bloqué');
-  const termines = travaux.filter(t => t.statut === 'terminé');
-
-  // Card compacte pour un travail simple
-  const TravailCard = ({ travail }: { travail: TravailSimple }) => {
-    const progression = travail.nombre_etapes > 0 
-      ? Math.round((travail.etapes_terminees / travail.nombre_etapes) * 100)
-      : 0;
-
-    const statusColor = getStatusColor(travail.statut);
-    
-    const getStatusRgb = (statut: string) => {
-      switch (statut) {
-        case 'terminé': return '16, 185, 129';
-        case 'en_cours': return '37, 99, 235';
-        case 'bloqué': return '249, 115, 22';
-        case 'annulé': return '239, 68, 68';
-        default: return '139, 92, 246';
-      }
-    };
-
-    const rgb = getStatusRgb(travail.statut);
-
-    return (
-      <Link
-        href={`/chantiers/${travail.chantier_id}/travaux/${travail.id}/etapes`}
-        style={{
-          display: 'block',
-          background: `linear-gradient(90deg, transparent 0%, rgba(${rgb}, 0.15) 50%, rgba(${rgb}, 0.4) 100%)`,
-          borderRadius: '12px',
-          borderLeft: `5px solid rgb(${rgb})`,
-          padding: '1rem 1.25rem',
-          marginBottom: '0.75rem',
-          textDecoration: 'none',
-          transition: 'all 0.3s ease'
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.background = `linear-gradient(90deg, rgba(${rgb}, 0.05) 0%, rgba(${rgb}, 0.25) 50%, rgba(${rgb}, 0.5) 100%)`;
-          e.currentTarget.style.transform = 'translateX(4px)';
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.background = `linear-gradient(90deg, transparent 0%, rgba(${rgb}, 0.15) 50%, rgba(${rgb}, 0.4) 100%)`;
-          e.currentTarget.style.transform = 'translateX(0)';
-        }}
-      >
-        {/* Ligne 1 : Titre + Badge % */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'flex-start',
-          gap: '1rem',
-          marginBottom: '0.75rem'
-        }}>
-          <h3 style={{
-            margin: 0,
-            fontSize: '1rem',
-            fontWeight: '600',
-            color: 'white',
-            lineHeight: '1.4',
-            flex: 1
-          }}>
-            {travail.titre}
-          </h3>
-          <span style={{
-            background: statusColor,
-            color: 'white',
-            padding: '0.25rem 0.6rem',
-            borderRadius: '12px',
-            fontSize: '0.85rem',
-            fontWeight: '700',
-            minWidth: '45px',
-            textAlign: 'center'
-          }}>
-            {progression}%
-          </span>
-        </div>
-
-        {/* Ligne 2 : Progress bar */}
-        <div style={{
-          height: '6px',
-          background: 'rgba(255, 255, 255, 0.1)',
-          borderRadius: '3px',
-          overflow: 'hidden',
-          marginBottom: '0.75rem'
-        }}>
-          <div style={{
-            width: `${Math.max(progression, 2)}%`,
-            height: '100%',
-            background: progression === 100 
-              ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' 
-              : 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)',
-            borderRadius: '3px',
-            transition: 'width 0.5s ease'
-          }}></div>
-        </div>
-
-        {/* Ligne 3 : Stats + MediaButtons */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          fontSize: '0.85rem'
-        }}>
-          {/* Stats gauche */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', color: 'white' }}>
-            <span>✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
-            {travail.duree_estimee_heures && (
-              <span>⏱️ {formatDuree(travail.duree_estimee_heures)}</span>
-            )}
-          </div>
-
-          {/* MediaButtons droite */}
-          <div onClick={(e) => e.preventDefault()}>
-            <MediaButtons
-              niveau="travail"
-              niveauId={travail.id}
-              niveauTitre={travail.titre}
-              photosCount={0}
-              hasVideo={false}
-              onPhotoClick={() => {
-                console.log('Photos:', travail.id);
-              }}
-              onVideoClick={() => {
-                const searchQuery = encodeURIComponent(travail.titre);
-                window.location.href = `/videos?context=travail&id=${travail.id}&search=${searchQuery}`;
-              }}
-            />
-          </div>
-        </div>
-      </Link>
-    );
-  };
-
-  // Section collapsable
+  // Composant Section
   const Section = ({ 
     title, 
     icon, 
     color, 
     items, 
-    defaultOpen = true 
+    sectionKey
   }: { 
     title: string; 
     icon: string; 
     color: string; 
     items: TravailSimple[];
-    defaultOpen?: boolean;
+    sectionKey: keyof typeof sectionsOpen;
   }) => {
-    const [isOpen, setIsOpen] = useState(defaultOpen);
-
     if (items.length === 0) return null;
 
-    // Convertir la couleur en RGB pour le dégradé
+    const isOpen = sectionsOpen[sectionKey];
+
     const getColorRgb = (cssColor: string) => {
       switch (cssColor) {
         case 'var(--green)': return '16, 185, 129';
@@ -257,16 +213,15 @@ export default function TravauxSimplesPage() {
 
     return (
       <div style={{ marginBottom: '1.5rem' }}>
-        {/* Header avec dégradé */}
         <button
-          onClick={() => setIsOpen(!isOpen)}
+          onClick={() => setSectionsOpen(prev => ({ ...prev, [sectionKey]: !prev[sectionKey] }))}
           style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem',
             background: 'none',
             border: 'none',
-            borderBottom: `2px solid transparent`,
+            borderBottom: '2px solid transparent',
             borderImage: `linear-gradient(90deg, transparent 0%, rgb(${rgb}) 100%) 1`,
             cursor: 'pointer',
             padding: '0.5rem 0',
@@ -314,172 +269,324 @@ export default function TravauxSimplesPage() {
     );
   };
 
-  return (
-    <div style={{
-      maxWidth: '800px',
-      margin: '0 auto',
-      padding: isMobile ? '0.75rem' : '1.5rem'
-    }}>
-      {/* Breadcrumb */}
-      <nav style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '0.5rem',
-        fontSize: '0.85rem',
-        marginBottom: isMobile ? '1rem' : '1.5rem',
-        flexWrap: 'wrap'
-      }}>
-        <Link href="/" style={{ color: 'var(--gray)', textDecoration: 'none' }}>
-          🏠 Home
-        </Link>
-        <span style={{ color: 'var(--gray)' }}>/</span>
-        <Link href="/chantiers" style={{ color: 'var(--gray)', textDecoration: 'none' }}>
-          🏗️ Mes projets
-        </Link>
-        <span style={{ color: 'var(--gray)' }}>/</span>
-        <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
-          🔧 Travaux simples
-        </span>
-      </nav>
+  // Composant TravailCard
+  const TravailCard = ({ travail }: { travail: TravailSimple }) => {
+    const progression = travail.nombre_etapes > 0 
+      ? Math.round((travail.etapes_terminees / travail.nombre_etapes) * 100)
+      : 0;
 
-      {/* Header */}
+    const statusColor = getStatusColor(travail.statut);
+    
+    const getStatusRgb = (statut: string) => {
+      switch (statut) {
+        case 'termine':
+        case 'terminé': return '16, 185, 129';
+        case 'en_cours': return '37, 99, 235';
+        case 'bloque': return '249, 115, 22';
+        case 'annule': return '239, 68, 68';
+        default: return '37, 99, 235';
+      }
+    };
+
+    const rgb = getStatusRgb(travail.statut);
+
+    return (
       <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '1.5rem',
-        flexWrap: 'wrap',
-        gap: '1rem'
+        background: `linear-gradient(90deg, transparent 0%, rgba(${rgb}, 0.15) 50%, rgba(${rgb}, 0.4) 100%)`,
+        borderRadius: '12px',
+        borderLeft: `5px solid rgb(${rgb})`,
+        marginBottom: '0.75rem',
+        overflow: 'hidden',
+        transition: 'all 0.3s ease'
       }}>
-        <h1 style={{
-          fontSize: isMobile ? '1.5rem' : '1.75rem',
-          fontWeight: '700',
-          color: 'var(--gray-light)',
-          margin: 0
-        }}>
-          🔧 Mes travaux simples
-        </h1>
-
-        {/* Bouton nouveau */}
-        <button
-          onClick={() => {
-            window.dispatchEvent(new CustomEvent('openAssistantWithContext', { 
-              detail: { 
-                pageContext: 'travaux_simple_decouverte',
-                welcomeMessage: "Salut ! Décris-moi le petit travail que tu veux faire et je vais t'aider à le planifier. 🔧"
-              } 
-            }));
-          }}
+        {/* Zone cliquable - lien vers étapes */}
+        <Link
+          href={`/chantiers/${travail.chantier_id}/travaux/${travail.id}/etapes`}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '0.5rem',
-            background: 'var(--blue)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '10px',
-            padding: '0.6rem 1rem',
-            fontSize: '0.9rem',
-            fontWeight: '600',
-            cursor: 'pointer',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = '#1e40af';
-            e.currentTarget.style.transform = 'translateY(-2px)';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'var(--blue)';
-            e.currentTarget.style.transform = 'translateY(0)';
+            display: 'block',
+            padding: '1rem 1.25rem',
+            textDecoration: 'none'
           }}
         >
-          <span>+</span>
-          <span>Nouveau</span>
-        </button>
-      </div>
+          {/* Ligne 1 : Titre + Badge % */}
+          <div style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            gap: '1rem',
+            marginBottom: '0.75rem'
+          }}>
+            <h3 style={{
+              margin: 0,
+              fontSize: '1rem',
+              fontWeight: '600',
+              color: 'white',
+              lineHeight: '1.4',
+              flex: 1
+            }}>
+              {travail.titre}
+            </h3>
+            <span style={{
+              background: statusColor,
+              color: 'white',
+              padding: '0.25rem 0.6rem',
+              borderRadius: '12px',
+              fontSize: '0.85rem',
+              fontWeight: '700',
+              minWidth: '45px',
+              textAlign: 'center'
+            }}>
+              {progression}%
+            </span>
+          </div>
 
-      {/* Loading */}
-      {loading && (
-        <div style={{ textAlign: 'center', padding: '3rem' }}>
-          <div className="spinner"></div>
-          <p style={{ marginTop: '1rem', color: 'var(--gray)' }}>Chargement...</p>
-        </div>
-      )}
+          {/* Ligne 2 : Progress bar */}
+          <div style={{
+            height: '6px',
+            background: 'rgba(255, 255, 255, 0.1)',
+            borderRadius: '3px',
+            overflow: 'hidden',
+            marginBottom: '0.75rem'
+          }}>
+            <div style={{
+              width: `${Math.max(progression, 2)}%`,
+              height: '100%',
+              background: progression === 100 
+                ? 'linear-gradient(90deg, #10b981 0%, #34d399 100%)' 
+                : 'linear-gradient(90deg, #3b82f6 0%, #10b981 100%)',
+              borderRadius: '3px',
+              transition: 'width 0.5s ease'
+            }}></div>
+          </div>
 
-      {/* Empty state */}
-      {!loading && travaux.length === 0 && (
+          {/* Ligne 3 : Stats */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            fontSize: '0.85rem',
+            color: 'white'
+          }}>
+            <span>✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
+            {travail.duree_estimee_heures && (
+              <span>⏱️ {formatDuree(travail.duree_estimee_heures)}</span>
+            )}
+          </div>
+        </Link>
+
+        {/* Zone MediaButtons + Delete (non cliquable pour navigation) */}
         <div style={{
-          textAlign: 'center',
-          padding: '3rem 1rem',
-          background: 'rgba(255,255,255,0.02)',
-          borderRadius: '16px',
-          border: '1px dashed rgba(255,255,255,0.1)'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          padding: '0.5rem 1.25rem',
+          borderTop: '1px solid rgba(255,255,255,0.1)'
         }}>
-          <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>🔧</span>
-          <h3 style={{ color: 'var(--gray-light)', marginBottom: '0.5rem' }}>
-            Aucun travail simple
-          </h3>
-          <p style={{ color: 'var(--gray)', marginBottom: '1.5rem' }}>
-            Créez votre première tâche ponctuelle !
-          </p>
+          <MediaButtons
+            niveau="travail"
+            niveauId={travail.id}
+            niveauTitre={travail.titre}
+            photosCount={travail.photos_urls?.length || 0}
+            hasVideo={!!travail.video_aide?.video_id}
+            videoTitre={travail.video_aide?.titre}
+            compact
+            onPhotoClick={() => openPhotosModal(travail)}
+            onVideoClick={() => openVideoModal(travail)}
+          />
+          <button
+            onClick={() => handleDelete(travail)}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '0.3rem',
+              opacity: 0.6,
+              transition: 'opacity 0.2s',
+              fontSize: '1rem'
+            }}
+            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+            title="Supprimer"
+          >
+            🗑️
+          </button>
+        </div>
+      </div>
+    );
+  };
+
+  // Empty state
+  const EmptyState = () => (
+    <div style={{
+      textAlign: 'center',
+      padding: '3rem 1rem',
+      color: 'var(--gray)'
+    }}>
+      <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>🔧</div>
+      <p style={{ fontSize: '1.1rem', fontWeight: '600', marginBottom: '0.5rem', color: 'var(--gray-light)' }}>
+        Aucun travail simple
+      </p>
+      <p style={{ fontSize: '0.9rem', marginBottom: '1.5rem' }}>
+        Créez votre première tâche ponctuelle !
+      </p>
+      <button
+        onClick={() => {
+          window.dispatchEvent(new CustomEvent('openAssistantWithContext', { 
+            detail: { 
+              pageContext: 'travaux_simple_decouverte',
+              welcomeMessage: "Salut ! Décris-moi le petit travail que tu veux faire..."
+            } 
+          }));
+        }}
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: '0.5rem',
+          padding: '0.875rem 1.5rem',
+          background: 'var(--blue)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '12px',
+          fontWeight: '600',
+          cursor: 'pointer'
+        }}
+      >
+        + Créer un travail simple
+      </button>
+    </div>
+  );
+
+  if (loading) {
+    return (
+      <div style={{ 
+        display: 'flex', 
+        flexDirection: 'column',
+        alignItems: 'center', 
+        justifyContent: 'center',
+        minHeight: '60vh',
+        gap: '1rem'
+      }}>
+        <div className="spinner"></div>
+        <p style={{ color: 'var(--gray)' }}>Chargement...</p>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <Breadcrumb 
+        currentLevel="travaux_simples"
+      />
+
+      <div style={{ 
+        maxWidth: '800px', 
+        margin: '0 auto', 
+        padding: '1rem',
+        paddingTop: isMobile ? '0.5rem' : '2rem',
+        paddingBottom: '100px'
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          marginBottom: '1.5rem'
+        }}>
+          <h1 style={{
+            fontSize: '1.5rem',
+            fontWeight: '700',
+            color: 'var(--gray-light)',
+            margin: 0,
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem'
+          }}>
+            🔧 Mes travaux simples
+          </h1>
           <button
             onClick={() => {
               window.dispatchEvent(new CustomEvent('openAssistantWithContext', { 
                 detail: { 
                   pageContext: 'travaux_simple_decouverte',
-                  welcomeMessage: "Salut ! Décris-moi le petit travail que tu veux faire et je vais t'aider à le planifier. 🔧"
+                  welcomeMessage: "Salut ! Décris-moi le petit travail que tu veux faire..."
                 } 
               }));
             }}
             style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.625rem 1rem',
               background: 'var(--blue)',
               color: 'white',
               border: 'none',
               borderRadius: '10px',
-              padding: '0.75rem 1.5rem',
-              fontSize: '1rem',
               fontWeight: '600',
+              fontSize: '0.9rem',
               cursor: 'pointer'
             }}
           >
-            + Créer un travail simple
+            <span>+ Nouveau</span>
           </button>
         </div>
-      )}
 
-      {/* Sections */}
-      {!loading && travaux.length > 0 && (
-        <>
-          <Section 
-            title="En cours" 
-            icon="🔨" 
-            color="var(--blue)" 
-            items={enCours}
-            defaultOpen={true}
-          />
-          <Section 
-            title="À faire" 
-            icon="📋" 
-            color="var(--purple)" 
-            items={aFaire}
-            defaultOpen={true}
-          />
-          <Section 
-            title="Bloqués" 
-            icon="⚠️" 
-            color="var(--orange)" 
-            items={bloques}
-            defaultOpen={true}
-          />
-          <Section 
-            title="Terminés" 
-            icon="✅" 
-            color="var(--green)" 
-            items={termines}
-            defaultOpen={false}
-          />
-        </>
-      )}
-    </div>
+        {/* Contenu */}
+        {travaux.length === 0 ? (
+          <EmptyState />
+        ) : (
+          <>
+            <Section
+              title="En cours"
+              icon="🔧"
+              color="var(--blue)"
+              items={enCours}
+              sectionKey="en_cours"
+            />
+            <Section
+              title="À faire"
+              icon="📋"
+              color="var(--purple)"
+              items={aFaire}
+              sectionKey="a_faire"
+            />
+            <Section
+              title="Bloqués"
+              icon="⚠️"
+              color="var(--orange)"
+              items={bloques}
+              sectionKey="bloque"
+            />
+            <Section
+              title="Terminés"
+              icon="✅"
+              color="var(--green)"
+              items={termines}
+              sectionKey="termine"
+            />
+          </>
+        )}
+      </div>
+
+      {/* Modal Photos */}
+      <PhotosModal
+        isOpen={showPhotosModal}
+        onClose={() => setShowPhotosModal(false)}
+        niveau={photosModalConfig.niveau}
+        niveauId={photosModalConfig.niveauId}
+        niveauTitre={photosModalConfig.niveauTitre}
+        photos={photosModalConfig.photos}
+        onPhotosChange={(newPhotos) => {
+          handlePhotosChange(photosModalConfig.niveauId, newPhotos);
+          setPhotosModalConfig(prev => ({ ...prev, photos: newPhotos }));
+        }}
+      />
+
+      {/* Modal Vidéo */}
+      <VideoPlayerModal
+        isOpen={showVideoModal}
+        onClose={() => setShowVideoModal(false)}
+        video={videoModalConfig.video}
+      />
+    </>
   );
 }
