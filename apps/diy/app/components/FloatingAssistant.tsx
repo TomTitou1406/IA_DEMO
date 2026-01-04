@@ -246,8 +246,8 @@ export default function FloatingAssistant() {
 
   return (
     <>
-      {/* Floating Button - visible uniquement si fermé */}
-      {!isOpen && (
+      {/* Floating Button - visible uniquement si fermé et pas sur la Home */}
+      {!isOpen && pathname !== '/' && (
         <button
           onClick={() => {
             setIsOpen(true);
