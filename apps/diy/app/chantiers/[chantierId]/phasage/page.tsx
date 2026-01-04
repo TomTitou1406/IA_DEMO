@@ -276,12 +276,13 @@ function LoadingPhasage() {
     { icon: '📦', text: 'Organisation en lots cohérents...' },
     { icon: '🔗', text: 'Vérification des dépendances...' },
     { icon: '⏱️', text: 'Estimation durées et coûts...' },
+    { icon: '✅', text: 'Optimisation du séquencement...' },
   ];
 
-  const TOTAL_DURATION = 25000; // 30 secondes
+  const TOTAL_DURATION = 35000; // 35 secondes (2 appels IA)
   const STEP_DURATION = TOTAL_DURATION / steps.length; 
 
-  // Progress bar animation (30 secondes pour faire le tour)
+  // Progress bar animation
   useEffect(() => {
     const startTime = Date.now();
     
