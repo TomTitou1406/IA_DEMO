@@ -357,11 +357,11 @@ export default function Navbar({ className }: NavbarProps) {
           flexDirection: mobile ? 'column' : 'row',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: mobile ? '0.2rem' : '0.4rem',
-          padding: mobile ? '0.4rem' : '0.5rem 0.75rem',
+          gap: mobile ? '0.2rem' : '0.5rem',
+          padding: mobile ? '0.4rem' : '0.5rem 0.85rem',
           borderRadius: mobile ? '0' : '10px',
-          border: hasItems ? '1px solid rgba(16, 185, 129, 0.4)' : 'none',
-          background: hasItems ? 'rgba(16, 185, 129, 0.1)' : 'transparent',
+          border: hasItems ? '1px solid #10b981' : '1px solid transparent',
+          background: hasItems ? 'rgba(16, 185, 129, 0.15)' : 'transparent',
           color: hasItems ? '#10b981' : 'rgba(255,255,255,0.7)',
           fontSize: mobile ? '0.6rem' : '0.85rem',
           fontWeight: hasItems ? '600' : '500',
@@ -371,14 +371,18 @@ export default function Navbar({ className }: NavbarProps) {
           flex: mobile ? 1 : 'unset',
         }}
         onMouseEnter={(e) => {
-          e.currentTarget.style.background = 'rgba(16, 185, 129, 0.2)';
-          e.currentTarget.style.color = '#10b981';
-          e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.3)';
+          e.currentTarget.style.background = hasItems ? '#10b981' : 'rgba(16, 185, 129, 0.15)';
+          e.currentTarget.style.color = hasItems ? 'white' : '#10b981';
+          e.currentTarget.style.borderColor = '#10b981';
+          e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
+          e.currentTarget.style.transform = 'translateY(-2px)';
         }}
         onMouseLeave={(e) => {
-          e.currentTarget.style.background = hasItems ? 'rgba(16, 185, 129, 0.1)' : 'transparent';
+          e.currentTarget.style.background = hasItems ? 'rgba(16, 185, 129, 0.15)' : 'transparent';
           e.currentTarget.style.color = hasItems ? '#10b981' : 'rgba(255,255,255,0.7)';
+          e.currentTarget.style.borderColor = hasItems ? '#10b981' : 'transparent';
           e.currentTarget.style.boxShadow = 'none';
+          e.currentTarget.style.transform = 'translateY(0)';
         }}
       >
         <span style={{ 
@@ -389,13 +393,13 @@ export default function Navbar({ className }: NavbarProps) {
           {hasItems && (
             <span style={{
               position: 'absolute',
-              top: '-6px',
-              right: '-10px',
+              top: '-8px',
+              right: '-14px',
               background: '#10b981',
               color: 'white',
               fontSize: '0.55rem',
               fontWeight: '700',
-              padding: '1px 4px',
+              padding: '2px 5px',
               borderRadius: '6px',
               minWidth: '14px',
               textAlign: 'center',
@@ -406,7 +410,7 @@ export default function Navbar({ className }: NavbarProps) {
           )}
         </span>
         {!mobile && (
-          <span>
+          <span style={{ marginLeft: hasItems ? '0.3rem' : 0 }}>
             {hasItems ? `${cartData.totalGeneral.toLocaleString()}€` : 'Panier'}
           </span>
         )}
@@ -967,11 +971,13 @@ export default function Navbar({ className }: NavbarProps) {
                             {article.total}€
                           </span>
                         </div>
-                        {/* Sources */}
+                       {/* Sources */}
                         <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                          <p style={{ color: 'var(--gray)', margin: 0, fontSize: '0.7rem' }}>
-                            ↳ {article.lots.map((l: any) => `${l.titre} (${l.quantite})`).join(' + ')}
-                          </p>
+                          {article.lots.map((l: any, i: number) => (
+                            <p key={i} style={{ color: 'var(--gray)', margin: i > 0 ? '0.2rem 0 0 0' : 0, fontSize: '0.7rem' }}>
+                              ↳ {l.titre} ({l.quantite} {article.unite})
+                            </p>
+                          ))}
                         </div>
                       </div>
                     ))}
@@ -1024,11 +1030,13 @@ export default function Navbar({ className }: NavbarProps) {
                             {article.total}€
                           </span>
                         </div>
-                        {/* Sources */}
+                       {/* Sources */}
                         <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-                          <p style={{ color: 'var(--gray)', margin: 0, fontSize: '0.7rem' }}>
-                            ↳ {article.lots.map((l: any) => `${l.titre} (${l.quantite})`).join(' + ')}
-                          </p>
+                          {article.lots.map((l: any, i: number) => (
+                            <p key={i} style={{ color: 'var(--gray)', margin: i > 0 ? '0.2rem 0 0 0' : 0, fontSize: '0.7rem' }}>
+                              ↳ {l.titre} ({l.quantite} {article.unite})
+                            </p>
+                          ))}
                         </div>
                       </div>
                     ))}
