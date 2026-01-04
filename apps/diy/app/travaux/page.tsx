@@ -359,58 +359,62 @@ export default function TravauxSimplesPage() {
             }}></div>
           </div>
 
-          {/* Ligne 3 : Stats */}
+          {/* Ligne 3 : Stats + MediaButtons + Delete */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            gap: '1rem',
+            justifyContent: 'space-between',
             fontSize: '0.85rem',
             color: 'white'
           }}>
-            <span>✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
-            {travail.duree_estimee_heures && (
-              <span>⏱️ {formatDuree(travail.duree_estimee_heures)}</span>
-            )}
+            {/* Stats gauche */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <span>✅ {travail.etapes_terminees}/{travail.nombre_etapes} étapes</span>
+              {travail.duree_estimee_heures && (
+                <span>⏱️ {formatDuree(travail.duree_estimee_heures)}</span>
+              )}
+            </div>
+
+            {/* MediaButtons + Delete droite */}
+            <div 
+              style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+              onClick={(e) => e.stopPropagation()}
+            >
+              <MediaButtons
+                niveau="travail"
+                niveauId={travail.id}
+                niveauTitre={travail.titre}
+                photosCount={travail.photos_urls?.length || 0}
+                hasVideo={!!travail.video_aide?.video_id}
+                videoTitre={travail.video_aide?.titre}
+                compact
+                onPhotoClick={() => openPhotosModal(travail)}
+                onVideoClick={() => openVideoModal(travail)}
+              />
+              <button
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  handleDelete(travail);
+                }}
+                style={{
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '0.3rem',
+                  opacity: 0.6,
+                  transition: 'opacity 0.2s',
+                  fontSize: '1rem'
+                }}
+                onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
+                onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
+                title="Supprimer"
+              >
+                🗑️
+              </button>
+            </div>
           </div>
         </Link>
-
-        {/* Zone MediaButtons + Delete (non cliquable pour navigation) */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.5rem 1.25rem',
-          borderTop: '1px solid rgba(255,255,255,0.1)'
-        }}>
-          <MediaButtons
-            niveau="travail"
-            niveauId={travail.id}
-            niveauTitre={travail.titre}
-            photosCount={travail.photos_urls?.length || 0}
-            hasVideo={!!travail.video_aide?.video_id}
-            videoTitre={travail.video_aide?.titre}
-            compact
-            onPhotoClick={() => openPhotosModal(travail)}
-            onVideoClick={() => openVideoModal(travail)}
-          />
-          <button
-            onClick={() => handleDelete(travail)}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '0.3rem',
-              opacity: 0.6,
-              transition: 'opacity 0.2s',
-              fontSize: '1rem'
-            }}
-            onMouseEnter={(e) => e.currentTarget.style.opacity = '1'}
-            onMouseLeave={(e) => e.currentTarget.style.opacity = '0.6'}
-            title="Supprimer"
-          >
-            🗑️
-          </button>
-        </div>
       </div>
     );
   };
@@ -482,7 +486,7 @@ export default function TravauxSimplesPage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: isMobile ? '0.5rem' : '2rem',
+        paddingTop: isMobile ? '1rem' : '3rem',
         paddingBottom: '100px'
       }}>
         {/* Header */}
