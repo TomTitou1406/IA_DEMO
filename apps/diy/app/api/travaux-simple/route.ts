@@ -4,8 +4,12 @@
  * Récupère les travaux simples (chantiers mono-lot avec type_projet='simple')
  * avec stats de progression
  * 
- * @version 1.0
+ * @version 1.1
  * @date 04 janvier 2026
+ * 
+ * Changelog :
+ * - v1.1 : Fix .single() → .maybeSingle() pour éviter erreurs
+ * - v1.0 : Création
  * 
  * Query params :
  * - count_only=true : retourne uniquement le compteur
@@ -34,6 +38,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    console.log(`🔍 Chantiers simples trouvés: ${chantiers?.length || 0}`);
+
     // Si count_only, retourner juste le nombre
     if (countOnly) {
       return NextResponse.json({
@@ -45,17 +51,19 @@ export async function GET(request: NextRequest) {
     // Pour chaque chantier simple, récupérer le lot unique et ses stats
     const travauxSimples = await Promise.all(
       (chantiers || []).map(async (chantier) => {
-        // Récupérer le lot unique du chantier
-        const { data: travail, error: travailError } = await supabase
+        // Récupérer le(s) lot(s) du chantier
+        const { data: travaux, error: travailError } = await supabase
           .from('travaux')
           .select('id, titre, description, statut, progression, duree_estimee_heures, duree_reelle_heures')
           .eq('chantier_id', chantier.id)
-          .single();
+          .limit(1);
 
-        if (travailError || !travail) {
-          console.log(`⚠️ Pas de lot pour chantier ${chantier.id}`);
+        if (travailError || !travaux || travaux.length === 0) {
+          console.log(`⚠️ Pas de lot pour chantier ${chantier.id} (${chantier.titre})`);
           return null;
         }
+
+        const travail = travaux[0];
 
         // Compter les étapes
         const { count: totalEtapes } = await supabase
@@ -94,7 +102,7 @@ export async function GET(request: NextRequest) {
     // Filtrer les null (chantiers sans lot)
     const travauxFiltres = travauxSimples.filter(t => t !== null);
 
-    console.log(`🔧 Travaux simples : ${travauxFiltres.length} trouvés`);
+    console.log(`🔧 Travaux simples avec lots : ${travauxFiltres.length}`);
 
     return NextResponse.json({
       success: true,
