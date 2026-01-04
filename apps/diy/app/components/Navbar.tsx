@@ -964,7 +964,7 @@ export default function Navbar({ className }: NavbarProps) {
                               {article.nom}
                             </p>
                             <p style={{ color: 'var(--gray-light)', margin: '0.25rem 0 0 0', fontSize: '0.75rem', opacity: 0.8 }}>
-                              {article.quantite} {article.unite} × {article.prixUnitaire}€
+                              {article.prixUnitaire}€/{article.unite} × {article.quantite}
                             </p>
                           </div>
                           <span style={{ color: 'var(--green)', fontWeight: '700', fontSize: '0.95rem' }}>
@@ -974,9 +974,26 @@ export default function Navbar({ className }: NavbarProps) {
                        {/* Sources */}
                         <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                           {article.lots.map((l: any, i: number) => (
-                            <p key={i} style={{ color: 'var(--gray)', margin: i > 0 ? '0.2rem 0 0 0' : 0, fontSize: '0.7rem' }}>
-                              ↳ {l.titre} ({l.quantite} {article.unite})
-                            </p>
+                            <div key={i} style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '0.4rem',
+                              marginTop: i > 0 ? '0.25rem' : 0 
+                            }}>
+                              <span style={{ 
+                                background: 'rgba(139, 92, 246, 0.2)', 
+                                color: '#a78bfa',
+                                padding: '0.15rem 0.4rem',
+                                borderRadius: '4px',
+                                fontSize: '0.65rem',
+                                fontWeight: '500'
+                              }}>
+                                ×{l.quantite}
+                              </span>
+                              <span style={{ color: 'var(--gray-light)', fontSize: '0.7rem' }}>
+                                {l.titre}
+                              </span>
+                            </div>
                           ))}
                         </div>
                       </div>
@@ -1033,9 +1050,26 @@ export default function Navbar({ className }: NavbarProps) {
                        {/* Sources */}
                         <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
                           {article.lots.map((l: any, i: number) => (
-                            <p key={i} style={{ color: 'var(--gray)', margin: i > 0 ? '0.2rem 0 0 0' : 0, fontSize: '0.7rem' }}>
-                              ↳ {l.titre} ({l.quantite} {article.unite})
-                            </p>
+                            <div key={i} style={{ 
+                              display: 'flex', 
+                              alignItems: 'center', 
+                              gap: '0.4rem',
+                              marginTop: i > 0 ? '0.25rem' : 0 
+                            }}>
+                              <span style={{ 
+                                background: 'rgba(139, 92, 246, 0.2)', 
+                                color: '#a78bfa',
+                                padding: '0.15rem 0.4rem',
+                                borderRadius: '4px',
+                                fontSize: '0.65rem',
+                                fontWeight: '500'
+                              }}>
+                                ×{l.quantite}
+                              </span>
+                              <span style={{ color: 'var(--gray-light)', fontSize: '0.7rem' }}>
+                                {l.titre}
+                              </span>
+                            </div>
                           ))}
                         </div>
                       </div>
