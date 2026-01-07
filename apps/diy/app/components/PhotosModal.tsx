@@ -2,10 +2,11 @@
  * /app/components/PhotosModal.tsx
  * Modal pour afficher et gérer les médias (photos + vidéos) d'un niveau
  * 
- * @version 2.0
+ * @version 2.1
  * @date 07 janvier 2026
  * 
  * Changelog :
+ * - v2.1 : Header lightbox opaque, boutons navigation contrastés, pas d'arrondi lightbox
  * - v2.0 : Grille 2 colonnes, lightbox plein écran, support vidéos
  * - v1.0 : Version initiale photos uniquement
  */
@@ -131,7 +132,7 @@ export default function PhotosModal({
       const { error: uploadError } = await supabase.storage
         .from('papibricole_bucket')
         .upload(filePath, file, {
-        onUploadProgress: (progress: { loaded: number; total: number }) => {
+          onUploadProgress: (progress: { loaded: number; total: number }) => {
             const percent = Math.round((progress.loaded / progress.total) * 100);
             setUploadProgress(percent);
           }
@@ -237,7 +238,7 @@ export default function PhotosModal({
 
   return (
     <>
-      {/* Modal principale */}
+      {/* Modal principale - Galerie */}
       <div
         onClick={onClose}
         style={{
@@ -268,7 +269,7 @@ export default function PhotosModal({
             border: '1px solid rgba(255,255,255,0.1)',
           }}
         >
-          {/* Header */}
+          {/* Header galerie */}
           <div style={{
             display: 'flex',
             justifyContent: 'space-between',
@@ -313,7 +314,7 @@ export default function PhotosModal({
             </button>
           </div>
 
-          {/* Contenu */}
+          {/* Contenu galerie */}
           <div style={{ 
             padding: '1rem', 
             overflowY: 'auto',
@@ -430,7 +431,7 @@ export default function PhotosModal({
                           }}
                         />
                       )}
-                     {/* Bouton supprimer */}
+                      {/* Bouton supprimer */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -525,58 +526,48 @@ export default function PhotosModal({
         </div>
       </div>
 
-      {/* Lightbox plein écran */}
+      {/* ============================================ */}
+      {/* LIGHTBOX PLEIN ÉCRAN                        */}
+      {/* ============================================ */}
       {lightboxMedia && (
         <div
-          onClick={() => setLightboxMedia(null)}
           style={{
             position: 'fixed',
             top: 0,
             left: 0,
             right: 0,
             bottom: 0,
-            background: 'rgba(0, 0, 0, 0.95)',
+            background: '#000',
             display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
+            flexDirection: 'column',
             zIndex: 10000,
           }}
         >
-          {/* Header lightbox */}
+          {/* Header lightbox - TOUJOURS VISIBLE */}
           <div style={{
-            position: 'fixed',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '60px',
-            background: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            padding: '0 1rem',
-            zIndex: 10002
+            padding: '1rem',
+            background: '#1a1a1a',
+            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            flexShrink: 0,
           }}>
             {/* Compteur à gauche */}
             <span style={{
               color: 'white',
               fontSize: '0.95rem',
               fontWeight: '600',
-              background: 'rgba(0,0,0,0.5)',
-              padding: '0.4rem 0.75rem',
-              borderRadius: '20px'
             }}>
               {sortedMedias.findIndex(m => m.id === lightboxMedia.id) + 1} / {sortedMedias.length}
             </span>
             
             {/* Bouton fermer à droite */}
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                setLightboxMedia(null);
-              }}
+              onClick={() => setLightboxMedia(null)}
               style={{
-                background: 'rgba(255, 255, 255, 0.2)',
-                border: '2px solid white',
+                background: 'rgba(255, 255, 255, 0.15)',
+                border: '2px solid rgba(255,255,255,0.3)',
                 borderRadius: '50%',
                 width: '44px',
                 height: '44px',
@@ -585,54 +576,52 @@ export default function PhotosModal({
                 justifyContent: 'center',
                 cursor: 'pointer',
                 color: 'white',
-                fontSize: '1.5rem',
+                fontSize: '1.3rem',
                 fontWeight: '700'
               }}
             >
               ✕
             </button>
           </div>
-          
-          {/* Navigation précédent */}
-          {sortedMedias.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigateLightbox('prev');
-              }}
-              style={{
-                position: 'absolute',
-                left: '1rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: 'white',
-                fontSize: '1.5rem',
-              }}
-            >
-              ‹
-            </button>
-          )}
 
-          {/* Contenu média */}
-          <div
-            onClick={(e) => e.stopPropagation()}
-            style={{
-              maxWidth: '90vw',
-              maxHeight: '85vh',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-            }}
-          >
+          {/* Zone contenu média */}
+          <div style={{
+            flex: 1,
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            position: 'relative',
+            overflow: 'hidden',
+          }}>
+            {/* Navigation précédent */}
+            {sortedMedias.length > 1 && (
+              <button
+                onClick={() => navigateLightbox('prev')}
+                style={{
+                  position: 'absolute',
+                  left: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(0,0,0,0.7)',
+                  border: '2px solid rgba(255,255,255,0.5)',
+                  borderRadius: '50%',
+                  width: '48px',
+                  height: '48px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  fontSize: '1.8rem',
+                  fontWeight: '700',
+                  zIndex: 10,
+                }}
+              >
+                ‹
+              </button>
+            )}
+
+            {/* Contenu média */}
             {getMediaType(lightboxMedia) === 'video' ? (
               <video
                 src={lightboxMedia.url}
@@ -640,8 +629,8 @@ export default function PhotosModal({
                 autoPlay
                 style={{
                   maxWidth: '100%',
-                  maxHeight: '85vh',
-                  borderRadius: '8px',
+                  maxHeight: '100%',
+                  objectFit: 'contain',
                 }}
               />
             ) : (
@@ -650,42 +639,40 @@ export default function PhotosModal({
                 alt=""
                 style={{
                   maxWidth: '100%',
-                  maxHeight: '85vh',
+                  maxHeight: '100%',
                   objectFit: 'contain',
-                  borderRadius: '8px',
                 }}
               />
             )}
-          </div>
 
-          {/* Navigation suivant */}
-          {sortedMedias.length > 1 && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                navigateLightbox('next');
-              }}
-              style={{
-                position: 'absolute',
-                right: '1rem',
-                top: '50%',
-                transform: 'translateY(-50%)',
-                background: 'rgba(255,255,255,0.2)',
-                border: 'none',
-                borderRadius: '50%',
-                width: '44px',
-                height: '44px',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                cursor: 'pointer',
-                color: 'white',
-                fontSize: '1.5rem',
-              }}
-            >
-              ›
-            </button>
-          )}
+            {/* Navigation suivant */}
+            {sortedMedias.length > 1 && (
+              <button
+                onClick={() => navigateLightbox('next')}
+                style={{
+                  position: 'absolute',
+                  right: '0.5rem',
+                  top: '50%',
+                  transform: 'translateY(-50%)',
+                  background: 'rgba(0,0,0,0.7)',
+                  border: '2px solid rgba(255,255,255,0.5)',
+                  borderRadius: '50%',
+                  width: '48px',
+                  height: '48px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  color: 'white',
+                  fontSize: '1.8rem',
+                  fontWeight: '700',
+                  zIndex: 10,
+                }}
+              >
+                ›
+              </button>
+            )}
+          </div>
         </div>
       )}
     </>
