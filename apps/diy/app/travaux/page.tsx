@@ -481,7 +481,7 @@ export default function TravauxSimplesPage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: isMobile ? '1rem' : '3.5rem',
+        paddingTop: isMobile ? '3.5rem' : '3.5rem',
         paddingBottom: '100px'
       }}>
         {/* Header */}
@@ -489,7 +489,7 @@ export default function TravauxSimplesPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1.5rem'
+          marginBottom: '0.75rem'
         }}>
           <h1 style={{
             fontSize: '1.5rem',
