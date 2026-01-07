@@ -540,7 +540,7 @@ export default function PhotosModal({
             background: '#000',
             display: 'flex',
             flexDirection: 'column',
-            zIndex: 10000,
+            zIndex: 99999,
           }}
         >
           {/* Header lightbox - TOUJOURS VISIBLE */}
