@@ -265,11 +265,13 @@ export default function PhotosModal({
           {photos.length > 0 ? (
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fill, minmax(120px, 1fr))',
-              gap: '0.75rem',
+              gridTemplateColumns: 'repeat(2, 1fr)',
+              gap: '0.5rem',
               marginBottom: '1rem'
             }}>
-              {photos.map((photo) => (
+              {[...photos].sort((a, b) => 
+                new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+              ).map((photo) => (
                 <div
                   key={photo.id}
                   onClick={() => setSelectedPhoto(photo)}
