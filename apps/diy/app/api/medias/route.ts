@@ -55,10 +55,11 @@ export async function POST(request: NextRequest) {
 
         const photos = record?.photos_urls || [];
         const newPhoto = {
-          id: crypto.randomUUID(),
-          url,
-          legende: legende || '',
-          created_at: new Date().toISOString()
+            id: data.id || crypto.randomUUID(),
+            url,
+            type: data.type || 'image',
+            legende: legende || '',
+            created_at: new Date().toISOString()
         };
         photos.push(newPhoto);
 
