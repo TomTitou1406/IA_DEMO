@@ -91,9 +91,20 @@ export default function PhotosModal({
 
     const fileType = getFileType(file);
 
-    // Vérifier le type
-    if (!file.type.startsWith('image/') && !file.type.startsWith('video/')) {
-      setError('Seules les images et vidéos sont autorisées');
+    // Formats autorisés
+    const allowedImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    const allowedVideoTypes = ['video/mp4', 'video/webm', 'video/quicktime'];
+    const allAllowedTypes = [...allowedImageTypes, ...allowedVideoTypes];
+
+    // Vérifier le format
+    if (!allAllowedTypes.includes(file.type)) {
+      if (file.type.startsWith('video/')) {
+        setError('Format vidéo non supporté. Utilisez MP4, WebM ou MOV.');
+      } else if (file.type.startsWith('image/')) {
+        setError('Format image non supporté. Utilisez JPG, PNG, GIF ou WebP.');
+      } else {
+        setError('Seules les images et vidéos sont autorisées.');
+      }
       return;
     }
 
@@ -235,7 +246,7 @@ export default function PhotosModal({
           left: 0,
           right: 0,
           bottom: 0,
-          background: 'rgba(0, 0, 0, 0.85)',
+          background: 'rgba(0, 0, 0, 0.95)',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -246,7 +257,7 @@ export default function PhotosModal({
         <div
           onClick={(e) => e.stopPropagation()}
           style={{
-            background: 'var(--background)',
+            background: '#1a1a1a',
             borderRadius: '16px',
             width: '100%',
             maxWidth: '500px',
@@ -419,7 +430,7 @@ export default function PhotosModal({
                           }}
                         />
                       )}
-                      {/* Bouton supprimer */}
+                     {/* Bouton supprimer */}
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -429,17 +440,18 @@ export default function PhotosModal({
                           position: 'absolute',
                           top: '6px',
                           right: '6px',
-                          background: 'rgba(239, 68, 68, 0.9)',
-                          border: 'none',
+                          background: '#ef4444',
+                          border: '2px solid white',
                           borderRadius: '50%',
-                          width: '26px',
-                          height: '26px',
+                          width: '30px',
+                          height: '30px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer',
                           color: 'white',
-                          fontSize: '0.75rem',
+                          fontSize: '0.85rem',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
                         }}
                       >
                         🗑️
@@ -537,18 +549,20 @@ export default function PhotosModal({
               position: 'absolute',
               top: '1rem',
               right: '1rem',
-              background: 'rgba(255,255,255,0.2)',
-              border: 'none',
+              background: 'rgba(239, 68, 68, 0.9)',
+              border: '2px solid white',
               borderRadius: '50%',
-              width: '44px',
-              height: '44px',
+              width: '48px',
+              height: '48px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               color: 'white',
               fontSize: '1.5rem',
-              zIndex: 10001
+              fontWeight: '700',
+              zIndex: 10001,
+              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
             }}
           >
             ✕
