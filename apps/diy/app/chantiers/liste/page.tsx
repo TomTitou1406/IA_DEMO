@@ -322,7 +322,7 @@ export default function ChantiersListePage() {
           style={{
             display: 'block',
             padding: '0.75rem 1rem',
-            paddingBottom: '0.5rem',
+            paddingBottom: '0.25rem',
             textDecoration: 'none'
           }}
         >
