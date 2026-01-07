@@ -342,7 +342,7 @@ export default function ChantiersListePage() {
               lineHeight: '1.4',
               flex: 1
             }}>
-              {status.icon} {chantier.titre}
+              {chantier.titre}
             </h3>
             {chantier.statut !== 'nouveau' && (
               <span style={{
@@ -406,10 +406,12 @@ export default function ChantiersListePage() {
           color: 'white'
         }}>
           {/* Stats gauche */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
             {chantier.statut === 'nouveau' ? (
               <>
-                <span>📅 Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}</span>
+                {!isMobile && (
+                  <span>📅 Créé le {new Date(chantier.created_at).toLocaleDateString('fr-FR')}</span>
+                )}
                 {(chantier as any).nombre_travaux > 0 && (
                   <span style={{ color: 'var(--orange)' }}>
                     ⚠️ {(chantier as any).nombre_travaux} lots en brouillon
@@ -418,9 +420,10 @@ export default function ChantiersListePage() {
               </>
             ) : (
               <>
-                {stats && <span>📦 {stats.total} lots</span>}
-                {stats && <span>✅ {stats.termines} terminés</span>}
-                {chantier.budget_initial > 0 && (
+                {stats && (
+                  <span>✅ {stats.termines}/{stats.total} lots</span>
+                )}
+                {chantier.budget_initial > 0 && !isMobile && (
                   <span>💰 {chantier.budget_initial.toLocaleString()}€</span>
                 )}
               </>
