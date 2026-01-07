@@ -440,21 +440,21 @@ export default function PhotosModal({
                           position: 'absolute',
                           top: '6px',
                           right: '6px',
-                          background: '#ef4444',
-                          border: '2px solid white',
+                          background: 'rgba(0, 0, 0, 0.7)',
+                          border: 'none',
                           borderRadius: '50%',
-                          width: '30px',
-                          height: '30px',
+                          width: '28px',
+                          height: '28px',
                           display: 'flex',
                           alignItems: 'center',
                           justifyContent: 'center',
                           cursor: 'pointer',
                           color: 'white',
-                          fontSize: '0.85rem',
-                          boxShadow: '0 2px 8px rgba(0,0,0,0.4)'
+                          fontSize: '1rem',
+                          boxShadow: '0 2px 6px rgba(0,0,0,0.5)'
                         }}
                       >
-                        🗑️
+                        ✕
                       </button>
                       {/* Badge vidéo */}
                       {mediaType === 'video' && (
@@ -544,30 +544,33 @@ export default function PhotosModal({
         >
           {/* Bouton fermer */}
           <button
-            onClick={() => setLightboxMedia(null)}
+            onClick={(e) => {
+              e.stopPropagation();
+              setLightboxMedia(null);
+            }}
             style={{
-              position: 'absolute',
-              top: '1rem',
-              right: '1rem',
-              background: 'rgba(239, 68, 68, 0.9)',
+              position: 'fixed',
+              top: '20px',
+              right: '20px',
+              background: 'rgba(0, 0, 0, 0.8)',
               border: '2px solid white',
               borderRadius: '50%',
-              width: '48px',
-              height: '48px',
+              width: '50px',
+              height: '50px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               cursor: 'pointer',
               color: 'white',
-              fontSize: '1.5rem',
+              fontSize: '1.8rem',
               fontWeight: '700',
-              zIndex: 10001,
+              zIndex: 10002,
               boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
             }}
           >
             ✕
           </button>
-
+          
           {/* Navigation précédent */}
           {sortedMedias.length > 1 && (
             <button
