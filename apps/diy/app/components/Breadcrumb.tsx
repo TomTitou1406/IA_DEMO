@@ -16,7 +16,6 @@ interface BreadcrumbProps {
 const LEVELS_CONFIG: Record<NavigationLevel, { label: string; icon: string }> = {
   home: { label: 'Home', icon: '🏠' },
   chantiers: { label: 'Chantiers', icon: '🏗️' },
-  travaux: { label: 'Travaux', icon: '🔧' },
   lots: { label: 'Lots', icon: '📦' },
   etapes: { label: 'Étapes', icon: '📋' },
   taches: { label: 'Tâches', icon: '✅' }
@@ -43,8 +42,6 @@ export default function Breadcrumb({
         return '/';
       case 'chantiers':
         return '/chantiers';
-      case 'travaux':
-        return '/travaux';
       case 'lots':
         return chantierId ? `/chantiers/${chantierId}/travaux` : null;
       case 'etapes':
