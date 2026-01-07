@@ -481,7 +481,7 @@ export default function TravauxSimplesPage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: isMobile ? '3.5rem' : '3.5rem',
+        paddingTop: '2rem',
         paddingBottom: '100px'
       }}>
         {/* Header */}
