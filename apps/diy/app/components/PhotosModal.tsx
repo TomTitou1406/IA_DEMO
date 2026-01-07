@@ -549,7 +549,7 @@ export default function PhotosModal({
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '1rem',
-            paddingTop: '70px',
+            paddingTop: '85px',
             background: '#000',
             flexShrink: 0,
           }}>
