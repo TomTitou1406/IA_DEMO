@@ -469,7 +469,8 @@ export default function Navbar({ className }: NavbarProps) {
         >
           <span style={{ 
             fontSize: mobile ? '1.3rem' : '1rem',
-            transition: 'transform 0.2s ease'
+            transition: 'transform 0.2s ease',
+            filter: 'brightness(1.5)'
           }}>
             👤
           </span>
@@ -1140,7 +1141,7 @@ export default function Navbar({ className }: NavbarProps) {
           background: isScrolled ? 'rgba(10, 10, 10, 0.9)' : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: 'none',
           transition: 'all 0.3s ease',
           display: isMobile ? 'none' : 'block',
         }}
@@ -1236,7 +1237,7 @@ export default function Navbar({ className }: NavbarProps) {
           background: isScrolled ? 'rgba(10, 10, 10, 0.9)' : 'rgba(0, 0, 0, 0.5)',
           backdropFilter: 'blur(20px)',
           WebkitBackdropFilter: 'blur(20px)',
-          borderBottom: '1px solid rgba(255,255,255,0.08)',
+          borderBottom: 'none',
           transition: 'all 0.3s ease',
           display: isMobile ? 'flex' : 'none',
           alignItems: 'center',
@@ -1278,6 +1279,19 @@ export default function Navbar({ className }: NavbarProps) {
           <GamificationBadge size={32} />
           <AccountButton mobile />
         </div>
+
+        {/* Trait dégradé sous header */}
+              <div style={{
+                position: 'fixed',
+                top: isMobile ? '52px' : '58px',
+                left: 0,
+                right: 0,
+                height: '2px',
+                background: 'linear-gradient(90deg, transparent 0%, #f97316 50%, transparent 100%)',
+                zIndex: 999,
+                opacity: 0.6
+              }} />
+        
       </header>
 
       <nav
