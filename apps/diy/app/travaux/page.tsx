@@ -489,7 +489,7 @@ export default function TravauxSimplesPage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '0.75rem'
+          marginBottom: '0.5rem'
         }}>
           <h1 style={{
             fontSize: '1.5rem',
