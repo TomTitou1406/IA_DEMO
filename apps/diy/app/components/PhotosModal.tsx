@@ -543,14 +543,14 @@ export default function PhotosModal({
             zIndex: 99999,
           }}
         >
-          {/* Header lightbox - TOUJOURS VISIBLE */}
+         {/* Header lightbox - TOUJOURS VISIBLE */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
             padding: '1rem',
-            background: '#1a1a1a',
-            borderBottom: '1px solid rgba(255,255,255,0.1)',
+            paddingTop: '70px',
+            background: '#000',
             flexShrink: 0,
           }}>
             {/* Compteur à gauche */}
