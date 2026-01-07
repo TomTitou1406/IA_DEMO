@@ -150,7 +150,6 @@ export default function ChantiersHubPage() {
             alignItems: 'center',
             justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-            border: '2px solid rgba(0,0,0,0.3)',
             zIndex: 1
           }}>
             {count}
