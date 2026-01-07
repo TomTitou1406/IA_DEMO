@@ -60,7 +60,7 @@ export default function Breadcrumb({
   return (
     <div style={{
       position: 'fixed',
-      top: 52,
+      top: 65,
       left: 0,
       right: 0,
       background: 'rgba(0, 0, 0, 0.7)',
