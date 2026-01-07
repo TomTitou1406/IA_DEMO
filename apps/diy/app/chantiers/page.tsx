@@ -5,12 +5,13 @@
  * - Travaux simples (tâches ponctuelles)
  * - Chantiers (projets structurés)
  * 
- * Design : 2 cards horizontales style Home avec images
+ * Design : 2 cards horizontales avec pastilles sur images
  * 
- * @version 1.1
- * @date 04 janvier 2026
+ * @version 1.2
+ * @date 07 janvier 2026
  * 
  * Changelog :
+ * - v1.2 : Breadcrumb standard, pastilles sur images, polish UI
  * - v1.1 : Ajout images, texte modifié, counts
  * - v1.0 : Création du HUB avec 2 cards
  */
@@ -19,6 +20,7 @@
 
 import Link from "next/link";
 import { useState, useEffect } from "react";
+import Breadcrumb from '@/app/components/Breadcrumb';
 
 export default function ChantiersHubPage() {
   const [counts, setCounts] = useState({ travaux: 0, chantiers: 0 });
@@ -59,212 +61,179 @@ export default function ChantiersHubPage() {
     }
   };
 
-  return (
-    <div style={{
-      maxWidth: '800px',
-      margin: '0 auto',
-      padding: isMobile ? '0.75rem' : '1.5rem'
-    }}>
-      {/* Breadcrumb */}
-      <nav style={{
+  // Composant Card réutilisable
+  const HubCard = ({ 
+    href, 
+    image, 
+    imageAlt,
+    title, 
+    description, 
+    count, 
+    bgColor,
+    shadowColor 
+  }: {
+    href: string;
+    image: string;
+    imageAlt: string;
+    title: string;
+    description: string;
+    count: number;
+    bgColor: string;
+    shadowColor: string;
+  }) => (
+    <Link 
+      href={href}
+      style={{
         display: 'flex',
         alignItems: 'center',
-        gap: '0.5rem',
-        fontSize: '0.85rem',
-        marginBottom: isMobile ? '1rem' : '1.5rem',
-        flexWrap: 'wrap'
-      }}>
-        <Link href="/" style={{ color: 'var(--gray)', textDecoration: 'none' }}>
-          🏠 Home
-        </Link>
-        <span style={{ color: 'var(--gray)' }}>/</span>
-        <span style={{ color: 'var(--orange)', fontWeight: '600' }}>
-          🏗️ Mes projets
-        </span>
-      </nav>
-
-      {/* Titre */}
-      <h1 style={{
-        fontSize: isMobile ? '1.5rem' : '2rem',
-        fontWeight: '700',
-        marginBottom: isMobile ? '1.5rem' : '2rem',
-        color: 'var(--gray-light)'
-      }}>
-        Que veux-tu faire ?
-      </h1>
-
-      {/* Cards */}
+        gap: '1rem',
+        padding: '1rem',
+        background: bgColor,
+        borderRadius: '16px',
+        textDecoration: 'none',
+        color: 'white',
+        transition: 'all 0.3s ease',
+        border: '3px solid transparent'
+      }}
+      onMouseEnter={(e) => {
+        e.currentTarget.style.transform = 'translateY(-4px)';
+        e.currentTarget.style.boxShadow = `0 12px 40px ${shadowColor}`;
+        e.currentTarget.style.borderColor = 'rgba(255,255,255,0.5)';
+      }}
+      onMouseLeave={(e) => {
+        e.currentTarget.style.transform = 'translateY(0)';
+        e.currentTarget.style.boxShadow = 'none';
+        e.currentTarget.style.borderColor = 'transparent';
+      }}
+    >
+      {/* Image avec pastille */}
       <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '1rem'
+        position: 'relative',
+        width: '80px',
+        height: '80px',
+        minWidth: '80px',
+        borderRadius: '12px',
+        overflow: 'hidden',
+        background: 'rgba(255,255,255,0.1)'
       }}>
-        
-        {/* Card Travaux Simples */}
-        <Link 
-          href="/travaux"
+        <img 
+          src={image} 
+          alt={imageAlt}
           style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem 1.25rem',
-            background: 'var(--blue)',
-            borderRadius: '16px',
-            textDecoration: 'none',
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover'
+          }}
+          onError={(e) => {
+            (e.target as HTMLImageElement).style.display = 'none';
+          }}
+        />
+        {/* Pastille sur l'image */}
+        {count > 0 && (
+          <span style={{
+            position: 'absolute',
+            top: '6px',
+            right: '6px',
+            background: 'rgba(0,0,0,0.7)',
+            backdropFilter: 'blur(4px)',
             color: 'white',
-            transition: 'all 0.3s ease',
-            border: '3px solid transparent'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(37, 99, 235, 0.4)';
-            e.currentTarget.style.borderColor = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'transparent';
-          }}
-        >
-          {/* Image */}
-          <div style={{
-            width: '70px',
-            height: '70px',
-            minWidth: '70px',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            background: 'rgba(255,255,255,0.1)'
+            padding: '0.2rem 0.5rem',
+            borderRadius: '10px',
+            fontSize: '0.75rem',
+            fontWeight: '700',
+            minWidth: '24px',
+            textAlign: 'center',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
           }}>
-            <img 
-              src="/images/travaux_liste.webp" 
-              alt="Travaux simples"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-          
-          <div style={{ flex: 1 }}>
-            <h2 style={{ 
-              margin: 0, 
-              fontSize: isMobile ? '1.1rem' : '1.25rem', 
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              Mes travaux simples
-              {counts.travaux > 0 && (
-                <span style={{
-                  background: 'rgba(255,255,255,0.3)',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '12px',
-                  fontSize: '0.8rem',
-                  fontWeight: '600'
-                }}>
-                  {counts.travaux}
-                </span>
-              )}
-            </h2>
-            <p style={{ 
-              margin: '0.25rem 0 0 0', 
-              fontSize: '0.85rem', 
-              opacity: 0.9 
-            }}>
-              Petits travaux faciles de bricolage
-            </p>
-          </div>
-          <span style={{ fontSize: '1.5rem', opacity: 0.8 }}>→</span>
-        </Link>
-
-        {/* Card Chantiers */}
-        <Link 
-          href="/chantiers/liste"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            padding: '1rem 1.25rem',
-            background: 'var(--orange)',
-            borderRadius: '16px',
-            textDecoration: 'none',
-            color: 'white',
-            transition: 'all 0.3s ease',
-            border: '3px solid transparent'
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.transform = 'translateY(-4px)';
-            e.currentTarget.style.boxShadow = '0 12px 40px rgba(249, 115, 22, 0.4)';
-            e.currentTarget.style.borderColor = 'white';
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.transform = 'translateY(0)';
-            e.currentTarget.style.boxShadow = 'none';
-            e.currentTarget.style.borderColor = 'transparent';
-          }}
-        >
-          {/* Image */}
-          <div style={{
-            width: '70px',
-            height: '70px',
-            minWidth: '70px',
-            borderRadius: '12px',
-            overflow: 'hidden',
-            background: 'rgba(255,255,255,0.1)'
-          }}>
-            <img 
-              src="/images/chantiers_liste.webp" 
-              alt="Chantiers"
-              style={{
-                width: '100%',
-                height: '100%',
-                objectFit: 'cover'
-              }}
-              onError={(e) => {
-                (e.target as HTMLImageElement).style.display = 'none';
-              }}
-            />
-          </div>
-          
-          <div style={{ flex: 1 }}>
-            <h2 style={{ 
-              margin: 0, 
-              fontSize: isMobile ? '1.1rem' : '1.25rem', 
-              fontWeight: '700',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem'
-            }}>
-              Mes chantiers
-              {counts.chantiers > 0 && (
-                <span style={{
-                  background: 'rgba(255,255,255,0.3)',
-                  padding: '0.15rem 0.5rem',
-                  borderRadius: '12px',
-                  fontSize: '0.8rem',
-                  fontWeight: '600'
-                }}>
-                  {counts.chantiers}
-                </span>
-              )}
-            </h2>
-            <p style={{ 
-              margin: '0.25rem 0 0 0', 
-              fontSize: '0.85rem', 
-              opacity: 0.9 
-            }}>
-              Projets structurés avec suivi complet
-            </p>
-          </div>
-          <span style={{ fontSize: '1.5rem', opacity: 0.8 }}>→</span>
-        </Link>
-
+            {count}
+          </span>
+        )}
       </div>
-    </div>
+      
+      {/* Contenu texte */}
+      <div style={{ flex: 1 }}>
+        <h2 style={{ 
+          margin: 0, 
+          fontSize: isMobile ? '1.05rem' : '1.2rem', 
+          fontWeight: '700',
+          lineHeight: '1.3'
+        }}>
+          {title}
+        </h2>
+        <p style={{ 
+          margin: '0.3rem 0 0 0', 
+          fontSize: '0.85rem', 
+          opacity: 0.85,
+          lineHeight: '1.4'
+        }}>
+          {description}
+        </p>
+      </div>
+      
+      {/* Flèche */}
+      <span style={{ 
+        fontSize: '1.5rem', 
+        opacity: 0.7,
+        transition: 'transform 0.2s ease'
+      }}>
+        →
+      </span>
+    </Link>
+  );
+
+  return (
+    <>
+      <Breadcrumb currentLevel="chantiers" />
+      
+      <div style={{
+        maxWidth: '800px',
+        margin: '0 auto',
+        padding: isMobile ? '0.75rem' : '1.5rem',
+        paddingTop: '2rem'
+      }}>
+        {/* Titre */}
+        <h1 style={{
+          fontSize: isMobile ? '1.4rem' : '1.75rem',
+          fontWeight: '700',
+          marginBottom: isMobile ? '1.25rem' : '1.5rem',
+          color: 'var(--gray-light)'
+        }}>
+          Que veux-tu faire ?
+        </h1>
+
+        {/* Cards */}
+        <div style={{
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '1rem'
+        }}>
+          
+          {/* Card Travaux Simples */}
+          <HubCard
+            href="/travaux"
+            image="/images/travaux_liste.webp"
+            imageAlt="Travaux simples"
+            title="Travaux simples"
+            description="Petits travaux faciles de bricolage"
+            count={counts.travaux}
+            bgColor="var(--blue)"
+            shadowColor="rgba(37, 99, 235, 0.4)"
+          />
+
+          {/* Card Chantiers */}
+          <HubCard
+            href="/chantiers/liste"
+            image="/images/chantiers_liste.webp"
+            imageAlt="Chantiers"
+            title="Mes chantiers"
+            description="Projets structurés avec suivi complet"
+            count={counts.chantiers}
+            bgColor="var(--orange)"
+            shadowColor="rgba(249, 115, 22, 0.4)"
+          />
+
+        </div>
+      </div>
+    </>
   );
 }
