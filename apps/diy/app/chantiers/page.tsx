@@ -106,34 +106,39 @@ export default function ChantiersHubPage() {
         e.currentTarget.style.borderColor = 'transparent';
       }}
     >
-      {/* Image avec pastille */}
+    {/* Image avec pastille */}
       <div style={{
         position: 'relative',
         width: '80px',
         height: '80px',
         minWidth: '80px',
-        borderRadius: '12px',
-        overflow: 'hidden',
-        background: 'rgba(255,255,255,0.1)'
       }}>
-        <img 
-          src={image} 
-          alt={imageAlt}
-          style={{
-            width: '100%',
-            height: '100%',
-            objectFit: 'cover'
-          }}
-          onError={(e) => {
-            (e.target as HTMLImageElement).style.display = 'none';
-          }}
-        />
-        {/* Pastille sur l'image */}
+        <div style={{
+          width: '100%',
+          height: '100%',
+          borderRadius: '12px',
+          overflow: 'hidden',
+          background: 'rgba(255,255,255,0.1)'
+        }}>
+          <img 
+            src={image} 
+            alt={imageAlt}
+            style={{
+              width: '100%',
+              height: '100%',
+              objectFit: 'cover'
+            }}
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+            }}
+          />
+        </div>
+        {/* Pastille qui déborde */}
         {count > 0 && (
           <span style={{
             position: 'absolute',
-            top: '-8px',
-            right: '-8px',
+            top: '-6px',
+            right: '-6px',
             background: '#10b981',
             color: 'white',
             padding: '0.25rem 0.5rem',
@@ -143,7 +148,8 @@ export default function ChantiersHubPage() {
             minWidth: '24px',
             textAlign: 'center',
             boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
-            border: '2px solid rgba(0,0,0,0.3)'
+            border: '2px solid rgba(0,0,0,0.3)',
+            zIndex: 1
           }}>
             {count}
           </span>
@@ -198,7 +204,7 @@ export default function ChantiersHubPage() {
           marginBottom: isMobile ? '1.25rem' : '1.5rem',
           color: 'var(--gray-light)'
         }}>
-          Que veux-tu faire ?
+          Mes projets de bricolage
         </h1>
 
         {/* Cards */}
@@ -213,7 +219,7 @@ export default function ChantiersHubPage() {
             href="/travaux"
             image="/images/travaux_liste.webp"
             imageAlt="Travaux simples"
-            title="Travaux simples"
+            title="Mes Travaux simples"
             description="Petits travaux faciles de bricolage"
             count={counts.travaux}
             bgColor="var(--blue)"
