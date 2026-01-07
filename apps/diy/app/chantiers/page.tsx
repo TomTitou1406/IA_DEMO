@@ -132,18 +132,18 @@ export default function ChantiersHubPage() {
         {count > 0 && (
           <span style={{
             position: 'absolute',
-            top: '6px',
-            right: '6px',
-            background: 'rgba(0,0,0,0.7)',
-            backdropFilter: 'blur(4px)',
+            top: '-8px',
+            right: '-8px',
+            background: '#10b981',
             color: 'white',
-            padding: '0.2rem 0.5rem',
-            borderRadius: '10px',
+            padding: '0.25rem 0.5rem',
+            borderRadius: '12px',
             fontSize: '0.75rem',
             fontWeight: '700',
             minWidth: '24px',
             textAlign: 'center',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.3)'
+            boxShadow: '0 2px 8px rgba(0,0,0,0.4)',
+            border: '2px solid rgba(0,0,0,0.3)'
           }}>
             {count}
           </span>
@@ -189,7 +189,7 @@ export default function ChantiersHubPage() {
         maxWidth: '800px',
         margin: '0 auto',
         padding: isMobile ? '0.75rem' : '1.5rem',
-        paddingTop: '2rem'
+          paddingTop: isMobile ? '2rem' : '5rem'
       }}>
         {/* Titre */}
         <h1 style={{
