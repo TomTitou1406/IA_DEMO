@@ -304,7 +304,7 @@ export default function TravauxSimplesPage() {
           href={`/chantiers/${travail.chantier_id}/travaux/${travail.id}/etapes`}
           style={{
             display: 'block',
-            padding: '1rem 1.25rem',
+            padding: '0.75rem 1rem',
             paddingBottom: '0.5rem',
             textDecoration: 'none'
           }}
@@ -365,8 +365,8 @@ export default function TravauxSimplesPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0.5rem 1.25rem',
-          paddingTop: '0.5rem',
+          padding: '0.4rem 1rem',
+          paddingTop: '0.25rem',
           fontSize: '0.85rem',
           color: 'white'
         }}>
@@ -474,7 +474,7 @@ export default function TravauxSimplesPage() {
   return (
     <>
       <Breadcrumb 
-        currentLevel="chantiers"
+        currentLevel="Travaux"
       />
 
       <div style={{ 
@@ -500,7 +500,7 @@ export default function TravauxSimplesPage() {
             alignItems: 'center',
             gap: '0.5rem'
           }}>
-            🔧 Mes travaux simples
+            🔧 Travaux simples
           </h1>
           <button
             onClick={() => {
@@ -522,7 +522,9 @@ export default function TravauxSimplesPage() {
               borderRadius: '10px',
               fontWeight: '600',
               fontSize: '0.9rem',
-              cursor: 'pointer'
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              flexShrink: 0
             }}
           >
             <span>+ Nouveau</span>
