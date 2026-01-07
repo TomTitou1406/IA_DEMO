@@ -1,6 +1,6 @@
 // /app/components/MediaButtons.tsx
 // Boutons 📷🎬 réutilisables pour tous les niveaux
-// v1.1 - 22/12/2024 - Suppression modale interne (gérée par les pages)
+// v1.2 - 07/01/2026 - Pastilles en superposition style notification
 
 'use client';
 
@@ -30,7 +30,8 @@ export default function MediaButtons({
   compact = false
 }: MediaButtonsProps) {
 
-  const buttonStyle = {
+  const buttonStyle: React.CSSProperties = {
+    position: 'relative',
     padding: compact ? '0.25rem' : '0.35rem',
     borderRadius: '6px',
     border: 'none',
@@ -40,17 +41,37 @@ export default function MediaButtons({
     cursor: 'pointer',
     display: 'flex',
     alignItems: 'center',
-    gap: '0.25rem',
-    transition: 'all 0.2s'
+    justifyContent: 'center',
+    transition: 'all 0.2s',
+    minWidth: compact ? '28px' : '32px',
+    height: compact ? '28px' : '32px'
   };
 
-  const activeStyle = {
+  const activeStyle: React.CSSProperties = {
     ...buttonStyle,
     color: 'var(--orange)'
   };
 
+  const badgeStyle: React.CSSProperties = {
+    position: 'absolute',
+    top: '-4px',
+    right: '-4px',
+    background: 'var(--blue)',
+    color: 'white',
+    fontSize: '0.55rem',
+    fontWeight: '700',
+    minWidth: '14px',
+    height: '14px',
+    borderRadius: '50%',
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'center',
+    boxShadow: '0 1px 3px rgba(0,0,0,0.3)',
+    border: '1.5px solid rgba(0,0,0,0.2)'
+  };
+
   return (
-    <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+    <div style={{ display: 'flex', gap: '0.25rem', alignItems: 'center' }}>
       {/* Bouton Photos */}
       <button
         onClick={onPhotoClick}
@@ -65,21 +86,10 @@ export default function MediaButtons({
         }}
         title={photosCount > 0 ? `${photosCount} photo(s)` : 'Ajouter une photo'}
       >
-        📷 {photosCount > 0 && (
-          <span style={{
-            background: 'var(--blue)',
-            color: 'white',
-            fontSize: '0.65rem',
-            fontWeight: '700',
-            minWidth: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: '2px'
-          }}>
-            {photosCount}
+        📷
+        {photosCount > 0 && (
+          <span style={badgeStyle}>
+            {photosCount > 9 ? '9+' : photosCount}
           </span>
         )}
       </button>
@@ -98,21 +108,13 @@ export default function MediaButtons({
         }}
         title={hasVideo ? videoTitre || 'Voir le tuto' : 'Trouver un tuto'}
       >
-        🎬 {hasVideo && (
+        🎬
+        {hasVideo && (
           <span style={{
-            background: 'var(--blue)',
-            color: 'white',
-            fontSize: '0.65rem',
-            fontWeight: '700',
-            minWidth: '16px',
-            height: '16px',
-            borderRadius: '50%',
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginLeft: '2px'
+            ...badgeStyle,
+            background: 'var(--green)'
           }}>
-            1
+            ✓
           </span>
         )}
       </button>
