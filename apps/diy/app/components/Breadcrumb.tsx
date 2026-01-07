@@ -3,7 +3,7 @@
 import Link from 'next/link';
 
 // Types pour les niveaux de navigation
-export type NavigationLevel = 'home' | 'chantiers' | 'travaux' | 'lots' | 'etapes' | 'taches';
+export type NavigationLevel = 'home' | 'chantiers' | 'lots' | 'etapes' | 'taches';
 
 interface BreadcrumbProps {
   currentLevel: NavigationLevel;
