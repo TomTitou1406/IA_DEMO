@@ -1224,6 +1224,18 @@ export default function Navbar({ className }: NavbarProps) {
 
           <HelpButton />
         </div>
+
+        {/* Trait dégradé */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent 0%, #f97316 50%, transparent 100%)',
+            opacity: 0.7
+          }} />
+        
       </header>
 
       <header
@@ -1280,18 +1292,17 @@ export default function Navbar({ className }: NavbarProps) {
           <AccountButton mobile />
         </div>
 
-        {/* Trait dégradé sous header */}
-              <div style={{
-                position: 'fixed',
-                top: isMobile ? '52px' : '58px',
-                left: 0,
-                right: 0,
-                height: '2px',
-                background: 'linear-gradient(90deg, transparent 0%, #f97316 50%, transparent 100%)',
-                zIndex: 999,
-                opacity: 0.6
-              }} />
-        
+        {/* Trait dégradé */}
+          <div style={{
+            position: 'absolute',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            height: '2px',
+            background: 'linear-gradient(90deg, transparent 0%, #f97316 50%, transparent 100%)',
+            opacity: 0.7
+          }} />
+
       </header>
 
       <nav
