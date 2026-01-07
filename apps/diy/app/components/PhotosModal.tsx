@@ -542,34 +542,56 @@ export default function PhotosModal({
             zIndex: 10000,
           }}
         >
-          {/* Bouton fermer */}
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              setLightboxMedia(null);
-            }}
-            style={{
-              position: 'fixed',
-              top: '20px',
-              right: '20px',
-              background: 'rgba(0, 0, 0, 0.8)',
-              border: '2px solid white',
-              borderRadius: '50%',
-              width: '50px',
-              height: '50px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              cursor: 'pointer',
+          {/* Header lightbox */}
+          <div style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '60px',
+            background: 'linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, transparent 100%)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '0 1rem',
+            zIndex: 10002
+          }}>
+            {/* Compteur à gauche */}
+            <span style={{
               color: 'white',
-              fontSize: '1.8rem',
-              fontWeight: '700',
-              zIndex: 10002,
-              boxShadow: '0 4px 12px rgba(0,0,0,0.5)'
-            }}
-          >
-            ✕
-          </button>
+              fontSize: '0.95rem',
+              fontWeight: '600',
+              background: 'rgba(0,0,0,0.5)',
+              padding: '0.4rem 0.75rem',
+              borderRadius: '20px'
+            }}>
+              {sortedMedias.findIndex(m => m.id === lightboxMedia.id) + 1} / {sortedMedias.length}
+            </span>
+            
+            {/* Bouton fermer à droite */}
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                setLightboxMedia(null);
+              }}
+              style={{
+                background: 'rgba(255, 255, 255, 0.2)',
+                border: '2px solid white',
+                borderRadius: '50%',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'white',
+                fontSize: '1.5rem',
+                fontWeight: '700'
+              }}
+            >
+              ✕
+            </button>
+          </div>
           
           {/* Navigation précédent */}
           {sortedMedias.length > 1 && (
@@ -664,21 +686,6 @@ export default function PhotosModal({
               ›
             </button>
           )}
-
-          {/* Compteur */}
-          <div style={{
-            position: 'absolute',
-            bottom: '1rem',
-            left: '50%',
-            transform: 'translateX(-50%)',
-            background: 'rgba(0,0,0,0.6)',
-            padding: '0.5rem 1rem',
-            borderRadius: '20px',
-            color: 'white',
-            fontSize: '0.9rem',
-          }}>
-            {sortedMedias.findIndex(m => m.id === lightboxMedia.id) + 1} / {sortedMedias.length}
-          </div>
         </div>
       )}
     </>
