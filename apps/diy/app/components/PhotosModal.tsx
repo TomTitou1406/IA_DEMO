@@ -120,7 +120,7 @@ export default function PhotosModal({
       const { error: uploadError } = await supabase.storage
         .from('papibricole_bucket')
         .upload(filePath, file, {
-          onUploadProgress: (progress) => {
+        onUploadProgress: (progress: { loaded: number; total: number }) => {
             const percent = Math.round((progress.loaded / progress.total) * 100);
             setUploadProgress(percent);
           }
