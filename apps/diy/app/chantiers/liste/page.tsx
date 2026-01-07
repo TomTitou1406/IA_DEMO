@@ -321,7 +321,7 @@ export default function ChantiersListePage() {
           href={linkHref}
           style={{
             display: 'block',
-            padding: '1rem 1.25rem',
+            padding: '0.75rem 1rem',
             paddingBottom: '0.5rem',
             textDecoration: 'none'
           }}
@@ -400,7 +400,7 @@ export default function ChantiersListePage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          padding: '0.5rem 1.25rem',
+          padding: '0.4rem 1rem',
           paddingTop: '0.25rem',
           fontSize: '0.85rem',
           color: 'white'
@@ -523,7 +523,7 @@ export default function ChantiersListePage() {
         maxWidth: '800px', 
         margin: '0 auto', 
         padding: '1rem',
-        paddingTop: isMobile ? '1rem' : '3.5rem',
+        paddingTop: isMobile ? '2rem' : '5rem',
         paddingBottom: '100px'
       }}>
         {/* Header */}
@@ -531,7 +531,7 @@ export default function ChantiersListePage() {
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'center',
-          marginBottom: '1.5rem'
+          marginBottom: '0.5rem'
         }}>
           <h1 style={{
             fontSize: '1.5rem',
@@ -557,7 +557,9 @@ export default function ChantiersListePage() {
               borderRadius: '10px',
               fontWeight: '600',
               fontSize: '0.9rem',
-              textDecoration: 'none'
+              textDecoration: 'none',
+              whiteSpace: 'nowrap',
+              flexShrink: 0
             }}
           >
             <span>+ Nouveau</span>
