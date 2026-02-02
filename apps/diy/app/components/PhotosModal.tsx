@@ -15,6 +15,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import { useToast } from '@/app/components/Toast';
 
 // Client Supabase pour Storage
 const supabase = createClient(
@@ -65,6 +66,7 @@ export default function PhotosModal({
   const [isMobile, setIsMobile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
+  const { showConfirm } = useToast();
 
   // Détecter si mobile (pour afficher le bouton caméra)
   useEffect(() => {
@@ -200,7 +202,15 @@ export default function PhotosModal({
   };
 
   const handleDelete = async (media: Photo) => {
-    if (!confirm('Supprimer ce média ?')) return;
+    const confirmed = await showConfirm({
+      title: 'Supprimer le média',
+      message: 'Voulez-vous vraiment supprimer ce média ?',
+      confirmText: 'Supprimer',
+      cancelText: 'Annuler',
+      type: 'danger'
+    });
+    
+    if (!confirmed) return;
 
     try {
       // Extraire le chemin du fichier depuis l'URL
