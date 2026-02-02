@@ -542,7 +542,7 @@ export default function FloatingAssistant() {
        @media (max-width: 768px) {
           .floating-assistant-btn {
             bottom: auto !important;
-            top: 8px !important;
+            top: 14px !important;
             right: auto !important;
             left: 50% !important;
             transform: translateX(-50%) !important;
