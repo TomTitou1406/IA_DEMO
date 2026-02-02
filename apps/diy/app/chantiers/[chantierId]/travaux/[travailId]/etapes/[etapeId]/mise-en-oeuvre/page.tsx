@@ -277,7 +277,7 @@ function TacheCard({
         display: 'flex', 
         justifyContent: 'space-between', 
         alignItems: 'flex-start',
-        gap: '1rem'
+        gap: '0.5rem'
       }}>
         <div 
           style={{ flex: 1, cursor: 'pointer' }}
@@ -345,19 +345,19 @@ function TacheCard({
         </div>
 
         {/* Actions */}
-        <div style={{ display: 'flex', gap: '0.25rem' }}>
+        <div style={{ display: 'flex', gap: '0.2rem', flexShrink: 0 }}>
           <button
             onClick={() => onMove(index, 'up')}
             disabled={isFirst}
             style={{
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               background: isFirst ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)',
               border: 'none',
               borderRadius: '6px',
               color: isFirst ? 'var(--gray)' : 'var(--gray-light)',
               cursor: isFirst ? 'not-allowed' : 'pointer',
-              fontSize: '0.9rem'
+              fontSize: '0.8rem'
             }}
           >
             ↑
@@ -366,14 +366,14 @@ function TacheCard({
             onClick={() => onMove(index, 'down')}
             disabled={isLast}
             style={{
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               background: isLast ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)',
               border: 'none',
               borderRadius: '6px',
               color: isLast ? 'var(--gray)' : 'var(--gray-light)',
               cursor: isLast ? 'not-allowed' : 'pointer',
-              fontSize: '0.9rem'
+              fontSize: '0.8rem'
             }}
           >
             ↓
@@ -381,14 +381,14 @@ function TacheCard({
           <button
             onClick={() => onDelete(index)}
             style={{
-              width: '32px',
-              height: '32px',
+              width: '28px',
+              height: '28px',
               background: 'rgba(239, 68, 68, 0.1)',
               border: 'none',
               borderRadius: '6px',
               color: '#ef4444',
               cursor: 'pointer',
-              fontSize: '0.9rem'
+              fontSize: '0.8rem'
             }}
           >
             ✕
@@ -989,14 +989,14 @@ export default function MiseEnOeuvreTachesPage() {
             {/* Actions - Footer sticky */}
             <div style={{
               position: 'fixed',
-              bottom: 0,
+              bottom: isMobile ? '70px' : 0,
               left: 0,
               right: 0,
               background: 'rgba(0, 0, 0, 0.95)',
               backdropFilter: 'blur(10px)',
               WebkitBackdropFilter: 'blur(10px)',
               borderTop: '1px solid rgba(255,255,255,0.1)',
-              padding: '1rem'
+              padding: isMobile ? '0.75rem' : '1rem'
             }}>
               <div style={{
                 maxWidth: '900px',
