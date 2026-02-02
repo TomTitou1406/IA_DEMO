@@ -354,8 +354,8 @@ export default function TravailDetailPage() {
             )}
           </div>
   
-          {/* Boutons selon statut */}
-          {etape.statut !== 'terminé' && (
+         {/* Boutons selon statut - sur mobile, uniquement si expanded */}
+          {etape.statut !== 'terminé' && (!isMobile || isExpanded) && (
           <div 
             onClick={(e) => e.stopPropagation()}
             style={{ 
@@ -571,7 +571,7 @@ export default function TravailDetailPage() {
         </div>
   
         {/* Barre de progression + Stats en ligne */}
-        {etape.statut === 'en_cours' && etape.nombre_taches && etape.nombre_taches > 0 && (
+        {(!isMobile || isExpanded) && etape.statut === 'en_cours' && etape.nombre_taches && etape.nombre_taches > 0 && (
           <>
             {/* Barre de progression */}
             <div style={{ marginBottom: '0.75rem' }}>
