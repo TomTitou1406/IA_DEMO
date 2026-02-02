@@ -322,7 +322,7 @@ export default function PhotosModal({
                 fontSize: '1.2rem',
               }}
             >
-              🗑️
+              ✕
             </button>
           </div>
 
@@ -467,7 +467,7 @@ export default function PhotosModal({
                           boxShadow: '0 2px 6px rgba(0,0,0,0.5)'
                         }}
                       >
-                        ✕
+                        🗑️
                       </button>
                       {/* Badge vidéo */}
                       {mediaType === 'video' && (
