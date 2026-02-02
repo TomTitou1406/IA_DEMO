@@ -66,14 +66,14 @@ export default function PhotosModal({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
-  if (!isOpen) return null;
-
   // Détecter si mobile (pour afficher le bouton caméra)
   useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsMobile(window.innerWidth < 768);
     }
   }, []);
+
+  if (!isOpen) return null;
 
   // Trier par date (plus récent en premier)
   const sortedMedias = [...photos].sort((a, b) => 
