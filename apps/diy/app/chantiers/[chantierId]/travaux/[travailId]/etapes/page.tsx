@@ -864,7 +864,7 @@ export default function TravailDetailPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '70px'
+        paddingTop: isMobile ? '55px' : '70px'
       }}>
         {/* ========== NOUVEAU PARENT CONTEXT ========== */}
         {!isMobile && (
@@ -875,8 +875,8 @@ export default function TravailDetailPage() {
 
        {/* ÉTAT DES LIEUX DU LOT */}
         <div style={{
-          marginBottom: isMobile ? '0.5rem' : '2rem',
-          paddingBottom: isMobile ? '0.5rem' : '1.5rem',
+          marginBottom: isMobile ? '0.5rem' : '1.5rem',
+          paddingBottom: isMobile ? '0.5rem' : '1.0rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)'
         }}>
           {/* Header avec titre + bouton notes */}
