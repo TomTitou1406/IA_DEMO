@@ -89,7 +89,7 @@ export default function ConfirmModal({
           <h3 style={{ 
             margin: 0, 
             fontSize: '1.25rem',
-            color: 'var(--text)'
+            color: 'var(--gray-light)'
           }}>
             {title}
           </h3>
@@ -99,7 +99,7 @@ export default function ConfirmModal({
         <p style={{ 
           margin: 0, 
           marginBottom: '1.5rem',
-          color: 'var(--gray-dark)',
+          color: 'var(--gray)',
           lineHeight: '1.5'
         }}>
           {message}
@@ -115,8 +115,9 @@ export default function ConfirmModal({
             onClick={onCancel}
             className="main-btn"
             style={{
-              background: 'var(--gray-light)',
-              color: 'var(--gray-dark)',
+              background: 'rgba(255,255,255,0.1)',
+              color: 'var(--gray-light)',
+              border: '1px solid rgba(255,255,255,0.2)',
               padding: '0.6rem 1.5rem',
               minHeight: 'auto'
             }}
