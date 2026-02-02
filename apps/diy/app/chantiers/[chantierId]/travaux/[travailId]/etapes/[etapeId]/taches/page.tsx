@@ -66,6 +66,15 @@ export default function TachesPage() {
     lot?: { titre: string };
   }>({});
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     loadData();
   }, [etapeId, chantierId, travailId]);
@@ -187,19 +196,19 @@ export default function TachesPage() {
               <span style={{
                 background: statusColor,
                 color: 'white',
-                minWidth: '32px',
-                height: '32px',
+                minWidth: isMobile ? '26px' : '32px',
+                height: isMobile ? '26px' : '32px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: '700',
-                fontSize: '0.9rem'
+                fontSize: isMobile ? '0.8rem' : '0.9rem'
               }}>
                 {tache.numero}
               </span>
               <h3 style={{ 
-                fontSize: '1.05rem', 
+                fontSize: isMobile ? '0.9rem' : '1.05rem', 
                 margin: 0,
                 color: 'var(--gray-light)',
                 fontWeight: '700',
@@ -233,15 +242,16 @@ export default function TachesPage() {
             
             <div style={{ 
               display: 'flex', 
-              gap: '1.5rem', 
-              fontSize: '0.85rem', 
+              flexWrap: 'wrap',
+              gap: isMobile ? '0.75rem' : '1.5rem', 
+              fontSize: isMobile ? '0.75rem' : '0.85rem', 
               color: 'var(--gray)',
-              marginLeft: '40px'
+              marginLeft: '0'
             }}>
-              {tache.duree_estimee_minutes && (
+              {(tache.duree_estimee_minutes ?? 0) > 0 && (
                 <span>⏱️ {tache.duree_estimee_minutes} min</span>
               )}
-              {tache.duree_reelle_minutes && (
+              {(tache.duree_reelle_minutes ?? 0) > 0 && (
                 <span style={{ color: 'var(--blue)', fontWeight: '600' }}>
                   ✓ {tache.duree_reelle_minutes} min réel
                 </span>
@@ -497,13 +507,15 @@ export default function TachesPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: '70px'
+        paddingTop: isMobile ? '35px' : '70px'
       }}>
-        {/* ========== NOUVEAU PARENT CONTEXT ========== */}
-        <ParentContext 
-          chantier={parents.chantier}
-          lot={parents.lot}
-        />
+       {/* ========== NOUVEAU PARENT CONTEXT ========== */}
+        {!isMobile && (
+          <ParentContext 
+            chantier={parents.chantier}
+            lot={parents.lot}
+          />
+        )}
 
         {/* ÉTAT DES LIEUX DE L'ÉTAPE */}
         <div style={{
@@ -520,7 +532,7 @@ export default function TachesPage() {
             gap: '1rem'
           }}>
             <h1 style={{ 
-              fontSize: '1.5rem', 
+              fontSize: isMobile ? '1.1rem' : '1.5rem', 
               margin: 0,
               color: 'var(--gray-light)',
               fontWeight: '700',
@@ -534,7 +546,7 @@ export default function TachesPage() {
             {/* Bouton Notes */}
             <NotesButton level="etape" id={etapeId} />
           </div>
-          {etape.description && (
+          {!isMobile && etape.description && (
             <p style={{ 
               fontSize: '0.95rem', 
               color: 'var(--gray)', 
@@ -549,7 +561,7 @@ export default function TachesPage() {
           <div style={{ marginBottom: '1rem' }}>
             <div style={{
               width: '100%',
-              height: '16px',
+              height: isMobile ? '10px' : '16px',
               background: 'rgba(255,255,255,0.08)',
               borderRadius: '10px',
               overflow: 'hidden'
@@ -563,47 +575,53 @@ export default function TachesPage() {
             </div>
           </div>
 
-          {/* Stats inline */}
+        {/* Stats inline */}
           <div style={{ 
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: '2rem',
-            fontSize: '0.95rem',
+            gap: isMobile ? '0.75rem' : '2rem',
+            fontSize: isMobile ? '0.85rem' : '0.95rem',
             color: 'var(--gray)',
             marginBottom: '1rem'
           }}>
             <span style={{ 
               color: 'var(--gray-light)', 
-              fontSize: '1.1rem', 
+              fontSize: isMobile ? '0.95rem' : '1.1rem', 
               fontWeight: '700' 
             }}>
-              {progressionAuto}% complété
+              {progressionAuto}%{!isMobile && ' complété'}
             </span>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+              <span style={{ fontSize: isMobile ? '1rem' : '1.1rem' }}>⏱️</span>
               <span>
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
                   {dureeReelleMinutes}min
                 </strong>
-                <span style={{ opacity: 0.6 }}> / {dureeEstimeeMinutes}min</span>
+                {!isMobile && <span style={{ opacity: 0.6 }}> / {dureeEstimeeMinutes}min</span>}
               </span>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>✅</span>
+              <span style={{ fontSize: isMobile ? '1rem' : '1.1rem' }}>✅</span>
               <span>
                 <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
                   {terminees.length}
                 </strong>
                 <span style={{ opacity: 0.6 }}> / {totalTaches}</span>
-                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
-                </span>
-                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {aFaire.length} à faire
-                </span>
+                {isMobile ? (
+                  <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>• {aFaire.length} à faire</span>
+                ) : (
+                  <>
+                    <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                      • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
+                    </span>
+                    <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                      • {aFaire.length} à faire
+                    </span>
+                  </>
+                )}
               </span>
             </div>
           </div>
