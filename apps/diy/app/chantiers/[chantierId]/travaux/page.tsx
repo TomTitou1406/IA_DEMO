@@ -1836,48 +1836,50 @@ export default function TravauxPage() {
               </div>
             </div>
             {/* Photos et Vidéos du chantier */}
-            <MediaButtons
-              niveau="chantier"
-              niveauId={chantierId}
-              niveauTitre={chantier?.titre || ''}
-              photosCount={chantierPhotos.length}
-              hasVideo={!!chantierVideo?.video_id}
-              videoTitre={chantierVideo?.titre}
-              onPhotoClick={() => {
-                setPhotosModalConfig({
-                  niveau: 'chantier',
-                  niveauId: chantierId,
-                  niveauTitre: chantier?.titre || '',
-                  photos: chantierPhotos
-                });
-                setShowPhotosModal(true);
-              }}
-              onVideoClick={() => {
-                if (chantierVideo?.video_id) {
-                  setVideoModalConfig({
+            <div style={{ marginLeft: 'auto' }}>
+              <MediaButtons
+                niveau="chantier"
+                niveauId={chantierId}
+                niveauTitre={chantier?.titre || ''}
+                photosCount={chantierPhotos.length}
+                hasVideo={!!chantierVideo?.video_id}
+                videoTitre={chantierVideo?.titre}
+                onPhotoClick={() => {
+                  setPhotosModalConfig({
                     niveau: 'chantier',
                     niveauId: chantierId,
-                    video: {
-                      id: chantierVideo.video_id,
-                      title: chantierVideo.titre,
-                      thumbnail: chantierVideo.thumbnail,
-                      channelTitle: '',
-                      viewCount: 0,
-                      duration: ''
-                    }
+                    niveauTitre: chantier?.titre || '',
+                    photos: chantierPhotos
                   });
-                  setShowVideoModal(true);
-                } else {
-                  // Ouvrir modale de choix
-                  setVideoChoiceContext({
-                    niveau: 'chantier',
-                    id: chantierId,
-                    titre: chantier?.titre || ''
-                  });
-                  setShowVideoChoiceModal(true);
-                }
-              }}
-            />
+                  setShowPhotosModal(true);
+                }}
+                onVideoClick={() => {
+                  if (chantierVideo?.video_id) {
+                    setVideoModalConfig({
+                      niveau: 'chantier',
+                      niveauId: chantierId,
+                      video: {
+                        id: chantierVideo.video_id,
+                        title: chantierVideo.titre,
+                        thumbnail: chantierVideo.thumbnail,
+                        channelTitle: '',
+                        viewCount: 0,
+                        duration: ''
+                      }
+                    });
+                    setShowVideoModal(true);
+                  } else {
+                    // Ouvrir modale de choix
+                    setVideoChoiceContext({
+                      niveau: 'chantier',
+                      id: chantierId,
+                      titre: chantier?.titre || ''
+                    });
+                    setShowVideoChoiceModal(true);
+                  }
+                }}
+              />
+            </div>
           </div>
         </div>
        
