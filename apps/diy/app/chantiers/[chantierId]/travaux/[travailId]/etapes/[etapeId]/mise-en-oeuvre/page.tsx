@@ -474,6 +474,15 @@ export default function MiseEnOeuvreTachesPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Écouter les actions de l'assistant IA
   useEffect(() => {
     const handleTachesAction = (event: Event) => {
@@ -766,11 +775,11 @@ export default function MiseEnOeuvreTachesPage() {
           alignItems: 'flex-start',
           gap: '1rem'
         }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: '1.5rem', color: 'var(--gray-light)' }}>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ margin: 0, fontSize: isMobile ? '1.1rem' : '1.5rem', color: 'var(--gray-light)' }}>
               📋 Tâches : {etape?.titre}
             </h1>
-            {etape?.description && (
+            {!isMobile && etape?.description && (
               <p style={{ margin: '0.5rem 0 0', color: 'var(--gray)', fontSize: '0.9rem' }}>
                 {etape.description}
               </p>
@@ -780,7 +789,7 @@ export default function MiseEnOeuvreTachesPage() {
                 display: 'flex', 
                 gap: '1rem', 
                 marginTop: '0.5rem',
-                fontSize: '0.85rem',
+                fontSize: isMobile ? '0.75rem' : '0.85rem',
                 color: 'var(--gray)'
               }}>
                 <span>⏱️ {etape.duree_estimee_minutes} min</span>
@@ -881,50 +890,50 @@ export default function MiseEnOeuvreTachesPage() {
             {/* Stats */}
             <div style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))',
-              gap: '1rem',
-              marginBottom: '1.5rem'
+              gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fit, minmax(120px, 1fr))',
+              gap: isMobile ? '0.5rem' : '1rem',
+              marginBottom: '1rem'
             }}>
               <div style={{
                 background: 'rgba(255,255,255,0.05)',
-                padding: '1rem',
-                borderRadius: '12px',
+                padding: isMobile ? '0.6rem' : '1rem',
+                borderRadius: '10px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--blue)' }}>
+                <div style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', fontWeight: '700', color: 'var(--blue)' }}>
                   {totaux.nombre_taches}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Tâches</div>
               </div>
               <div style={{
                 background: 'rgba(255,255,255,0.05)',
-                padding: '1rem',
-                borderRadius: '12px',
+                padding: isMobile ? '0.6rem' : '1rem',
+                borderRadius: '10px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--green)' }}>
+                <div style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', fontWeight: '700', color: 'var(--green)' }}>
                   {totaux.duree_totale_minutes}min
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Durée totale</div>
               </div>
               <div style={{
                 background: 'rgba(255,255,255,0.05)',
-                padding: '1rem',
-                borderRadius: '12px',
+                padding: isMobile ? '0.6rem' : '1rem',
+                borderRadius: '10px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: '#ef4444' }}>
+                <div style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', fontWeight: '700', color: '#ef4444' }}>
                   {totaux.taches_critiques}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Critiques</div>
               </div>
               <div style={{
                 background: 'rgba(255,255,255,0.05)',
-                padding: '1rem',
-                borderRadius: '12px',
+                padding: isMobile ? '0.6rem' : '1rem',
+                borderRadius: '10px',
                 textAlign: 'center'
               }}>
-                <div style={{ fontSize: '1.5rem', fontWeight: '700', color: 'var(--purple)' }}>
+                <div style={{ fontSize: isMobile ? '1.2rem' : '1.5rem', fontWeight: '700', color: 'var(--purple)' }}>
                   {outils.length}
                 </div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--gray)' }}>Outils</div>
