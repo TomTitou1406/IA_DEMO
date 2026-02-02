@@ -1253,8 +1253,8 @@ export default function TravauxPage() {
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
-                  icon="🎯"
-                  label="Voir les étapes"
+                  icon={isMobile ? "" : "🎯"}
+                  label={isMobile ? "Étapes" : "Voir les étapes"}
                   count={travail.nombre_etapes}
                   href={`/chantiers/${chantierId}/travaux/${travail.id}/etapes`}
                 />
@@ -1266,7 +1266,7 @@ export default function TravauxPage() {
                   variant="secondary"
                   color="var(--blue)"
                   icon="📅"
-                  label="Reporter"
+                  label={isMobile ? "" : "Reporter"}
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -1287,8 +1287,8 @@ export default function TravauxPage() {
                 <CardButton
                   variant="secondary"
                   color="var(--green)"
-                  icon="✓✓"
-                  label="Tout terminer"
+                  icon={isMobile ? "" : "✓✓"}
+                  label={isMobile ? "Terminer" : "Tout terminer"}
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -1311,7 +1311,7 @@ export default function TravauxPage() {
                   variant="primary"
                   color="var(--orange)"
                   icon="🔓"
-                  label="Débloquer"
+                  label={isMobile ? "" : "Débloquer"}
                   onClick={() => console.log('Débloquer:', travail.id)}
                 />
               )}
@@ -1321,8 +1321,8 @@ export default function TravauxPage() {
                 <CardButton
                   variant="primary"
                   color="var(--orange)"
-                  icon="🔧"
-                  label="Reprendre mise en œuvre"
+                  icon={isMobile ? "" : "🔧"}
+                  label={isMobile ? "Reprendre" : "Reprendre mise en œuvre"}
                   count={travail.etapes_brouillon}
                   onClick={() => router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`)}
                 />
@@ -1333,8 +1333,8 @@ export default function TravauxPage() {
                 <CardButton
                   variant="primary"
                   color="var(--green)"
-                  icon="🔧"
-                  label="Mettre en œuvre"
+                  icon={isMobile ? "" : "🔧"}
+                  label={isMobile ? "Démarrer" : "Mettre en œuvre"}
                   onClick={() => router.push(`/chantiers/${chantierId}/travaux/${travail.id}/mise-en-oeuvre`)}
                 />
               )}
@@ -1345,7 +1345,7 @@ export default function TravauxPage() {
                   variant="primary"
                   color="var(--purple)"
                   icon="▶️"
-                  label="Commencer"
+                  label={isMobile ? "" : "Commencer"}
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -1437,16 +1437,18 @@ export default function TravauxPage() {
           }}></div>
         </div>
 
-        {/* LIGNE 4 : Stats + Panier + MediaButtons + Poubelle */}
+         {/* LIGNE 4 : Stats + Panier + MediaButtons + Poubelle */}
         <div style={{
           display: 'flex',
-          alignItems: 'center',
+          flexDirection: isMobile ? 'column' : 'row',
+          alignItems: isMobile ? 'flex-start' : 'center',
           justifyContent: 'space-between',
-          fontSize: '0.85rem',
+          gap: isMobile ? '0.5rem' : '0',
+          fontSize: isMobile ? '0.75rem' : '0.85rem',
           color: 'white'
         }}>
           {/* Gauche : %, Panier, Durée, Étapes */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? '0.5rem' : '1rem', flexWrap: 'wrap' }}>
             <span style={{ fontWeight: '700' }}>{progression}%</span>
             
             {/* Bouton Panier */}
@@ -1467,7 +1469,7 @@ export default function TravauxPage() {
                   gap: '0.3rem'
                 }}
               >
-                🛒 Générer panier
+                🛒{!isMobile && ' Générer panier'}
               </button>
             ) : (travail.cout_materiaux_estime || travail.cout_estime) ? (
               <button
@@ -1501,8 +1503,8 @@ export default function TravauxPage() {
             )}
           </div>
 
-          {/* Droite : MediaButtons + Poubelle */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+         {/* Droite : MediaButtons + Poubelle */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: isMobile ? 'auto' : '0' }}>
             <MediaButtons
               niveau="travail"
               niveauId={travail.id}
@@ -1662,7 +1664,7 @@ export default function TravauxPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 0.75rem',
-        paddingTop: isMobile ? '55px' : '70px'
+        paddingTop: isMobile ? '35px' : '70px'
       }}>
         {/* ========== NOUVEAU PARENT CONTEXT ========== */}
         {/* Note: Ici on a déjà le chantier chargé, pas besoin de ParentContext 
@@ -1700,11 +1702,11 @@ export default function TravauxPage() {
             <NotesButton level="chantier" id={chantierId} />
           </div>
 
-          {/* Progress bar */}
-          <div style={{ marginBottom: '1rem' }}>
+         {/* Progress bar */}
+          <div style={{ marginBottom: isMobile ? '0.5rem' : '1rem' }}>
             <div style={{
               width: '100%',
-              height: '16px',
+              height: isMobile ? '10px' : '16px',
               background: 'rgba(255,255,255,0.08)',
               borderRadius: '10px',
               overflow: 'hidden'
@@ -1723,113 +1725,116 @@ export default function TravauxPage() {
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: isMobile ? '0.75rem' : '2rem',
+            justifyContent: 'space-between',
+            gap: isMobile ? '0.5rem' : '2rem',
             fontSize: isMobile ? '0.85rem' : '0.95rem',
             color: 'var(--gray)'
           }}>
-            {/* % complété */}
-            <span style={{ 
-              color: 'var(--gray-light)', 
-              fontSize: isMobile ? '0.95rem' : '1.1rem', 
-              fontWeight: '700',
-              marginLeft: '0.5rem'
-            }}>
-              {progressionChantier}%{!isMobile && ' complété'}
-            </span>
-
-            {/* Heures - SANS COULEUR BLEUE */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>⏱️</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {stats?.heuresEffectuees || 0}h
-                </strong>
-                <span style={{ opacity: 0.6 }}> / {stats?.heuresEstimees || 0}h</span>
-                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                  {stats?.progressionHeures || 0}%
-                </span>
+            {/* Stats groupées à gauche */}
+            <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: isMobile ? '0.75rem' : '2rem' }}>
+                {/* % complété */}
+                <span style={{
+                color: 'var(--gray-light)', 
+                fontSize: isMobile ? '0.95rem' : '1.1rem', 
+                fontWeight: '700',
+                marginLeft: '0.5rem'
+              }}>
+                {progressionChantier}%{!isMobile && ' complété'}
               </span>
-            </div>
-            
-          {/* Total Paniers techniques - Cliquable - Masqué sur mobile */}
-            {!isMobile && (() => {
-              const totalPaniers = travaux.reduce((sum, t) => sum + (t.cout_materiaux_estime || 0), 0);
-              const lotsAvecPanier = travaux.filter(t => t.cout_materiaux_estime && t.cout_materiaux_estime > 0).length;
-              return (
-                <div 
-                  onClick={() => setShowPanierChantierModal(true)}
-                  style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '0.5rem',
-                    cursor: 'pointer',
-                    padding: '0.4rem 0.8rem',
-                    borderRadius: '8px',
-                    border: '1px solid rgba(16, 185, 129, 0.4)',
-                    background: 'rgba(16, 185, 129, 0.1)',
-                    transition: 'all 0.2s',
-                    color: 'var(--green)'
-                  }}
-                  onMouseEnter={(e) => {
-                    e.currentTarget.style.background = '#10b981';
-                    e.currentTarget.style.borderColor = '#10b981';
-                    e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
-                    e.currentTarget.style.transform = 'translateY(-2px)';
-                    // Passer tous les textes en blanc
-                    e.currentTarget.querySelectorAll('strong, span').forEach((el: any) => {
-                      el.dataset.originalColor = el.style.color;
-                      el.style.color = 'white';
-                    });
-                  }}
-                  onMouseLeave={(e) => {
-                    e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
-                    e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-                    e.currentTarget.style.boxShadow = 'none';
-                    e.currentTarget.style.transform = 'translateY(0)';
-                    // Restaurer les couleurs originales
-                    e.currentTarget.querySelectorAll('strong, span').forEach((el: any) => {
-                      el.style.color = el.dataset.originalColor || '';
-                    });
-                  }}
-                  title="Voir tous les paniers"
-                >
-                  <span style={{ fontSize: '1.1rem' }}>🛒</span>
-                  <span>
-                    <strong style={{ fontWeight: '700' }}>
-                      {totalPaniers > 0 ? `${totalPaniers.toLocaleString()}€` : 'Paniers'}
-                    </strong>
-                    <span style={{ opacity: 0.7, marginLeft: '0.3rem' }}>({lotsAvecPanier}/{travaux.length})</span>
+  
+              {/* Heures - SANS COULEUR BLEUE */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+                <span>
+                  <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
+                    {stats?.heuresEffectuees || 0}h
+                  </strong>
+                  <span style={{ opacity: 0.6 }}> / {stats?.heuresEstimees || 0}h</span>
+                  <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
+                    {stats?.progressionHeures || 0}%
                   </span>
-                </div>
-              );
-            })()}
-
-           {/* Lots */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: isMobile ? '1rem' : '1.1rem' }}>✅</span>
-              <span>
-                {isMobile ? (
-                  <>
-                    <span style={{ fontWeight: '700' }}>{stats?.termines || 0}/{travaux.length}</span>
-                    <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>• {stats?.enCours || 0} en cours</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Lots :</span>
-                    <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                      {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
+                </span>
+              </div>
+              
+            {/* Total Paniers techniques - Cliquable - Masqué sur mobile */}
+              {!isMobile && (() => {
+                const totalPaniers = travaux.reduce((sum, t) => sum + (t.cout_materiaux_estime || 0), 0);
+                const lotsAvecPanier = travaux.filter(t => t.cout_materiaux_estime && t.cout_materiaux_estime > 0).length;
+                return (
+                  <div 
+                    onClick={() => setShowPanierChantierModal(true)}
+                    style={{ 
+                      display: 'flex', 
+                      alignItems: 'center', 
+                      gap: '0.5rem',
+                      cursor: 'pointer',
+                      padding: '0.4rem 0.8rem',
+                      borderRadius: '8px',
+                      border: '1px solid rgba(16, 185, 129, 0.4)',
+                      background: 'rgba(16, 185, 129, 0.1)',
+                      transition: 'all 0.2s',
+                      color: 'var(--green)'
+                    }}
+                    onMouseEnter={(e) => {
+                      e.currentTarget.style.background = '#10b981';
+                      e.currentTarget.style.borderColor = '#10b981';
+                      e.currentTarget.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
+                      e.currentTarget.style.transform = 'translateY(-2px)';
+                      // Passer tous les textes en blanc
+                      e.currentTarget.querySelectorAll('strong, span').forEach((el: any) => {
+                        el.dataset.originalColor = el.style.color;
+                        el.style.color = 'white';
+                      });
+                    }}
+                    onMouseLeave={(e) => {
+                      e.currentTarget.style.background = 'rgba(16, 185, 129, 0.1)';
+                      e.currentTarget.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+                      e.currentTarget.style.boxShadow = 'none';
+                      e.currentTarget.style.transform = 'translateY(0)';
+                      // Restaurer les couleurs originales
+                      e.currentTarget.querySelectorAll('strong, span').forEach((el: any) => {
+                        el.style.color = el.dataset.originalColor || '';
+                      });
+                    }}
+                    title="Voir tous les paniers"
+                  >
+                    <span style={{ fontSize: '1.1rem' }}>🛒</span>
+                    <span>
+                      <strong style={{ fontWeight: '700' }}>
+                        {totalPaniers > 0 ? `${totalPaniers.toLocaleString()}€` : 'Paniers'}
+                      </strong>
+                      <span style={{ opacity: 0.7, marginLeft: '0.3rem' }}>({lotsAvecPanier}/{travaux.length})</span>
                     </span>
-                    <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                      | {stats?.enCours || 0} En cours
-                    </span>
-                    <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                      | {stats?.bloques || 0} Bloqué{stats?.bloques > 1 ? 's' : ''}
-                    </span>
-                  </>
-                )}
-              </span>
+                  </div>
+                );
+              })()}
+  
+             {/* Lots */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: isMobile ? '1rem' : '1.1rem' }}>✅</span>
+                <span>
+                  {isMobile ? (
+                    <>
+                      <span style={{ fontWeight: '700' }}>{stats?.termines || 0}/{travaux.length}</span>
+                      <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>• {stats?.enCours || 0} en cours</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>Lots :</span>
+                      <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                        {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
+                      </span>
+                      <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                        | {stats?.enCours || 0} En cours
+                      </span>
+                      <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                        | {stats?.bloques || 0} Bloqué{stats?.bloques > 1 ? 's' : ''}
+                      </span>
+                    </>
+                  )}
+                </span>
+              </div>
             </div>
-            
             {/* Photos et Vidéos du chantier */}
             <MediaButtons
               niveau="chantier"
