@@ -307,18 +307,6 @@ function TacheCard({
             }}>
               {tache.titre}
             </h3>
-            {tache.est_critique && (
-              <span style={{
-                background: 'rgba(239, 68, 68, 0.2)',
-                color: '#ef4444',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '6px',
-                fontSize: '0.7rem',
-                fontWeight: '600'
-              }}>
-                🔥 Critique
-              </span>
-            )}
             <span style={{ 
               fontSize: '1rem',
               color: 'var(--gray)',
@@ -340,6 +328,18 @@ function TacheCard({
             <span>⏱️ {tache.duree_estimee_minutes} min</span>
             {tache.outils_necessaires && tache.outils_necessaires.length > 0 && (
               <span>🔧 {tache.outils_necessaires.length} outil{tache.outils_necessaires.length > 1 ? 's' : ''}</span>
+            )}
+            {tache.est_critique && (
+              <span style={{
+                background: 'rgba(239, 68, 68, 0.2)',
+                color: '#ef4444',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '6px',
+                fontSize: '0.7rem',
+                fontWeight: '600'
+              }}>
+                🔥 Critique
+              </span>
             )}
           </div>
         </div>
