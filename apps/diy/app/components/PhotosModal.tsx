@@ -322,7 +322,7 @@ export default function PhotosModal({
                 fontSize: '1.2rem',
               }}
             >
-              ✕
+              🗑️
             </button>
           </div>
 
@@ -613,6 +613,26 @@ export default function PhotosModal({
             }}>
               {sortedMedias.findIndex(m => m.id === lightboxMedia.id) + 1} / {sortedMedias.length}
             </span>
+            
+          {/* Bouton supprimer */}
+            <button
+              onClick={() => handleDelete(lightboxMedia)}
+              style={{
+                background: 'rgba(239, 68, 68, 0.9)',
+                border: '2px solid white',
+                borderRadius: '50%',
+                width: '44px',
+                height: '44px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                cursor: 'pointer',
+                color: 'white',
+                fontSize: '1.2rem',
+              }}
+            >
+              🗑️
+            </button>
             
             {/* Bouton fermer à droite */}
             <button
