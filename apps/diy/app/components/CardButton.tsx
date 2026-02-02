@@ -62,18 +62,21 @@ export default function CardButton({
 
   const buttonStyle = getButtonStyle();
 
+ // Détecter mobile
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+
   const commonStyle = {
-    fontSize: '0.75rem',
-    padding: '0.45rem 0.75rem',
+    fontSize: isMobile ? '0.7rem' : '0.75rem',
+    padding: isMobile ? '0.35rem 0.5rem' : '0.45rem 0.75rem',
     minHeight: 'auto',
     whiteSpace: 'nowrap' as const,
-    borderRadius: '8px',
+    borderRadius: '6px',
     cursor: disabled ? 'not-allowed' : 'pointer',
     opacity: disabled ? 0.5 : 1,
     transition: 'all 0.2s ease',
     display: 'inline-flex',
     alignItems: 'center',
-    gap: '0.3rem',
+    gap: '0.25rem',
     textDecoration: 'none',
     ...buttonStyle
   };
