@@ -946,6 +946,15 @@ export default function TravauxPage() {
   // État pour la modale récap paniers chantier
   const [showPanierChantierModal, setShowPanierChantierModal] = useState(false);
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   const handlePhotosChange = (niveau: string, niveauId: string, newPhotos: any[]) => {
     if (niveau === 'chantier') {
       setChantierPhotos(newPhotos);
@@ -1137,6 +1146,7 @@ export default function TravauxPage() {
     const isAnnulee = travail.statut === 'annulé';
     const statusColor = getStatusColor(travail.statut);
     const progression = travail.progression || 0;
+    const [isExpanded, setIsExpanded] = useState(false);
     
     // RGB pour le dégradé
     const getStatusRgb = (statut: string) => {
@@ -1164,30 +1174,33 @@ export default function TravauxPage() {
         {/* LIGNE 1 : Header - Titre + Boutons (SANS Annuler) */}
         <div style={{ 
           display: 'flex', 
+          flexDirection: isMobile ? 'column' : 'row',
           justifyContent: 'space-between', 
-          alignItems: 'flex-start',
+          alignItems: isMobile ? 'stretch' : 'flex-start',
           marginBottom: '0.5rem',
-          gap: '1rem'
+          gap: isMobile ? '0.75rem' : '1rem'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1 }}>
+          <div 
+            onClick={() => isMobile && setIsExpanded(!isExpanded)}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flex: 1, cursor: isMobile ? 'pointer' : 'default' }}>
             <span style={{
               background: statusColor,
               color: 'white',
-              minWidth: '32px',
-              width: '32px',
-              height: '32px',
+              minWidth: isMobile ? '26px' : '32px',
+              width: isMobile ? '26px' : '32px',
+              height: isMobile ? '26px' : '32px',
               borderRadius: '50%',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontWeight: '700',
-              fontSize: '0.9rem',
+              fontSize: isMobile ? '0.8rem' : '0.9rem',
               flexShrink: 0
             }}>
               {travail.ordre}
             </span>
             <h3 style={{ 
-              fontSize: '1.05rem', 
+              fontSize: isMobile ? '0.9rem' : '1.05rem', 
               margin: 0,
               color: 'white',
               fontWeight: '700',
@@ -1215,12 +1228,23 @@ export default function TravauxPage() {
                 >
                   ⚡ Forcé
                 </span>
-              )}
+             )}
             </h3>
+            {isMobile && (
+              <span style={{ 
+                fontSize: '1rem',
+                color: 'var(--gray)',
+                transition: 'transform 0.2s',
+                transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)',
+                marginLeft: 'auto'
+              }}>
+                ▼
+              </span>
+            )}
           </div>
           
-          {/* Boutons action (SANS Annuler) */}
-          {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (
+          {/* Boutons action (SANS Annuler) - sur mobile uniquement si expanded */}
+          {travail.statut !== 'terminé' && travail.statut !== 'annulé' && (!isMobile || isExpanded) && (
             <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
               {/* Bouton VOIR LES ÉTAPES */}
               {(travail.statut === 'en_cours' || travail.statut === 'à_venir') && 
@@ -1362,8 +1386,8 @@ export default function TravauxPage() {
           )}
         </div>
 
-        {/* LIGNE 2 : Description */}
-        {travail.description && (
+      {/* LIGNE 2 : Description - masquée sur mobile */}
+        {!isMobile && travail.description && (
           <p style={{ 
             fontSize: '0.85rem', 
             color: 'rgba(255,255,255,0.7)', 
@@ -1638,7 +1662,7 @@ export default function TravauxPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 0.75rem',
-        paddingTop: '70px'
+        paddingTop: isMobile ? '55px' : '70px'
       }}>
         {/* ========== NOUVEAU PARENT CONTEXT ========== */}
         {/* Note: Ici on a déjà le chantier chargé, pas besoin de ParentContext 
@@ -1659,7 +1683,7 @@ export default function TravauxPage() {
             gap: '1rem'
           }}>
             <h1 style={{ 
-              fontSize: '1.5rem', 
+              fontSize: isMobile ? '1.2rem' : '1.5rem', 
               margin: 0,
               color: 'var(--gray-light)',
               fontWeight: '700',
@@ -1694,23 +1718,23 @@ export default function TravauxPage() {
             </div>
           </div>
 
-          {/* Stats TOUT EN LIGNE - PLUS VISIBLE */}
+         {/* Stats TOUT EN LIGNE - PLUS VISIBLE */}
           <div style={{ 
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: '2rem',
-            fontSize: '0.95rem',
+            gap: isMobile ? '0.75rem' : '2rem',
+            fontSize: isMobile ? '0.85rem' : '0.95rem',
             color: 'var(--gray)'
           }}>
             {/* % complété */}
             <span style={{ 
               color: 'var(--gray-light)', 
-              fontSize: '1.1rem', 
+              fontSize: isMobile ? '0.95rem' : '1.1rem', 
               fontWeight: '700',
               marginLeft: '0.5rem'
             }}>
-              {progressionChantier}% complété
+              {progressionChantier}%{!isMobile && ' complété'}
             </span>
 
             {/* Heures - SANS COULEUR BLEUE */}
@@ -1727,8 +1751,8 @@ export default function TravauxPage() {
               </span>
             </div>
             
-            {/* Total Paniers techniques - Cliquable */}
-            {(() => {
+          {/* Total Paniers techniques - Cliquable - Masqué sur mobile */}
+            {!isMobile && (() => {
               const totalPaniers = travaux.reduce((sum, t) => sum + (t.cout_materiaux_estime || 0), 0);
               const lotsAvecPanier = travaux.filter(t => t.cout_materiaux_estime && t.cout_materiaux_estime > 0).length;
               return (
@@ -1780,19 +1804,29 @@ export default function TravauxPage() {
               );
             })()}
 
-            {/* Tâches */}
+           {/* Lots */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>✅ Lots :</span>
+              <span style={{ fontSize: isMobile ? '1rem' : '1.1rem' }}>✅</span>
               <span>
-                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
-                </span>
-                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  | {stats?.enCours || 0} En cours
-                </span>
-                <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  | {stats?.bloques || 0} Bloqué{stats?.bloques > 1 ? 's' : ''}
-                </span>
+                {isMobile ? (
+                  <>
+                    <span style={{ fontWeight: '700' }}>{stats?.termines || 0}/{travaux.length}</span>
+                    <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>• {stats?.enCours || 0} en cours</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Lots :</span>
+                    <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                      {stats?.termines || 0} Terminé{stats?.termines > 1 ? 's' : ''}
+                    </span>
+                    <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                      | {stats?.enCours || 0} En cours
+                    </span>
+                    <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                      | {stats?.bloques || 0} Bloqué{stats?.bloques > 1 ? 's' : ''}
+                    </span>
+                  </>
+                )}
               </span>
             </div>
             
