@@ -29,6 +29,15 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
   const [loading, setLoading] = useState(true);
   const [expandedNotes, setExpandedNotes] = useState<Set<string>>(new Set());
 
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   // Charger les notes
   useEffect(() => {
     const loadNotes = async () => {
@@ -99,26 +108,42 @@ export default function NotesButton({ level, id }: NotesButtonProps) {
 
   return (
     <>
-      {/* Bouton foncé cerclé */}
+     {/* Bouton foncé cerclé */}
       <button
         onClick={() => setIsOpen(true)}
         style={{
           display: 'flex',
           alignItems: 'center',
-          gap: '0.4rem',
-          padding: '0.5rem 0.75rem',
+          gap: '0.3rem',
+          padding: isMobile ? '0.4rem 0.5rem' : '0.5rem 0.75rem',
           borderRadius: '20px',
           border: '1px solid #404040',
           background: '#2a2a2a',
           color: '#e5e5e5',
-          fontSize: '0.85rem',
+          fontSize: isMobile ? '0.75rem' : '0.85rem',
           fontWeight: '500',
           cursor: 'pointer',
           transition: 'all 0.2s'
         }}
       >
         <span>📌</span>
-        <span>{notes.length} note{notes.length > 1 ? 's' : ''}</span>
+        {isMobile ? (
+          <span style={{
+            background: 'rgba(255,255,255,0.2)',
+            borderRadius: '50%',
+            minWidth: '18px',
+            height: '18px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontSize: '0.7rem',
+            fontWeight: '700'
+          }}>
+            {notes.length}
+          </span>
+        ) : (
+          <span>{notes.length} note{notes.length > 1 ? 's' : ''}</span>
+        )}
       </button>
 
       {/* Modale centrée */}
