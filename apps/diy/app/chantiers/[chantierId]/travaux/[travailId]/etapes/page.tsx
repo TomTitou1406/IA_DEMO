@@ -427,7 +427,7 @@ export default function TravailDetailPage() {
                 <CardButton
                   variant="danger"
                   icon="🗑️"
-                  label="Annuler"
+                  label={isMobile ? "" : "Annuler"}
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -490,7 +490,7 @@ export default function TravailDetailPage() {
                   variant="secondary"
                   color="var(--green)"
                   icon="✓✓"
-                  label="Tout terminer"
+                  label={isMobile ? "Terminer" : "Tout terminer"}
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -514,7 +514,7 @@ export default function TravailDetailPage() {
                 <CardButton
                   variant="danger"
                   icon="🗑️"
-                  label="Annuler"
+                  label={isMobile ? "" : "Annuler"}
                   onClick={() => {
                     setModalConfig({
                       isOpen: true,
@@ -867,9 +867,11 @@ export default function TravailDetailPage() {
         paddingTop: '70px'
       }}>
         {/* ========== NOUVEAU PARENT CONTEXT ========== */}
-        <ParentContext 
-          chantier={chantierParent || undefined}
-        />
+        {!isMobile && (
+          <ParentContext 
+            chantier={chantierParent || undefined}
+          />
+        )}
 
         {/* ÉTAT DES LIEUX DU LOT */}
         <div style={{
@@ -886,7 +888,7 @@ export default function TravailDetailPage() {
             gap: '1rem'
           }}>
             <h1 style={{ 
-              fontSize: '1.5rem', 
+              fontSize: isMobile ? '1.3rem' : '1.8rem',
               margin: 0,
               color: 'var(--gray-light)',
               fontWeight: '700',
@@ -900,7 +902,7 @@ export default function TravailDetailPage() {
             {/* Bouton Notes du lot */}
             <NotesButton level="travail" id={travailId} />
           </div>
-          {travail.description && (
+          {!isMobile && travail.description && (
             <p style={{ 
               fontSize: '0.95rem', 
               color: 'var(--gray)', 
@@ -929,66 +931,57 @@ export default function TravailDetailPage() {
             </div>
           </div>
         
-          {/* Stats inline */}
+                    {/* Stats inline */}
           <div style={{ 
             display: 'flex',
             flexWrap: 'wrap',
             alignItems: 'center',
-            gap: '2rem',
-            fontSize: '0.95rem',
+            gap: isMobile ? '0.75rem' : '2rem',
+            fontSize: isMobile ? '0.85rem' : '0.95rem',
             color: 'var(--gray)'
           }}>
             <span style={{ 
               color: 'var(--gray-light)', 
-              fontSize: '1.1rem', 
+              fontSize: isMobile ? '0.95rem' : '1.1rem', 
               fontWeight: '700' 
             }}>
-              {progressionAuto}% complété
+              {progressionAuto}%
             </span>
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>⏱️</span>
+            
+            {/* Durée - version compacte sur mobile */}
+            <span>
+              ⏱️ {Math.round(dureeReelleMinutes / 60)}h{!isMobile && <span style={{ opacity: 0.6 }}> / {Math.round(dureeEstimeeMinutes / 60)}h</span>}
+            </span>
+            
+            {/* Budget - masqué sur mobile */}
+            {!isMobile && travail.budget_estime && (
               <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {Math.round(dureeReelleMinutes / 60)}h
-                </strong>
-                <span style={{ opacity: 0.6 }}> / {Math.round(dureeEstimeeMinutes / 60)}h</span>
-                <span style={{ color: 'var(--gray-light)', marginLeft: '0.5rem', fontWeight: '700' }}>
-                  {progressionHeures}%
-                </span>
+                💰 {(travail.budget_reel || 0).toLocaleString()}€
+                <span style={{ opacity: 0.6 }}> / {travail.budget_estime.toLocaleString()}€</span>
               </span>
-            </div>
-
-            {travail.budget_estime && (
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1.1rem' }}>💰</span>
-                <span>
-                  <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                    {(travail.budget_reel || 0).toLocaleString()}€
-                  </strong>
-                  <span style={{ opacity: 0.6 }}> / {travail.budget_estime.toLocaleString()}€</span>
-                </span>
-              </div>
             )}
-
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ fontSize: '1.1rem' }}>✅</span>
-              <span>
-                <strong style={{ color: 'var(--gray-light)', fontWeight: '700' }}>
-                  {terminees.length}
-                </strong>
-                <span style={{ opacity: 0.6 }}> / {totalEtapes}</span>
-                <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
-                </span>
-                <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {enCours.length} en cours
-                </span>
-                <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
-                  • {bloquees.length} bloquée{bloquees.length > 1 ? 's' : ''}
-                </span>
-              </span>
-            </div>
+            
+            {/* Étapes - version compacte sur mobile */}
+            <span>
+              ✅ {terminees.length}/{totalEtapes}
+              {isMobile ? (
+                <>
+                  <span style={{ color: 'var(--blue)', marginLeft: '0.5rem' }}>• {enCours.length} en cours</span>
+                </>
+              ) : (
+                <>
+                  <span style={{ color: 'var(--green)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                    • {terminees.length} terminée{terminees.length > 1 ? 's' : ''}
+                  </span>
+                  <span style={{ color: 'var(--blue)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                    • {enCours.length} en cours
+                  </span>
+                  <span style={{ color: 'var(--orange)', marginLeft: '0.6rem', fontWeight: '700' }}>
+                    • {bloquees.length} bloquée{bloquees.length > 1 ? 's' : ''}
+                  </span>
+                </>
+              )}
+            </span>
             
             {/* Photos et Vidéos du lot */}
             <MediaButtons
