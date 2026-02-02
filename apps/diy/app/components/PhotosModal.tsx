@@ -13,7 +13,7 @@
 
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
 
 // Client Supabase pour Storage
@@ -69,11 +69,11 @@ export default function PhotosModal({
   if (!isOpen) return null;
 
   // Détecter si mobile (pour afficher le bouton caméra)
-  useState(() => {
+  useEffect(() => {
     if (typeof window !== 'undefined') {
       setIsMobile(window.innerWidth < 768);
     }
-  });
+  }, []);
 
   // Trier par date (plus récent en premier)
   const sortedMedias = [...photos].sort((a, b) => 
