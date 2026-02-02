@@ -57,12 +57,13 @@ export default function ConfirmModal({
         top: '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
-        background: 'white',
+        background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
         borderRadius: 'var(--card-radius)',
         padding: '1.5rem',
         maxWidth: '400px',
         width: '90%',
-        boxShadow: '0 20px 60px rgba(0,0,0,0.3)',
+        boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
+        border: '1px solid rgba(255,255,255,0.1)',
         zIndex: 9999,
         animation: 'slideIn 0.3s'
       }}>
