@@ -747,7 +747,7 @@ export default function MiseEnOeuvreTachesPage() {
       {/* Header */}
       <div style={{ maxWidth: '900px', margin: '0 auto' }}>
         {/* Breadcrumb */}
-        <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--gray)' }}>
+        <div style={{ marginBottom: '1rem', fontSize: '0.85rem', color: 'var(--gray)', display: isMobile ? 'none' : 'block' }}>
           <Link href="/chantiers" style={{ color: 'var(--gray)' }}>Chantiers</Link>
           {' > '}
           <Link href={`/chantiers/${chantierId}`} style={{ color: 'var(--gray)' }}>
@@ -814,7 +814,7 @@ export default function MiseEnOeuvreTachesPage() {
                 gap: '0.5rem'
               }}
             >
-              🔄 Régénérer
+              🔄{!isMobile && ' Régénérer'}
             </button>
           )}
         </div>
