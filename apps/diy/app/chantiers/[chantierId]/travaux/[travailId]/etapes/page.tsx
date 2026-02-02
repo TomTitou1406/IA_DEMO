@@ -72,6 +72,7 @@ export default function TravailDetailPage() {
   const [travail, setTravail] = useState<Travail | null>(null);
   const [etapes, setEtapes] = useState<Etape[]>([]);
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
   const [showEnCours, setShowEnCours] = useState(true);
   const [showBloques, setShowBloques] = useState(true);
   const [showAnnulees, setShowAnnulees] = useState(false);
@@ -142,6 +143,14 @@ export default function TravailDetailPage() {
       console.error('Erreur détachement vidéo:', error);
     }
   };
+
+  // Détecter mobile
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     async function loadData() {
@@ -279,15 +288,16 @@ export default function TravailDetailPage() {
       onMouseLeave={(e) => {
         e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.3)';
       }}>
-        {/* Header cliquable */}
+       {/* Header cliquable */}
         <div 
           onClick={() => setIsExpanded(!isExpanded)}
           style={{ 
             display: 'flex', 
+            flexDirection: isMobile ? 'column' : 'row',
             justifyContent: 'space-between', 
-            alignItems: 'flex-start',
+            alignItems: isMobile ? 'stretch' : 'flex-start',
             marginBottom: isExpanded ? '1rem' : '0.5rem',
-            gap: '1rem',
+            gap: isMobile ? '0.75rem' : '1rem',
             cursor: 'pointer'
           }}>
           <div style={{ flex: 1 }}>
@@ -350,9 +360,11 @@ export default function TravailDetailPage() {
             onClick={(e) => e.stopPropagation()}
             style={{ 
               display: 'flex', 
+              flexWrap: 'wrap',
               gap: '0.5rem', 
               flexShrink: 0,
-              alignItems: 'flex-start'
+              alignItems: 'flex-start',
+              justifyContent: isMobile ? 'flex-start' : 'flex-end'
             }}>
             {/* Boutons à_venir */}
             {etape.statut === 'à_venir' && (
