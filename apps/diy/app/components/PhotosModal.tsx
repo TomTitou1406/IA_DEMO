@@ -62,9 +62,18 @@ export default function PhotosModal({
   const [uploadProgress, setUploadProgress] = useState(0);
   const [lightboxMedia, setLightboxMedia] = useState<Photo | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   if (!isOpen) return null;
+
+  // Détecter si mobile (pour afficher le bouton caméra)
+  useState(() => {
+    if (typeof window !== 'undefined') {
+      setIsMobile(window.innerWidth < 768);
+    }
+  });
 
   // Trier par date (plus récent en premier)
   const sortedMedias = [...photos].sort((a, b) => 
@@ -178,11 +187,14 @@ export default function PhotosModal({
     } catch (err: any) {
       console.error('Erreur upload:', err);
       setError(err.message || 'Erreur lors de l\'upload');
-    } finally {
+   } finally {
       setUploading(false);
       setUploadProgress(0);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
+      }
+      if (cameraInputRef.current) {
+        cameraInputRef.current.value = '';
       }
     }
   };
@@ -489,13 +501,24 @@ export default function PhotosModal({
             )}
           </div>
 
-          {/* Footer - Bouton ajouter */}
+          {/* Footer - Boutons ajouter */}
           <div style={{
             padding: '1rem 1.25rem',
             borderTop: '1px solid rgba(255,255,255,0.1)',
             display: 'flex',
-            justifyContent: 'center'
+            flexDirection: 'column',
+            gap: '0.5rem'
           }}>
+            {/* Input caméra (mobile uniquement) */}
+            <input
+              ref={cameraInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              onChange={handleFileSelect}
+              style={{ display: 'none' }}
+            />
+            {/* Input galerie/fichiers */}
             <input
               ref={fileInputRef}
               type="file"
@@ -503,6 +526,33 @@ export default function PhotosModal({
               onChange={handleFileSelect}
               style={{ display: 'none' }}
             />
+            
+            {/* Bouton prendre photo - Mobile uniquement */}
+            {isMobile && (
+              <button
+                onClick={() => cameraInputRef.current?.click()}
+                disabled={uploading}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  borderRadius: '8px',
+                  border: 'none',
+                  background: uploading ? 'var(--gray)' : 'var(--orange)',
+                  color: 'white',
+                  fontSize: '0.9rem',
+                  fontWeight: '600',
+                  cursor: uploading ? 'wait' : 'pointer',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.5rem',
+                  width: '100%'
+                }}
+              >
+                📷 Prendre une photo
+              </button>
+            )}
+            
+            {/* Bouton choisir fichier - Toujours visible */}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={uploading}
@@ -517,10 +567,12 @@ export default function PhotosModal({
                 cursor: uploading ? 'wait' : 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                justifyContent: 'center',
+                gap: '0.5rem',
+                width: '100%'
               }}
             >
-              ➕ Ajouter photo / vidéo
+              📁 {isMobile ? 'Choisir depuis la galerie' : 'Ajouter photo / vidéo'}
             </button>
           </div>
         </div>
