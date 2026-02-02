@@ -569,6 +569,7 @@ export default function TravailDetailPage() {
           </div>
           )}
         </div>
+        <span style={{color: 'red'}}>AAA</span>
         {/* Barre de progression + Stats en ligne */}
         {(!isMobile || isExpanded) && etape.statut === 'en_cours' && etape.nombre_taches && etape.nombre_taches > 0 && (
           <>
