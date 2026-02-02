@@ -270,7 +270,7 @@ export default function TravailDetailPage() {
       <div style={{
         background: `linear-gradient(90deg, #0d0d0d 0%, color-mix(in srgb, ${statusColor} 50%, #1a1a1a) 100%)`,
         borderRadius: '12px',
-        padding: '1rem',
+        padding: isMobile ? '0.75rem' : '1rem',
         marginBottom: '0.75rem',
         borderLeft: `4px solid ${statusColor}`,
         boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
@@ -305,19 +305,19 @@ export default function TravailDetailPage() {
               <span style={{
                 background: statusColor,
                 color: 'white',
-                minWidth: '32px',
-                height: '32px',
+                minWidth: isMobile ? '26px' : '32px',
+                height: isMobile ? '26px' : '32px',
                 borderRadius: '50%',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontWeight: '700',
-                fontSize: '0.9rem'
+                fontSize: isMobile ? '0.8rem' : '0.9rem'
               }}>
                 {etape.numero}
               </span>
               <h3 style={{ 
-                fontSize: '1.05rem', 
+                fontSize: isMobile ? '0.9rem' : '1.05rem', 
                 margin: 0,
                 color: 'var(--gray-light)',
                 fontWeight: '700',
@@ -327,7 +327,7 @@ export default function TravailDetailPage() {
                 {getStatusIcon(etape.statut)} {etape.titre}
               </h3>
               <span style={{ 
-                fontSize: '1.2rem',
+                fontSize: isMobile ? '1rem' : '1.2rem',
                 color: 'var(--gray)',
                 transition: 'transform 0.2s',
                 transform: isExpanded ? 'rotate(180deg)' : 'rotate(0deg)'
