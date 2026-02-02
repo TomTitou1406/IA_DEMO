@@ -372,7 +372,7 @@ export default function TravailDetailPage() {
                 <CardButton
                   variant="primary"
                   color="var(--purple)"
-                  icon="🚀"
+                  icon={isMobile ? "" : "🚀"}
                   label="Démarrer"
                   onClick={() => {
                     setModalConfig({
@@ -393,7 +393,7 @@ export default function TravailDetailPage() {
                   <CardButton
                     variant="secondary"
                     color="var(--orange)"
-                    icon="✏️"
+                    icon={isMobile ? "" : "✏️"}
                     label="Finaliser tâches"
                     count={etape.taches_brouillon}
                     onClick={() => {
@@ -405,7 +405,7 @@ export default function TravailDetailPage() {
                   <CardButton
                     variant="secondary"
                     color="var(--purple)"
-                    icon="📋"
+                    icon={isMobile ? "" : "📋"}
                     label="Voir tâches"
                     count={etape.nombre_taches}
                     onClick={() => {
@@ -417,7 +417,7 @@ export default function TravailDetailPage() {
                   <CardButton
                     variant="secondary"
                     color="var(--purple)"
-                    icon="✨"
+                    icon={isMobile ? "" : "✨"}
                     label="Générer tâches"
                     onClick={() => {
                       router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/mise-en-oeuvre`);
@@ -453,7 +453,7 @@ export default function TravailDetailPage() {
                   <CardButton
                     variant="primary"
                     color="var(--orange)"
-                    icon="✏️"
+                    icon={isMobile ? "" : "✏️"}
                     label="Finaliser tâches"
                     count={etape.taches_brouillon}
                     onClick={() => {
@@ -465,7 +465,7 @@ export default function TravailDetailPage() {
                   <CardButton
                     variant="primary"
                     color="var(--blue)"
-                    icon="📋"
+                    icon={isMobile ? "" : "📋"}
                     label="Voir tâches"
                     count={etape.nombre_taches}
                     onClick={() => {
@@ -477,7 +477,7 @@ export default function TravailDetailPage() {
                   <CardButton
                     variant="primary"
                     color="var(--blue)"
-                    icon="✨"
+                    icon={isMobile ? "" : "✨"}
                     label="Générer tâches"
                     onClick={() => {
                       router.push(`/chantiers/${chantierId}/travaux/${travailId}/etapes/${etape.id}/mise-en-oeuvre`);
@@ -489,7 +489,7 @@ export default function TravailDetailPage() {
                 <CardButton
                   variant="secondary"
                   color="var(--green)"
-                  icon="✓✓"
+                  icon={isMobile ? "" : "✓✓"}
                   label={isMobile ? "Terminer" : "Tout terminer"}
                   onClick={() => {
                     setModalConfig({
@@ -569,7 +569,6 @@ export default function TravailDetailPage() {
           </div>
           )}
         </div>
-  
         {/* Barre de progression + Stats en ligne */}
         {(!isMobile || isExpanded) && etape.statut === 'en_cours' && etape.nombre_taches && etape.nombre_taches > 0 && (
           <>
@@ -864,7 +863,7 @@ export default function TravailDetailPage() {
         maxWidth: '1100px', 
         margin: '0 auto', 
         padding: '0.75rem 1rem',
-        paddingTop: isMobile ? '55px' : '70px'
+        paddingTop: isMobile ? '45px' : '70px'
       }}>
         {/* ========== NOUVEAU PARENT CONTEXT ========== */}
         {!isMobile && (
