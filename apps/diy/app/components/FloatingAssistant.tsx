@@ -539,15 +539,15 @@ export default function FloatingAssistant() {
           0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
           50% { transform: scale(1.1); box-shadow: 0 6px 30px rgba(0,0,0,0.25); }
         }
-        @media (max-width: 768px) {
+       @media (max-width: 768px) {
           .floating-assistant-btn {
             bottom: auto !important;
-            top: 60px !important;
-            right: 0.75rem !important;
-            left: auto !important;
-            transform: none !important;
-            width: 50px !important;
-            height: 50px !important;
+            top: 8px !important;
+            right: auto !important;
+            left: 50% !important;
+            transform: translateX(-50%) !important;
+            width: 44px !important;
+            height: 44px !important;
           }
         }
       `}</style>
