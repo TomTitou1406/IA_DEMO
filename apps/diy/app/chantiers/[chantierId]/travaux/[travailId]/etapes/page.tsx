@@ -873,10 +873,10 @@ export default function TravailDetailPage() {
           />
         )}
 
-        {/* ÉTAT DES LIEUX DU LOT */}
+       {/* ÉTAT DES LIEUX DU LOT */}
         <div style={{
-          marginBottom: '2rem',
-          paddingBottom: '1.5rem',
+          marginBottom: isMobile ? '1rem' : '2rem',
+          paddingBottom: isMobile ? '0.75rem' : '1.5rem',
           borderBottom: '1px solid rgba(255,255,255,0.08)'
         }}>
           {/* Header avec titre + bouton notes */}
@@ -884,6 +884,7 @@ export default function TravailDetailPage() {
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'flex-start',
+            marginTop: isMobile ? '-0.5rem' : '0',
             marginBottom: '0.75rem',
             gap: '1rem'
           }}>
@@ -931,7 +932,7 @@ export default function TravailDetailPage() {
             </div>
           </div>
         
-                    {/* Stats inline */}
+          {/* Stats inline */}
           <div style={{ 
             display: 'flex',
             flexWrap: 'wrap',
