@@ -320,10 +320,11 @@ function TacheCard({
           {/* Méta infos */}
           <div style={{ 
             display: 'flex', 
-            gap: '1rem', 
+            flexWrap: 'wrap',
+            gap: '0.75rem', 
             fontSize: '0.8rem', 
             color: 'var(--gray)',
-            marginLeft: '36px'
+            marginLeft: '0'
           }}>
             <span>⏱️ {tache.duree_estimee_minutes} min</span>
             {tache.outils_necessaires && tache.outils_necessaires.length > 0 && (
